@@ -1,0 +1,13 @@
+# R-related files
+.Rproj.user/
+*.Rproj
+*.RData
+*.Rhistory
+
+# JetBrains files
+.idea/
+# virtualenv folder
+virtualenv/
+# folder for temp data
+data/
+packrat/lib*/

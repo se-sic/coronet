@@ -1,0 +1,300 @@
+## (c) Claus Hunsen, 2016
+## hunsen@fim.uni-passau.de
+
+
+## libraries
+library(R6) # for R6 classes
+library(yaml) # for Codeface configuration files
+library(logging)
+
+
+## / / / / / / / / / / / / / /
+## Constants
+##
+
+## mapping of tagging to artifact
+ARTIFACT.TO.TAGGING = list(
+    "feature"  = "feature",
+    "featureexpression" = "feature",
+    "function" = "proximity",
+    "file"     = "proximity"
+)
+
+ARTIFACT.TO.ABBREVIATION = list(
+    "feature"  = "f",
+    "featureexpression" = "fe",
+    "function" = "func",
+    "file"     = "cu"
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## CodefaceConf
+##
+## Represents the Codeface configuration
+
+CodefaceConf = R6Class("CodefaceConf",
+
+    ## private members
+    private = list(
+
+        data = NULL, # character
+        selection.process = NULL, # character
+        casestudy = NULL, # character
+        artifact = NULL, # character
+        conf = NULL, # list
+
+        ## / / / / / / / / / / / / / /
+        ## Revisions and ranges
+        ##
+
+        postprocess.revision.list = function(ranges) {
+            # remove names ,e.g. "version", from release cycle names
+            casestudy = private$casestudy
+            to.remove = c(
+                "version-", "v-","version_", "v_","version", "v",
+                paste0(casestudy, "-"), paste0(casestudy,"-"),
+                paste0(casestudy, "_"), paste0(casestudy,"_"),
+                casestudy, casestudy
+            )
+
+            # run gsub for all pattern
+            ranges = tolower(ranges)
+            for (string in to.remove) {
+                ranges = gsub(string, "", ranges)
+            }
+
+            # return simplified list of ranges
+            return(ranges)
+        },
+
+        postprocess.revision.list.for.callgraph.data = function(r) {
+            r = gsub("version-", "", r) # remove version prefix (SQLite)
+            r = gsub("OpenSSL_", "", r) # remove name prefix (OpenSSL)
+            r = gsub("\\.", "_", r) # replace dots by underscores
+            return(r)
+        },
+
+        construct.ranges = function(revs) {
+            ranges = paste(revs[1:(length(revs) - 1)], revs[2:length(revs)], sep = "-")
+            return(ranges)
+        },
+
+
+        ## / / / / / / / / / / / / / /
+        ## Path construction
+        ##
+
+        ## Construct the path to the configuration folder of Codeface
+        get.configurations.folder = function(data, selection.process) {
+            return(file.path(data, "configurations", selection.process))
+        },
+
+        ## Construct the path to the results folder of Codeface
+        get.results.folder = function(data, selection.process, project, tagging) {
+            return(file.path(data, "results", selection.process, project, tagging))
+        },
+
+        ## Construct the path to the callgraph folder of Codeface
+        get.callgraph.folder = function(data, selection.process, casestudy) {
+            return(file.path(data, "results", selection.process, paste(casestudy, "callgraphs", sep = "_")))
+        },
+
+
+
+        ## construct path to a Codeface configuration
+        ## - data: path to codeface-data folder
+        ## - selection.process: one of: threemonth, releases
+        ## - casestudy: the name of the casestudy (same name as repo folder, e.g., "busybox")
+        ## - tagging: the tagging parameter used by Codeface, one of: feature, proximity
+        construct.conf.path = function(data, selection.process, casestudy, tagging) {
+            ## construct the base name of the configuration
+            conf.basename = paste(casestudy, "_", tagging, ".conf", sep = "")
+            ## construct complete path
+            conf.file = file.path(private$get.configurations.folder(data, selection.process), conf.basename)
+            ## return path to config file
+            return(conf.file)
+        },
+
+        ## / / / / / / / / / / / / / /
+        ## Configuration loading
+        ##
+
+        ## function to load a Codeface configuration
+        ## - data: path to codeface-data folder
+        ## - selection.process: one of: threemonth, releases
+        ## - casestudy: the name of the casestudy (same name as repo folder, e.g., "busybox")
+        ## - artifact: the kind of artifact to study, one of: feature, function, file
+        ##
+        ## The artifact parameter is automatically mapped to the tagging parameter used by Codeface.
+        load.configuration = function(data, selection.process, casestudy, artifact = "feature") {
+
+            ## construct file name for configuration
+            tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
+            conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
+
+            ## load case-study confuration from given file
+            logging::loginfo("Attempting to load configuration: %s", conf.file)
+            conf = yaml.load_file(conf.file)
+
+            ## store artifact in configuration
+            conf$artifact = artifact
+            conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
+            conf$artifact.codeface = paste0(
+                toupper(substr(conf$artifact, 1, 1)),
+                substr(conf$artifact, 2, nchar(conf$artifact))
+                ) # first letter uppercase
+
+            ## store path to actual Codeface data
+            conf$datapath = private$get.results.folder(data, selection.process, conf[["project"]], tagging)
+            ## store path to call graphs
+            conf$datapath.callgraph = private$get.callgraph.folder(data, selection.process, casestudy)
+
+            ## READ REVISIONS META-DATA
+
+            ## read revisions
+            revisions = scan(file = file.path(conf$datapath, "revisions.list"),
+                             what = character(), quiet = TRUE, comment.char = "#")
+            conf$revisions = revisions
+
+            ## do a postprocessing for list of revisions
+            conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
+
+            ## compute revision ranges
+            conf$ranges = private$construct.ranges(conf$revisions)
+            conf$ranges.callgraph = private$construct.ranges(conf$revisions.callgraph)
+
+            ## logging
+            logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
+
+            ## SAVE FULL CONFIGURATION OBJECT
+            private$conf = conf
+        },
+
+        ## access data in configuration list
+        get.conf.entry = function(key) {
+            return(private$conf[[key]])
+        }
+
+    ),
+
+    ## public members
+    public = list(
+
+        ## constructor
+        initialize = function(data, selection.process, casestudy, artifact = "feature") {
+            if (!missing(data) && is.character(data)) {
+                private$data <- data
+            }
+            if (!missing(selection.process) && is.character(selection.process)) {
+                private$selection.process <- selection.process
+            }
+            if (!missing(casestudy) && is.character(casestudy)) {
+                private$casestudy <- casestudy
+            }
+            if (!missing(artifact) && is.character(artifact)) {
+                private$artifact <- artifact
+            }
+
+            private$load.configuration(data, selection.process, casestudy, artifact)
+        },
+
+
+        ## get configuration list
+        get.conf = function() {
+            return(private$conf)
+        },
+
+        get.conf.as.string = function() {
+            return(as.yaml(private$conf))
+        },
+
+
+        ## CONFIGURATION ENTRIES
+
+        ## project
+        get.project = function() {
+            return(private$get.conf.entry("project"))
+        },
+
+        ## repo
+        get.repo = function() {
+            return(private$get.conf.entry("repo"))
+        },
+
+        ## description
+        get.description = function() {
+            return(private$get.conf.entry("description"))
+        },
+
+        ## mailinglists
+        get.mailinglists = function() {
+            return(private$get.conf.entry("mailinglists"))
+        },
+
+        ## tagging
+        get.tagging = function() {
+            return(private$get.conf.entry("tagging"))
+        },
+
+        ## artifact
+        get.artifact = function() {
+            return(private$get.conf.entry("artifact"))
+        },
+
+        ## artifact.short
+        get.artifact.short = function() {
+            return(private$get.conf.entry("artifact.short"))
+        },
+
+        ## artifact
+        get.artifact.codeface = function() {
+            return(private$get.conf.entry("artifact.codeface"))
+        },
+
+        ## data.path
+        get.datapath = function() {
+            return(private$get.conf.entry("datapath"))
+        },
+
+        ## data.path.callgraph
+        get.datapath.callgraph = function() {
+            return(private$get.conf.entry("datapath.callgraph"))
+        },
+
+        ## revisions
+        get.revisions = function() {
+            return(private$get.conf.entry("revisions"))
+        },
+
+        ## revisions.callgraph
+        get.revisions.callgraph = function() {
+            return(private$get.conf.entry("revisions.callgraph"))
+        },
+
+        ## ranges
+        get.ranges = function() {
+            return(private$get.conf.entry("ranges"))
+        },
+
+        ## ranges.callgraph
+        get.ranges.callgraph = function() {
+            return(private$get.conf.entry("ranges.callgraph"))
+        },
+
+        ## get a stripped-down version of the ranges
+        ## (for use while plotting)
+        get.ranges.simplified = function() {
+            # remove names ,e.g. "version", from release cycle names
+            return(self$get.ranges())
+        },
+
+        ## get the corresponding call-graph revision for the given range
+        get.callgraph.revision.from.range = function(range) {
+            idx = which(self$get.ranges() == range)
+            rev = self$get.revisions.callgraph()[idx + 1]
+            return(rev)
+        }
+
+    )
+)

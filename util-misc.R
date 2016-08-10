@@ -1,0 +1,301 @@
+## (c) Claus Hunsen, 2016
+## hunsen@fim.uni-passau.de
+
+
+## libraries
+library(plyr) # for rbind.fill
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Utility function for reading file formats
+##
+
+## Transform base.data (data.frame) to a list
+## - group by thing1
+## - use thing2 as sublist items
+get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
+    # get right portion of data
+    data = base.data[c(thing1, thing2)]
+
+    cols = c(thing1, thing2, extra.data)
+    extra.data.df = base.data[cols]
+    extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # sort data.frame for better comprehension
+    colnames(extra.data.df) = cols
+
+    # group list by author (V1) and construct a list (author -> artifacts)
+    transform.df.per.item = function(df) {
+        df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
+    }
+    mylist = dlply(extra.data.df, thing1, transform.df.per.item)
+
+    # remove object attributes introduced by dlply
+    attr(mylist, "split_labels") = NULL
+    attr(mylist,"split_type") = NULL
+
+    return(mylist)
+}
+
+
+## Read adjacency matrix as given by Codeface output:
+## - headers exist (developer IDs)
+## - no row names
+## Column names are mapped to the developers' names, row names are set identically
+read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE) {
+
+    if(!file.exists(file)) { # no analysis for the current range
+        return(create.empty.network())
+    }
+
+    # read data.frame from disk (as expected from Codeface output)
+    dat = read.table(file, header = TRUE)
+
+    # get author names whose IDs are
+    authors.id = sapply(colnames(dat), function(x) { gsub("X", "", x) }) # remove "X" from col names
+    authors.name = authors[ match(authors.id, authors[["ID"]]), "author.name"]
+
+    # set row and col names
+    colnames(dat) = authors.name
+    rownames(dat) = authors.name
+
+    # construct igraph object from adjacency matrix
+    g = graph_from_adjacency_matrix(as.matrix(dat), mode = "directed", weighted = TRUE)
+
+    # transform multiple edges to edge weights
+    if (simple.network)
+        g = simplify.network(g)
+
+    # return constructed igraph object
+    return(g)
+
+}
+
+
+## Construct a dependency network from the given list of lists
+## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
+## - if directed, the order of things in the sublists is respected
+## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
+construct.dependency.network.from.list = function(list, directed = FALSE, simple.network = TRUE,
+                                                  extra.edge.attr = c()) {
+
+    # initialize an edge list to fill and the set of nodes
+    nodes.processed = c()
+    edge.list = data.frame()
+
+    if (directed) {
+
+        ## for all subsets (sets), connect all items in there with the previous ones
+        edge.list.data = lapply(list, function(set) {
+            # for (set in list) {
+
+            # queue of already processed artifacts
+            edge.list.set = data.frame()
+            nodes.processed.set = c()
+
+            # connect the current item to all previous ones
+            for (item.no in 1:nrow(set)) {
+                item = set[item.no, ]
+
+                ## get vertex data
+                item.node = item[, 1]
+                item.edge.attrs = item [1, extra.edge.attr, drop = FALSE]
+
+                ## construct edges
+                combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
+                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1)
+                    combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
+                edge.list.set = rbind(edge.list.set, combinations) # add to edge list
+
+                # mark current item as processed
+                nodes.processed.set = c(nodes.processed.set, item.node)
+            }
+
+            ## store set of processed nodes
+            attr(edge.list.set, "nodes.processed") = nodes.processed.set
+
+            return(edge.list.set)
+        })
+
+        edge.list = rbind.fill(edge.list.data)
+        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+
+    } else {
+
+        ## for all items in the sublists, construct the cartesian product
+        edge.list.data = lapply(list, function(set) {
+            # for (set in list) {
+
+            # queue of already processed artifacts
+            edge.list.set = data.frame()
+            nodes.processed.set = c()
+
+            ## get vertex data
+            nodes = unique(set[, 1])
+            edge.attrs = set[1, extra.edge.attr, drop = FALSE]
+
+            ## construct edges
+            combinations = expand.grid(nodes, nodes, stringsAsFactors = default.stringsAsFactors())
+            if (nrow(combinations) > 0 & nrow(edge.attrs) == 1)
+                combinations = cbind(combinations, edge.attrs, row.names = NULL) # add edge attributes
+            edge.list.set = rbind(edge.list.set, combinations) # add to edge list
+
+            # mark current item as processed
+            nodes.processed.set = c(nodes.processed.set, nodes)
+
+            ## store set of processed nodes
+            attr(edge.list.set, "nodes.processed") = nodes.processed.set
+
+            return(edge.list.set)
+        })
+
+        edge.list = rbind.fill(edge.list.data)
+        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+
+    }
+
+    # if the edge.list is empty, return rightaway
+    if (is.null(edge.list) || nrow(edge.list) == 0) {
+        return(create.empty.network())
+    }
+
+    # construct network from edge list
+    net = graph.data.frame(edge.list, directed = TRUE, vertices = unique(nodes.processed))
+    net = set.vertex.attribute(net, "id", value = get.vertex.attribute(net, "name"))
+
+    # transform multiple edges to edge weights
+    if (simple.network)
+        net = simplify.network(net)
+
+    return(net)
+
+}
+
+
+## Read a basic igraph network from disk
+##
+## In this environment, we only use the 'pajek' format.
+read.network.from.file = function(file, format = "pajek") {
+    # read the basic graph
+    g = read.graph(file, format = "pajek")
+
+    # set vertex labels properly (copy "id" attribute to "name" attribute)
+    g = set.vertex.attribute( g, "name", index = V(g), get.vertex.attribute(g, "id") )
+
+    return(g)
+}
+
+
+## Unify the set of vertices in artifacts and author2artifact mapping
+##
+## As there may be artifacts existing that have not been touched by a developer,
+## the two sets need to be unified to avoid null-pointer exceptions
+unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
+
+    # get vertex names and set of all related artifacts
+    artifacts.net.vertices = get.vertex.attribute(artifacts.net, "name")
+    artifacts = unique( unlist( author.to.artifact ) )
+
+    # get only the missing ones
+    diff = setdiff(artifacts, artifacts.net.vertices)
+
+    # add missing vertices to existing network
+    net = artifacts.net + vertices(diff)
+    net = set.vertex.attribute(net, "id", index = V(net), get.vertex.attribute(net, "name"))
+
+    return(net)
+
+}
+
+
+## Process vertex names in artifact networks for consistent names
+##
+## Feature and file networks can have unique naming structures existent
+## (especially in the call-graph networks), so the names need to be processed
+## to have the same look as the ones from Codeface.
+postprocess.artifact.names.callgraph = function(net, artifact) {
+    names = vertex_attr(net, "name")
+
+    ## FEATURE
+    if (artifact == "feature") {
+        names = gsub("^CONFIG_", "ENABLE_", names) # BusyBox
+        names = gsub("^1$", "Base_Feature", names) # Base feature
+    }
+    ## FILE
+    else if (artifact == "file") {
+        ## transform to relative paths
+        names = gsub("^/local/bockthom/TypeChef-BusyboxAnalysis/gitbusybox/", "", names) # BusyBox
+        names = gsub("^/local/bockthom/openssl/", "", names) # OpenSSLl
+        names = gsub("^/local/bockthom/sqlite/\\./", "", names) # SQLite
+        names = gsub("^/local/bockthom/sqlite/", "", names) # SQLite
+
+        ## remove call-graph extension
+        names = gsub(".cg", "", names, fixed = TRUE)
+    }
+
+    ## set processed names inside graph object
+    vertex_attr(net, "name") = names
+
+    return(net)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Utility function for network simplification
+##
+
+## Simplify a network
+simplify.network = function(network) {
+    ## FIXME remove loops?
+    E(network)$weight <- 1
+    network = igraph::simplify(network, edge.attr.comb = list(weight = "sum", type = "first", "concat"), remove.loops = FALSE)
+    return(network)
+}
+
+## Simplify a list of networks
+simplify.networks = function(networks){
+    nets = lapply(networks, simplify.network)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Utility function to create empty networks that do not break the algorithms
+##
+
+create.empty.network = function() {
+
+    ## create empty network
+    net = make_empty_graph(0, directed = TRUE)
+
+    # set proper attributes
+    vertex_attr(net, "name") = ""
+    vertex_attr(net, "type") = 3
+    edge_attr(net, "type") = 6
+
+    return(net)
+
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Exemplary network for illustration purposes
+##
+
+get.sample.network = function() {
+
+    ## INDEPENDENT NETWORKS
+    authors = make_empty_graph(directed = TRUE) + vertices("D1", "D2", "D3", "D4", "D5", "D6") +
+        edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
+
+    artifacts = make_empty_graph(directed = FALSE) + vertices("A1", "A2", "A3", "A4", "A5", "A6") +
+        edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
+    artifacts = as.directed(artifacts, mode = "mutual")
+
+    authors.to.artifacts.df = data.frame(
+        author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
+        artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
+    )
+    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
+
+    ## combine networks
+    combined.network = combine.networks(authors, artifacts, authors.to.artifacts)
+    return(combined.network)
+}
