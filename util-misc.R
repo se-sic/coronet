@@ -246,7 +246,7 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 simplify.network = function(network) {
     ## FIXME remove loops?
     E(network)$weight <- 1
-    network = igraph::simplify(network, edge.attr.comb = list(weight = "sum", type = "first", "concat"), remove.loops = FALSE)
+    network = igraph::simplify(network, edge.attr.comb = list(weight = "sum", type = "first", "concat"), remove.loops = TRUE)
     return(network)
 }
 
