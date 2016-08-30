@@ -619,6 +619,19 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
         get.data.path.callgraph = function() {
             data.path = file.path(private$conf$get.datapath.callgraph(), private$revision.callgraph)
             return(data.path)
+        },
+
+
+        ## DATA ####
+
+        ## get range
+        get.range = function() {
+            return(private$range)
+        },
+
+        ## get call-graph revision
+        get.revision.callgraph = function() {
+            return(private$revision.callgraph)
         }
 
     )
