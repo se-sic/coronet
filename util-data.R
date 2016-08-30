@@ -94,7 +94,6 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## rewrite data.frame when we want file-based data
             ## (we have proximity-based data as foundation)
             if (private$conf$get.artifact() == "file") {
-
                 ## aggregate diff size by hash and file
                 commit.data = sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data` group by hash, file")
 
@@ -103,8 +102,9 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data["artifact.type"] = "File"
                 commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
                 commit.data["diffsum"] = NULL # remove
-
             }
+
+            ## FIXME for function-based analysis: artifact = file name + "::" . function name?
 
             ## only process commits with non-empty artifact
             if (filter.empty.artifacts) {
