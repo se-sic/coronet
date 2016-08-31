@@ -192,7 +192,7 @@ unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
 
     # get vertex names and set of all related artifacts
     artifacts.net.vertices = get.vertex.attribute(artifacts.net, "name")
-    artifacts = unique( unlist( author.to.artifact ) )
+    artifacts = unique( rbind.fill(author.to.artifact)[["artifact"]] )
 
     # get only the missing ones
     diff = setdiff(artifacts, artifacts.net.vertices)

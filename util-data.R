@@ -393,7 +393,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get the artifacts for each author
         ## (formerly Author2ArtifactExtraction, authors2{artifact}.list)
-        get.author2artifact = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE) {
+        get.author2artifact = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE,
+                                       extra.data = c()) {
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
                 private$read.commits(filter.empty.artifacts = filter.empty.artifacts,
@@ -402,7 +403,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "author.name", "artifact")
+            mylist = get.thing2thing(private$commits, "author.name", "artifact", extra.data = c(extra.data))
 
             return(mylist)
         },
@@ -501,7 +502,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get all networks (build unification to avoid null-pointers)
         get.networks = function(author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                author.directed = FALSE, author.only.committers = FALSE, artifact.extra.edge.attr = c(),
+                                author.directed = FALSE, author.only.committers = FALSE, artifact.extra.edge.attr = c("hash"),
                                 simple.network = TRUE, artifact.filter.empty = TRUE, artifact.filter = TRUE,
                                 artifact.filter.base = TRUE) {
 
@@ -510,7 +511,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             artifact.relation = match.arg(artifact.relation)
 
             ## authors-artifact relation
-            authors.to.artifacts = self$get.author2artifact(filter.empty.artifacts = artifact.filter.empty,
+            authors.to.artifacts = self$get.author2artifact(extra.data = artifact.extra.edge.attr,
+                                                            filter.empty.artifacts = artifact.filter.empty,
                                                             filter.artifact = artifact.filter,
                                                             filter.base.artifact = artifact.filter.base)
 
@@ -545,7 +547,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function(simple.network = TRUE, ...) {
+        get.bipartite.network = function(simple.network = TRUE, artifact.extra.edge.attr = c("hash"), ...) {
 
             networks = self$get.networks(simple.network = simple.network, ...)
 
@@ -554,7 +556,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             artifacts.net = networks[["artifacts.net"]]
 
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 simple.network = simple.network)
+                                 simple.network = simple.network,
+                                 extra.data = artifact.extra.edge.attr)
 
             return(u)
 
@@ -643,7 +646,8 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
 ##
 
 ## combine networks to a bipartite network
-combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, simple.network = TRUE) {
+combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, simple.network = TRUE,
+                            extra.data = c()) {
 
     authors = vertex_attr(authors.net, "name")
     artifacts = vertex_attr(artifacts.net, "name")
@@ -665,7 +669,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     E(u)$type = TYPE.EDGES.INTRA
 
     # add edges for devs.to.arts relation
-    u = add.edges.for.devart.relation(u, authors.to.artifacts)
+    u = add.edges.for.devart.relation(u, authors.to.artifacts, extra.data = extra.data)
 
     # simplify network
     if (simple.network)
@@ -680,7 +684,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
 
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
-add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER) {
+add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER, extra.data = c()) {
 
     # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = mapply(function(d, a.df) {
@@ -691,8 +695,18 @@ add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDG
         return(new.edges)
     }, names(auth.to.arts), auth.to.arts)
 
+    # attributes =
+    extra.edge.attributes.df = lapply(auth.to.arts, function(a.df) {
+        return(a.df[, extra.data, drop = FALSE])
+    })
+    extra.edge.attributes.df = rbind.fill(extra.edge.attributes.df)
+    extra.edge.attributes = as.list(extra.edge.attributes.df)
+
+    ## set edge type
+    extra.edge.attributes = c(extra.edge.attributes, list(type = edge.type))
+
     ## add the vertex sequences as edges to the network
-    new.net = add_edges(net, unlist(vertex.sequence.for.edges), attr = list(type = edge.type))
+    new.net = add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
 
     return(new.net)
 
