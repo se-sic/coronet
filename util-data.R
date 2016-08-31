@@ -661,7 +661,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     }
 
     ## combine networks
-    u = igraph::union(authors.net, artifacts.net)
+    u = igraph::disjoint_union(authors.net, artifacts.net)
 
     ## set vertex and edge attributes for identifaction
     V(u)[ name %in% authors ]$type = TYPE.AUTHOR
