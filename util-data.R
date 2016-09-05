@@ -672,13 +672,16 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     # add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, extra.data = extra.data)
 
+    ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
+
     # simplify network
     if (simple.network)
         u = simplify.network(u)
 
     # set network as undirected
     ## TODO refactor this?
-    u = as.undirected(u, mode = "collapse", edge.attr.comb = list(weight = sum, type = "first", "concat"))
+    ## FIXME add a parameter to skip this (for Momin's networks)
+    u = as.undirected(u, mode = "each", edge.attr.comb = list(weight = sum, type = "first", "concat"))
 
     return(u)
 }
