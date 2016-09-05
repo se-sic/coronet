@@ -86,7 +86,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## cd.file, cd.entityId, cd.entityType, cd.size
             colnames(commit.data) = c(
                 "id", # id
-                "author.date", "author.name", "author.email", # author information
+                "date", "author.name", "author.email", # author information
                 "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
                 "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
             )
@@ -502,7 +502,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get all networks (build unification to avoid null-pointers)
         get.networks = function(author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                author.directed = FALSE, author.only.committers = FALSE, artifact.extra.edge.attr = c("hash"),
+                                author.directed = FALSE, author.only.committers = FALSE, artifact.extra.edge.attr = c("date", "hash"),
                                 simple.network = TRUE, artifact.filter.empty = TRUE, artifact.filter = TRUE,
                                 artifact.filter.base = TRUE) {
 
@@ -533,7 +533,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             artifacts.net = self$get.artifact.network(artifact.relation,
                                                       filter.empty.artifacts = artifact.filter.empty,
                                                       filter.artifact = artifact.filter,
-                                                      filter.base.artifact = artifact.filter.base)
+                                                      filter.base.artifact = artifact.filter.base,
+                                                      extra.edge.attr = artifact.extra.edge.attr)
             # merge vertices on artifact network to avoid NULL references
             artifacts.net = unify.artifact.vertices(artifacts.net, authors.to.artifacts)
             # ## compute communities # TODO in the end, this needs to read Thomas' files!
@@ -547,9 +548,9 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function(simple.network = TRUE, artifact.extra.edge.attr = c("hash"), ...) {
+        get.bipartite.network = function(simple.network = TRUE, artifact.extra.edge.attr = c("date", "hash"), ...) {
 
-            networks = self$get.networks(simple.network = simple.network, ...)
+            networks = self$get.networks(simple.network = simple.network, artifact.extra.edge.attr = artifact.extra.edge.attr, ...)
 
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
