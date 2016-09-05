@@ -695,11 +695,13 @@ add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDG
         return(new.edges)
     }, names(auth.to.arts), auth.to.arts)
 
-    # attributes =
+    ## get extra edge attributes
     extra.edge.attributes.df = lapply(auth.to.arts, function(a.df) {
         return(a.df[, extra.data, drop = FALSE])
     })
     extra.edge.attributes.df = rbind.fill(extra.edge.attributes.df)
+    extra.edge.attributes.df["weight"] = 1 # add weight
+
     extra.edge.attributes = as.list(extra.edge.attributes.df)
 
     ## set edge type

@@ -160,6 +160,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     # construct network from edge list
     net = graph.data.frame(edge.list, directed = TRUE, vertices = unique(nodes.processed))
     net = set.vertex.attribute(net, "id", value = get.vertex.attribute(net, "name"))
+    net = set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
     if (simple.network)
