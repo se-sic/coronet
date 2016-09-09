@@ -502,9 +502,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get all networks (build unification to avoid null-pointers)
         get.networks = function(author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                author.directed = FALSE, author.only.committers = FALSE, artifact.extra.edge.attr = c("date", "hash"),
-                                simple.network = TRUE, artifact.filter.empty = TRUE, artifact.filter = TRUE,
-                                artifact.filter.base = TRUE) {
+                                author.directed = FALSE, author.only.committers = FALSE,
+                                artifact.extra.edge.attr = c("date", "hash"), artifact.filter.empty = TRUE,
+                                artifact.filter = TRUE, artifact.filter.base = TRUE,
+                                simple.network = TRUE) {
 
             ## get method arguments
             author.relation = match.arg(author.relation)
@@ -548,7 +549,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function(simple.network = TRUE, artifact.extra.edge.attr = c("date", "hash"), ...) {
+        get.bipartite.network = function(simple.network = TRUE, contract.edges = simple.network,
+                                         artifact.extra.edge.attr = c("date", "hash"), ...) {
 
             networks = self$get.networks(simple.network = simple.network, artifact.extra.edge.attr = artifact.extra.edge.attr, ...)
 
@@ -557,7 +559,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             artifacts.net = networks[["artifacts.net"]]
 
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 simple.network = simple.network,
+                                 simple.network = simple.network, contract.edges = contract.edges,
                                  extra.data = artifact.extra.edge.attr)
 
             return(u)
@@ -648,7 +650,7 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
 
 ## combine networks to a bipartite network
 combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, simple.network = TRUE,
-                            extra.data = c()) {
+                            contract.edges = simple.network, extra.data = c()) {
 
     authors = vertex_attr(authors.net, "name")
     artifacts = vertex_attr(artifacts.net, "name")
@@ -669,19 +671,22 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     V(u)[ name %in% artifacts ]$type = TYPE.ARTIFACT
     E(u)$type = TYPE.EDGES.INTRA
 
-    # add edges for devs.to.arts relation
+    ## add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, extra.data = extra.data)
 
     ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
 
-    # simplify network
+    ## simplify network
     if (simple.network)
         u = simplify.network(u)
 
-    # set network as undirected
-    ## TODO refactor this?
-    ## FIXME add a parameter to skip this (for Momin's networks)
-    u = as.undirected(u, mode = "each", edge.attr.comb = list(weight = sum, type = "first", "concat"))
+    ## set network as undirected
+    ## set contraction mode (collapse is contracting, each is not)
+    contraction.mode = "collapse"
+    if (!contract.edges)
+        contraction.mode = "each"
+    ## convert to undirected
+    u = as.undirected(u, mode = contraction.mode, edge.attr.comb = list(weight = sum, type = "first", "concat"))
 
     return(u)
 }
