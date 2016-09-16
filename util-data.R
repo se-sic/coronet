@@ -42,6 +42,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## raw data
         ## commits
         commits = NULL, # data.frame
+        commits.raw = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -65,7 +66,40 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 return(private$commits)
             }
 
+            ## get raw commit data
+            browser()
+            commit.data = self$get.commits.raw()
+
+            ## FIXME for function-based analysis: artifact = file name + "::" . function name?
+
+            ## only process commits with non-empty artifact
+            if (filter.empty.artifacts) {
+                commit.data = subset(commit.data, artifact != "")
+            }
+
+            ## only process commits with the artifact listed in the configuration
+            if (filter.artifact) {
+                commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
+            }
+
+            ## filter out the base artifacts (i.e., Base_Feature, File_Level)
+            if (filter.base.artifact ) {
+                commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
+            }
+
+            ## store the commit data
+            private$commits = commit.data
+        },
+
+        read.commits.raw = function() {
+
+            ## do not compute anything more than once
+            if (!is.null(private$commits.raw)) {
+                return(private$commits.raw)
+            }
+
             ## get file name of commit data
+            data.path = self$get.data.path()
             file = file.path(data.path, "commits.list")
 
             ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
@@ -104,25 +138,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data["diffsum"] = NULL # remove
             }
 
-            ## FIXME for function-based analysis: artifact = file name + "::" . function name?
-
-            ## only process commits with non-empty artifact
-            if (filter.empty.artifacts) {
-                commit.data = subset(commit.data, artifact != "")
-            }
-
-            ## only process commits with the artifact listed in the configuration
-            if (filter.artifact) {
-                commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
-            }
-
-            ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (filter.base.artifact ) {
-                commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
-            }
-
             ## store the commit data
-            private$commits = commit.data
+            private$commits.raw = commit.data
         },
 
         ## read the mail data for the range
@@ -354,9 +371,9 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
 
-        ## DATA ####
+        ## RAW DATA ####
 
-        ## get the complete list of commits
+        ## get the complete filtered list of commits
         get.commits = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE) {
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
@@ -366,6 +383,17 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             return(private$commits)
+        },
+
+        ## get the complete raw list of commits
+        get.commits.raw = function() {
+            ## if commits are not read already, do this
+            if (is.null(private$commits.raw)) {
+                private$read.commits.raw()
+            }
+            browser()
+
+            return(private$commits.raw)
         },
 
         ## get the complete list of mails
