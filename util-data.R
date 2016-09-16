@@ -419,6 +419,20 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## DATA ####
 
+        ## get the commits for each author
+        get.author2commit = function(extra.data = c("date", "diff.size")) {
+            ## if commits are not read already, do this
+            if (is.null(private$commits.raw)) {
+                private$read.commits.raw()
+            }
+
+            ## store the authors per artifact
+            mylist = get.thing2thing(private$commits.raw, "author.name", "hash", extra.data = c(extra.data))
+            mylist = lapply(mylist, unique)
+
+            return(mylist)
+        },
+
         ## get the artifacts for each author
         ## (formerly Author2ArtifactExtraction, authors2{artifact}.list)
         get.author2artifact = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE,
