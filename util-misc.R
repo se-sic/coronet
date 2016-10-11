@@ -19,7 +19,7 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
 
     cols = c(thing1, thing2, extra.data)
     extra.data.df = base.data[cols]
-    extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # sort data.frame for better comprehension
+    # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
     colnames(extra.data.df) = cols
 
     # group list by author (V1) and construct a list (author -> artifacts)
