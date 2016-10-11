@@ -297,6 +297,8 @@ get.sample.network = function() {
     authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
 
     ## combine networks
-    combined.network = combine.networks(authors, artifacts, authors.to.artifacts)
+    combined.network = combine.networks(authors, artifacts, authors.to.artifacts) %>%
+        set.graph.attribute("sample.network", TRUE)
+
     return(combined.network)
 }
