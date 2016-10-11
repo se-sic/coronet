@@ -43,6 +43,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## commits and commit data
         commits = NULL, # data.frame
         commits.raw = NULL, # data.frame
+        synchronicity = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -58,7 +59,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## BASIC DATA ####
 
         ## read the commit data for the range
-        read.commits = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE) {
+        read.commits = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE,
+                                synchronicity = FALSE, synchronicity.window = 5) {
             data.path = self$get.data.path()
 
             ## do not compute anything more than once
@@ -67,7 +69,6 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## get raw commit data
-            browser()
             commit.data = self$get.commits.raw()
 
             ## FIXME for function-based analysis: artifact = file name + "::" . function name?
@@ -91,7 +92,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             private$commits = commit.data
         },
 
-        read.commits.raw = function() {
+        read.commits.raw = function(synchronicity = FALSE, synchronicity.window = 5) {
 
             ## do not compute anything more than once
             if (!is.null(private$commits.raw)) {
@@ -139,8 +140,49 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data["diffsum"] = NULL # remove
             }
 
+            ## append synchronicity data if wanted
+            if (synchronicity) {
+                synchronicity.data = self$get.synchronicity()
+                commit.data = merge(commit.data, synchronicity.data, by = "id", all.x = TRUE)
+            } else {
+                ## fill with NAs for safety reasons
+                commit.data[["synchronicity"]] = NA
+            }
+
             ## store the commit data
             private$commits.raw = commit.data
+        },
+
+        ## read the synchronicity data of commits
+        read.synchronicity = function(time.window = 5){
+            allowed.time.windows = c(1, 5, 10)
+
+            ## do not compute anything more than once
+            if (!is.null(private$synchronicity)) {
+                return(private$sychronicity)
+            }
+
+            ## check time.window
+            stopifnot(time.window %in% allowed.time.windows)
+
+            ## construct path and file
+            data.path = self$get.data.path.synchronicity()
+            file.name = paste0("commit_sync_analysis_", private$conf$get.artifact(), "_", time.window, ".dat")
+            file = file.path(data.path, file.name)
+
+            ## break if file does not exist
+            stopifnot(file.exists(file))
+
+            ## load commit.ids object
+            load(file = file)
+            synchronous.commits = data.frame(id = commit.ids[["synchronous"]], synchronous = TRUE)
+            nonsynchronous.commits = data.frame(id = commit.ids[["non.synchronous"]], synchronous = FALSE)
+
+            ## construct data.frame
+            synchronicity = rbind.fill(synchronous.commits, nonsynchronous.commits)
+
+            ## store the synchronicity data
+            private$synchronicity = synchronicity
         },
 
         ## read the mail data for the range
@@ -372,30 +414,47 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             return(data.path)
         },
 
+        ## construct the absolute path to the range's result folder for synchronicity data
+        get.data.path.synchronicity = function() {
+            data.path = private$conf$get.datapath.synchronicity()
+            return(data.path)
+        },
+
 
         ## RAW DATA ####
 
         ## get the complete filtered list of commits
-        get.commits = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE) {
+        get.commits = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE,
+                               synchronicity = FALSE, synchronicity.window = 5) {
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
                 private$read.commits(filter.empty.artifacts = filter.empty.artifacts,
                                      filter.artifact = filter.artifact,
-                                     filter.base.artifact = filter.base.artifact)
+                                     filter.base.artifact = filter.base.artifact,
+                                     synchronicity = synchronicity, synchronicity.window = synchronicity.window)
             }
 
             return(private$commits)
         },
 
         ## get the complete raw list of commits
-        get.commits.raw = function() {
+        get.commits.raw = function(synchronicity = FALSE, synchronicity.window = 5) {
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw()
+                private$read.commits.raw(synchronicity = synchronicity, synchronicity.window = synchronicity.window)
             }
-            browser()
 
             return(private$commits.raw)
+        },
+
+        ## get the complete synchronicity data
+        get.synchronicity = function(time.window = c(5)) {
+            ## if commits are not read already, do this
+            if (is.null(private$synchronicity)) {
+                private$read.synchronicity()
+            }
+
+            return(private$synchronicity)
         },
 
         ## get the complete list of mails
