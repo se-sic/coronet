@@ -2,7 +2,6 @@
 ## hunsen@fim.uni-passau.de
 
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility function for plotting author networks
 ##

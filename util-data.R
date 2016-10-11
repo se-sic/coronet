@@ -40,7 +40,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         conf = NULL, # list
 
         ## raw data
-        ## commits
+        ## commits and commit data
         commits = NULL, # data.frame
         commits.raw = NULL, # data.frame
         ## mails
@@ -163,6 +163,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 logging::logerror("There are no mails available for the current environment.")
                 logging::logerror("Class: %s", self$get.class.name())
                 logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
+                ## FIXME do not stop the hard way: log the error and return an empty data.frame?!
                 stop("Stopped due to missing mails.")
             }
 
@@ -365,7 +366,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## PATHS ####
 
-        ## construct the absolute path to the range's result folder
+        ## construct the absolute path to the project's result folder
         get.data.path = function() {
             data.path = private$conf$get.datapath()
             return(data.path)
@@ -664,7 +665,7 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
             return(file.path(data.path, range))
         },
 
-        ## construct the absolute path to the range's result folder
+        ## construct the absolute path to the range's result folder for callgraphs
         get.data.path.callgraph = function() {
             data.path = file.path(private$conf$get.datapath.callgraph(), private$revision.callgraph)
             return(data.path)
