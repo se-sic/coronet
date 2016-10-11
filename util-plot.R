@@ -7,15 +7,28 @@
 ##
 ## Given networks need type attributes on all vertices and edges
 
-plot.network = function(net) {
+plot.network = function(net, grayscale = FALSE) {
 
     ## colors and shapes
-    vertex.colors <- c("skyblue", "orange", "red")
-    vertex.colors.dark = c("deepskyblue", "darkorange", "red")
-    edge.colors = c("gray80", "chartreuse3", "red")
+    vertex.colors.light <- c("skyblue", "orange", "red")
+    vertex.colors.dark = c("deepskyblue", "darkorange", "darkred")
+    edge.colors = c("gray60", "chartreuse3", "red")
     edge.lty = c(2, 1, 3)
     vertex.shapes = c("circle", "square", "triangle")
     vertex.shapes.pch = c(16, 15, 17)
+
+    ## b/w version
+    vertex.colors.bw = c("gray40", "gray30", "gray20")
+    edge.colors.bw = c("gray60", "gray40")
+    if (grayscale) {
+        vertex.colors.dark = vertex.colors.bw
+        edge.colors = edge.colors.bw
+    }
+
+    ## legend colors and types
+    vertex.colors.legend = c(vertex.colors.dark[1:2], edge.colors[1:2])
+    edge.lty.legend = c(NA, NA, edge.lty[1:2])
+    vertex.shapes.pch.legend = c(vertex.shapes.pch[1:2], NA, NA)
 
     ## vertex color by "type" attribute
     V(net)$color <- vertex.colors.dark[V(net)$type]
@@ -25,30 +38,49 @@ plot.network = function(net) {
 
     ##  Compute node degrees (#links) and use that to set node size:
     # V(net)$size = degree(net, mode = "all") * 4
-    V(net)$label.cex = .7
-    V(net)$label.color = "black"
+    V(net)$label.cex = .8
+    V(net)$label.color = ifelse(grayscale, "white", "black")
 
     ## change arrow size and edge color:
     E(net)$arrow.size <- .2
-    E(net)$width <- 1 + E(net)$weight/6
+    E(net)$width <- 2 + E(net)$weight/6
     # E(net)$curved = .1 # curvy edges
     E(net)$type = unlist(E(net)$type) - 2 # as TYPE.EDGE.INTER is 3, we need to re-map this to 1
     E(net)$color = edge.colors[unlist(E(net)$type)]
     E(net)$lty = edge.lty[unlist(E(net)$type)]
 
-    # ## layout of graph
-    # lay = matrix(c(56, 89, 189, 245, 349, 405, 60, 56, 145, 172, 272, 341, 282, 223, 214, 276, 270, 289, 90, 30, 67, 0, 86, 65),
-    #              nrow = 12, byrow = FALSE) # for sample graph
-    # graph_attr(net, "layout") = lay
+    ## plot network
+    if (!is.plot.empty(net)) {
 
-    # plot network
-    if (!is.plot.empty(net))
-        plot(net)
+        ## if we have a sample network, set the layout globally
+        is.sample.network = !is.null(get.graph.attribute(net, "sample.network")) && get.graph.attribute(net, "sample.network") == TRUE
+        if (is.sample.network) {
+            par(mai = c(2,0,0,0), mar = c(0,0,0,0))
+
+            lay = matrix(c(  20, 179, 552, 693, 956, 1091, 124, 317, 516, 615, 803, 1038,
+                            245, 175, 185, 255, 253, 225,   73,   8,  75,   0,  96,   86),
+                         nrow = 12, byrow = FALSE) # for sample graph
+            graph_attr(net, "layout") = lay
+
+            # id = tkplot(net, canvas.width = 1450, canvas.height = 450, rescale = FALSE)
+            # browser()
+            # lay = tk_coords(id)
+
+            V(net)$label.cex = 1.25
+
+            plot(net, layout = lay, asp = 0, margin = c(0.7,0,0.1,0))
+        }
+        ## else plot the network with the default igraph layout
+        else {
+            plot(net)
+        }
+    }
     else {
         plot.new()
     }
-    legend("bottomleft", c("Developers", "Artifacts"),
-           pch = vertex.shapes.pch, col = vertex.colors.dark, pt.bg = vertex.colors.dark, pt.cex = 2, cex = .8, bty = "n", ncol = 1)
+    legend("bottom", c("Developers", "Artifacts", "Intra-Type Edges", "Inter-Type Edges"), bty = "n", ncol = 2,
+           pch = vertex.shapes.pch.legend, col = vertex.colors.legend, pt.bg = vertex.colors.legend, lty = edge.lty.legend,
+           cex = 1.25, pt.cex = 2, lwd = 2)
 
 }
 
@@ -57,14 +89,14 @@ plot.network = function(net) {
 ## Utility function for plotting bipartite networks
 ##
 
-plot.bipartite.network = function(net) {
+plot.bipartite.network = function(net, grayscale = FALSE) {
 
     ## correct missing type attributes
     E(net)[ is.na(type) ]$type = 5
     V(net)[ is.na(type) ]$type = 5
 
     ## plot
-    plot.network(net)
+    plot.network(net, grayscale = grayscale)
 
 }
 
@@ -73,14 +105,14 @@ plot.bipartite.network = function(net) {
 ## Utility function for plotting author networks
 ##
 
-plot.author.network = function(net) {
+plot.author.network = function(net, grayscale = FALSE) {
 
     ## correct missing type attributes
     net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
 
     ## plot
-    plot.network(net)
+    plot.network(net, grayscale = grayscale)
 
 }
 
@@ -89,14 +121,14 @@ plot.author.network = function(net) {
 ## Utility function for plotting artifact networks
 ##
 
-plot.artifact.network = function(net) {
+plot.artifact.network = function(net, grayscale = FALSE) {
 
     ## correct missing type attributes
     net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
 
     ## plot
-    plot.network(net)
+    plot.network(net, grayscale = grayscale)
 
 }
 
