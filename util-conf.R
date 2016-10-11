@@ -100,6 +100,11 @@ CodefaceConf = R6Class("CodefaceConf",
             return(file.path(data, "results", selection.process, paste(casestudy, "callgraphs", sep = "_")))
         },
 
+        ## Construct the path to the synchronicity folder of Codeface
+        get.synchronicity.folder = function(data, selection.process, casestudy) {
+            return(file.path(data, "results", selection.process, paste(casestudy, "synchronicity", sep = "_")))
+        },
+
 
 
         ## construct path to a Codeface configuration
@@ -149,6 +154,8 @@ CodefaceConf = R6Class("CodefaceConf",
             conf$datapath = private$get.results.folder(data, selection.process, conf[["project"]], tagging)
             ## store path to call graphs
             conf$datapath.callgraph = private$get.callgraph.folder(data, selection.process, casestudy)
+            ## store path to synchronicity data
+            conf$datapath.synchronicity = private$get.synchronicity.folder(data, selection.process, casestudy)
 
             ## READ REVISIONS META-DATA
 
@@ -260,6 +267,11 @@ CodefaceConf = R6Class("CodefaceConf",
         ## data.path.callgraph
         get.datapath.callgraph = function() {
             return(private$get.conf.entry("datapath.callgraph"))
+        },
+
+        ## data.path.synchronicity
+        get.datapath.synchronicity = function() {
+            return(private$get.conf.entry("datapath.synchronicity"))
         },
 
         ## revisions
