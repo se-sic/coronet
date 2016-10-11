@@ -301,7 +301,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 return(private$authors.network.mail)
             }
 
-            edge.attributes = c("date", "message.id")
+            edge.attributes = c("date", "message.id", "thread")
             thread2author = self$get.thread2author(extra.data = edge.attributes)
             dev.relation = construct.dependency.network.from.list(thread2author, directed = directed, simple.network = simple.network,
                                                                   extra.edge.attr = edge.attributes)
