@@ -118,4 +118,14 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]])
 # run.lapply(data, "get.data.path.callgraph")
 
 
+## SAMPLE PLOTS (e.g., for papers)
 
+# pdf(file = "sample-network.pdf", width = 9, height = 5)
+# g = get.sample.network()
+# plot.bipartite.network(g, grayscale = FALSE)
+# dev.off()
+#
+# pdf(file = "sample-network-bw.pdf", width = 9, height = 5)
+# g = get.sample.network()
+# plot.bipartite.network(g, grayscale = TRUE)
+# dev.off()
