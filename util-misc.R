@@ -302,3 +302,12 @@ get.sample.network = function() {
 
     return(combined.network)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Stacktrace
+##
+
+get.stacktrace = function(calls) {
+    lapply(calls, deparse)
+}
