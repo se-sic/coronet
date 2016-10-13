@@ -28,6 +28,9 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
             artifact.filter = artifact.filter, artifact.filter.base = artifact.filter.base
         )
 
+        ## set range attribute
+        bp.network = set.graph.attribute(bp.network, "range", range)
+
         # add to global list
         return(bp.network)
     })
@@ -58,6 +61,9 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 
         ## get the author network
         author.network = range.data$get.author.network(author.relation, directed = author.directed, simple.network = simple.network)
+
+        ## set range attribute
+        author.network = set.graph.attribute(author.network, "range", range)
 
         # add to global list
         return(author.network)
@@ -91,6 +97,9 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
         ## get the artifact network
         artifact.network = range.data$get.artifact.network(artifact.relation, filter.artifact = filter.artifact,
                                                             filter.base.artifact = filter.base.artifact, extra.edge.attr = extra.edge.attr)
+
+        ## set range attribute
+        artifact.network = set.graph.attribute(artifact.network, "range", range)
 
         # add to global list
         return(artifact.network)
