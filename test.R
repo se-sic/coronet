@@ -86,9 +86,8 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # y$get.artifact.network(relation = ARTIFACT.RELATION, extra.edge.attr = c("hash"))
 # y$get.networks(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION)
 # g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, artifact.filter.base = FALSE,
-#                             author.only.committers = TRUE, author.directed = TRUE)
-# plot.bipartite.network(g)
-
+#                             author.only.committers = TRUE, author.directed = TRUE, simple.network = FALSE)
+# plot.bipartite.network(g, labels = FALSE, grayscale = FALSE)
 
 ## BULK METHODS
 

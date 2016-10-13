@@ -7,7 +7,7 @@
 ##
 ## Given networks need type attributes on all vertices and edges
 
-plot.network = function(net, grayscale = FALSE) {
+plot.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## colors and shapes
     vertex.colors.light <- c("skyblue", "orange", "red")
@@ -49,6 +49,11 @@ plot.network = function(net, grayscale = FALSE) {
     E(net)$color = edge.colors[unlist(E(net)$type)]
     E(net)$lty = edge.lty[unlist(E(net)$type)]
 
+    ## omit labels if wanted
+    if (labels == FALSE) {
+        V(net)$label = NA
+    }
+
     ## plot network
     if (!is.plot.empty(net)) {
 
@@ -89,14 +94,14 @@ plot.network = function(net, grayscale = FALSE) {
 ## Utility function for plotting bipartite networks
 ##
 
-plot.bipartite.network = function(net, grayscale = FALSE) {
+plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
     E(net)[ is.na(type) ]$type = 5
     V(net)[ is.na(type) ]$type = 5
 
     ## plot
-    plot.network(net, grayscale = grayscale)
+    plot.network(net, labels = labels, grayscale = grayscale)
 
 }
 
@@ -105,14 +110,14 @@ plot.bipartite.network = function(net, grayscale = FALSE) {
 ## Utility function for plotting author networks
 ##
 
-plot.author.network = function(net, grayscale = FALSE) {
+plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
     net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
 
     ## plot
-    plot.network(net, grayscale = grayscale)
+    plot.network(net, labels = labels, grayscale = grayscale)
 
 }
 
@@ -121,14 +126,14 @@ plot.author.network = function(net, grayscale = FALSE) {
 ## Utility function for plotting artifact networks
 ##
 
-plot.artifact.network = function(net, grayscale = FALSE) {
+plot.artifact.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
     net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
 
     ## plot
-    plot.network(net, grayscale = grayscale)
+    plot.network(net, labels = labels, grayscale = grayscale)
 
 }
 
