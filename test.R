@@ -15,7 +15,7 @@ CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
 CASESTUDY = "busybox"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 ## FIXME test:
-## - artifact = file and author network = cochange
+## - author network = cochange
 ## - artifact = featureexpression
 
 AUTHOR.RELATION = "mail" # mail, cochange
@@ -70,7 +70,7 @@ x = CodefaceProjectData$new(conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]])
+y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits()
 # y$get.mails()

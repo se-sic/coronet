@@ -72,7 +72,7 @@ plot.network = function(net, grayscale = FALSE) {
         }
         ## else plot the network with the default igraph layout
         else {
-            plot(net)
+            plot(net, margin = c(0.7,0,0.1,0))
         }
     }
     else {
