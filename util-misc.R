@@ -14,6 +14,12 @@ library(plyr) # for rbind.fill
 ## - group by thing1
 ## - use thing2 as sublist items
 get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
+    if (nrow(base.data) == 0) {
+        logging::logwarn("Trying to get subset of non-existent data.")
+        logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
+        return(list())
+    }
+
     # get right portion of data
     data = base.data[c(thing1, thing2)]
 

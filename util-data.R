@@ -202,11 +202,11 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## break if the list of mails is empty
             if (inherits(mail.data, 'try-error')) {
-                logging::logerror("There are no mails available for the current environment.")
-                logging::logerror("Class: %s", self$get.class.name())
-                logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
-                ## FIXME do not stop the hard way: log the error and return an empty data.frame?!
-                stop("Stopped due to missing mails.")
+                logging::logwarn("There are no mails available for the current environment.")
+                logging::logwarn("Class: %s", self$get.class.name())
+                logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                private$mails = data.frame()
+                return()
             }
 
             ## set proper column names based on Codeface extraction:
@@ -303,8 +303,15 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             edge.attributes = c("date", "message.id", "thread")
             thread2author = self$get.thread2author(extra.data = edge.attributes)
-            dev.relation = construct.dependency.network.from.list(thread2author, directed = directed, simple.network = simple.network,
-                                                                  extra.edge.attr = edge.attributes)
+
+            if (length(thread2author) != 0) {
+                dev.relation =
+                    construct.dependency.network.from.list(thread2author,
+                                                           directed = directed, simple.network = simple.network,
+                                                           extra.edge.attr = edge.attributes)
+            } else {
+                dev.relation = create.empty.network()
+            }
 
             ## store network
             private$authors.network.mail = dev.relation
