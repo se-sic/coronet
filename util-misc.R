@@ -128,29 +128,35 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = lapply(list, function(set) {
-            # for (set in list) {
-
-            # queue of already processed artifacts
-            edge.list.set = data.frame()
-            nodes.processed.set = c()
 
             ## get vertex data
             nodes = unique(set[, 1])
-            edge.attrs = set[1, extra.edge.attr, drop = FALSE]
 
-            ## construct edges
-            combinations = expand.grid(nodes, nodes, stringsAsFactors = default.stringsAsFactors())
-            if (nrow(combinations) > 0 & nrow(edge.attrs) == 1)
-                combinations = cbind(combinations, edge.attrs, row.names = NULL) # add edge attributes
-            edge.list.set = rbind(edge.list.set, combinations) # add to edge list
+            ## break if there is only one developer
+            if (length(nodes) <= 1) {
+                return(NULL)
+            }
 
-            # mark current item as processed
-            nodes.processed.set = c(nodes.processed.set, nodes)
+            ## get combinations
+            combinations = combn(nodes, 2) # all unique pairs of developers
+
+            ## construct edge list
+            edges = apply(combinations, 2, function(comb) {
+                ## basic edge data
+                edge = data.frame(comb[1], comb[2])
+
+                ## get edge attibutes
+                edge.attrs = set[ set[,1] %in% comb, -c(1) ] # everything without first column (i.e., the nodes)
+                edgelist = cbind(edge, edge.attrs) # add edge attributes to edge list
+
+                return(edgelist)
+            })
+            edges = rbind.fill(edges)
 
             ## store set of processed nodes
-            attr(edge.list.set, "nodes.processed") = nodes.processed.set
+            attr(edges, "nodes.processed") = nodes
 
-            return(edge.list.set)
+            return(edges)
         })
 
         edge.list = rbind.fill(edge.list.data)
