@@ -251,9 +251,30 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 
 ## Simplify a network
 simplify.network = function(network) {
-    ## FIXME remove loops?
+
+    ## initialize weights
     E(network)$weight <- 1
-    network = igraph::simplify(network, edge.attr.comb = list(weight = "sum", type = "first", "concat"), remove.loops = TRUE)
+
+    ## configure handling of attributes by name
+    edge.attr.handling = list(
+        ## network-analytic data
+        weight = "sum",
+        type = "first",
+
+        ## commit data
+        changed.files = "sum",
+        added.lines = "sum",
+        deleted.lines = "sum",
+        diff.size = "sum",
+        artifact.diff.size = "sum",
+
+        ## everything else
+        "concat"
+    )
+
+    ## simplify networks (contract edges and remove loops)
+    network = igraph::simplify(network, edge.attr.comb = edge.attr.handling, remove.loops = TRUE)
+
     return(network)
 }
 
