@@ -487,6 +487,22 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## DATA ####
 
+        ## get the authors for each artifact
+        get.artifact2author = function(filter.base.artifact = TRUE, extra.data = c()) {
+            ## get commits sorted by date
+            sorted.commits = self$get.commits(filter.empty.artifacts = TRUE,
+                                              filter.artifact = TRUE,
+                                              filter.base.artifact = filter.base.artifact,
+                                              synchronicity = synchronicity,
+                                              synchronicity.window = synchronicity.window)
+            sorted.commits = sorted.commits[order(sorted.commits[["date"]], decreasing = FALSE), ] # sort!
+
+            ## store the authors per artifact
+            mylist = get.thing2thing(sorted.commits, "artifact", "author.name", extra.data = c(extra.data))
+
+            return(mylist)
+        },
+
         ## get the commits for each author
         get.author2commit = function(extra.data = c("date", "diff.size")) {
             ## if commits are not read already, do this
