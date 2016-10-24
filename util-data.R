@@ -505,10 +505,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the commits for each author
-        get.author2commit = function(extra.data = c("date", "diff.size")) {
+        get.author2commit = function(extra.data = c("date", "diff.size"), synchronicity = FALSE, synchronicity.window = 5) {
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw()
+                private$read.commits.raw(synchronicity = synchronicity, synchronicity.window = synchronicity.window)
             }
 
             ## store the authors per artifact
