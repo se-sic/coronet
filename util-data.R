@@ -266,7 +266,11 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## AUTHOR NETWORKS ####
 
         ## get the co-change-based developer relation as network
-        get.author.network.cochange = function(directed = FALSE, simple.network = TRUE) {
+        get.author.network.cochange = function(directed = FALSE, simple.network = TRUE,
+                                               filter.base.artifact = TRUE,
+                                               extra.edge.attr = c("artifact", "date", "artifact.diff.size"),
+                                               synchronicity = FALSE, synchronicity.window = 5
+                                               ) {
 
             ## do not compute anything more than once
             if (!is.null(private$authors.network.cochange)) {
@@ -278,19 +282,16 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 private$read.authors()
             }
 
-            ## TODO 1 - do not use adjacencyMatrix!
-            ## TODO 2 - add data to edges (e.g., timestamp of mails or files)
-            file = file.path(self$get.data.path(), "adjacencyMatrix.txt")
-            dev.relation = read.adjacency.matrix.from.file(file, private$authors, simple.network = simple.network)
-
-            if (!directed) {
-                dev.relation = as.undirected(dev.relation) ## TODO 3 - test contraction with the stuff above completely implemented
-            }
+            ## construct network based on artifact2author data
+            artifact2author = self$get.artifact2author(filter.base.artifact = FALSE, extra.data = extra.edge.attr)
+            author.net = construct.dependency.network.from.list(artifact2author, directed = directed,
+                                                                simple.network = simple.network,
+                                                                extra.edge.attr = extra.edge.attr)
 
             ## store network
-            private$authors.network.cochange = dev.relation
+            private$authors.network.cochange = author.net
 
-            return(dev.relation)
+            return(author.net)
         },
 
         ## get the thread-based developer relation as network
