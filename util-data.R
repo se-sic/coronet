@@ -143,7 +143,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## append synchronicity data if wanted
             if (synchronicity) {
                 synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data, by = "id", all.x = TRUE)
+                commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
             } else {
                 ## fill with NAs for safety reasons
                 commit.data[["synchronicity"]] = NA
@@ -167,7 +167,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## construct path and file
             data.path = self$get.data.path.synchronicity()
-            file.name = paste0("commit_sync_analysis_", private$conf$get.artifact(), "_", time.window, ".dat")
+            file.name = paste0("commit_sync_analysis_", private$conf$get.artifact(), "s_", time.window, ".dat")
             file = file.path(data.path, file.name)
 
             ## break if file does not exist
@@ -175,8 +175,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## load commit.ids object
             load(file = file)
-            synchronous.commits = data.frame(id = commit.ids[["synchronous"]], synchronous = TRUE)
-            nonsynchronous.commits = data.frame(id = commit.ids[["non.synchronous"]], synchronous = FALSE)
+            synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
+            nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
 
             ## construct data.frame
             synchronicity = rbind.fill(synchronous.commits, nonsynchronous.commits)
