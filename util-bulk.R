@@ -6,8 +6,9 @@ library(parallel)
 ##
 
 collect.bipartite.networks = function(conf, author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                            simple.network = TRUE, author.directed = FALSE, artifact.extra.edge.attr = c(),
-                            artifact.filter = TRUE, artifact.filter.base = TRUE) {
+                                      simple.network = TRUE, author.directed = FALSE, artifact.extra.edge.attr = c(),
+                                      artifact.filter = TRUE, artifact.filter.base = TRUE,
+                                      step = 1) {
 
     ## get argument
     author.relation = match.arg(author.relation)
@@ -15,6 +16,8 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
@@ -46,13 +49,17 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 ## Author networks
 ##
 
-collect.author.networks = function(conf, author.relation = c("mail", "cochange"), author.directed = FALSE, simple.network = TRUE) {
+collect.author.networks = function(conf, author.relation = c("mail", "cochange"),
+                                   author.directed = FALSE, simple.network = TRUE,
+                                   step = 1) {
 
     ## get argument
     author.relation = match.arg(author.relation)
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
@@ -81,13 +88,16 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 ##
 
 collect.artifact.networks = function(conf, artifact.relation = c("cochange", "callgraph"),
-                                     filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c()) {
+                                     filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c(),
+                                     step = 1) {
 
     ## get argument
     artifact.relation = match.arg(artifact.relation)
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
@@ -116,10 +126,12 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
 ## Construct data
 ##
 
-construct.data = function(conf, callgraphs = FALSE) {
+construct.data = function(conf, callgraphs = FALSE, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     data = lapply(ranges, function(range) {
