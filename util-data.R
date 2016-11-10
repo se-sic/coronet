@@ -110,7 +110,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             if (inherits(commit.data, 'try-error')) {
                 logging::logerror("There are no commits available for the current environment.")
                 logging::logerror("Class: %s", self$get.class.name())
-                logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
                 stop("Stopped due to missing commits.")
             }
 
@@ -204,7 +204,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             if (inherits(mail.data, 'try-error')) {
                 logging::logwarn("There are no mails available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
-                logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
                 private$mails = data.frame()
                 return()
             }
