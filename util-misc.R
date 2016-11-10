@@ -255,31 +255,31 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 ## Utility function for network simplification
 ##
 
+## Edge-attribute contraction: configure handling of attributes by name
+EDGE.ATTR.HANDLING = list(
+    ## network-analytic data
+    weight = "sum",
+    type = "first",
+
+    ## commit data
+    changed.files = "sum",
+    added.lines = "sum",
+    deleted.lines = "sum",
+    diff.size = "sum",
+    artifact.diff.size = "sum",
+
+    ## everything else
+    "concat"
+)
+
 ## Simplify a network
 simplify.network = function(network) {
 
     ## initialize weights
     E(network)$weight <- 1
 
-    ## configure handling of attributes by name
-    edge.attr.handling = list(
-        ## network-analytic data
-        weight = "sum",
-        type = "first",
-
-        ## commit data
-        changed.files = "sum",
-        added.lines = "sum",
-        deleted.lines = "sum",
-        diff.size = "sum",
-        artifact.diff.size = "sum",
-
-        ## everything else
-        "concat"
-    )
-
     ## simplify networks (contract edges and remove loops)
-    network = igraph::simplify(network, edge.attr.comb = edge.attr.handling, remove.loops = TRUE)
+    network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 
     return(network)
 }
