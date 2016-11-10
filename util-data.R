@@ -356,7 +356,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## check if revision for call-graphs is set
-            if (is.null(private$revision.callgraph)) {
+            if (is.na(private$revision.callgraph)) {
                 logging::logerror("The call-graph revision is not set. Aborting...")
                 logging::logerror("This may be due to project-level analysis.
                                    The call-graph data is only available in range-level analysis.")
@@ -711,7 +711,7 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
     ## private members ####
     private = list(
         range = NULL, # character
-        revision.callgraph = NULL # character
+        revision.callgraph = NA # character
     ),
 
     ## public members ####
