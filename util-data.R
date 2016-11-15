@@ -706,7 +706,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         }
 
-        ## FIXME split data by three-month ranges (e.g., giveb by argument (four months, ten days, ...))
+        ## FIXME split data by three-month ranges (e.g., given by argument (four months, ten days, ...))
 
     )
 )
