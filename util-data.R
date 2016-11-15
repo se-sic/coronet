@@ -71,8 +71,6 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## get raw commit data
             commit.data = self$get.commits.raw()
 
-            ## FIXME for function-based analysis: artifact = file name + "::" . function name?
-
             ## only process commits with non-empty artifact
             if (filter.empty.artifacts) {
                 commit.data = subset(commit.data, artifact != "")
@@ -138,6 +136,21 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data["artifact.type"] = "File"
                 commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
                 commit.data["diffsum"] = NULL # remove
+            }
+
+            ## rewrite data.frame when we want function-based data
+            ## (we have proximity-based data as foundation)
+            if (private$conf$get.artifact() == "function") {
+
+                ## artifact = file name + "::" . function name
+                artifacts.new = paste(commit.data[["file"]], commit.data[["artifact"]], sep = "::")
+
+                ## clean up empty artifacts and File_Level artifact
+                artifacts.new = gsub("^::$", "", artifacts.new)
+                artifacts.new = gsub("^(.*)::File_Level$", "File_Level", artifacts.new)
+
+                ## insert new artifact names into commit table
+                commit.data["artifact"] = artifacts.new
             }
 
             ## append synchronicity data if wanted
