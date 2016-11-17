@@ -227,7 +227,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
             colnames(mail.data) = c(
                 "author.name", "author.email", # author information
-                "message.id", "date", "subject", # meta information
+                "message.id", "date", "date.offset", "subject", # meta information
                 "thread" # thread ID
             )
 
