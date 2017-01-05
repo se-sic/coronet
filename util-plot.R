@@ -10,9 +10,8 @@
 plot.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## colors and shapes
-    vertex.colors.light <- c("skyblue", "orange", "red")
-    vertex.colors.dark = c("deepskyblue", "darkorange", "darkred")
-    edge.colors = c("gray60", "chartreuse3", "red")
+    vertex.colors = c("#00AEFF", "#FF8B00", "#FF0000")
+    edge.colors = c("#999999", "#14CC3B", "#FF0000")
     edge.lty = c(2, 1, 3)
     vertex.shapes = c("circle", "square", "triangle")
     vertex.shapes.pch = c(16, 15, 17)
@@ -21,20 +20,20 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     vertex.colors.bw = c("gray40", "gray30", "gray20")
     edge.colors.bw = c("gray60", "gray40")
     if (grayscale) {
-        vertex.colors.dark = vertex.colors.bw
+        vertex.colors = vertex.colors.bw
         edge.colors = edge.colors.bw
     }
 
     ## legend colors and types
-    vertex.colors.legend = c(vertex.colors.dark[1:2], edge.colors[1:2])
+    vertex.colors.legend = c(vertex.colors[1:2], edge.colors[1:2])
     edge.lty.legend = c(NA, NA, edge.lty[1:2])
     vertex.shapes.pch.legend = c(vertex.shapes.pch[1:2], NA, NA)
 
     ## vertex color by "type" attribute
-    V(net)$color <- vertex.colors.dark[V(net)$type]
+    V(net)$color <- vertex.colors[V(net)$type]
     V(net)$shape <- vertex.shapes[V(net)$type]
     # ## vertex color by "community" attribute
-    # plot(net, vertex.color = vertex.colors.dark[ V(net)$community ])
+    # plot(net, vertex.color = vertex.colors[ V(net)$community ])
 
     ##  Compute node degrees (#links) and use that to set node size:
     # V(net)$size = degree(net, mode = "all") * 4
