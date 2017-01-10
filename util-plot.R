@@ -82,7 +82,7 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     else {
         plot.new()
     }
-    legend("bottom", c("Developers", "Artifacts", "Intra-Type Edges", "Inter-Type Edges"), bty = "n", ncol = 2,
+    legend("bottom", c("Developers", "Artifacts", "Unipartite Edges", "Bipartite Edges"), bty = "n", ncol = 2,
            pch = vertex.shapes.pch.legend, col = vertex.colors.legend, pt.bg = vertex.colors.legend, lty = edge.lty.legend,
            cex = 1.25, pt.cex = 2, lwd = 2)
 
