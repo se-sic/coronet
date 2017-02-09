@@ -132,9 +132,16 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
             ## get vertex data
             nodes = unique(set[, 1])
 
-            ## break if there is only one developer
-            if (length(nodes) <= 1) {
+            ## break if there is no developer
+            if (length(nodes) < 1) {
                 return(NULL)
+            }
+
+            ## if there is only one developer, just create the node, but no edges
+            if (length(nodes) == 1) {
+                edges = data.frame()
+                attr(edges, "nodes.processed") = nodes # store set of processed nodes
+                return(edges)
             }
 
             ## get combinations
@@ -164,13 +171,25 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
     }
 
-    # if the edge.list is empty, return rightaway
-    if (is.null(edge.list) || nrow(edge.list) == 0) {
-        return(create.empty.network())
+    ## get unique list of vertices to produce
+    nodes.processed = unique(nodes.processed)
+
+    # if we do not have nodes AND the edge.list is empty, return rightaway
+    if (length(nodes.processed) == 0) {
+            return(create.empty.network())
     }
 
-    # construct network from edge list
-    net = graph.data.frame(edge.list, directed = directed, vertices = unique(nodes.processed))
+    ## if we have nodes to create, but no edges
+    if (is.null(edge.list) || nrow(edge.list) == 0) {
+        ## create network with only the vertices
+        net = make_empty_graph(n = 0, directed = directed) + vertices(nodes.processed)
+    }
+    ## if we have nodes and edges
+    else {
+        ## construct network from edge list
+        net = graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+    }
+
     net = set.vertex.attribute(net, "id", value = get.vertex.attribute(net, "name"))
     net = set.edge.attribute(net, "weight", value = 1)
 
