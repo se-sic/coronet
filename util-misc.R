@@ -270,6 +270,23 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 }
 
 
+## Construct an edge list for the given network, with timestamps as an extra attribute column
+##
+## If there are problems accessing the 'date' attribute of a network, this attribute needs to
+## be added to it during network construction (defined as a default edge attribute).
+get.edgelist.with.timestamps = function(net) {
+  ## get edge list as data.frame
+  edges = as.data.frame(get.edgelist(net))
+  colnames(edges) = c("from", "to")
+  ## get timestamps
+  dates = get.edge.attribute(net, "date")
+  ## bind everything together
+  edges = cbind(edges, date = dates)
+
+  return(edges)
+}
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility function for network simplification
 ##
