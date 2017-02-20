@@ -90,7 +90,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     if (directed) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
-        edge.list.data = lapply(list, function(set) {
+        edge.list.data = mclapply(list, function(set) {
             # for (set in list) {
 
             # queue of already processed artifacts
@@ -122,12 +122,12 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
         })
 
         edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     } else {
 
         ## for all items in the sublists, construct the cartesian product
-        edge.list.data = lapply(list, function(set) {
+        edge.list.data = mclapply(list, function(set) {
 
             ## get vertex data
             nodes = unique(set[, 1])
@@ -167,7 +167,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
         })
 
         edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     }
 
@@ -322,7 +322,7 @@ simplify.network = function(network) {
 
 ## Simplify a list of networks
 simplify.networks = function(networks){
-    nets = lapply(networks, simplify.network)
+    nets = mclapply(networks, simplify.network)
 }
 
 

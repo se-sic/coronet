@@ -529,7 +529,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## store the authors per artifact
             mylist = get.thing2thing(private$commits.raw, "author.name", "hash", extra.data = c(extra.data))
-            mylist = lapply(mylist, unique)
+            mylist = mclapply(mylist, unique)
 
             return(mylist)
         },
@@ -839,7 +839,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
 add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER, extra.data = c()) {
 
     # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
-    vertex.sequence.for.edges = mapply(function(d, a.df) {
+    vertex.sequence.for.edges = mcmapply(function(d, a.df) {
         a = a.df[["artifact"]]
         new.edges = lapply(a, function(art) {
             V(net)[d, art] # get two vertices from source network:  c(developer, artifact)
@@ -848,7 +848,7 @@ add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDG
     }, names(auth.to.arts), auth.to.arts)
 
     ## get extra edge attributes
-    extra.edge.attributes.df = lapply(auth.to.arts, function(a.df) {
+    extra.edge.attributes.df = mclapply(auth.to.arts, function(a.df) {
         return(a.df[, extra.data, drop = FALSE])
     })
     extra.edge.attributes.df = rbind.fill(extra.edge.attributes.df)
