@@ -137,8 +137,14 @@ CodefaceConf = R6Class("CodefaceConf",
         ## The artifact parameter is automatically mapped to the tagging parameter used by Codeface.
         load.configuration = function(data, selection.process, casestudy, artifact = "feature") {
 
-            ## construct file name for configuration
+            ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
+            if (is.null(tagging)) {
+                logging::logerror("Artifact '%s' cannot be converted to a proper Codeface tagging! Stopping...", artifact)
+                stop("Stopped due to wrong configuration parameters!")
+            }
+
+            ## construct file name for configuration
             conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
 
             ## load case-study confuration from given file
