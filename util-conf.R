@@ -85,24 +85,27 @@ CodefaceConf = R6Class("CodefaceConf",
         ## Path construction
         ##
 
+        subfolder.configurations = "configurations",
+        subfolder.results = "results",
+
         ## Construct the path to the configuration folder of Codeface
         get.configurations.folder = function(data, selection.process) {
-            return(file.path(data, "configurations", selection.process))
+            return(file.path(data, private$subfolder.configurations, selection.process))
         },
 
         ## Construct the path to the results folder of Codeface
         get.results.folder = function(data, selection.process, project, tagging) {
-            return(file.path(data, "results", selection.process, project, tagging))
+            return(file.path(data, private$subfolder.results, selection.process, project, tagging))
         },
 
         ## Construct the path to the callgraph folder of Codeface
         get.callgraph.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, "results", selection.process, paste(casestudy, "callgraphs", sep = "_")))
+            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "callgraphs", sep = "_")))
         },
 
         ## Construct the path to the synchronicity folder of Codeface
         get.synchronicity.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, "results", selection.process, paste(casestudy, "synchronicity", sep = "_")))
+            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "synchronicity", sep = "_")))
         },
 
 
