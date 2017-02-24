@@ -19,6 +19,7 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
         logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
         return(list())
     }
+    logging::logdebug("get.thing2thing: starting.")
 
     # get right portion of data
     data = base.data[c(thing1, thing2)]
@@ -36,7 +37,9 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
 
     # remove object attributes introduced by dlply
     attr(mylist, "split_labels") = NULL
-    attr(mylist,"split_type") = NULL
+    attr(mylist, "split_type") = NULL
+
+    logging::logdebug("get.thing2thing: finished.")
 
     return(mylist)
 }
@@ -72,7 +75,6 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
 
     # return constructed igraph object
     return(g)
-
 }
 
 
@@ -83,6 +85,9 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
 construct.dependency.network.from.list = function(list, directed = FALSE, simple.network = TRUE,
                                                   extra.edge.attr = c()) {
 
+    logging::loginfo("Create edges.")
+    logging::logdebug("construct.dependency.network.from.list: starting.")
+
     # initialize an edge list to fill and the set of nodes
     nodes.processed = c()
     edge.list = data.frame()
@@ -91,7 +96,6 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = mclapply(list, function(set) {
-            # for (set in list) {
 
             # queue of already processed artifacts
             edge.list.set = data.frame()
@@ -117,6 +121,8 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
             ## store set of processed nodes
             attr(edge.list.set, "nodes.processed") = nodes.processed.set
+
+            logging::logdebug("Constructing edges for %s '%s': finished.", attr(set, "group.type"), attr(set, "group.name"))
 
             return(edge.list.set)
         })
@@ -171,6 +177,8 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
     }
 
+    logging::loginfo("Construct network from edges.")
+
     ## get unique list of vertices to produce
     nodes.processed = unique(nodes.processed)
 
@@ -197,8 +205,9 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     if (simple.network)
         net = simplify.network(net)
 
-    return(net)
+    logging::logdebug("construct.dependency.network.from.list: finished.")
 
+    return(net)
 }
 
 

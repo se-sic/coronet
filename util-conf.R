@@ -148,7 +148,7 @@ CodefaceConf = R6Class("CodefaceConf",
             conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
 
             ## load case-study confuration from given file
-            logging::loginfo("Attempting to load configuration: %s", conf.file)
+            logging::loginfo("Attempting to load configuration file: %s", conf.file)
             conf = yaml.load_file(conf.file)
 
             ## store artifact in configuration
@@ -180,11 +180,11 @@ CodefaceConf = R6Class("CodefaceConf",
             conf$ranges = private$construct.ranges(conf$revisions)
             conf$ranges.callgraph = private$construct.ranges(conf$revisions.callgraph)
 
-            ## logging
-            logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
-
             ## SAVE FULL CONFIGURATION OBJECT
             private$conf = conf
+
+            ## logging
+            logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
         },
 
         ## access data in configuration list
@@ -212,7 +212,9 @@ CodefaceConf = R6Class("CodefaceConf",
                 private$artifact <- artifact
             }
 
+            logging::loginfo("Construct configuration: starting.")
             private$load.configuration(data, selection.process, casestudy, artifact)
+            logging::loginfo("Construct configuration: finished.")
         },
 
 
