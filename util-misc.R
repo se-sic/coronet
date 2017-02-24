@@ -29,9 +29,13 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
     # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
     colnames(extra.data.df) = cols
 
-    # group list by author (V1) and construct a list (author -> artifacts)
+    # group list by thing1 and construct a list: thing1 -> (thing2, extra.data)
     transform.df.per.item = function(df) {
-        df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
+        group = unique(df[[thing1]])
+        df = df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
+        attr(df, "group.type") = thing1
+        attr(df, "group.name") = group
+        return(df)
     }
     mylist = dlply(extra.data.df, thing1, transform.df.per.item)
 
@@ -96,6 +100,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = mclapply(list, function(set) {
+            logging::logdebug("Constructing edges for %s '%s': starting.", attr(set, "group.type"), attr(set, "group.name"))
 
             # queue of already processed artifacts
             edge.list.set = data.frame()
