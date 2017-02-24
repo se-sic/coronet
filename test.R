@@ -5,8 +5,11 @@ source("util-bulk.R")
 source("util-plot.R")
 
 library(logging)
-logging::basicConfig()
+logging::basicConfig(level = "DEBUG")
+file.remove("test.log")
+logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
+options(mc.cores = 6L)
 
 
 CF.DATA = "/local/hunsen/projects/codeface-data"
