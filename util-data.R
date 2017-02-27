@@ -85,7 +85,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (filter.base.artifact ) {
+            if (filter.base.artifact) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
@@ -320,7 +320,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## construct network based on artifact2author data
-            artifact2author = self$get.artifact2author(filter.base.artifact = FALSE, extra.data = extra.edge.attr)
+            artifact2author = self$get.artifact2author(filter.base.artifact = filter.base.artifact, extra.data = extra.edge.attr)
             author.net = construct.dependency.network.from.list(artifact2author, directed = directed,
                                                                 simple.network = simple.network,
                                                                 extra.edge.attr = extra.edge.attr)
