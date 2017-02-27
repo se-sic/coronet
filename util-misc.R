@@ -139,6 +139,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = mclapply(list, function(set) {
+            logging::logdebug("Constructing edges for %s '%s': starting.", attr(set, "group.type"), attr(set, "group.name"))
 
             ## get vertex data
             nodes = unique(set[, 1])
