@@ -99,7 +99,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     if (directed) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
-        edge.list.data = lapply(list, function(set) {
+        edge.list.data = mclapply(list, function(set) {
             logging::logdebug("Constructing edges for %s '%s': starting.", attr(set, "group.type"), attr(set, "group.name"))
 
             # queue of already processed artifacts
@@ -133,12 +133,12 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
         })
 
         edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     } else {
 
         ## for all items in the sublists, construct the cartesian product
-        edge.list.data = lapply(list, function(set) {
+        edge.list.data = mclapply(list, function(set) {
             logging::logdebug("Constructing edges for %s '%s': starting.", attr(set, "group.type"), attr(set, "group.name"))
 
             ## get vertex data
@@ -179,7 +179,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
         })
 
         edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( lapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     }
 
