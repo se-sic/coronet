@@ -8,6 +8,7 @@ library(igraph) # networks
 library(plyr) # for dlply function
 library(sqldf) # for sqldf
 library(logging) # for logging
+library(parallel) # for parallel computation
 
 
 options(stringsAsFactors = FALSE)

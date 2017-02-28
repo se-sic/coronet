@@ -1,4 +1,4 @@
-library(parallel)
+library(parallel) # for parallel computation
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
