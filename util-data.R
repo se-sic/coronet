@@ -140,6 +140,9 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data = sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data` group by hash, file
                                     order by `date`, `author.name`, `id`, `file`, `artifact`")
 
+                ## fix column class for diffsum
+                commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
+
                 ## copy columns to match proper layout for further analyses
                 commit.data["artifact"] = commit.data[["file"]]
                 commit.data["artifact.type"] = "File"
