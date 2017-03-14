@@ -444,13 +444,18 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
                 private$conf <- conf
             }
+
+            if (class(self)[1] == "CodefaceProjectData")
+                logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
 
         ## TO STRING ;) ####
 
         get.class.name = function() {
-            return("CodefaceProjectData")
+            return(
+                sprintf("CodefaceProjectData<%s>", private$conf$get.repo())
+            )
         },
 
 
@@ -810,13 +815,15 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
             if (!missing(revision.callgraph) && is.character(revision.callgraph) && revision.callgraph != "") {
                     private$revision.callgraph <- revision.callgraph
             }
+
+            logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
         ## TO STRING ;) ####
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceRangeData<%s, %s>", private$range, private$revision.callgraph)
+                sprintf("CodefaceRangeData<%s, %s, %s>", private$conf$get.repo(), private$range, private$revision.callgraph)
             )
         },
 
