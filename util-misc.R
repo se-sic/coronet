@@ -88,7 +88,7 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
 ## - if directed, the order of things in the sublists is respected
 ## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
 construct.dependency.network.from.list = function(list, directed = FALSE, simple.network = TRUE,
-                                                  extra.edge.attr = c()) {
+                                                  extra.edge.attr = c(), skip.threshold = Inf) {
 
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
@@ -101,8 +101,16 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = mclapply(list, function(set) {
+            number.edges = sum(1:nrow(set)) - 1
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
-                              attr(set, "group.type"), attr(set, "group.name"), sum(1:nrow(set))-1)
+                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+            ## Skip artifacts with many, many edges
+            if (number.edges > skip.threshold) {
+                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                                 attr(set, "group.type"), attr(set, "group.name"), skip.threshold)
+                return(NULL)
+            }
 
             # queue of already processed artifacts
             edge.list.set = data.frame()
@@ -141,8 +149,16 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = mclapply(list, function(set) {
+            number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
-                              attr(set, "group.type"), attr(set, "group.name"), sum(table(set[,1]) * (dim(table(set[,1])) - 1)))
+                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+            ## Skip artifacts with many, many edges
+            if (number.edges > skip.threshold) {
+                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                                 attr(set, "group.type"), attr(set, "group.name"), skip.threshold)
+                return(NULL)
+            }
 
             ## get vertex data
             nodes = unique(set[, 1])
