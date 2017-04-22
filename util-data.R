@@ -356,7 +356,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                                            directed = directed, simple.network = simple.network,
                                                            extra.edge.attr = edge.attributes)
             } else {
-                dev.relation = create.empty.network()
+                dev.relation = create.empty.network(directed = directed)
             }
 
             ## store network
@@ -771,6 +771,14 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             artifacts.net = networks[["artifacts.net"]]
+
+            if (is.directed(authors.net) && !is.directed(artifacts.net)) {
+                logging::logwarn("Author network is directed, but artifact network is not. Converting artifact network...")
+                artifacts.net = as.directed(artifacts.net, mode = "mutual")
+            } else if (!is.directed(authors.net) && is.directed(artifacts.net)) {
+                logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
+                artifacts.net = as.undirected(artifacts.net, mode = "collapse", edge.attr.comb = EDGE.ATTR.HANDLING)
+            }
 
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
                                  simple.network = simple.network, contract.edges = contract.edges,

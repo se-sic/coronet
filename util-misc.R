@@ -364,10 +364,10 @@ simplify.networks = function(networks){
 ## Utility function to create empty networks that do not break the algorithms
 ##
 
-create.empty.network = function() {
+create.empty.network = function(directed = TRUE) {
 
     ## create empty network
-    net = make_empty_graph(0, directed = TRUE)
+    net = make_empty_graph(0, directed = directed)
 
     # set proper attributes
     vertex_attr(net, "name") = ""
