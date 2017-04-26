@@ -777,12 +777,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 artifacts.net = as.directed(artifacts.net, mode = "mutual")
             } else if (!is.directed(authors.net) && is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                artifacts.net = as.undirected(artifacts.net, mode = "collapse", edge.attr.comb = EDGE.ATTR.HANDLING)
+                contraction.mode = "collapse"
+                if (!contract.edges) contraction.mode = "each"
+                artifacts.net = as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 simple.network = simple.network, contract.edges = contract.edges,
-                                 extra.data = artifact.extra.edge.attr)
+                                 simple.network = simple.network, extra.data = artifact.extra.edge.attr)
 
             return(u)
 
@@ -874,7 +875,7 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
 
 ## combine networks to a bipartite network
 combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, simple.network = TRUE,
-                            contract.edges = simple.network, extra.data = c()) {
+                            extra.data = c()) {
 
     authors = vertex_attr(authors.net, "name")
     artifacts = vertex_attr(artifacts.net, "name")
@@ -903,14 +904,6 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     ## simplify network
     if (simple.network)
         u = simplify.network(u)
-
-    ## set network as undirected
-    ## set contraction mode (collapse is contracting, each is not)
-    contraction.mode = "collapse"
-    if (!contract.edges)
-        contraction.mode = "each"
-    ## convert to undirected
-    u = as.undirected(u, mode = contraction.mode, edge.attr.comb = list(weight = sum, type = "first", "concat"))
 
     return(u)
 }
