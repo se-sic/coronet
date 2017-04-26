@@ -168,13 +168,32 @@ CodefaceConf = R6Class("CodefaceConf",
 
             ## READ REVISIONS META-DATA
 
-            ## read revisions
-            revisions = scan(file = file.path(conf$datapath, "revisions.list"),
-                             what = character(), quiet = TRUE, comment.char = "#")
-            conf$revisions = revisions
+            ## read revisions file
+            revisions.file = file.path(conf$datapath, "revisions.list")
+            revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
+                                           fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+            ## break if the list of revisions is empty or any other error occurs
+            if (inherits(revisions.df, 'try-error')) {
+                logging::logerror("There are no revisions available for the current casestudy.")
+                logging::logerror("Attempted to load following file: %s", revisions.file)
+                stop("Stopped due to missing revisions.")
+            }
+            ## convert columns accordingly
+            revisions.cols = c(revision = "as.character", date = "as.POSIXct")
+            for (i in 1:ncol(revisions.df)) {
+                revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
+                colnames(revisions.df)[i] = names(revisions.cols)[i]
+            }
+            revisions = revisions.df[["revision"]]
+            revisions.dates = revisions.df[["date"]]
+            if (!is.null(revisions.dates)) names(revisions.dates) = revisions
 
-            ## do a postprocessing for list of revisions
-            conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
+            ## store revision data
+            conf$revisions = revisions
+            conf$revisions.dates = revisions.dates
+
+            ## call-graph revisions (do a postprocessing for list of revisions)
+            conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(conf$revisions)
 
             ## compute revision ranges
             conf$ranges = private$construct.ranges(conf$revisions)
@@ -288,6 +307,11 @@ CodefaceConf = R6Class("CodefaceConf",
         ## revisions
         get.revisions = function() {
             return(private$get.conf.entry("revisions"))
+        },
+
+        ## revisions.dates
+        get.revisions.dates = function() {
+            return(private$get.conf.entry("revisions.dates"))
         },
 
         ## revisions.callgraph
