@@ -174,6 +174,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data[["synchronicity"]] = NA
             }
 
+            ## convert dates and sort by them
+            commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
+            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
+
             ## store the commit data
             private$commits.raw = commit.data
             logging::logdebug("read.commits.raw: finished.")
@@ -256,6 +260,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
             if (length(empty.dates) > 0)
                 mail.data = mail.data[-empty.dates, ]
+
+            ## convert dates and sort by them
+            mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
+            mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
             ## store the mail data
             private$mails = mail.data
