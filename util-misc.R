@@ -414,3 +414,39 @@ get.sample.network = function() {
 get.stacktrace = function(calls) {
     lapply(calls, deparse)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Intermediate data
+##
+
+#' Save the given 'variable' on the file system (in 'dump.path') if it does not exist already,
+#' and load the saved data if it exists.
+#'
+#' With skip, the check for data existance can be skipped (i.e., force a re-save).
+#'
+#' This function is for repetitive runs of the same script: It saves intermediate data to disk and
+#' loads it from a previous runs if possible. This way, computation time can be saved.
+#'
+#' @param variable a character naming the data variable to be saved to disk
+#' @param dump.path the path where the data is to be saved
+#' @param if.not.found if the data does not exist on disk, run this function ('variable' must be a variable there!)
+#' @param skip re-save although data exists on the disk?
+#'
+#' @return the data computed by 'if.not.found' or loaded from 'dump.path'
+save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
+    if (!skip && file.exists(dump.path)) {
+        logging::logdebug("Load %s from previously dumped object: %s.", variable, dump.path)
+        load(file = dump.path) # load the list named "variable" into the current environment
+    } else {
+        res = if.not.found()
+
+        assign(variable, res) # rewrite to variable name
+        rm(res) # clear memory
+
+        logging::logdebug("Dumping object %s to %s.", variable, dump.path)
+        save(list = variable, file = dump.path) # save automatically
+    }
+
+    return(get0(variable))
+}

@@ -44,6 +44,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## commits and commit data
         commits = NULL, # data.frame
         commits.raw = NULL, # data.frame
+        artifacts = NULL, # list
         synchronicity = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
@@ -173,6 +174,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data[["synchronicity"]] = NA
             }
 
+            ## convert dates and sort by them
+            commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
+            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
+
             ## store the commit data
             private$commits.raw = commit.data
             logging::logdebug("read.commits.raw: finished.")
@@ -255,6 +260,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
             if (length(empty.dates) > 0)
                 mail.data = mail.data[-empty.dates, ]
+
+            ## convert dates and sort by them
+            mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
+            mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
             ## store the mail data
             private$mails = mail.data
@@ -552,6 +561,23 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             return(private$authors)
+        },
+
+        ## get the list of artifacts
+        get.artifacts = function(filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE) {
+            logging::loginfo("Getting artifact data.")
+
+            ## if artifacts are not read already, do this
+            if (is.null(private$artifacts)) {
+                commits = self$get.commits(filter.empty.artifacts = filter.empty.artifacts,
+                                 filter.artifact = filter.artifact,
+                                 filter.base.artifact = filter.base.artifact)
+
+                artifacts = unique(commits[["artifact"]])
+                private$artifacts = artifacts
+            }
+
+            return(private$artifacts)
         },
 
 
