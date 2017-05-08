@@ -96,7 +96,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             logging::logdebug("read.commits: finished.")
         },
 
-        read.commits.raw = function(synchronicity = FALSE, synchronicity.window = 5) {
+        read.commits.raw = function() {
 
             logging::logdebug("read.commits.raw: starting.")
 
@@ -163,15 +163,6 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
                 ## insert new artifact names into commit table
                 commit.data["artifact"] = artifacts.new
-            }
-
-            ## append synchronicity data if wanted
-            if (synchronicity) {
-                synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
-            } else {
-                ## fill with NAs for safety reasons
-                commit.data[["synchronicity"]] = NA
             }
 
             ## convert dates and sort by them
@@ -516,12 +507,12 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the complete raw list of commits
-        get.commits.raw = function(synchronicity = FALSE, synchronicity.window = 5) {
+        get.commits.raw = function() {
             logging::loginfo("Getting raw commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw(synchronicity = synchronicity, synchronicity.window = synchronicity.window)
+                private$read.commits.raw()
             }
 
             return(private$commits.raw)
