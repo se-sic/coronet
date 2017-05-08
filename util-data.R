@@ -263,7 +263,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## store the mail data
             private$mails = mail.data
-            logging::logdebug("read.mails: finished. (already existing)")
+            logging::logdebug("read.mails: finished.")
         },
 
         ## read the author data for the range
@@ -302,7 +302,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## store the ID--author mapping
             private$authors = authors.df
-            logging::logdebug("read.authors: finished. (already existing)")
+            logging::logdebug("read.authors: finished.")
         },
 
 
