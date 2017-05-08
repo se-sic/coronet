@@ -194,7 +194,12 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             file = file.path(data.path, file.name)
 
             ## break if file does not exist
-            stopifnot(file.exists(file))
+            if(!file.exists(file)) {
+                logging::logwarn("There are no synchronicity data available for the current environment.")
+                logging::logwarn("Class: %s", self$get.class.name())
+                private$synchronicity = data.frame()
+                return()
+            }
 
             ## load commit.ids object
             load(file = file)
