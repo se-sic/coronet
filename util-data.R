@@ -533,6 +533,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             return(private$commits.raw)
         },
 
+        ## set the complete raw list of commits
+        set.commits.raw = function(data) {
+            logging::loginfo("Setting raw commit data.")
+            if (is.null(data)) data = data.frame()
+            private$commits.raw = data
+        },
+
         ## get the complete synchronicity data
         get.synchronicity = function(time.window = c(5)) {
             logging::loginfo("Getting synchronicity data.")
@@ -543,6 +550,12 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             return(private$synchronicity)
+        },
+
+        ## set the complete synchronicity data
+        set.synchronicity = function(data) {
+            logging::loginfo("Setting synchronicity data.")
+            private$synchronicity = data
         },
 
         ## get the complete list of mails
@@ -557,6 +570,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             return(private$mails)
         },
 
+        ## set the complete list of mails
+        set.mails = function(data) {
+            logging::loginfo("Setting e-mail data.")
+            if (is.null(data)) data = data.frame()
+            private$mails = data
+        },
+
         ## get the ID--author mapping
         get.authors = function() {
             logging::loginfo("Getting author data.")
@@ -567,6 +587,12 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             return(private$authors)
+        },
+
+        ## set the ID--author mapping
+        set.authors = function(data) {
+            logging::loginfo("Setting author data.")
+            private$authors = data
         },
 
         ## get the list of artifacts
