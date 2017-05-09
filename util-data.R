@@ -76,6 +76,15 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## get raw commit data
             commit.data = self$get.commits.raw()
 
+            ## break if the list of commits is empty
+            if (nrow(commit.data) == 0) {
+                logging::logwarn("There are no commits available for the current environment.")
+                logging::logwarn("Class: %s", self$get.class.name())
+                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                private$commits = data.frame()
+                return(private$commits)
+            }
+
             ## only process commits with non-empty artifact
             if (filter.empty.artifacts) {
                 commit.data = subset(commit.data, artifact != "")
@@ -116,10 +125,11 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## break if the list of commits is empty
             if (inherits(commit.data, 'try-error')) {
-                logging::logerror("There are no commits available for the current environment.")
-                logging::logerror("Class: %s", self$get.class.name())
-                # logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
-                stop("Stopped due to missing commits.")
+                logging::logwarn("There are no commits available for the current environment.")
+                logging::logwarn("Class: %s", self$get.class.name())
+                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                private$commits.raw = data.frame()
+                return()
             }
 
             ## set proper column names based on Codeface extraction:
@@ -569,7 +579,10 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                  filter.artifact = filter.artifact,
                                  filter.base.artifact = filter.base.artifact)
 
+                ## get artifacts (empty list if no commits exist)
                 artifacts = unique(commits[["artifact"]])
+                if (is.null(artifacts)) artifacts = list()
+
                 private$artifacts = artifacts
             }
 
@@ -589,6 +602,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                               filter.base.artifact = filter.base.artifact,
                                               synchronicity = synchronicity,
                                               synchronicity.window = synchronicity.window)
+
+            ## break if list of commits is empty
+            if (ncol(sorted.commits) == 0) {
+                return(list())
+            }
+
+            ## sort commits by date
             sorted.commits = sorted.commits[order(sorted.commits[["date"]], decreasing = FALSE), ] # sort!
 
             ## store the authors per artifact
