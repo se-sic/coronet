@@ -27,6 +27,58 @@ ARTIFACT.TO.ABBREVIATION = list(
     "file"     = "cu"
 )
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## NetworkConf
+##
+## Represents the network configurations
+
+NetworkConf = R6Class("NetworkConf",
+    private = list(
+        author.relation = NULL, #character
+        artifact.relation = NULL, #character
+        author.directed = FALSE, #bool
+        artifact.directed = FALSE, #bool
+        simplified = FALSE, #bool
+        artifact.filter = TRUE, #bool
+        artifact.filter.base = TRUE, #bool
+        artifact.filter.empty = TRUE, #bool
+        skip.threshold = Inf, #numeric
+        synchronized = FALSE, #bool
+        synchronicity.time.window = 0, #numeric
+        contract.edges = FALSE, #bool
+        artifact.extra.edge.attribute = NULL #list
+    ),
+    public = list(
+        initialize = function(author.relation, artifact.relation, author.directed, artifact.directed, simplified,
+                              artifact.filter, artifact.filter.base, artifact.filter.empty, skip.threshold, synchronized,
+                              synchrinicity.time.window, contract.edges, artifact.extra.edge.attribute){
+            if(!missing(author.relation) && is.character(author.relation)) {
+                private$author.relation = author.relation
+            }
+            if(!missing(artifact.relation) && is.character(artifact.relation)) {
+                private$artifact.relation = artifact.relation
+            }
+            if(!missing(author.directed) && is.character(author.directed)) {
+                private$author.directed = author.directed
+            }
+            if(!missing(artifact.directed) && is.character(artifact.directed)) {
+                private$artifact.directed = artifact.directed
+            }
+            if(!missing(simplified) && is.logical(simplified)) {
+                private$simplified = simplified
+            }
+            if(!missing(artifact.filter) && is.logical(artifact.filter)) {
+                private$artifact.filter = artifact.filter
+            }
+            if(!missing(artifact.filter.base) && is.logical(artifact.filter.base)) {
+                private$artifact.filter.base = artifact.filter.base
+            }
+            if(!missing(artifact.filter.empty) && is.logical(artifact.filter.empty)) {
+                private$artifact.filter.empty = artifact.filter.empty
+            }
+        }
+    )
+                      )
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## CodefaceConf
