@@ -100,6 +100,15 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
+            ## append synchronicity data if wanted
+            if (synchronicity) {
+                synchronicity.data = self$get.synchronicity(synchronicity.window)
+                commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
+            } else {
+                ## fill with NAs for safety reasons
+                commit.data[["synchronicity"]] = NA
+            }
+
             ## store the commit data
             private$commits = commit.data
             logging::logdebug("read.commits: finished.")
