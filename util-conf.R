@@ -36,21 +36,21 @@ NetworkConf = R6Class("NetworkConf",
     private = list(
         author.relation = NULL, #character
         author.directed = FALSE, #bool
-        artifact.directed = FALSE, #bool
-        simplified = FALSE, #bool
         artifact.relation = NULL, #character
+        artifact.directed = FALSE, #bool
         artifact.filter = TRUE, #bool
         artifact.filter.base = TRUE, #bool
         artifact.filter.empty = TRUE, #bool
         artifact.edge.attributes = NULL, #list
+        simplified = FALSE, #bool
         skip.threshold = Inf, #numeric
         synchronicity = FALSE, #bool
         synchronicity.time.window = 0, #numeric
         contract.edges = FALSE #bool
-        
-        
-        
-        
+
+
+
+
     ),
     public = list(
         initialize = function(author.relation, artifact.relation, author.directed, artifact.directed, simplified,
@@ -59,17 +59,14 @@ NetworkConf = R6Class("NetworkConf",
             if(!missing(author.relation) && is.character(author.relation)) {
                 private$author.relation = author.relation
             }
-            if(!missing(artifact.relation) && is.character(artifact.relation)) {
-                private$artifact.relation = artifact.relation
-            }
             if(!missing(author.directed) && is.character(author.directed)) {
                 private$author.directed = author.directed
             }
+            if(!missing(artifact.relation) && is.character(artifact.relation)) {
+                private$artifact.relation = artifact.relation
+            }
             if(!missing(artifact.directed) && is.character(artifact.directed)) {
                 private$artifact.directed = artifact.directed
-            }
-            if(!missing(simplified) && is.logical(simplified)) {
-                private$simplified = simplified
             }
             if(!missing(artifact.filter) && is.logical(artifact.filter)) {
                 private$artifact.filter = artifact.filter
@@ -80,11 +77,17 @@ NetworkConf = R6Class("NetworkConf",
             if(!missing(artifact.filter.empty) && is.logical(artifact.filter.empty)) {
                 private$artifact.filter.empty = artifact.filter.empty
             }
+            if(!missing(artifact.edge.attributes) && is.list(artifact.edge.attributes)) {
+                private$artifact.edge.attributes = artifact.edge.attributes
+            }
+            if(!missing(simplified) && is.logical(simplified)) {
+                private$simplified = simplified
+            }
             if(!missing(skip.theshold) && is.logical(skip.threshold)) {
               private$skip.threshold = skip.threshold
             }
-            if(!missing(synchronized) && is.logical(synchronized)) {
-              private$synchronized = synchronized
+            if(!missing(synchronicity) && is.logical(synchronicity)) {
+              private$synchronicity = synchronicity
             }
             if(!missing(synchronicity.time.window) && is.numeric(synchronicity.time.window)) {
               private$synchronicity.time.window = synchronicity.time.window
@@ -92,68 +95,107 @@ NetworkConf = R6Class("NetworkConf",
             if(!missing(contract.edges) && is.logical(contract.edges)) {
               private$contract.edges = contract.edges
             }
-            if(!missing(artifact.extra.edge.attributes) && is.list(artifact.extra.edge.attributes)) {
-              private$artifact.extra.edge.attributes = artifact.extra.edge.attributes
+        },
+
+        update.values = function(attr.list = list()) {
+            if(!is.null(attr.list[["author.relation"]])) {
+                private$author.relation = attr.list$author.relation
+            }
+            if(!is.null(attr.list[["author.directed"]])) {
+                private$author.directed = attr.list$author.directed
+            }
+            if(!is.null(attr.list[["artifact.relation"]])) {
+                private$artifact.relation = attr.list$artifact.relation
+            }
+            if(!is.null(attr.list[["artifact.directed"]])) {
+                private$artifact.directed = attr.list$artifact.directed
+            }
+            if(!is.null(attr.list[["artifact.filter"]])) {
+                private$artifact.filter = attr.list$artifact.filter
+            }
+            if(!is.null(attr.list[["artifact.filter.base"]])) {
+                private$artifact.filter.base = attr.list$artifact.filter.base
+            }
+            if(!is.null(attr.list[["artifact.filter.empty"]])) {
+                private$artifact.filter.empty = attr.list$artifact.filter.empty
+            }
+            if(!is.null(attr.list[["artifact.edge.attributes"]])) {
+                private$artifact.edge.attributes = attr.list$artifact.edge.attributes
+            }
+            if(!is.null(attr.list[["simplified"]])) {
+                private$simplified = attr.list$simplified
+            }
+            if(!is.null(attr.list[["skip.threshold"]])) {
+                private$skip.threshold = attr.list$skip.threshold
+            }
+            if(!is.null(attr.list[["synchronity"]])) {
+                private$synchronity = attr.list$synchronity
+            }
+            if(!is.null(attr.list[["synchronity.time.window"]])) {
+                private$synchronity.time.window = attr.list$synchronity.time.window
+            }
+            if(!is.null(attr.list[["contract.edges"]])) {
+                private$contract.edges = attr.list$contract.edges
             }
         },
-        
-        update.values = function() {
-          
-        },
-        
-        get.author.relation = function() {
-          return(private$author.relation)
-        },
-        
-        get.artifact.relation = function() {
-          return(private$artifact.relation)
-        },
-        
-        get.author.directed = function() {
-          return(private$author.directed)
-        },
-        
-        get.artifact.directed = function() {
-          return(private$artifact.directed)
-        },
-        
-        is.simplified = function() {
-          return(private$simplified)
-        },
-        
-        get.artifact.filter = function() {
-          return(private$artifact.filter)
-        },
-        
-        get.artifact.filter.base = function() {
-          return(private$artiact.filter.base)
-        },
-        
-        get.artifact.filter.empty = function() {
-          return(private$artifact.filter.empty)
-        },
-        
-        get.skip.threshold = function() {
-          return(private$skip.threshold)
-        },
-        
-        get.synchronized = function() {
-          return(private$synchronized)
-        },
-        
-        get.synchronicity.time.window = function() {
-          return(private$synchronicity.time.window)
-        },
-        
-        get.contract.edges = function() {
-          return(private$contract.edges)
-        },
-        
-        get.artifact.extra.edge.attributes = function() {
-          return(private$artifact.extra.edge.attributes)
+
+        get.variable = function(var.name) {
+           return(private[var.name])
         }
-        
-        
+
+        # get.author.relation = function() {
+        #   return(private$author.relation)
+        # },
+        #
+        # get.artifact.relation = function() {
+        #   return(private$artifact.relation)
+        # },
+        #
+        # get.author.directed = function() {
+        #   return(private$author.directed)
+        # },
+        #
+        # get.artifact.directed = function() {
+        #   return(private$artifact.directed)
+        # },
+        #
+        # is.simplified = function() {
+        #   return(private$simplified)
+        # },
+        #
+        # get.artifact.filter = function() {
+        #   return(private$artifact.filter)
+        # },
+        #
+        # get.artifact.filter.base = function() {
+        #   return(private$artiact.filter.base)
+        # },
+        #
+        # get.artifact.filter.empty = function() {
+        #   return(private$artifact.filter.empty)
+        # },
+        #
+        # get.skip.threshold = function() {
+        #   return(private$skip.threshold)
+        # },
+        #
+        # get.synchronized = function() {
+        #   return(private$synchronized)
+        # },
+        #
+        # get.synchronicity.time.window = function() {
+        #   return(private$synchronicity.time.window)
+        # },
+        #
+        # get.contract.edges = function() {
+        #   return(private$contract.edges)
+        # },
+        #
+        # get.artifact.extra.edge.attributes = function() {
+        #   return(private$artifact.extra.edge.attributes)
+        # }
+
+
     )
 )
 
