@@ -397,6 +397,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         get.artifact.network.cochange = function(filter.empty.artifacts = TRUE,
                                                  filter.artifact = TRUE,
                                                  filter.base.artifact = TRUE,
+                                                 simple.network = TRUE,
                                                  extra.edge.attr = c()) {
 
             logging::logdebug("get.artifact.network.cochange: starting.")
@@ -774,7 +775,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## get artifact relation as network (generic)
         get.artifact.network = function(relation = c("cochange", "callgraph"),
                                         filter.empty.artifacts = TRUE, filter.artifact = TRUE, filter.base.artifact = TRUE,
-                                        extra.edge.attr = c()) {
+                                        simple.network = TRUE, extra.edge.attr = c()) {
             logging::loginfo("Constructing artifact network.")
             relation = match.arg(relation)
             if (relation == "cochange")
@@ -782,6 +783,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                     filter.empty.artifacts = filter.empty.artifacts,
                     filter.artifact = filter.artifact,
                     filter.base.artifact = filter.base.artifact,
+                    simple.network = simple.network,
                     extra.edge.attr = extra.edge.attr))
             else if (relation == "callgraph")
                 return(private$get.artifact.network.callgraph())
@@ -825,6 +827,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                                       filter.empty.artifacts = artifact.filter.empty,
                                                       filter.artifact = artifact.filter,
                                                       filter.base.artifact = artifact.filter.base,
+                                                      simple.network = simple.network,
                                                       extra.edge.attr = artifact.extra.edge.attr)
             # merge vertices on artifact network to avoid NULL references
             artifacts.net = unify.artifact.vertices(artifacts.net, authors.to.artifacts)

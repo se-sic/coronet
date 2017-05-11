@@ -345,9 +345,6 @@ EDGE.ATTR.HANDLING = list(
 ## Simplify a network
 simplify.network = function(network) {
 
-    ## initialize weights
-    E(network)$weight <- 1
-
     ## simplify networks (contract edges and remove loops)
     network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 
