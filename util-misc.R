@@ -5,6 +5,7 @@
 ## libraries
 library(plyr) # for rbind.fill
 library(parallel) # for parallel computation
+library(igraph) # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

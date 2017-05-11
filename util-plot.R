@@ -2,6 +2,10 @@
 ## hunsen@fim.uni-passau.de
 
 
+## libraries
+library(igraph) # networks
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility function for plotting author networks
 ##

@@ -1,4 +1,5 @@
 library(parallel) # for parallel computation
+library(igraph) # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
