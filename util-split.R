@@ -99,6 +99,43 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 }
 
 
+#' Split project data in activity-based ranges as specified
+#'
+#' @param project.data the Codeface*Data object from which the data is retrieved
+#' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
+#' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
+#'                        specified by 'activity.type'
+#'
+#' @return the list of CodefaceRangeData objects, each referring to one time period
+split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
+                                     activity.amount) {
+
+    ## get basis for splitting process
+    activity.type = match.arg(activity.type)
+    logging::loginfo(activity.type)
+
+    ## get actual raw data
+    data = list(
+        commits = project.data$get.commits.raw(),
+        mails = project.data$get.mails()
+    )
+
+    ## define ID columns for mails and commits
+    id.column = list(
+        commits = "hash",
+        mails = "message.id"
+    )
+
+    ## get bins based on split.basis
+    bins = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)
+    bins.date = as.POSIXct(bins)
+
+    ## split the data based on the extracted timestamps
+    data.split = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type)
+    return(data.split)
+}
+
+
 
 #' Split the given data by the given bins.
 #'
@@ -139,5 +176,65 @@ split.get.bins.time.based = function(dates, time.period) {
         )
     )
     return(bins)
+}
+
+#' Compute the bins for a activity-based splitting based on the given time period.
+#'
+#' @param df the data.frame representing the data
+#' @param id a character string denoting the ID column of the data.frame 'df'
+#' @param activity.amount the amount of activity denoting the number of unique items
+#'                        in each split bin [default: 5000]
+#'
+#' @return a vector of bins described by dates, each bin containing 'acitivity.amount'
+#'         many unique items; each item in the vector indicates the start of a bin,
+#'         although the last item indicates the end of the last bin
+split.get.bins.activity.based = function(df, id, activity.amount) {
+
+    ## get the unique integer IDs for each item in 'id' column
+    ids = df[[id]]
+    ids.unique = unique(ids)
+    ## compute split bins
+    bins.number.complete = length(ids.unique) %/% activity.amount
+    bins.number.incomplete = length(ids.unique) %% activity.amount
+    bins.activity = c(
+        rep(1:bins.number.complete, each = activity.amount),
+        rep(bins.number.complete + 1, bins.number.incomplete)
+    )
+    bins.number = max(bins.activity)
+
+    ## join ids and bin numbers
+    bins.mapping = data.frame(
+        id = ids.unique,
+        bin = bins.activity
+    )
+
+    ## get the start (and end) date for all bins
+    bins.date = lapply(1:bins.number, function(bin) {
+        ## get the ids in the bin
+        ids = bins.mapping[ bins.mapping$bin == bin, "id"]
+        ## grab dates for the ids
+        dates = df[df[[id]] %in% ids, "date"]
+
+        ## get min and max date
+        dates.min = min(dates)
+        dates.max = max(dates)
+
+        ## add 1 second to last range's dates.max to ensure
+        ## that the last items are included by cut(..., right = TRUE)
+        dates.max = dates.max + 1
+
+        ## return earliest date and, if in last bin, most recent date
+        return(c(
+            dates.min,
+            if (bin == bins.number) dates.max
+        ))
+    })
+    ## unlist bins
+    bins.date = do.call(c, bins.date)
+    bins.date = unique(bins.date)
+    ## convert to character strings
+    bins.date.char = strftime(bins.date)
+
+    return(bins.date.char)
 }
 
