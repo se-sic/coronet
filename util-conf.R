@@ -159,7 +159,7 @@ NetworkConf = R6Class("NetworkConf",
         },
 
         get.variable = function(var.name) {
-           return(private[var.name])
+           return(private[[var.name]])
         }
 
         # get.author.relation = function() {
