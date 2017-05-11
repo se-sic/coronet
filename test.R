@@ -92,6 +92,7 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 #                             author.only.committers = TRUE, author.directed = TRUE, simple.network = FALSE)
 # plot.bipartite.network(g, labels = FALSE, grayscale = FALSE)
 
+
 ## BULK METHODS
 
 # ## author networks
@@ -99,14 +100,14 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # for (net in auth) {
 #     plot.author.network(net)
 # }
-#
+
 # ## artifact networks
 # art = collect.artifact.networks(conf, artifact.relation = c("cochange", "callgraph"),
 #                               filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c("hash"))
 # for (net in art) {
 #     plot.artifact.network(net)
 # }
-#
+
 # ## bipartite networks
 # bp = collect.bipartite.networks(conf, author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION,
 #                              simple.network = TRUE, author.directed = TRUE, artifact.extra.edge.attr = c("hash"),
@@ -114,10 +115,35 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # for (net in bp) {
 #     plot.bipartite.network(net)
 # }
-#
+
 # ## lapply on data objects
 # data = construct.data(conf, callgraphs = TRUE)
 # run.lapply(data, "get.data.path.callgraph")
+
+
+## SPLITTING DATA
+
+# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits")
+# for (range in names(cf.data)) {
+#     y = cf.data[[range]]
+#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+# }
+# print(run.lapply(cf.data, "get.class.name"))
+
+# mybins = as.POSIXct(c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30"))
+# cf.data = split.data.time.based(x, bins = mybins)
+# for (range in names(cf.data)) {
+#     y = cf.data[[range]]
+#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+# }
+# print(run.lapply(cf.data, "get.class.name"))
+
+# cf.data = split.data.activity.based(x, activity.amount = 5000, activity.type = "mails")
+# for (range in names(cf.data)) {
+#     y = cf.data[[range]]
+#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+# }
+# print(run.lapply(cf.data, "get.class.name"))
 
 
 ## SAMPLE PLOTS (e.g., for papers)
@@ -126,7 +152,7 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # g = get.sample.network()
 # plot.bipartite.network(g, grayscale = FALSE)
 # dev.off()
-#
+
 # pdf(file = "sample-network-bw.pdf", width = 9, height = 5)
 # g = get.sample.network()
 # plot.bipartite.network(g, grayscale = TRUE)
