@@ -35,23 +35,27 @@ ARTIFACT.TO.ABBREVIATION = list(
 NetworkConf = R6Class("NetworkConf",
     private = list(
         author.relation = NULL, #character
-        artifact.relation = NULL, #character
         author.directed = FALSE, #bool
         artifact.directed = FALSE, #bool
         simplified = FALSE, #bool
+        artifact.relation = NULL, #character
         artifact.filter = TRUE, #bool
         artifact.filter.base = TRUE, #bool
         artifact.filter.empty = TRUE, #bool
+        artifact.edge.attributes = NULL, #list
         skip.threshold = Inf, #numeric
-        synchronized = FALSE, #bool
+        synchronicity = FALSE, #bool
         synchronicity.time.window = 0, #numeric
-        contract.edges = FALSE, #bool
-        artifact.extra.edge.attribute = NULL #list
+        contract.edges = FALSE #bool
+        
+        
+        
+        
     ),
     public = list(
         initialize = function(author.relation, artifact.relation, author.directed, artifact.directed, simplified,
                               artifact.filter, artifact.filter.base, artifact.filter.empty, skip.threshold, synchronized,
-                              synchrinicity.time.window, contract.edges, artifact.extra.edge.attribute){
+                              synchronicity.time.window, contract.edges, artifact.extra.edge.attributes){
             if(!missing(author.relation) && is.character(author.relation)) {
                 private$author.relation = author.relation
             }
@@ -76,9 +80,82 @@ NetworkConf = R6Class("NetworkConf",
             if(!missing(artifact.filter.empty) && is.logical(artifact.filter.empty)) {
                 private$artifact.filter.empty = artifact.filter.empty
             }
+            if(!missing(skip.theshold) && is.logical(skip.threshold)) {
+              private$skip.threshold = skip.threshold
+            }
+            if(!missing(synchronized) && is.logical(synchronized)) {
+              private$synchronized = synchronized
+            }
+            if(!missing(synchronicity.time.window) && is.numeric(synchronicity.time.window)) {
+              private$synchronicity.time.window = synchronicity.time.window
+            }
+            if(!missing(contract.edges) && is.logical(contract.edges)) {
+              private$contract.edges = contract.edges
+            }
+            if(!missing(artifact.extra.edge.attributes) && is.list(artifact.extra.edge.attributes)) {
+              private$artifact.extra.edge.attributes = artifact.extra.edge.attributes
+            }
+        },
+        
+        update.values = function() {
+          
+        },
+        
+        get.author.relation = function() {
+          return(private$author.relation)
+        },
+        
+        get.artifact.relation = function() {
+          return(private$artifact.relation)
+        },
+        
+        get.author.directed = function() {
+          return(private$author.directed)
+        },
+        
+        get.artifact.directed = function() {
+          return(private$artifact.directed)
+        },
+        
+        is.simplified = function() {
+          return(private$simplified)
+        },
+        
+        get.artifact.filter = function() {
+          return(private$artifact.filter)
+        },
+        
+        get.artifact.filter.base = function() {
+          return(private$artiact.filter.base)
+        },
+        
+        get.artifact.filter.empty = function() {
+          return(private$artifact.filter.empty)
+        },
+        
+        get.skip.threshold = function() {
+          return(private$skip.threshold)
+        },
+        
+        get.synchronized = function() {
+          return(private$synchronized)
+        },
+        
+        get.synchronicity.time.window = function() {
+          return(private$synchronicity.time.window)
+        },
+        
+        get.contract.edges = function() {
+          return(private$contract.edges)
+        },
+        
+        get.artifact.extra.edge.attributes = function() {
+          return(private$artifact.extra.edge.attributes)
         }
+        
+        
     )
-                      )
+)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## CodefaceConf
