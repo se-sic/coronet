@@ -34,14 +34,16 @@ ARTIFACT.TO.ABBREVIATION = list(
 
 NetworkConf = R6Class("NetworkConf",
     private = list(
-        author.relation = NULL, #character
+        #Variables with default values
+        #has to be configured through update.values method
+        author.relation = "mail", #character
         author.directed = FALSE, #bool
-        artifact.relation = NULL, #character
+        artifact.relation = "cochange", #character
         artifact.directed = FALSE, #bool
         artifact.filter = TRUE, #bool
         artifact.filter.base = TRUE, #bool
         artifact.filter.empty = TRUE, #bool
-        artifact.edge.attributes = NULL, #list
+        artifact.edge.attributes = c(), #list
         simplified = FALSE, #bool
         skip.threshold = Inf, #numeric
         synchronicity = FALSE, #bool
@@ -53,88 +55,105 @@ NetworkConf = R6Class("NetworkConf",
 
     ),
     public = list(
-        initialize = function(author.relation, artifact.relation, author.directed, artifact.directed, simplified,
-                              artifact.filter, artifact.filter.base, artifact.filter.empty, skip.threshold, synchronized,
-                              synchronicity.time.window, contract.edges, artifact.extra.edge.attributes){
-            if(!missing(author.relation) && is.character(author.relation)) {
-                private$author.relation = author.relation
-            }
-            if(!missing(author.directed) && is.character(author.directed)) {
-                private$author.directed = author.directed
-            }
-            if(!missing(artifact.relation) && is.character(artifact.relation)) {
-                private$artifact.relation = artifact.relation
-            }
-            if(!missing(artifact.directed) && is.character(artifact.directed)) {
-                private$artifact.directed = artifact.directed
-            }
-            if(!missing(artifact.filter) && is.logical(artifact.filter)) {
-                private$artifact.filter = artifact.filter
-            }
-            if(!missing(artifact.filter.base) && is.logical(artifact.filter.base)) {
-                private$artifact.filter.base = artifact.filter.base
-            }
-            if(!missing(artifact.filter.empty) && is.logical(artifact.filter.empty)) {
-                private$artifact.filter.empty = artifact.filter.empty
-            }
-            if(!missing(artifact.edge.attributes) && is.list(artifact.edge.attributes)) {
-                private$artifact.edge.attributes = artifact.edge.attributes
-            }
-            if(!missing(simplified) && is.logical(simplified)) {
-                private$simplified = simplified
-            }
-            if(!missing(skip.theshold) && is.logical(skip.threshold)) {
-              private$skip.threshold = skip.threshold
-            }
-            if(!missing(synchronicity) && is.logical(synchronicity)) {
-              private$synchronicity = synchronicity
-            }
-            if(!missing(synchronicity.time.window) && is.numeric(synchronicity.time.window)) {
-              private$synchronicity.time.window = synchronicity.time.window
-            }
-            if(!missing(contract.edges) && is.logical(contract.edges)) {
-              private$contract.edges = contract.edges
-            }
+        #for testing reasons
+        print.object = function() {
+            print(private$author.relation)
+            print(private$author.directed)
+            print(private$artifact.relation)
+            print(private$artifact.directed)
+            print(private$artifact.filter)
+            print(private$artifact.filter.base)
+            print(private$artifact.filter.empty)
+            print(private$artifact.edge.attributes)
+            print(private$simplified)
+            print(private$skip.threshold)
+            print(private$synchronicity)
+            print(private$synchronicity.time.window)
+            print(private$contract.edges)
+
         },
+        # initialize = function(author.relation, artifact.relation, author.directed, artifact.directed, simplified,
+        #                       artifact.filter, artifact.filter.base, artifact.filter.empty, skip.threshold, synchronized,
+        #                       synchronicity.time.window, contract.edges, artifact.extra.edge.attributes){
+        #     if(!missing(author.relation) && is.character(author.relation)) {
+        #         private$author.relation = author.relation
+        #     }
+        #     if(!missing(author.directed) && is.character(author.directed)) {
+        #         private$author.directed = author.directed
+        #     }
+        #     if(!missing(artifact.relation) && is.character(artifact.relation)) {
+        #         private$artifact.relation = artifact.relation
+        #     }
+        #     if(!missing(artifact.directed) && is.character(artifact.directed)) {
+        #         private$artifact.directed = artifact.directed
+        #     }
+        #     if(!missing(artifact.filter) && is.logical(artifact.filter)) {
+        #         private$artifact.filter = artifact.filter
+        #     }
+        #     if(!missing(artifact.filter.base) && is.logical(artifact.filter.base)) {
+        #         private$artifact.filter.base = artifact.filter.base
+        #     }
+        #     if(!missing(artifact.filter.empty) && is.logical(artifact.filter.empty)) {
+        #         private$artifact.filter.empty = artifact.filter.empty
+        #     }
+        #     if(!missing(artifact.edge.attributes) && is.list(artifact.edge.attributes)) {
+        #         private$artifact.edge.attributes = artifact.edge.attributes
+        #     }
+        #     if(!missing(simplified) && is.logical(simplified)) {
+        #         private$simplified = simplified
+        #     }
+        #     if(!missing(skip.theshold) && is.logical(skip.threshold)) {
+        #       private$skip.threshold = skip.threshold
+        #     }
+        #     if(!missing(synchronicity) && is.logical(synchronicity)) {
+        #       private$synchronicity = synchronicity
+        #     }
+        #     if(!missing(synchronicity.time.window) && is.numeric(synchronicity.time.window)) {
+        #       private$synchronicity.time.window = synchronicity.time.window
+        #     }
+        #     if(!missing(contract.edges) && is.logical(contract.edges)) {
+        #       private$contract.edges = contract.edges
+        #     }
+        # },
 
         update.values = function(attr.list = list()) {
-            if(!is.null(attr.list[["author.relation"]])) {
+            if(!is.null(attr.list$author.relation)) {
                 private$author.relation = attr.list$author.relation
             }
-            if(!is.null(attr.list[["author.directed"]])) {
+            if(!is.null(attr.list$author.directed)) {
                 private$author.directed = attr.list$author.directed
             }
-            if(!is.null(attr.list[["artifact.relation"]])) {
+            if(!is.null(attr.list$artifact.relation)) {
                 private$artifact.relation = attr.list$artifact.relation
             }
-            if(!is.null(attr.list[["artifact.directed"]])) {
+            if(!is.null(attr.list$artifact.directed)) {
                 private$artifact.directed = attr.list$artifact.directed
             }
-            if(!is.null(attr.list[["artifact.filter"]])) {
+            if(!is.null(attr.list$artifact.filter)) {
                 private$artifact.filter = attr.list$artifact.filter
             }
-            if(!is.null(attr.list[["artifact.filter.base"]])) {
+            if(!is.null(attr.list$artifact.filter.base)) {
                 private$artifact.filter.base = attr.list$artifact.filter.base
             }
-            if(!is.null(attr.list[["artifact.filter.empty"]])) {
+            if(!is.null(attr.list$artifact.filter.empty)) {
                 private$artifact.filter.empty = attr.list$artifact.filter.empty
             }
-            if(!is.null(attr.list[["artifact.edge.attributes"]])) {
+            if(!is.null(attr.list$artifact.edge.attributes)) {
                 private$artifact.edge.attributes = attr.list$artifact.edge.attributes
             }
-            if(!is.null(attr.list[["simplified"]])) {
+            if(!is.null(attr.list$simplified)) {
                 private$simplified = attr.list$simplified
             }
-            if(!is.null(attr.list[["skip.threshold"]])) {
+            if(!is.null(attr.list$skip.threshold)) {
                 private$skip.threshold = attr.list$skip.threshold
             }
-            if(!is.null(attr.list[["synchronity"]])) {
-                private$synchronity = attr.list$synchronity
+            if(!is.null(attr.list$synchronicity)) {
+                private$synchronicity = attr.list$synchronicity
             }
-            if(!is.null(attr.list[["synchronity.time.window"]])) {
-                private$synchronity.time.window = attr.list$synchronity.time.window
+            if(!is.null(attr.list$synchronicity.time.window)) {
+                private$synchronicity.time.window = attr.list$synchronciity.time.window
             }
-            if(!is.null(attr.list[["contract.edges"]])) {
+            if(!is.null(attr.list$contract.edges)) {
                 private$contract.edges = attr.list$contract.edges
             }
         },
