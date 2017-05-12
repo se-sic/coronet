@@ -146,16 +146,24 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
+#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
 #'
 #' @return a list of igraph networks, each referring to one time period
-split.network.time.based = function(network, time.period) {
+split.network.time.based = function(network, time.period, bins = NULL) {
     ## extract date attributes from edges
     dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
 
     ## get bin information for all edges
-    bins.info = split.get.bins.time.based(dates, time.period)
-    bins.vector = bins.info[["vector"]]
-    bins = head(bins.info[["bins"]], -1)
+    if (!is.null(bins)) {
+        bins.date = as.POSIXct(bins)
+        bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
+        bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
+    } else {
+        bins.info = split.get.bins.time.based(dates, time.period)
+        bins.vector = bins.info[["vector"]]
+        bins = head(bins.info[["bins"]], -1)
+    }
 
     ## create a network for each bin of edges
     nets = lapply(bins, function(bin) {
