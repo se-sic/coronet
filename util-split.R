@@ -38,7 +38,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
         ## get bins based on split.basis
-        bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period)
+        bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period)$bins
         bins.labels = head(bins, -1)
     }
     ## when bins are given explicitly
@@ -127,7 +127,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     )
 
     ## get bins based on split.basis
-    bins = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)
+    bins = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)[["bins"]]
     bins.date = as.POSIXct(bins)
 
     ## split the data based on the extracted timestamps
@@ -153,14 +153,16 @@ split.data.by.bins = function(df, bins) {
 ## Low-level functionality
 ##
 
-#' Compute the bins for a time-based splitting based on the given time period.
+#' Compute bin information for a time-based splitting based on the given time period.
 #'
 #' @param dates the dates that are to be split into several bins
 #' @param time.period the time period each bin lasts
 #'
-#' @return a vector of bins, each spanning the length of 'time.period';
-#'         each item in the vector indicates the start of a bin, although the last
-#'         item indicates the end of the last bin
+#' @return a list,
+#'         the item 'vector': the bins each item in 'dates' belongs to,
+#'         the item 'bins': the bin labels, each spanning the length of 'time.period';
+#'             each item in the vector indicates the start of a bin, although the last
+#'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     ## find bins for given dates
     dates.bins = cut(dates, breaks = time.period)
@@ -175,21 +177,25 @@ split.get.bins.time.based = function(dates, time.period) {
             length = 2)[2]
         )
     )
-    return(bins)
+    return(list(
+        vector = dates.bins,
+        bins = bins
+    ))
 }
 
-#' Compute the bins for a activity-based splitting based on the given time period.
+#' Compute bin information for a activity-based splitting based on the given amount of activity.
 #'
 #' @param df the data.frame representing the data
 #' @param id a character string denoting the ID column of the data.frame 'df'
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
 #'
-#' @return a vector of bins described by dates, each bin containing 'acitivity.amount'
-#'         many unique items; each item in the vector indicates the start of a bin,
-#'         although the last item indicates the end of the last bin
+#' @return a list,
+#'         the item 'vector': the bins each row in 'df' belongs to,
+#'         the item 'bins': the bin labels,  described by dates, each bin containing
+#'         'acitivity.amount' many unique items; each item in the vector indicates
+#'         the start of a bin, although the last item indicates the end of the last bin
 split.get.bins.activity.based = function(df, id, activity.amount) {
-
     ## get the unique integer IDs for each item in 'id' column
     ids = df[[id]]
     ids.unique = unique(ids)
@@ -235,6 +241,9 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     ## convert to character strings
     bins.date.char = strftime(bins.date)
 
-    return(bins.date.char)
+    return(list(
+        vector = bins.activity,
+        bins = bins.date.char
+    ))
 }
 
