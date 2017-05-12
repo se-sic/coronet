@@ -73,7 +73,7 @@ x = CodefaceProjectData$new(conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
+y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits()
 # y$get.mails()
@@ -145,6 +145,12 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[1]])
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
+# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# mybins = as.POSIXct(c("2013-05-23", "2013-06-11", "2013-06-27"))
+# nets = split.network.time.based(g, bins = mybins)
+# for (net in nets) {
+#     plot.network(net)
+# }
 
 ## SAMPLE PLOTS (e.g., for papers)
 
