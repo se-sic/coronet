@@ -136,6 +136,39 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 }
 
 
+#' This function takes a global network (igraph) with a edge attribute "date"
+#' and discretizes them by sectioning the network according to the given 'time_period'.
+#' The resulting networks does NOT get simplified.
+#'
+#' Important notice: This function only works for unsimplified networks, where no edges have been
+#' contracted, which would combine edge attributes.
+#'
+#' @param network the igraph network to split, needs to have an edge attribute named "date"
+#' @param time.period the time period describing the length of the ranges, a character string,
+#'                    e.g., "3 mins" or "15 days"
+#'
+#' @return a list of igraph networks, each referring to one time period
+split.network.time.based = function(network, time.period) {
+    ## extract date attributes from edges
+    dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
+
+    ## get bin information for all edges
+    bins.info = split.get.bins.time.based(dates, time.period)
+    bins.vector = bins.info[["vector"]]
+    bins = head(bins.info[["bins"]], -1)
+
+    ## create a network for each bin of edges
+    nets = lapply(bins, function(bin) {
+        ## identify edges in the current bin
+        edges = igraph::E(network)[ bins.vector == bin ]
+        ## create network based on the current set of edges
+        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
+        return(g)
+    })
+
+    return(nets)
+}
+
 
 #' Split the given data by the given bins.
 #'
