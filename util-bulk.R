@@ -5,14 +5,11 @@ library(parallel) # for parallel computation
 ## Bipartite networks
 ##
 
-collect.bipartite.networks = function(conf, author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                      simple.network = TRUE, author.directed = FALSE, artifact.extra.edge.attr = c(),
-                                      artifact.filter = TRUE, artifact.filter.base = TRUE,
-                                      step = 1) {
+collect.bipartite.networks = function(project.conf, network.conf) {
 
     ## get argument
-    author.relation = match.arg(author.relation)
-    artifact.relation = match.arg(artifact.relation)
+    author.relation = network.conf$get.variable("author.relation")
+    artifact.relation = network.conf$get.variable("artifact.relation")
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -25,11 +22,7 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the bipartite network
-        bp.network = range.data$get.bipartite.network(
-            author.relation = author.relation, artifact.relation = artifact.relation,
-            simple.network = simple.network, author.directed = author.directed, artifact.extra.edge.attr = artifact.extra.edge.attr,
-            artifact.filter = artifact.filter, artifact.filter.base = artifact.filter.base
-        )
+        bp.network = range.data$get.bipartite.network(network.conf = network.conf)
 
         ## set range attribute
         bp.network = set.graph.attribute(bp.network, "range", range)
@@ -49,12 +42,10 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 ## Author networks
 ##
 
-collect.author.networks = function(conf, author.relation = c("mail", "cochange"),
-                                   author.directed = FALSE, simple.network = TRUE,
-                                   step = 1) {
+collect.author.networks = function(conf, network.conf) {
 
     ## get argument
-    author.relation = match.arg(author.relation)
+    author.relation = network.conf$get.variable("author.relation")
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -67,7 +58,7 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the author network
-        author.network = range.data$get.author.network(author.relation, directed = author.directed, simple.network = simple.network)
+        author.network = range.data$get.author.network(network.conf = network.conf)
 
         ## set range attribute
         author.network = set.graph.attribute(author.network, "range", range)
@@ -87,12 +78,10 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 ## Artifact networks
 ##
 
-collect.artifact.networks = function(conf, artifact.relation = c("cochange", "callgraph"),
-                                     filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c(),
-                                     step = 1) {
+collect.artifact.networks = function(conf, network.conf) {
 
     ## get argument
-    artifact.relation = match.arg(artifact.relation)
+    artifact.relation = network.conf$get.variable("artifact.relation")
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -105,8 +94,7 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the artifact network
-        artifact.network = range.data$get.artifact.network(artifact.relation, filter.artifact = filter.artifact,
-                                                            filter.base.artifact = filter.base.artifact, extra.edge.attr = extra.edge.attr)
+        artifact.network = range.data$get.artifact.network(network.conf = network.conf)
 
         ## set range attribute
         artifact.network = set.graph.attribute(artifact.network, "range", range)
