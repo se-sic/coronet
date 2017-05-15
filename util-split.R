@@ -165,14 +165,7 @@ split.network.time.based = function(network, time.period, bins = NULL) {
         bins = head(bins.info[["bins"]], -1)
     }
 
-    ## create a network for each bin of edges
-    nets = lapply(bins, function(bin) {
-        ## identify edges in the current bin
-        edges = igraph::E(network)[ bins.vector == bin ]
-        ## create network based on the current set of edges
-        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
-        return(g)
-    })
+    nets = split.network.by.bins(network, bins, bins.vector)
 
     return(nets)
 }
@@ -187,6 +180,26 @@ split.network.time.based = function(network, time.period, bins = NULL) {
 split.data.by.bins = function(df, bins) {
     df.split = split(df, bins)
     return(df.split)
+}
+
+#' Split the given data by the given bins, in increasing order of the bin identifiers.
+#'
+#' @param network a network
+#' @param bins a vector with the unique bin identifiers, describing the order in which the bins are created
+#' @param bins.vector a vector of length 'ecount(network)' assigning a bin for each edge of 'network'
+#'
+#' @return a list of networks, with the length of 'unique(bins.vector)'
+split.network.by.bins = function(network, bins, bins.vector) {
+    ## create a network for each bin of edges
+    nets = lapply(bins, function(bin) {
+        ## identify edges in the current bin
+        edges = igraph::E(network)[ bins.vector == bin ]
+        ## create network based on the current set of edges
+        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
+        return(g)
+    })
+
+    return(nets)
 }
 
 
