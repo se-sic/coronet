@@ -4,6 +4,10 @@
 ## kemperso@fim.uni-passau.de
 
 
+## libraries
+requireNamespace("igraph")
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## High-level functionality
 ##
