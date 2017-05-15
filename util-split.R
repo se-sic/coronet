@@ -170,6 +170,68 @@ split.network.time.based = function(network, time.period, bins = NULL) {
     return(nets)
 }
 
+#' Discretizes a network according to the given 'number.edges' or by a predefined 'number.windows'.
+#'
+#' Important notice: This function only works for unsimplified networks, where no edges have been
+#' contracted, which would combine edge attributes, especially the "date" attribute.
+#'
+#' @param network the igraph network to split
+#' @param number.edges the amount of edges describing the size of the ranges
+#'                     (implying an open number of resulting ranges)
+#' @param number.windows the number of networks to get from this function
+#'                       (implying an equally distributed amount of edges in each range)
+#'
+#' @return a list of igraph networks, each referring to one period of activity
+split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL) {
+    ## get total edge count
+    edge.count = igraph::ecount(network)
+
+    ## number of edges given (number of windows NOT given)
+    if (is.null(number.windows)) {
+        if (edge.count < 1) {
+            logging::logerror("The number of edges per network has to be strictly positive (given: %s).", edge.count)
+            stop("Stopping due to illegally specified amount of edges to select.")
+        }
+        # compute the number of time windows according to the number of edges per network
+        number.windows = ceiling(edge.count / number.edges)
+
+        ## get dates in a data.frame for splitting purposes
+        df = data.frame(
+            date = as.POSIXct( # use POSIXct as other functions need it
+                igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
+            my.unique.id = 1:edge.count # as a unique identifier only
+        )
+        ## sort by date
+        df = df[ with(df, order(date)), ]
+
+        ## identify bins
+        bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
+        bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
+        bins = sort(unique(bins.vector))
+        ## split network by bins
+        networks = split.network.by.bins(network, bins, bins.vector)
+    }
+    ## number of windows given (ignoring number of edges)
+    else {
+        ## check the breaking case
+        if (number.windows < 1 || number.windows > edge.count) {
+            logging::logerror("The given number of windows is not suitable for this network (given: %s).", edge.count)
+            stop("Stopping due to illegally specified amount of windows to create.")
+        }
+
+        ## get dates from first and last edge
+        date.start = as.POSIXct(min(E(network)$date), origin = "1970-01-01")
+        date.end = as.POSIXct(max(E(network)$date), origin = "1970-01-01") + 1 # plus one second
+
+        ## create time-based equidistant bins
+        bins = seq(date.start, date.end, length.out = number.windows + 1)
+
+        ## split network with the computed bins
+        networks = split.network.time.based(network, bins = bins)
+    }
+
+    return(networks)
+}
 
 #' Split the given data by the given bins.
 #'
