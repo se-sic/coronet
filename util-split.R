@@ -102,7 +102,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     return(cf.data)
 }
 
-
 #' Split project data in activity-based ranges as specified
 #'
 #' @param project.data the Codeface*Data object from which the data is retrieved
@@ -139,13 +138,10 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(data.split)
 }
 
-
-#' This function takes a global network (igraph) with a edge attribute "date"
-#' and discretizes them by sectioning the network according to the given 'time_period'.
-#' The resulting networks does NOT get simplified.
+#' Discretizes a network (using the edge attribute "date") according to the given 'time_period'.
 #'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
-#' contracted, which would combine edge attributes.
+#' contracted, which would combine edge attributes, especially the "date" attribute.
 #'
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
