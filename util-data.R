@@ -847,12 +847,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                          artifact.extra.edge.attr = c("date", "hash"), ...) {
             logging::loginfo("Constructing bipartite network.")
 
+            ## construct the network parts
             networks = self$get.networks(simple.network = simple.network, artifact.extra.edge.attr = artifact.extra.edge.attr, ...)
-
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             artifacts.net = networks[["artifacts.net"]]
 
+            ## check directedness and adapt artifact network if needed
             if (is.directed(authors.net) && !is.directed(artifacts.net)) {
                 logging::logwarn("Author network is directed, but artifact network is not. Converting artifact network...")
                 artifacts.net = as.directed(artifacts.net, mode = "mutual")
@@ -863,11 +864,15 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 artifacts.net = as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
+            ## reduce memory consumption by removing temporary data
+            rm(networks)
+            gc()
+
+            ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
                                  simple.network = simple.network, extra.data = artifact.extra.edge.attr)
 
             return(u)
-
         }
 
         ## FIXME split data by three-month ranges (e.g., given by argument (four months, ten days, ...))
