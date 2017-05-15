@@ -138,7 +138,7 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
-# cf.data = split.data.activity.based(x, activity.amount = 5000, activity.type = "mails")
+# cf.data = split.data.activity.based(x, activity.amount = 10000, activity.type = "mails")
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
@@ -146,8 +146,26 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # print(run.lapply(cf.data, "get.class.name"))
 
 # g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# nets = split.network.time.based(g, time.period = "1 month")
+# for (net in nets) {
+#     plot.network(net)
+# }
+
+# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
 # mybins = as.POSIXct(c("2013-05-23", "2013-06-11", "2013-06-27"))
 # nets = split.network.time.based(g, bins = mybins)
+# for (net in nets) {
+#     plot.network(net)
+# }
+
+# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# nets = split.network.activity.based(g, number.windows = 2)
+# for (net in nets) {
+#     plot.network(net)
+# }
+
+# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# nets = split.network.activity.based(g, number.edges = 500)
 # for (net in nets) {
 #     plot.network(net)
 # }
