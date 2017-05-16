@@ -5,7 +5,7 @@ source("util-split.R")
 source("util-bulk.R")
 source("util-plot.R")
 
-library(logging)
+requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
 if (file.exists("test.log")) file.remove("test.log")
 logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
