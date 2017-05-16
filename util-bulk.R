@@ -39,6 +39,7 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
+        attr(bp.network, "range") = range
 
         # add to global list
         return(bp.network)
@@ -77,6 +78,7 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
+        attr(author.network, "range") = range
 
         # add to global list
         return(author.network)
@@ -117,6 +119,7 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
+        attr(artifact.network, "range") = range
 
         # add to global list
         return(artifact.network)
@@ -149,6 +152,7 @@ construct.data = function(conf, callgraphs = FALSE, step = 1) {
 
         ## construct range data
         range.data = CodefaceRangeData$new(conf, range, revision.callgraph)
+        attr(range.data, "range") = range
 
         # add to global list
         return(range.data)
