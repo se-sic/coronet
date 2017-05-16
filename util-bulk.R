@@ -1,5 +1,8 @@
-library(parallel) # for parallel computation
-library(igraph) # networks
+
+
+## libraries
+requireNamespace("parallel") # for parallel computation
+requireNamespace("igraph") # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -33,7 +36,7 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
         )
 
         ## set range attribute
-        bp.network = set.graph.attribute(bp.network, "range", range)
+        bp.network = igraph::set.graph.attribute(bp.network, "range", range)
 
         # add to global list
         return(bp.network)
@@ -71,7 +74,7 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
         author.network = range.data$get.author.network(author.relation, directed = author.directed, simple.network = simple.network)
 
         ## set range attribute
-        author.network = set.graph.attribute(author.network, "range", range)
+        author.network = igraph::set.graph.attribute(author.network, "range", range)
 
         # add to global list
         return(author.network)
@@ -107,10 +110,11 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
 
         ## get the artifact network
         artifact.network = range.data$get.artifact.network(artifact.relation, filter.artifact = filter.artifact,
-                                                            filter.base.artifact = filter.base.artifact, extra.edge.attr = extra.edge.attr)
+                                                           filter.base.artifact = filter.base.artifact,
+                                                           extra.edge.attr = extra.edge.attr)
 
         ## set range attribute
-        artifact.network = set.graph.attribute(artifact.network, "range", range)
+        artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
 
         # add to global list
         return(artifact.network)
@@ -160,10 +164,6 @@ construct.data = function(conf, callgraphs = FALSE, step = 1) {
 ##
 
 run.lapply = function(data, fun) {
-    res = mclapply(data, function(dat) dat[[fun]]())
+    res = parallel::mclapply(data, function(dat) dat[[fun]]())
     return(res)
 }
-
-
-
-
