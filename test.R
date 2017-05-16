@@ -1,3 +1,6 @@
+## (c) Claus Hunsen, 2016, 2017
+## hunsen@fim.uni-passau.de
+
 source("util-misc.R")
 source("util-conf.R")
 source("util-data.R")
