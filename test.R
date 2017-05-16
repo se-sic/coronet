@@ -18,8 +18,6 @@ CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
 
 CASESTUDY = "busybox"
 ARTIFACT = "feature" # function, feature, file, featureexpression
-## FIXME test:
-## - artifact = featureexpression
 
 AUTHOR.RELATION = "mail" # mail, cochange
 ARTIFACT.RELATION = "cochange" # cochange, callgraph

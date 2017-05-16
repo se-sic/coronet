@@ -27,6 +27,13 @@ ARTIFACT.TO.ABBREVIATION = list(
     "file"     = "cu"
 )
 
+ARTIFACT.CODEFACE = list(
+    "feature"  = "Feature",
+    "featureexpression" = "FeatureExpression",
+    "function" = "Function",
+    "file"     = "File"
+)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## CodefaceConf
@@ -154,10 +161,7 @@ CodefaceConf = R6Class("CodefaceConf",
             ## store artifact in configuration
             conf$artifact = artifact
             conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
-            conf$artifact.codeface = paste0(
-                toupper(substr(conf$artifact, 1, 1)),
-                substr(conf$artifact, 2, nchar(conf$artifact))
-                ) # first letter uppercase
+            conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
 
             ## store path to actual Codeface data
             conf$datapath = private$get.results.folder(data, selection.process, conf[["project"]], tagging)
