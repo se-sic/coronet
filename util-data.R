@@ -104,9 +104,17 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             if (synchronicity) {
                 synchronicity.data = self$get.synchronicity(synchronicity.window)
                 commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
-            } else {
-                ## fill with NAs for safety reasons
-                commit.data[["synchronicity"]] = NA
+            }
+            ## add synchronicity column anyway
+            else {
+                dummy.data = switch(
+                    as.character(nrow(commit.data)),
+                    ## if there are no data available, we need to add the synchronicity column in a special way
+                    "0" = logical(0),
+                    ## otherwise, add NAs to denote non-existing data
+                    NA
+                )
+                commit.data = cbind(commit.data, synchronicity = dummy.data)
             }
 
             ## store the commit data
