@@ -43,12 +43,13 @@ NetworkConf = R6Class("NetworkConf",
         artifact.filter = TRUE, #bool
         artifact.filter.base = TRUE, #bool
         artifact.filter.empty = TRUE, #bool
-        artifact.edge.attributes = c(), #list
+        artifact.edge.attributes = c("date"), #list
         simplified = FALSE, #bool
+        contract.edges = FALSE, #bool
         skip.threshold = Inf, #numeric
         synchronicity = FALSE, #bool
-        synchronicity.time.window = 0, #numeric
-        contract.edges = FALSE #bool
+        synchronicity.time.window = 5 #numeric
+
 
 
 
