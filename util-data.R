@@ -39,6 +39,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
     private = list(
         ## configuration
         conf = NULL, # list
+        network.conf = NULL, #object
 
         ## raw data
         ## commits and commit data
@@ -60,7 +61,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## BASIC DATA ####
 
         ## read the commit data for the range
-        read.commits = function(network.conf) {
+        read.commits = function() {
             data.path = self$get.data.path()
 
             logging::logdebug("read.commits: starting.")
@@ -94,7 +95,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             logging::logdebug("read.commits: finished.")
         },
 
-        read.commits.raw = function(network.conf) {
+        read.commits.raw = function() {
 
             logging::logdebug("read.commits.raw: starting.")
 
@@ -303,7 +304,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## AUTHOR NETWORKS ####
 
         ## get the co-change-based developer relation as network
-        get.author.network.cochange = function(network.conf) {
+        get.author.network.cochange = function() {
 
             logging::logdebug("get.author.network.cochange: starting.")
 
@@ -319,8 +320,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## construct network based on artifact2author data
-            artifact2author = self$get.artifact2author(network.conf)
-            author.net = construct.dependency.network.from.list(artifact2author, network.conf = network.conf)
+            artifact2author = self$get.artifact2author(network.conf = private$network.conf)
+            author.net = construct.dependency.network.from.list(artifact2author, network.conf = private$network.conf)
 
             ## store network
             private$authors.network.cochange = author.net
@@ -330,7 +331,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the thread-based developer relation as network
-        get.author.network.mail = function(network.conf) {
+        get.author.network.mail = function() {
 
             logging::logdebug("get.author.network.mail: starting.")
 
@@ -345,9 +346,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             if (length(thread2author) != 0) {
                 dev.relation =
-                    construct.dependency.network.from.list(thread2author,
-                                                           directed = directed, simple.network = simple.network,
-                                                           extra.edge.attr = edge.attributes)
+                    construct.dependency.network.from.list(thread2author, network.conf = private$network.conf)
             } else {
                 dev.relation = create.empty.network(directed = directed)
             }
@@ -363,7 +362,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## ARTIFACT NETWORKS ####
 
         ## co-change-based artifact network
-        get.artifact.network.cochange = function(network.conf) {
+        get.artifact.network.cochange = function() {
 
             logging::logdebug("get.artifact.network.cochange: starting.")
 
@@ -373,11 +372,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 return(private$artifacts.network.cochange)
             }
 
-            commit2artifact = self$get.commit2artifact(filter.empty.artifacts = filter.empty.artifacts,
-                                                       filter.artifact = filter.artifact,
-                                                       filter.base.artifact = filter.base.artifact,
-                                                       extra.data = extra.edge.attr)
-            artifacts.net = construct.dependency.network.from.list(commit2artifact, extra.edge.attr = extra.edge.attr)
+            commit2artifact = self$get.commit2artifact(network.conf = private$network.conf)
+            artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = private$network.conf)
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -432,7 +428,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## constructor
         initialize = function(conf) {
             if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
-                private$conf <- conf
+                private$conf = conf
             }
 
             if (class(self)[1] == "CodefaceProjectData")
@@ -481,24 +477,24 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## RAW DATA ####
 
         ## get the complete filtered list of commits
-        get.commits = function(network.conf) {
+        get.commits = function() {
             logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$read.commits(network.conf = network.conf)
+                private$read.commits(network.conf = private$network.conf)
             }
 
             return(private$commits)
         },
 
         ## get the complete raw list of commits
-        get.commits.raw = function(network.conf) {
+        get.commits.raw = function() {
             logging::loginfo("Getting raw commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw(network.conf = network.conf)
+                private$read.commits.raw(network.conf = private$network.conf)
             }
 
             return(private$commits.raw)
@@ -544,32 +540,32 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         ## DATA ####
 
         ## get the authors for each artifact
-        get.artifact2author = function(network.conf) {
+        get.artifact2author = function() {
             logging::loginfo("Getting artifact--author data.")
 
             ## get commits sorted by date
-            sorted.commits = self$get.commits(network.conf = network.conf)
+            sorted.commits = self$get.commits(network.conf = private$network.conf)
             sorted.commits = sorted.commits[order(sorted.commits[["date"]], decreasing = FALSE), ] # sort!
 
             ## store the authors per artifact
-            mylist = get.thing2thing(sorted.commits, "artifact", "author.name", extra.data = c(extra.data))
+            mylist = get.thing2thing(sorted.commits, "artifact", "author.name", network.conf = private$network.conf
+                                     # extra.data = c(extra.data)
+                                     )
 
             return(mylist)
         },
 
         ## get the commits for each author
-        get.author2commit = function(network.conf = network.conf
-          #extra.data = c("date", "diff.size"), synchronicity = FALSE, synchronicity.window = 5
-          ) {
+        get.author2commit = function() {
             logging::loginfo("Getting author--commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw(network.conf = network.conf)
+                private$read.commits.raw(network.conf = private$network.conf)
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits.raw, "author.name", "hash", network.conf = network.conf)
+            mylist = get.thing2thing(private$commits.raw, "author.name", "hash", network.conf = private$network.conf)
             mylist = mclapply(mylist, unique)
 
             return(mylist)
@@ -577,28 +573,28 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get the artifacts for each author
         ## (formerly Author2ArtifactExtraction, authors2{artifact}.list)
-        get.author2artifact = function(network.conf) {
+        get.author2artifact = function() {
             logging::loginfo("Getting author--artifact data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$read.commits(network.conf = network.conf)
+                private$read.commits(network.conf = private$network.conf)
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "author.name", "artifact", network.conf = network.conf)
+            mylist = get.thing2thing(private$commits, "author.name", "artifact", network.conf = private$network.conf)
 
             return(mylist)
         },
 
         ## get the files for each author
         ## (formerly Author2FileExtraction, authors2file.list)
-        get.author2file = function(network.conf) {
+        get.author2file = function() {
             logging::loginfo("Getting author--file data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$read.commits(network.conf = network.conf)
+                private$read.commits(network.conf = private$network.conf)
             }
 
             ## store the authors per artifact
@@ -609,28 +605,28 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get the artifacts for each commits
         ## (formerly Commit2ArtifactExtraction, commit2artifact.list)
-        get.commit2artifact = function(network.conf) {
+        get.commit2artifact = function() {
             logging::loginfo("Getting commit--artifact data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$read.commits(network.conf = network.conf)
+                private$read.commits(network.conf = private$network.conf)
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "hash", "artifact", network.conf = network.conf)
+            mylist = get.thing2thing(private$commits, "hash", "artifact", network.conf = private$network.conf)
 
             return(mylist)
         },
 
         ## get the files for each commits
         ## (formerly Commit2FileExtraction, commit2file.list)
-        get.commit2file = function(network.conf) {
+        get.commit2file = function() {
             logging::loginfo("Getting commit--file data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$read.commits(network.conf = network.conf)
+                private$read.commits(network.conf = private$network.conf)
             }
 
             ## store the authors per artifact
@@ -641,7 +637,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
         ## get the authors for each mail thread
         ## (formerly Thread2AuthorExtraction, thread2author.list)
-        get.thread2author = function(extra.data = c()) {
+        get.thread2author = function(# extra.data = c()
+          ) {
             logging::loginfo("Getting thread--author data.")
 
             ## if mails are not read already, do this
@@ -651,29 +648,29 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## store the authors per thread
             mylist = get.thing2thing(private$mails, "thread", "author.name",
-                                     extra.data = extra.data)
+                                     network.conf = private$network.conf)
 
             return(mylist)
         },
 
         ## get the developer relation as network (generic)
-        get.author.network = function(relation = c("mail", "cochange"), network.conf) {
+        get.author.network = function() {
             logging::loginfo("Constructing author network.")
-            relation = match.arg(relation)
+            relation = network.conf$get.variable("author.relation")
             if (relation == "cochange")
-                return(private$get.author.network.cochange(network.conf = network.conf))
+                return(private$get.author.network.cochange(network.conf = private$network.conf))
             else if (relation == "mail")
-                return(private$get.author.network.mail(network.conf = network.conf))
+                return(private$get.author.network.mail(network.conf = private$network.conf))
             else
                 stop(sprintf("The author relation '%s' does not exist.", relation))
         },
 
         ## get artifact relation as network (generic)
-        get.artifact.network = function(relation = c("cochange", "callgraph"), network.conf) {
+        get.artifact.network = function() {
             logging::loginfo("Constructing artifact network.")
-            relation = match.arg(relation)
+            relation = network.conf$get.variablo("artifact.relation")
             if (relation == "cochange")
-                return(private$get.artifact.network.cochange(network.conf = network.conf))
+                return(private$get.artifact.network.cochange(network.conf = private$network.conf))
             else if (relation == "callgraph")
                 return(private$get.artifact.network.callgraph())
             else
@@ -681,18 +678,18 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get all networks (build unification to avoid null-pointers)
-        get.networks = function(network.conf) {
+        get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
             ## get method arguments
-            author.relation = match.arg(network.conf$get.variable("author.relation"))
-            artifact.relation = match.arg(network.conf$get.variable("artifact.relation"))
+            author.relation = network.conf$get.variable("author.relation")
+            artifact.relation = network.conf$get.variable("artifact.relation")
 
             ## authors-artifact relation
-            authors.to.artifacts = self$get.author2artifact(network.conf = network.conf)
+            authors.to.artifacts = self$get.author2artifact(network.conf = private$network.conf)
 
             ## authors relation
-            authors.net = self$get.author.network(network.conf = network.conf)
+            authors.net = self$get.author.network(network.conf = private$network.conf)
 
             ## unify vertices with developer-artifact relation
             authors.from.net = get.vertex.attribute(authors.net, "name")
@@ -704,7 +701,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                 authors.net = delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
 
             ## artifact relation
-            artifacts.net = self$get.artifact.network(network.conf = network.conf)
+            artifacts.net = self$get.artifact.network(network.conf = private$network.conf)
             # merge vertices on artifact network to avoid NULL references
             artifacts.net = unify.artifact.vertices(artifacts.net, authors.to.artifacts)
             # ## compute communities # TODO in the end, this needs to read Thomas' files!
@@ -718,13 +715,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
         },
 
         ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function(network.conf
+        get.bipartite.network = function(
           # simple.network = TRUE, contract.edges = simple.network,
           #                                artifact.extra.edge.attr = c("date", "hash"), ...
           ) {
             logging::loginfo("Constructing bipartite network.")
 
-            networks = self$get.networks(network.conf = network.conf)
+            networks = self$get.networks(network.conf = private$network.conf)
 
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
@@ -741,7 +738,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = network.conf)
+                                 network.conf = private$network.conf)
 
             return(u)
 
