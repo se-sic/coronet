@@ -63,7 +63,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     names(bins.ranges) = bins.ranges
 
     ## split data
-    data.split = lapply(split.data, function(df.name) {
+    data.split = parallel::mclapply(split.data, function(df.name) {
         ## identify bins for data
         df = data[[df.name]]
         df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
@@ -75,11 +75,11 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     })
 
     ## re-arrange data to get the proper list of data per range
-    data.split = lapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
+    data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
     names(data.split) = bins.ranges
 
     ## construct CodefaceRangeData objects
-    cf.data = lapply(bins.ranges, function(range) {
+    cf.data = parallel::mclapply(bins.ranges, function(range) {
         ## construct object for current range
         cf.range.data = CodefaceRangeData$new(conf, range)
         ## FIXME add revision.callgraph parameter
@@ -254,7 +254,7 @@ split.data.by.bins = function(df, bins) {
 #' @return a list of networks, with the length of 'unique(bins.vector)'
 split.network.by.bins = function(network, bins, bins.vector) {
     ## create a network for each bin of edges
-    nets = lapply(bins, function(bin) {
+    nets = parallel::mclapply(bins, function(bin) {
         ## identify edges in the current bin
         edges = igraph::E(network)[ bins.vector == bin ]
         ## create network based on the current set of edges
@@ -332,7 +332,7 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     )
 
     ## get the start (and end) date for all bins
-    bins.date = lapply(1:bins.number, function(bin) {
+    bins.date = parallel::mclapply(1:bins.number, function(bin) {
         ## get the ids in the bin
         ids = bins.mapping[ bins.mapping$bin == bin, "id"]
         ## grab dates for the ids
