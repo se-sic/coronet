@@ -6,6 +6,7 @@
 
 ## libraries
 requireNamespace("igraph")
+requireNamespace("logging")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
