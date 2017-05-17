@@ -565,7 +565,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$synchronicity)) {
-                private$read.synchronicity()
+                private$read.synchronicity(time.window)
             }
 
             return(private$synchronicity)
