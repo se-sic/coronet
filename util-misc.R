@@ -14,7 +14,7 @@ library(parallel) # for parallel computation
 ## Transform base.data (data.frame) to a list
 ## - group by thing1
 ## - use thing2 as sublist items
-get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
+get.thing2thing = function(base.data, thing1, thing2, network.conf) {
     if (nrow(base.data) == 0) {
         logging::logwarn("Trying to get subset of non-existent data.")
         logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
@@ -25,7 +25,7 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
     # get right portion of data
     data = base.data[c(thing1, thing2)]
 
-    cols = c(thing1, thing2, extra.data)
+    cols = c(thing1, thing2, network.conf$get.variable("artifact.edge.attribute"))
     extra.data.df = base.data[cols]
     # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
     colnames(extra.data.df) = cols
@@ -54,7 +54,7 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
 ## - headers exist (developer IDs)
 ## - no row names
 ## Column names are mapped to the developers' names, row names are set identically
-read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE) {
+read.adjacency.matrix.from.file = function(file, authors, network.conf) {
 
     if(!file.exists(file)) { # no analysis for the current range
         return(create.empty.network())
@@ -75,7 +75,7 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
     g = graph_from_adjacency_matrix(as.matrix(dat), mode = "directed", weighted = TRUE)
 
     # transform multiple edges to edge weights
-    if (simple.network)
+    if (network.conf$get.variable("simplified"))
         g = simplify.network(g)
 
     # return constructed igraph object
@@ -87,8 +87,7 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
 ## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
 ## - if directed, the order of things in the sublists is respected
 ## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
-construct.dependency.network.from.list = function(list, directed = FALSE, simple.network = TRUE,
-                                                  extra.edge.attr = c(), skip.threshold = Inf) {
+construct.dependency.network.from.list = function(list, directed = FALSE, network.conf) {
 
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
@@ -106,9 +105,9 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > skip.threshold) {
+            if (number.edges > network.conf$get.attribute("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), skip.threshold)
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.attribute("skip.threshold"))
                 return(NULL)
             }
 
@@ -122,7 +121,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
                 ## get vertex data
                 item.node = item[, 1]
-                item.edge.attrs = item [1, extra.edge.attr, drop = FALSE]
+                item.edge.attrs = item [1, network.conf$get.attribute("artifact.edge.attributes"), drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -154,9 +153,9 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > skip.threshold) {
+            if (number.edges > network.conf$get.attribute("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), skip.threshold)
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.attribute("skip.threshold"))
                 return(NULL)
             }
 
@@ -227,7 +226,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     net = set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
-    if (simple.network)
+    if (network.conf$get.attribute("simplified"))
         net = simplify.network(net)
 
     logging::logdebug("construct.dependency.network.from.list: finished.")
