@@ -221,8 +221,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         }
 
         ## get dates from first and last edge
-        date.start = as.POSIXct(min(E(network)$date), origin = "1970-01-01")
-        date.end = as.POSIXct(max(E(network)$date), origin = "1970-01-01") + 1 # plus one second
+        date.start = as.POSIXct(min(igraph::E(network)$date), origin = "1970-01-01")
+        date.end = as.POSIXct(max(igraph::E(network)$date), origin = "1970-01-01") + 1 # plus one second
 
         ## create time-based equidistant bins
         bins = seq(date.start, date.end, length.out = number.windows + 1)
