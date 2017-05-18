@@ -55,7 +55,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         bins.labels = head(bins, -1)
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges '%s'.",
-                         project.data$get.class.name(), paste(bins, collapse = ", "), split.basis)
+                         project.data$get.class.name(), paste(bins, collapse = ", "))
     }
     bins.date = as.POSIXct(bins)
 
