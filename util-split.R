@@ -7,6 +7,7 @@
 ## libraries
 requireNamespace("igraph")
 requireNamespace("logging")
+requireNamespace("parallel")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
