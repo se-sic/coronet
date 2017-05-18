@@ -40,6 +40,8 @@ NetworkConf = R6Class("NetworkConf",
                              type = "character"),
       author.directed = list(value = FALSE,
                              type = "logical"),
+      author.only.comitters = list(value = FALSE,
+                             type = "logical"),
       artifact.relation = list(value = "cochange",
                                type = "character"),
       artifact.directed = list(value = FALSE,
@@ -50,29 +52,29 @@ NetworkConf = R6Class("NetworkConf",
                                   type = "logical"),
       artifact.filter.empty = list(value = TRUE,
                                    type = "logical"),
-      artifact.edge.attributes = list(value = c(),
+      artifact.edge.attributes = list(value = list("date"),
                                       type = "list"),
       simplified = list(value = FALSE,
                         type = "logical"),
       skip.threshold = list(value = Inf,
                             type = "numeric"),
-      synchronicity = list(value = FALSE,
+      synchronicity = list(value = TRUE,
                            type = "logical"),
-      synchronicity.time.window = list(value = 0,
+      synchronicity.time.window = list(value = 5,
                                        type = "numeric"),
       contract.edges = list(value = FALSE,
                             type = "logical"),
-      
+
       check.value = function(value, name) {
           return (exists(name, where=private) && (class(value) == (private[[name]][["type"]])))
       }
-      
-      
+
+
     ),
-    
+
     public = list(
         # for testing reasons
-        print.object = function() {
+        print = function() {
             for(name in names(private)) {
                 if((class(private[[name]]) != "function")) {
                     print(name)
@@ -80,29 +82,29 @@ NetworkConf = R6Class("NetworkConf",
               }
             }
         },
-        
-        
+
+
         # for testing purposes only
         check = function(value, name) {
             private$check.value(value = value, name = name)
         },
-        
 
-        update.values = function(attr.list = list()) {
-            for(name in names(attr.list)) {
-                if(private$check.value(value = attr.list[[name]], name = name)) {
-                    private[[name]][["value"]] = attr.list[[name]]
+
+        update.values = function(updated.values = list()) {
+            for(name in names(updated.values)) {
+                if(private$check.value(value = updated.values[[name]], name = name)) {
+                    private[[name]][["value"]] = updated.values[[name]]
                 } else {
                   # abort or log a warning because the name or type of one of the new values is not correct.
                 }
             }
         },
-        
+
 
         get.variable = function(var.name) {
            return(private[[var.name]][["value"]])
         }
-        
+
     )
 )
 
@@ -423,3 +425,4 @@ CodefaceConf = R6Class("CodefaceConf",
 
     )
 )
+
