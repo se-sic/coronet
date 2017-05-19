@@ -76,17 +76,17 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             commit.data = self$get.commits.raw()
 
             ## only process commits with non-empty artifact
-            if (network.conf$get.variable("filter.empty.artifacts")) {
+            if (network.conf$get.variable("artifact.filter.empty")) {
                 commit.data = subset(commit.data, artifact != "")
             }
 
             ## only process commits with the artifact listed in the configuration
-            if (network.conf$get.variable("filter.artifact")) {
+            if (network.conf$get.variable("artifact.filter")) {
                 commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
             }
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (network.conf$get.variable("filter.base.artifact")) {
+            if (network.conf$get.variable("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
@@ -609,7 +609,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "author.name", "file")
+            mylist = get.thing2thing(private$commits, "author.name", "file", network.conf = private$network.conf)
 
             return(mylist)
         },
@@ -641,7 +641,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             }
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "hash", "file")
+            mylist = get.thing2thing(private$commits, "hash", "file", network.conf = private$network.conf)
 
             return(mylist)
         },
