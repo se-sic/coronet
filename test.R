@@ -16,11 +16,19 @@ assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
 
 
+
 CF.DATA = "C:/Users/RNoem/Codeface/codeface-data"
+
 CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
 
 CASESTUDY = "test"
 ARTIFACT = "feature" # function, feature, file, featureexpression
+
+## FIXME test:
+## - artifact = featureexpression
+
+#AUTHOR.RELATION = "mail" # mail, cochange
+#ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 
 ## CONFIGURATION
@@ -36,6 +44,7 @@ revisions.callgraph = conf$get.revisions.callgraph()
 
 network.conf = NetworkConf$new()
 x = CodefaceProjectData$new(conf)
+
 x$get.network.conf.variable(var.name = "synchronicity.time.window")
 x$get.commits.raw()
 x$get.synchronicity()
@@ -57,12 +66,15 @@ x$get.networks()
 g = x$get.bipartite.network()
 plot.bipartite.network(g)
 
+
 # ## save binary objects
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
 # ## example for extensive configuration
+
 # net = x$get.bipartite.network()
+
 # save(net, file = sprintf("busybox_%s_%s_%s.network",  x$get.network.conf.variable(var.name = "author.relation"),
 #                   ARTIFACT,  x$get.network.conf.variable(var.name = "artifact.relation")))
 
@@ -90,21 +102,27 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]])
 
 
 ## BULK METHODS
-
+# network.conf = NetworkConf$new()
 # ## author networks
+
 # auth = collect.author.networks(conf)
+
 # for (net in auth) {
 #     plot.author.network(net)
 # }
 
 # ## artifact networks
+
 # art = collect.artifact.networks(conf)
+
 # for (net in art) {
 #     plot.artifact.network(net)
 # }
 
 # ## bipartite networks
+
 # bp = collect.bipartite.networks(conf)
+
 # for (net in bp) {
 #     plot.bipartite.network(net)
 # }
@@ -174,3 +192,6 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]])
 # g = get.sample.network()
 # plot.bipartite.network(g, grayscale = TRUE)
 # dev.off()
+# network.conf$update.values(list(author.relation = "mail", author.directed = TRUE))
+#network.conf$print.object()
+# print(network.conf$get.variable("author.relation"))

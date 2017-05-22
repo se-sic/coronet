@@ -39,7 +39,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
     private = list(
         ## configuration
         conf = NULL, # list
+
         network.conf = NULL,
+
 
         ## raw data
         ## commits and commit data
@@ -195,6 +197,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## convert dates and sort by them
             commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
             commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
+
 
             ## store the commit data
             private$commits.raw = commit.data
@@ -353,8 +356,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             ## construct network based on artifact2author data
+
             artifact2author = self$get.artifact2author()
             author.net = construct.dependency.network.from.list(artifact2author, network.conf = network.conf)
+
 
             ## store network
             private$authors.network.cochange = author.net
@@ -379,8 +384,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             if (length(thread2author) != 0) {
                 dev.relation =
+
                     construct.dependency.network.from.list(thread2author,
                                                            network.conf$get.variable("author.directed"), network.conf = network.conf)
+
             } else {
                 dev.relation = create.empty.network(network.conf$get.variable("author.directed"))
             }
@@ -463,7 +470,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         initialize = function(conf) {
             private$network.conf = NetworkConf$new()
             if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
-                private$conf <- conf
+                private$conf = conf
             }
 
             if (class(self)[1] == "CodefaceProjectData")
@@ -481,6 +488,16 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
           return(private$network.conf$get.variable(var.name))
         },
 
+        ## UPDATE CONFIGURATION ####
+        update.network.conf = function(updated.values = list()) {
+            private$network.conf$update.values(updated.values = updated.values)
+        },
+
+        # for testing reasons
+        # might be used for other purposes
+        get.network.conf.variable = function(var.name) {
+            return(private$network.conf$get.variable(var.name = var.name))
+        },
 
         ## TO STRING ;) ####
 
@@ -662,6 +679,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## store the authors per artifact
             mylist = get.thing2thing(private$commits.raw, "author.name", "hash", network.conf = private$network.conf)
             mylist = parallel::mclapply(mylist, unique)
+
 
             return(mylist)
         },

@@ -11,7 +11,9 @@ requireNamespace("igraph") # networks
 ## Bipartite networks
 ##
 
+
 collect.bipartite.networks = function(conf, step = 1) {
+
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -24,7 +26,9 @@ collect.bipartite.networks = function(conf, step = 1) {
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the bipartite network
+
         bp.network = range.data$get.bipartite.network()
+
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
@@ -45,7 +49,9 @@ collect.bipartite.networks = function(conf, step = 1) {
 ## Author networks
 ##
 
+
 collect.author.networks = function(conf, step = 1) {
+
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -58,7 +64,9 @@ collect.author.networks = function(conf, step = 1) {
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the author network
+
         author.network = range.data$get.author.network()
+
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
@@ -79,9 +87,8 @@ collect.author.networks = function(conf, step = 1) {
 ## Artifact networks
 ##
 
-collect.artifact.networks = function(conf, step = 1) {
 
-    ## get argument
+collect.artifact.networks = function(conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -94,7 +101,9 @@ collect.artifact.networks = function(conf, step = 1) {
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the artifact network
+
         artifact.network = range.data$get.artifact.network()
+
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)

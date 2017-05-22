@@ -28,6 +28,7 @@ get.thing2thing = function(base.data, thing1, thing2, network.conf) {
     data = base.data[c(thing1, thing2)]
 
     cols = c(thing1, thing2, network.conf$get.variable("artifact.edge.attributes"))
+
     extra.data.df = base.data[cols]
     # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
     colnames(extra.data.df) = cols
@@ -229,6 +230,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
 
     # transform multiple edges to edge weights
     if (network.conf$get.variable("simplified"))
+
         net = simplify.network(net)
 
     logging::logdebug("construct.dependency.network.from.list: finished.")
