@@ -16,6 +16,9 @@ requireNamespace("parallel")
 
 #' Split project data in time-based ranges as specified
 #'
+#' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
+#' than the specified time period.
+#'
 #' @param project.data the Codeface*Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
@@ -114,6 +117,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
 #' Split project data in activity-based ranges as specified
 #'
+#' Important: For a given amount of activity, the last set of data may be a lot smaller
+#' than the specified amount.
+#'
 #' @param project.data the Codeface*Data object from which the data is retrieved
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
@@ -151,7 +157,11 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(data.split)
 }
 
-#' Discretizes a network (using the edge attribute "date") according to the given 'time_period'.
+#' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
+#' or to the given hard 'bins'.
+#'
+#' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
+#' than the specified time period.
 #'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
 #' contracted, which would combine edge attributes, especially the "date" attribute.
@@ -160,7 +170,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
+#'             If set, the 'time.period' parameter is ignored.
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period, bins = NULL) {
@@ -189,6 +199,9 @@ split.network.time.based = function(network, time.period, bins = NULL) {
 }
 
 #' Discretizes a network according to the given 'number.edges' or by a predefined 'number.windows'.
+#'
+#' Important: For a given amount of edges, the last set of data may be a lot smaller
+#' than the specified amount.
 #'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
 #' contracted, which would combine edge attributes, especially the "date" attribute.
