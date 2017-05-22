@@ -314,8 +314,17 @@ split.network.by.bins = function(network, bins, bins.vector) {
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: starting.")
+    ## find date bins from given dates
+    dates.breaks = c(
+        ## time periods of length 'time.period'
+        as.Date(seq.POSIXt(from = min(dates), to = max(dates), by = time.period)),
+        ## add last bin
+        as.Date(max(dates)) + 1
+    )
     ## find bins for given dates
-    dates.bins = cut(dates, breaks = time.period)
+    dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
+    dates.bins = factor(dates.bins)
+    levels(dates.bins) = head(dates.breaks, -1)
     ## get bins for returning
     bins = levels(dates.bins)
     ## add end date for last bin
@@ -330,7 +339,7 @@ split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: finished.")
     return(list(
         vector = dates.bins,
-        bins = bins
+        bins = strftime(dates.breaks)
     ))
 }
 
