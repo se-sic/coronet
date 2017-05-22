@@ -11,14 +11,7 @@ requireNamespace("igraph") # networks
 ## Bipartite networks
 ##
 
-collect.bipartite.networks = function(conf, author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                      simple.network = TRUE, author.directed = FALSE, artifact.extra.edge.attr = c(),
-                                      artifact.filter = TRUE, artifact.filter.base = TRUE,
-                                      step = 1) {
-
-    ## get argument
-    author.relation = match.arg(author.relation)
-    artifact.relation = match.arg(artifact.relation)
+collect.bipartite.networks = function(conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -31,11 +24,7 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the bipartite network
-        bp.network = range.data$get.bipartite.network(
-            author.relation = author.relation, artifact.relation = artifact.relation,
-            simple.network = simple.network, author.directed = author.directed, artifact.extra.edge.attr = artifact.extra.edge.attr,
-            artifact.filter = artifact.filter, artifact.filter.base = artifact.filter.base
-        )
+        bp.network = range.data$get.bipartite.network()
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
@@ -56,12 +45,7 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 ## Author networks
 ##
 
-collect.author.networks = function(conf, author.relation = c("mail", "cochange"),
-                                   author.directed = FALSE, simple.network = TRUE,
-                                   step = 1) {
-
-    ## get argument
-    author.relation = match.arg(author.relation)
+collect.author.networks = function(conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -74,7 +58,7 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the author network
-        author.network = range.data$get.author.network(author.relation, directed = author.directed, simple.network = simple.network)
+        author.network = range.data$get.author.network()
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
@@ -95,12 +79,9 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 ## Artifact networks
 ##
 
-collect.artifact.networks = function(conf, artifact.relation = c("cochange", "callgraph"),
-                                     filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c(),
-                                     step = 1) {
+collect.artifact.networks = function(conf, step = 1) {
 
     ## get argument
-    artifact.relation = match.arg(artifact.relation)
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -113,9 +94,7 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
         range.data = CodefaceRangeData$new(conf, range)
 
         ## get the artifact network
-        artifact.network = range.data$get.artifact.network(artifact.relation, filter.artifact = filter.artifact,
-                                                           filter.base.artifact = filter.base.artifact,
-                                                           extra.edge.attr = extra.edge.attr)
+        artifact.network = range.data$get.artifact.network()
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
