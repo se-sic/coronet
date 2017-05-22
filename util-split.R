@@ -220,8 +220,9 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     ## number of edges given (number of windows NOT given)
     if (is.null(number.windows)) {
         if (edge.count < 1) {
-            logging::logerror("The number of edges per network has to be strictly positive (given: %s).", edge.count)
-            stop("Stopping due to illegally specified amount of edges to select.")
+            logging::logerror("The number of edges in the given network has to be
+                              strictly positive (given: %s).", edge.count)
+            stop("Stopping due to missing edges in given network.")
         }
         # compute the number of time windows according to the number of edges per network
         number.windows = ceiling(edge.count / number.edges)
@@ -250,7 +251,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     else {
         ## check the breaking case
         if (number.windows < 1 || number.windows > edge.count) {
-            logging::logerror("The given number of windows is not suitable for this network (given: %s).", edge.count)
+            logging::logerror("The given number of windows is not suitable for this
+                              network (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
 
