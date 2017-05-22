@@ -226,26 +226,6 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         }
         # compute the number of time windows according to the number of edges per network
         number.windows = ceiling(edge.count / number.edges)
-
-        logging::loginfo("Splitting network into activity ranges of %s edges, yielding %s windows.",
-                         number.edges, number.windows)
-
-        ## get dates in a data.frame for splitting purposes
-        df = data.frame(
-            date = as.POSIXct( # use POSIXct as other functions need it
-                igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
-            my.unique.id = 1:edge.count # as a unique identifier only
-        )
-        ## sort by date
-        df = df[ with(df, order(date)), ]
-
-        ## identify bins
-        logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
-        bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
-        bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
-        bins = sort(unique(bins.vector))
-        ## split network by bins
-        networks = split.network.by.bins(network, bins, bins.vector)
     }
     ## number of windows given (ignoring number of edges)
     else {
@@ -255,20 +235,29 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                               network (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
-
-        logging::loginfo("Splitting network into %s windows.", number.windows)
-
-        ## get dates from first and last edge
-        date.start = as.POSIXct(min(igraph::E(network)$date), origin = "1970-01-01")
-        date.end = as.POSIXct(max(igraph::E(network)$date), origin = "1970-01-01") + 1 # plus one second
-
-        ## create time-based equidistant bins
-        logging::logdebug("Getting bins for activity-based splitting based on amount of windows.")
-        bins = seq(date.start, date.end, length.out = number.windows + 1)
-
-        ## split network with the computed bins
-        networks = split.network.time.based(network, bins = bins)
+        # compute the number of time windows according to the number of edges per network
+        number.edges = ceiling(edge.count / number.windows)
     }
+
+    logging::loginfo("Splitting network into activity ranges of %s edges, yielding %s windows.",
+                     number.edges, number.windows)
+
+    ## get dates in a data.frame for splitting purposes
+    df = data.frame(
+        date = as.POSIXct( # use POSIXct as other functions need it
+            igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
+        my.unique.id = 1:edge.count # as a unique identifier only
+    )
+    ## sort by date
+    df = df[ with(df, order(date)), ]
+
+    ## identify bins
+    logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
+    bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
+    bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
+    bins = sort(unique(bins.vector))
+    ## split network by bins
+    networks = split.network.by.bins(network, bins, bins.vector)
 
     return(networks)
 }
