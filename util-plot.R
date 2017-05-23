@@ -1,9 +1,9 @@
-## (c) Claus Hunsen, 2016
+## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
 
 ## libraries
-library(igraph) # networks
+requireNamespace("igraph") # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -34,47 +34,49 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     vertex.shapes.pch.legend = c(vertex.shapes.pch[1:2], NA, NA)
 
     ## vertex color by "type" attribute
-    V(net)$color <- vertex.colors[V(net)$type]
-    V(net)$shape <- vertex.shapes[V(net)$type]
+    igraph::V(net)$color <- vertex.colors[igraph::V(net)$type]
+    igraph::V(net)$shape <- vertex.shapes[igraph::V(net)$type]
     # ## vertex color by "community" attribute
     # plot(net, vertex.color = vertex.colors[ V(net)$community ])
 
     ##  Compute node degrees (#links) and use that to set node size:
     # V(net)$size = degree(net, mode = "all") * 4
-    V(net)$label.cex = .8
-    V(net)$label.color = ifelse(grayscale, "white", "black")
+    igraph::V(net)$label.cex = .8
+    igraph::V(net)$label.color = ifelse(grayscale, "white", "black")
 
     ## change arrow size and edge color:
-    E(net)$arrow.size <- .2
-    E(net)$width <- 1 + log10(E(net)$weight/2)
+    igraph::E(net)$arrow.size <- .2
+    igraph::E(net)$width <- 1 + log10(igraph::E(net)$weight/2)
     # E(net)$curved = .1 # curvy edges
-    E(net)$type = unlist(E(net)$type) - 2 # as TYPE.EDGE.INTER is 3, we need to re-map this to 1
-    E(net)$color = edge.colors[unlist(E(net)$type)]
-    E(net)$lty = edge.lty[unlist(E(net)$type)]
+    igraph::E(net)$type = unlist(igraph::E(net)$type) - 2 # as TYPE.EDGE.INTER is 3, we need to re-map this to 1
+    igraph::E(net)$color = edge.colors[unlist(igraph::E(net)$type)]
+    igraph::E(net)$lty = edge.lty[unlist(igraph::E(net)$type)]
 
     ## omit labels if wanted
     if (labels == FALSE) {
-        V(net)$label = NA
+        igraph::V(net)$label = NA
     }
 
     ## plot network
     if (!is.plot.empty(net)) {
 
         ## if we have a sample network, set the layout globally
-        is.sample.network = !is.null(get.graph.attribute(net, "sample.network")) && get.graph.attribute(net, "sample.network") == TRUE
+        is.sample.network =
+            !is.null(igraph::get.graph.attribute(net, "sample.network")) &&
+            igraph::get.graph.attribute(net, "sample.network") == TRUE
         if (is.sample.network) {
             par(mai = c(2,0,0,0), mar = c(0,0,0,0))
 
             lay = matrix(c(  20, 179, 552, 693, 956, 1091, 124, 317, 516, 615, 803, 1038,
                             245, 175, 185, 255, 253, 225,   73,   8,  75,   0,  96,   86),
                          nrow = 12, byrow = FALSE) # for sample graph
-            graph_attr(net, "layout") = lay
+            net = igraph::set.graph.attribute(net, "layout", lay)
 
             # id = tkplot(net, canvas.width = 1450, canvas.height = 450, rescale = FALSE)
             # browser()
             # lay = tk_coords(id)
 
-            V(net)$label.cex = 1.25
+            igraph::V(net)$label.cex = 1.25
 
             plot(net, layout = lay, asp = 0, margin = c(0.7,0,0.1,0))
         }
@@ -100,8 +102,8 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
 plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
-    E(net)[ is.na(type) ]$type = 5
-    V(net)[ is.na(type) ]$type = 5
+    igraph::E(net)[ is.na(type) ]$type = 5
+    igraph::V(net)[ is.na(type) ]$type = 5
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
@@ -116,8 +118,8 @@ plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
 plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
-    net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
-    net = set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
+    net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
+    net = igraph::set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
@@ -132,8 +134,8 @@ plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
 plot.artifact.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## correct missing type attributes
-    net = set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
-    net = set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
+    net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
+    net = igraph::set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
@@ -161,7 +163,7 @@ mytriangle <- function(coords, v=NULL, params) {
             add=TRUE, inches=FALSE)
 }
 # clips as a circle
-add_shape("triangle", clip=shapes("circle")$clip, plot=mytriangle)
+igraph::add_shape("triangle", clip = igraph::shapes("circle")$clip, plot = mytriangle)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -169,6 +171,6 @@ add_shape("triangle", clip=shapes("circle")$clip, plot=mytriangle)
 ##
 
 is.plot.empty = function(net) {
-    empty = vcount(net) == 0
+    empty = igraph::vcount(net) == 0
     return(empty)
 }

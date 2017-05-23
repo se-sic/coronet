@@ -1,3 +1,6 @@
+## (c) Claus Hunsen, 2016, 2017
+## hunsen@fim.uni-passau.de
+
 source("util-misc.R")
 source("util-conf.R")
 source("util-data.R")
@@ -5,7 +8,7 @@ source("util-split.R")
 source("util-bulk.R")
 source("util-plot.R")
 
-library(logging)
+requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
 if (file.exists("test.log")) file.remove("test.log")
 logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
@@ -38,7 +41,6 @@ x = CodefaceProjectData$new(conf)
 # x$get.commits.raw()
 # x$get.synchronicity(time.window = c(5))
 # x$get.author2artifact()
-# x$get.commits.raw(synchronicity = TRUE, synchronicity.window = 5)
 # x$get.commits()
 # x$get.mails()
 # x$get.authors()
@@ -73,6 +75,7 @@ x = CodefaceProjectData$new(conf)
 
 y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+# y$get.commits.raw()
 # y$get.commits()
 # y$get.mails()
 # y$get.authors()

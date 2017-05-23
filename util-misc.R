@@ -1,12 +1,12 @@
-## (c) Claus Hunsen, 2016
+## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
 
 ## libraries
-library(plyr) # for rbind.fill
-library(parallel) # for parallel computation
-library(igraph) # networks
-library(logging)
+requireNamespace("plyr") # for rbind.fill and dlply
+requireNamespace("parallel") # for parallel computation
+requireNamespace("igraph") # networks
+requireNamespace("logging")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -40,7 +40,7 @@ get.thing2thing = function(base.data, thing1, thing2, extra.data = c()) {
         attr(df, "group.name") = group
         return(df)
     }
-    mylist = dlply(extra.data.df, thing1, transform.df.per.item)
+    mylist = plyr::dlply(extra.data.df, thing1, transform.df.per.item)
 
     # remove object attributes introduced by dlply
     attr(mylist, "split_labels") = NULL
@@ -74,7 +74,7 @@ read.adjacency.matrix.from.file = function(file, authors, simple.network = TRUE)
     rownames(dat) = authors.name
 
     # construct igraph object from adjacency matrix
-    g = graph_from_adjacency_matrix(as.matrix(dat), mode = "directed", weighted = TRUE)
+    g = igraph::graph.adjacency(as.matrix(dat), mode = "directed", weighted = TRUE)
 
     # transform multiple edges to edge weights
     if (simple.network)
@@ -102,7 +102,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     if (directed) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
-        edge.list.data = mclapply(list, function(set) {
+        edge.list.data = parallel::mclapply(list, function(set) {
             number.edges = sum(1:nrow(set)) - 1
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -144,13 +144,13 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
             return(edge.list.set)
         })
 
-        edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        edge.list = plyr::rbind.fill(edge.list.data)
+        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     } else {
 
         ## for all items in the sublists, construct the cartesian product
-        edge.list.data = mclapply(list, function(set) {
+        edge.list.data = parallel::mclapply(list, function(set) {
             number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -191,7 +191,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 
                 return(edgelist)
             })
-            edges = rbind.fill(edges)
+            edges = plyr::rbind.fill(edges)
 
             ## store set of processed nodes
             attr(edges, "nodes.processed") = nodes
@@ -199,8 +199,8 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
             return(edges)
         })
 
-        edge.list = rbind.fill(edge.list.data)
-        nodes.processed = unlist( mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        edge.list = plyr::rbind.fill(edge.list.data)
+        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
 
     }
 
@@ -217,16 +217,16 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
     ## if we have nodes to create, but no edges
     if (is.null(edge.list) || nrow(edge.list) == 0) {
         ## create network with only the vertices
-        net = make_empty_graph(n = 0, directed = directed) + vertices(nodes.processed)
+        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(nodes.processed)
     }
     ## if we have nodes and edges
     else {
         ## construct network from edge list
-        net = graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+        net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
     }
 
-    net = set.vertex.attribute(net, "id", value = get.vertex.attribute(net, "name"))
-    net = set.edge.attribute(net, "weight", value = 1)
+    net = igraph::set.vertex.attribute(net, "id", value = igraph::get.vertex.attribute(net, "name"))
+    net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
     if (simple.network)
@@ -243,10 +243,10 @@ construct.dependency.network.from.list = function(list, directed = FALSE, simple
 ## In this environment, we only use the 'pajek' format.
 read.network.from.file = function(file, format = "pajek") {
     # read the basic graph
-    g = read.graph(file, format = "pajek")
+    g = igraph::read.graph(file, format = "pajek")
 
     # set vertex labels properly (copy "id" attribute to "name" attribute)
-    g = set.vertex.attribute( g, "name", index = V(g), get.vertex.attribute(g, "id") )
+    g = igraph::set.vertex.attribute(g, "name", index = igraph::V(g), igraph::get.vertex.attribute(g, "id"))
 
     return(g)
 }
@@ -259,15 +259,16 @@ read.network.from.file = function(file, format = "pajek") {
 unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
 
     # get vertex names and set of all related artifacts
-    artifacts.net.vertices = get.vertex.attribute(artifacts.net, "name")
-    artifacts = unique( rbind.fill(author.to.artifact)[["artifact"]] )
+    artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
+    artifacts = unique(plyr::rbind.fill(author.to.artifact)[["artifact"]] )
 
     # get only the missing ones
     diff = setdiff(artifacts, artifacts.net.vertices)
 
     # add missing vertices to existing network
-    net = artifacts.net + vertices(diff)
-    net = set.vertex.attribute(net, "id", index = V(net), get.vertex.attribute(net, "name"))
+    net = artifacts.net + igraph::vertices(diff)
+    net = igraph::set.vertex.attribute(net, "id", index = igraph::V(net),
+                                       igraph::get.vertex.attribute(net, "name"))
 
     return(net)
 
@@ -280,7 +281,7 @@ unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
 ## (especially in the call-graph networks), so the names need to be processed
 ## to have the same look as the ones from Codeface.
 postprocess.artifact.names.callgraph = function(net, artifact) {
-    names = vertex_attr(net, "name")
+    names = igraph::get.vertex.attribute(net, "name")
 
     ## FEATURE
     if (artifact == "feature") {
@@ -300,7 +301,7 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
     }
 
     ## set processed names inside graph object
-    vertex_attr(net, "name") = names
+    net = igraph::set.vertex.attribute(net, "name", value = names)
 
     return(net)
 }
@@ -312,10 +313,10 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 ## be added to it during network construction (defined as a default edge attribute).
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
-  edges = as.data.frame(get.edgelist(net))
+  edges = as.data.frame(igraph::get.edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
-  dates = get.edge.attribute(net, "date")
+  dates = igraph::get.edge.attribute(net, "date")
   ## bind everything together
   edges = cbind(edges, date = dates)
 
@@ -355,7 +356,7 @@ simplify.network = function(network) {
 
 ## Simplify a list of networks
 simplify.networks = function(networks){
-    nets = mclapply(networks, simplify.network)
+    nets = parallel::mclapply(networks, simplify.network)
 }
 
 
@@ -364,17 +365,15 @@ simplify.networks = function(networks){
 ##
 
 create.empty.network = function(directed = TRUE) {
-
     ## create empty network
-    net = make_empty_graph(0, directed = directed)
+    net = igraph::graph.empty(0, directed = directed)
 
     # set proper attributes
-    vertex_attr(net, "name") = ""
-    vertex_attr(net, "type") = 3
-    edge_attr(net, "type") = 6
+    net = igraph::set.vertex.attribute(net, "name", value = "")
+    net = igraph::set.vertex.attribute(net, "type", value = 3)
+    net = igraph::set.edge.attribute(net, "type", value = 6)
 
     return(net)
-
 }
 
 
@@ -383,14 +382,15 @@ create.empty.network = function(directed = TRUE) {
 ##
 
 get.sample.network = function() {
-
     ## INDEPENDENT NETWORKS
-    authors = make_empty_graph(directed = TRUE) + vertices("D1", "D2", "D3", "D4", "D5", "D6") +
-        edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
+    authors = igraph::graph.empty(directed = FALSE) +
+        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
+        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
 
-    artifacts = make_empty_graph(directed = FALSE) + vertices("A1", "A2", "A3", "A4", "A5", "A6") +
-        edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
-    artifacts = as.directed(artifacts, mode = "mutual")
+    artifacts = igraph::graph.empty(directed = FALSE) +
+        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6") +
+        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
+    # artifacts = igraph::as.directed(artifacts, mode = "mutual")
 
     authors.to.artifacts.df = data.frame(
         author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
@@ -399,10 +399,10 @@ get.sample.network = function() {
     authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
 
     ## combine networks
-    combined.network = combine.networks(authors, artifacts, authors.to.artifacts) %>%
-        set.graph.attribute("sample.network", TRUE)
+    network = combine.networks(authors, artifacts, authors.to.artifacts)
+    network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
-    return(combined.network)
+    return(network)
 }
 
 

@@ -1,11 +1,11 @@
-## (c) Claus Hunsen, 2016
+## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
 
 ## libraries
-library(R6) # for R6 classes
-library(yaml) # for Codeface configuration files
-library(logging)
+requireNamespace("R6") # for R6 classes
+requireNamespace("yaml") # for Codeface configuration files
+requireNamespace("logging")
 
 
 ## / / / / / / / / / / / / / /
@@ -40,7 +40,7 @@ ARTIFACT.CODEFACE = list(
 ##
 ## Represents the Codeface configuration
 
-CodefaceConf = R6Class("CodefaceConf",
+CodefaceConf = R6::R6Class("CodefaceConf",
 
     ## private members
     private = list(
@@ -156,7 +156,7 @@ CodefaceConf = R6Class("CodefaceConf",
 
             ## load case-study confuration from given file
             logging::loginfo("Attempting to load configuration file: %s", conf.file)
-            conf = yaml.load_file(conf.file)
+            conf = yaml::yaml.load_file(conf.file)
 
             ## store artifact in configuration
             conf$artifact = artifact
@@ -247,7 +247,7 @@ CodefaceConf = R6Class("CodefaceConf",
         },
 
         get.conf.as.string = function() {
-            return(as.yaml(private$conf))
+            return(yaml::as.yaml(private$conf))
         },
 
 

@@ -1,14 +1,14 @@
-## (c) Claus Hunsen, 2016
+## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
 
 ## libraries
-library(R6) # for R6 classes
-library(igraph) # networks
-library(plyr) # for dlply function
-library(sqldf) # for sqldf
-library(logging) # for logging
-library(parallel) # for parallel computation
+requireNamespace("R6") # for R6 classes
+requireNamespace("igraph") # networks
+requireNamespace("plyr") # for dlply function
+requireNamespace("sqldf") # for sqldf
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
 
 
 options(stringsAsFactors = FALSE)
@@ -33,7 +33,7 @@ TYPE.EDGES.INTER = 4
 ## Represents the data for one revision range on Codeface Data
 
 #### CodefaceProjectData ####
-CodefaceProjectData = R6Class("CodefaceProjectData",
+CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## private members ####
     private = list(
@@ -165,8 +165,8 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             ## (we have proximity-based data as foundation)
             if (private$conf$get.artifact() == "file") {
                 ## aggregate diff size by hash and file
-                commit.data = sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data` group by hash, file
-                                    order by `date`, `author.name`, `id`, `file`, `artifact`")
+                commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
+                                            group by hash, file order by `date`, `author.name`, `id`, `file`, `artifact`")
 
                 ## fix column class for diffsum
                 commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
@@ -234,7 +234,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
 
             ## construct data.frame
-            synchronicity = rbind.fill(synchronous.commits, nonsynchronous.commits)
+            synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
 
             ## store the synchronicity data
             private$synchronicity = synchronicity
@@ -673,7 +673,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 
             ## store the authors per artifact
             mylist = get.thing2thing(private$commits.raw, "author.name", "hash", extra.data = c(extra.data))
-            mylist = mclapply(mylist, unique)
+            mylist = parallel::mclapply(mylist, unique)
 
             return(mylist)
         },
@@ -823,13 +823,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
                                                   directed = author.directed, simple.network = simple.network)
 
             ## unify vertices with developer-artifact relation
-            authors.from.net = get.vertex.attribute(authors.net, "name")
+            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
             authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + vertices(setdiff(authors.from.artifacts, authors.from.net))
+            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net))
 
             ## remove all authors from the corresponding network who do not have touched any artifact
             if (author.only.committers & !is.null(authors.from.artifacts))
-                authors.net = delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
+                authors.net = igraph::delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
 
             ## artifact relation
             artifacts.net = self$get.artifact.network(artifact.relation,
@@ -862,14 +862,13 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
             artifacts.net = networks[["artifacts.net"]]
 
             ## check directedness and adapt artifact network if needed
-            if (is.directed(authors.net) && !is.directed(artifacts.net)) {
+            if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is directed, but artifact network is not. Converting artifact network...")
-                artifacts.net = as.directed(artifacts.net, mode = "mutual")
-            } else if (!is.directed(authors.net) && is.directed(artifacts.net)) {
+                artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
+            } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                contraction.mode = "collapse"
-                if (!contract.edges) contraction.mode = "each"
-                artifacts.net = as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
+                contraction.mode = ifelse(FALSE, "collapse", "each")
+                artifacts.net = igraph::as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
             ## reduce memory consumption by removing temporary data
@@ -892,7 +891,7 @@ CodefaceProjectData = R6Class("CodefaceProjectData",
 ## Represents the data for one revision range on Codeface Data
 
 #### CodefaceRangeData ####
-CodefaceRangeData = R6Class("CodefaceRangeData",
+CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
     inherit = CodefaceProjectData,
 
@@ -969,8 +968,8 @@ CodefaceRangeData = R6Class("CodefaceRangeData",
 combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, simple.network = TRUE,
                             extra.data = c()) {
 
-    authors = vertex_attr(authors.net, "name")
-    artifacts = vertex_attr(artifacts.net, "name")
+    authors = igraph::get.vertex.attribute(authors.net, "name")
+    artifacts = igraph::get.vertex.attribute(artifacts.net, "name")
 
     ## check emptiness of networks
     if (length(authors) == 0) {
@@ -984,9 +983,9 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
     u = igraph::disjoint_union(authors.net, artifacts.net)
 
     ## set vertex and edge attributes for identifaction
-    V(u)[ name %in% authors ]$type = TYPE.AUTHOR
-    V(u)[ name %in% artifacts ]$type = TYPE.ARTIFACT
-    E(u)$type = TYPE.EDGES.INTRA
+    igraph::V(u)[ name %in% authors ]$type = TYPE.AUTHOR
+    igraph::V(u)[ name %in% artifacts ]$type = TYPE.ARTIFACT
+    igraph::E(u)$type = TYPE.EDGES.INTRA
 
     ## add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, extra.data = extra.data)
@@ -1002,31 +1001,31 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
 
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
-add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER, extra.data = c()) {
+add.edges.for.devart.relation = function(net, auth.to.arts, extra.data = c()) {
 
     # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
-    vertex.sequence.for.edges = mcmapply(function(d, a.df) {
+    vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
         a = a.df[["artifact"]]
         new.edges = lapply(a, function(art) {
-            V(net)[d, art] # get two vertices from source network:  c(developer, artifact)
+            igraph::V(net)[d, art] # get two vertices from source network:  c(developer, artifact)
         })
         return(new.edges)
     }, names(auth.to.arts), auth.to.arts)
 
     ## get extra edge attributes
-    extra.edge.attributes.df = mclapply(auth.to.arts, function(a.df) {
+    extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
         return(a.df[, extra.data, drop = FALSE])
     })
-    extra.edge.attributes.df = rbind.fill(extra.edge.attributes.df)
+    extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
     extra.edge.attributes.df["weight"] = 1 # add weight
 
     extra.edge.attributes = as.list(extra.edge.attributes.df)
 
     ## set edge type
-    extra.edge.attributes = c(extra.edge.attributes, list(type = edge.type))
+    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
 
     ## add the vertex sequences as edges to the network
-    new.net = add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+    new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
 
     return(new.net)
 
