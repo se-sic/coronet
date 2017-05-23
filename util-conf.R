@@ -34,86 +34,6 @@ ARTIFACT.CODEFACE = list(
   "file"     = "File"
 )
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## NetworkConf
-##
-## Represents the network configurations
-
-NetworkConf = R6Class("NetworkConf",
-    private = list(
-        #Variables with default values
-        #has to be configured through update.values method
-      author.relation = list(value = "mail",
-                             type = "character"),
-      author.directed = list(value = FALSE,
-                             type = "logical"),
-      author.only.comitters = list(value = FALSE,
-                             type = "logical"),
-      artifact.relation = list(value = "cochange",
-                               type = "character"),
-      artifact.directed = list(value = FALSE,
-                               type = "logical"),
-      artifact.filter = list(value = TRUE,
-                             type = "logical"),
-      artifact.filter.base = list(value = TRUE,
-                                  type = "logical"),
-      artifact.filter.empty = list(value = TRUE,
-                                   type = "logical"),
-      artifact.edge.attributes = list(value = list("date"),
-                                      type = "list"),
-      simplified = list(value = FALSE,
-                        type = "logical"),
-      skip.threshold = list(value = Inf,
-                            type = "numeric"),
-      synchronicity = list(value = TRUE,
-                           type = "logical"),
-      synchronicity.time.window = list(value = 5,
-                                       type = "numeric"),
-      contract.edges = list(value = FALSE,
-                            type = "logical"),
-
-      check.value = function(value, name) {
-          return (exists(name, where=private) && (class(value) == (private[[name]][["type"]])))
-      }
-
-
-    ),
-
-    public = list(
-        # for testing reasons
-        print = function() {
-            for(name in names(private)) {
-                if((class(private[[name]]) != "function")) {
-                    print(name)
-                    print(private[[name]])
-              }
-            }
-        },
-
-
-        # for testing purposes only
-        check = function(value, name) {
-            private$check.value(value = value, name = name)
-        },
-
-
-        update.values = function(updated.values = list()) {
-            for(name in names(updated.values)) {
-                if(private$check.value(value = updated.values[[name]], name = name)) {
-                    private[[name]][["value"]] = updated.values[[name]]
-                } else {
-                  # abort or log a warning because the name or type of one of the new values is not correct.
-                }
-            }
-        },
-
-
-        get.variable = function(var.name) {
-           return(private[[var.name]][["value"]])
-        }
-
-    )
-)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkConf
@@ -129,7 +49,7 @@ NetworkConf = R6::R6Class(
                            type = "character"),
     author.directed = list(value = FALSE,
                            type = "logical"),
-    author.only.comitters = list(value = FALSE,
+    author.only.committers = list(value = FALSE,
                                  type = "logical"),
     artifact.relation = list(value = "cochange",
                              type = "character"),

@@ -488,17 +488,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
           return(private$network.conf$get.variable(var.name))
         },
 
-        ## UPDATE CONFIGURATION ####
-        update.network.conf = function(updated.values = list()) {
-            private$network.conf$update.values(updated.values = updated.values)
-        },
-
-        # for testing reasons
-        # might be used for other purposes
-        get.network.conf.variable = function(var.name) {
-            return(private$network.conf$get.variable(var.name = var.name))
-        },
-
         ## TO STRING ;) ####
 
         get.class.name = function() {
@@ -809,7 +798,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net))
 
             ## remove all authors from the corresponding network who do not have touched any artifact
-            if (author.only.committers & !is.null(authors.from.artifacts))
+            if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts))
                 authors.net = igraph::delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
 
             ## artifact relation
@@ -962,7 +951,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
     igraph::E(u)$type = TYPE.EDGES.INTRA
 
     ## add edges for devs.to.arts relation
-    u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf$get.variable("artifact.edge.attributes"))
+    u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf$get.variable("artifact.edge.attributes"), network.conf = network.conf)
 
     ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
 

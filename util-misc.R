@@ -108,9 +108,9 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.attribute("skip.threshold")) {
+            if (number.edges > network.conf$get.variable("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.attribute("skip.threshold"))
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.variable("skip.threshold"))
                 return(NULL)
             }
 
@@ -124,7 +124,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
 
                 ## get vertex data
                 item.node = item[, 1]
-                item.edge.attrs = item [1, network.conf$get.attribute("artifact.edge.attributes"), drop = FALSE]
+                item.edge.attrs = item [1, network.conf$get.variable("artifact.edge.attributes"), drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -156,9 +156,9 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.attribute("skip.threshold")) {
+            if (number.edges > network.conf$get.variable("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.attribute("skip.threshold"))
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.variable("skip.threshold"))
                 return(NULL)
             }
 
