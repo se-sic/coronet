@@ -70,7 +70,7 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
             lay = matrix(c(  20, 179, 552, 693, 956, 1091, 124, 317, 516, 615, 803, 1038,
                             245, 175, 185, 255, 253, 225,   73,   8,  75,   0,  96,   86),
                          nrow = 12, byrow = FALSE) # for sample graph
-            igraph::set.graph.attribute(net, "layout") = lay
+            net = igraph::set.graph.attribute(net, "layout", lay)
 
             # id = tkplot(net, canvas.width = 1450, canvas.height = 450, rescale = FALSE)
             # browser()

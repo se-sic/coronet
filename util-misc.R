@@ -313,7 +313,7 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 ## be added to it during network construction (defined as a default edge attribute).
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
-  edges = as.data.frame(igaph::get.edgelist(net))
+  edges = as.data.frame(igraph::get.edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
   dates = igraph::get.edge.attribute(net, "date")
