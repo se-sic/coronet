@@ -4,6 +4,12 @@
 *.Rproj
 *.RData
 *.Rhistory
+.Rprofile
+
+# packrat
+packrat/
+packrat/lib*/
+packrat/src/
 
 # JetBrains files
 .idea/
@@ -11,4 +17,3 @@
 virtualenv/
 # folder for temp data
 data/
-packrat/lib*/

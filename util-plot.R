@@ -2,6 +2,10 @@
 ## hunsen@fim.uni-passau.de
 
 
+## libraries
+library(igraph) # networks
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility function for plotting author networks
 ##
@@ -42,7 +46,7 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
 
     ## change arrow size and edge color:
     E(net)$arrow.size <- .2
-    E(net)$width <- log10(1 + E(net)$weight/6)
+    E(net)$width <- 1 + log10(E(net)$weight/2)
     # E(net)$curved = .1 # curvy edges
     E(net)$type = unlist(E(net)$type) - 2 # as TYPE.EDGE.INTER is 3, we need to re-map this to 1
     E(net)$color = edge.colors[unlist(E(net)$type)]
