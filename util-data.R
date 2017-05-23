@@ -951,7 +951,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
     igraph::E(u)$type = TYPE.EDGES.INTRA
 
     ## add edges for devs.to.arts relation
-    u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf$get.variable("artifact.edge.attributes"), network.conf = network.conf)
+    u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf = network.conf)
 
     ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
 
