@@ -1001,7 +1001,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, si
 
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
-add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER, extra.data = c()) {
+add.edges.for.devart.relation = function(net, auth.to.arts, extra.data = c()) {
 
     # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
@@ -1022,7 +1022,7 @@ add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDG
     extra.edge.attributes = as.list(extra.edge.attributes.df)
 
     ## set edge type
-    extra.edge.attributes = c(extra.edge.attributes, list(type = edge.type))
+    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
 
     ## add the vertex sequences as edges to the network
     new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
