@@ -93,7 +93,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     cf.data = parallel::mclapply(bins.ranges, function(range) {
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
-        cf.range.data = CodefaceRangeData$new(conf, range)
+        cf.range.data = CodefaceRangeData$new(project.data$get.conf(), range)
         ## FIXME add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
