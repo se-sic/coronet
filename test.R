@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 source("util-misc.R")
 source("util-conf.R")
 source("util-data.R")
@@ -55,17 +61,15 @@ x$get.authors()
 x$get.data.path()
 x$get.author2artifact()
 x$get.author2file()
-x$update.network.conf(updated.values = list(artifact.edge.attributes = list("file")))
 x$get.commit2artifact()
 x$get.commit2file()
-x$update.network.conf(updated.values = list(artifact.edge.attributes = list("date")))
 x$get.thread2author()
 x$update.network.conf(updated.values = list(author.directed = TRUE))
 x$get.author.network()
 x$update.network.conf(updated.values = list(author.directed = FALSE))
 x$get.author.network()
-x$update.network.conf(updated.values = list(artifact.edge.attributes = list("hash")))
 x$get.artifact.network()
+x$reset.environment()
 x$get.networks()
 x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
 g = x$get.bipartite.network()

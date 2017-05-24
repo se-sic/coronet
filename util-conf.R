@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("R6") # for R6 classes
@@ -41,10 +47,10 @@ ARTIFACT.CODEFACE = list(
 ## Represents the network configurations
 
 NetworkConf = R6::R6Class("NetworkConf",
-
+    ## private members
     private = list(
         #Variables with default values
-        #has to be configured through update.values method
+        #Values can be changed using update.values method
         author.relation = list(value = "mail",
                                type = "character"),
         author.directed = list(value = FALSE,
@@ -61,7 +67,8 @@ NetworkConf = R6::R6Class("NetworkConf",
                                     type = "logical"),
         artifact.filter.empty = list(value = TRUE,
                                      type = "logical"),
-        artifact.edge.attributes = list(value = c("date"),
+        artifact.edge.attributes = list(value = c("message.id", "date", 
+                                                  "thread", "hash", "file", "artifact.type"),
                                         type = "character"),
         simplified = list(value = FALSE,
                           type = "logical"),
@@ -74,14 +81,17 @@ NetworkConf = R6::R6Class("NetworkConf",
         contract.edges = list(value = FALSE,
                               type = "logical"),
 
+        # Checks if the given value is of the correct type
         check.value = function(value, name) {
-            return (exists(name, where = private) &&
-                        (class(value) == (private[[name]][["type"]])))
+            return(exists(name, where = private) &&
+                     (class(value) == (private[[name]][["type"]])))
         }
     ),
-
+    
+    ## public members
     public = list(
-        # for testing reasons
+      
+        # Prints the private variables in the class
         print = function() {
             for (name in names(private)) {
                 if ((class(private[[name]]) != "function")) {
@@ -90,27 +100,26 @@ NetworkConf = R6::R6Class("NetworkConf",
                 }
             }
         },
-
-
-        # for testing purposes only
-        check = function(value, name) {
-            private$check.value(value = value, name = name)
-        },
-
+        
+        # Update the values in NetworkConf by giving a list containing the new values
         update.values = function(updated.values = list()) {
             for (name in names(updated.values)) {
                 if (private$check.value(value = updated.values[[name]], name = name)) {
-                    private[[name]][["value"]] = updated.values[[name]]
+                    if(name == "artifact.edge.attributes" && !("date" %in% updated.values[[name]])) {
+                      private[[name]][["value"]] = c(updated.values[[name]], "date")
+                    } else {
+                      private[[name]][["value"]] = updated.values[[name]]
+                    } 
                 } else {
-                    # abort or log a warning because the name or type of one of the new values is not correct.
+                  logging::logerror("Name or type of '%s' is incorrect.", name)
                 }
             }
         },
-
+        
+        # Returns the variable with the given name
         get.variable = function(var.name) {
             return(private[[var.name]][["value"]])
         }
-
     )
 )
 

@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("plyr") # for rbind.fill and dlply
@@ -26,8 +32,8 @@ get.thing2thing = function(base.data, thing1, thing2, network.conf) {
 
     # get right portion of data
     data = base.data[c(thing1, thing2)]
-
-    cols = c(thing1, thing2, network.conf$get.variable("artifact.edge.attributes"))
+    cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(base.data)
+    cols = c(thing1, thing2, network.conf$get.variable("artifact.edge.attributes")[cols.which])
 
     extra.data.df = base.data[cols]
     # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
@@ -123,8 +129,10 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
                 item = set[item.no, ]
 
                 ## get vertex data
+
                 item.node = item[, 1]
-                item.edge.attrs = item [1, network.conf$get.variable("artifact.edge.attributes"), drop = FALSE]
+                cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(item)
+                item.edge.attrs = item[1, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())

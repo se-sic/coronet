@@ -1,6 +1,11 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
 
 ## libraries
 requireNamespace("R6") # for R6 classes
@@ -467,8 +472,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
     public = list(
 
         ## constructor
-        initialize = function(conf) {
-            private$network.conf = NetworkConf$new()
+        initialize = function(conf, network.conf) {
+            private$network.conf = network.conf
             if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
                 private$conf = conf
             }
@@ -484,21 +489,44 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 sprintf("CodefaceProjectData<%s>", private$conf$get.repo())
             )
         },
+        
+        ## RESET ENVIRONMENT ##
+        
+        # Reset cached data
+        reset.environment = function() {
+          private$commits = NULL
+          private$commits.raw = NULL
+          private$artifacts = NULL
+          private$synchronicity = NULL
+          private$mails = NULL
+          private$authors = NULL
+          private$authors.network.mail = NULL
+          private$authors.network.cochange = NULL
+          private$artifacts.network.cochange = NULL
+          private$artifacts.network.callgraph = NULL
+        },
 
 
         ## CONFIGURATION ####
-
+        # Get the current project configuration
         get.conf = function() {
             return(private$conf)
         },
-
+        
+        # Set the current network configuration to the given one.
+        set.network.conf = function(network.conf) {
+          private$network.conf = network.conf
+        },
+        
+        # Get the current network configuration
         get.network.conf = function() {
             return(private$network.conf)
         },
 
         ## UPDATE CONFIGURATION ####
         update.network.conf = function(updated.values = list()) {
-            private$network.conf$update.values(updated.values = updated.values)
+          private$network.conf$update.values(updated.values = updated.values)
+          self$reset.environment()
         },
 
         # for testing reasons
@@ -872,9 +900,9 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
     public = list(
 
         ## constructor
-        initialize = function(conf, range, revision.callgraph = "") {
+        initialize = function(conf, network.conf, range, revision.callgraph = "") {
             ## call super constructor
-            super$initialize(conf)
+            super$initialize(conf, network.conf)
 
             if (!missing(range) && is.character(range)) {
                 private$range <- range
@@ -980,7 +1008,8 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     ## get extra edge attributes
     extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
-        return(a.df[, network.conf$get.variable("artifact.edge.attributes"), drop = FALSE])
+        cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(a.df)
+        return(a.df[, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE])
     })
     extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
     extra.edge.attributes.df["weight"] = 1 # add weight
