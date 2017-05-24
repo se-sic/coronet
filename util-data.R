@@ -477,17 +477,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
-        ## UPDATE CONFIGURATION ####
-        update.network.conf = function(updated.values = list()) {
-          private$network.conf$update.values(updated.values = updated.values)
-        },
-
-        # for testing reasons
-        # might be used for other purposes
-        get.network.conf.variable = function(var.name) {
-          return(private$network.conf$get.variable(var.name))
-        },
-
         ## TO STRING ;) ####
 
         get.class.name = function() {
@@ -507,6 +496,16 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(private$network.conf)
         },
 
+        ## UPDATE CONFIGURATION ####
+        update.network.conf = function(updated.values = list()) {
+            private$network.conf$update.values(updated.values = updated.values)
+        },
+
+        # for testing reasons
+        # might be used for other purposes
+        get.network.conf.variable = function(var.name) {
+            return(private$network.conf$get.variable(var.name))
+        },
 
         ## BACKUP ####
 
