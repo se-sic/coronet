@@ -503,6 +503,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(private$conf)
         },
 
+        get.network.conf = function() {
+            return(private$network.conf)
+        },
+
 
         ## BACKUP ####
 
