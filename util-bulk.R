@@ -12,8 +12,7 @@ requireNamespace("igraph") # networks
 ##
 
 
-collect.bipartite.networks = function(conf, step = 1) {
-
+collect.bipartite.networks = function(conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -23,12 +22,10 @@ collect.bipartite.networks = function(conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(conf, network.conf, range)
 
         ## get the bipartite network
-
         bp.network = range.data$get.bipartite.network()
-
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
@@ -50,7 +47,7 @@ collect.bipartite.networks = function(conf, step = 1) {
 ##
 
 
-collect.author.networks = function(conf, step = 1) {
+collect.author.networks = function(conf, network.conf, step = 1) {
 
 
     ## we need to iterate over all ranges
@@ -61,12 +58,10 @@ collect.author.networks = function(conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(conf, network.conf, range)
 
         ## get the author network
-
         author.network = range.data$get.author.network()
-
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
@@ -88,7 +83,7 @@ collect.author.networks = function(conf, step = 1) {
 ##
 
 
-collect.artifact.networks = function(conf, step = 1) {
+collect.artifact.networks = function(conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -98,12 +93,10 @@ collect.artifact.networks = function(conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(conf, network.conf, range)
 
         ## get the artifact network
-
         artifact.network = range.data$get.artifact.network()
-
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
@@ -124,7 +117,7 @@ collect.artifact.networks = function(conf, step = 1) {
 ## Construct data
 ##
 
-construct.data = function(conf, callgraphs = FALSE, step = 1) {
+construct.data = function(conf, network.conf, callgraphs = FALSE, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = conf$get.ranges()
@@ -133,13 +126,12 @@ construct.data = function(conf, callgraphs = FALSE, step = 1) {
 
     ## collect the network objects for all the ranges
     data = lapply(ranges, function(range) {
-
         revision.callgraph = ifelse(callgraphs,
                                     conf$get.callgraph.revision.from.range(range),
                                     "")
 
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range, revision.callgraph)
+        range.data = CodefaceRangeData$new(conf, network.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list

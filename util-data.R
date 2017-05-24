@@ -476,12 +476,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (class(self)[1] == "CodefaceProjectData")
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
-        
+
         ## UPDATE CONFIGURATION ####
         update.network.conf = function(updated.values = list()) {
           private$network.conf$update.values(updated.values = updated.values)
         },
-        
+
         # for testing reasons
         # might be used for other purposes
         get.network.conf.variable = function(var.name) {
@@ -669,7 +669,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             mylist = get.thing2thing(private$commits.raw, "author.name", "hash", network.conf = private$network.conf)
             mylist = parallel::mclapply(mylist, unique)
 
-
             return(mylist)
         },
 
@@ -798,8 +797,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net))
 
             ## remove all authors from the corresponding network who do not have touched any artifact
-            if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts))
+            if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts)) {
                 authors.net = igraph::delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
+            }
 
             ## artifact relation
             artifacts.net = self$get.artifact.network()
@@ -964,7 +964,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
 
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
-add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDGES.INTER, network.conf) {
+add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
@@ -985,7 +985,7 @@ add.edges.for.devart.relation = function(net, auth.to.arts, edge.type = TYPE.EDG
     extra.edge.attributes = as.list(extra.edge.attributes.df)
 
     ## set edge type
-    extra.edge.attributes = c(extra.edge.attributes, list(type = edge.type))
+    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
 
     ## add the vertex sequences as edges to the network
     new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)

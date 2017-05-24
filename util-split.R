@@ -16,6 +16,9 @@ requireNamespace("parallel")
 
 #' Split project data in time-based ranges as specified
 #'
+#' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
+#' than the specified time period.
+#'
 #' @param project.data the Codeface*Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
@@ -114,6 +117,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
 #' Split project data in activity-based ranges as specified
 #'
+#' Important: For a given amount of activity, the last set of data may be a lot smaller
+#' than the specified amount.
+#'
 #' @param project.data the Codeface*Data object from which the data is retrieved
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
@@ -151,7 +157,11 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(data.split)
 }
 
-#' Discretizes a network (using the edge attribute "date") according to the given 'time_period'.
+#' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
+#' or to the given hard 'bins'.
+#'
+#' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
+#' than the specified time period.
 #'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
 #' contracted, which would combine edge attributes, especially the "date" attribute.
@@ -160,7 +170,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
+#'             If set, the 'time.period' parameter is ignored.
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period, bins = NULL) {
@@ -190,6 +200,9 @@ split.network.time.based = function(network, time.period, bins = NULL) {
 
 #' Discretizes a network according to the given 'number.edges' or by a predefined 'number.windows'.
 #'
+#' Important: For a given amount of edges, the last set of data may be a lot smaller
+#' than the specified amount.
+#'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
 #' contracted, which would combine edge attributes, especially the "date" attribute.
 #'
@@ -207,53 +220,44 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     ## number of edges given (number of windows NOT given)
     if (is.null(number.windows)) {
         if (edge.count < 1) {
-            logging::logerror("The number of edges per network has to be strictly positive (given: %s).", edge.count)
-            stop("Stopping due to illegally specified amount of edges to select.")
+            logging::logerror("The number of edges in the given network has to be
+                              strictly positive (given: %s).", edge.count)
+            stop("Stopping due to missing edges in given network.")
         }
         # compute the number of time windows according to the number of edges per network
         number.windows = ceiling(edge.count / number.edges)
-
-        logging::loginfo("Splitting network into activity ranges of %s edges, yielding %s windows.",
-                         number.edges, number.windows)
-
-        ## get dates in a data.frame for splitting purposes
-        df = data.frame(
-            date = as.POSIXct( # use POSIXct as other functions need it
-                igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
-            my.unique.id = 1:edge.count # as a unique identifier only
-        )
-        ## sort by date
-        df = df[ with(df, order(date)), ]
-
-        ## identify bins
-        logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
-        bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
-        bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
-        bins = sort(unique(bins.vector))
-        ## split network by bins
-        networks = split.network.by.bins(network, bins, bins.vector)
     }
     ## number of windows given (ignoring number of edges)
     else {
         ## check the breaking case
         if (number.windows < 1 || number.windows > edge.count) {
-            logging::logerror("The given number of windows is not suitable for this network (given: %s).", edge.count)
+            logging::logerror("The given number of windows is not suitable for this
+                              network (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
-
-        logging::loginfo("Splitting network into %s windows.", number.windows)
-
-        ## get dates from first and last edge
-        date.start = as.POSIXct(min(igraph::E(network)$date), origin = "1970-01-01")
-        date.end = as.POSIXct(max(igraph::E(network)$date), origin = "1970-01-01") + 1 # plus one second
-
-        ## create time-based equidistant bins
-        logging::logdebug("Getting bins for activity-based splitting based on amount of windows.")
-        bins = seq(date.start, date.end, length.out = number.windows + 1)
-
-        ## split network with the computed bins
-        networks = split.network.time.based(network, bins = bins)
+        # compute the number of time windows according to the number of edges per network
+        number.edges = ceiling(edge.count / number.windows)
     }
+
+    logging::loginfo("Splitting network into activity ranges of %s edges, yielding %s windows.",
+                     number.edges, number.windows)
+
+    ## get dates in a data.frame for splitting purposes
+    df = data.frame(
+        date = as.POSIXct( # use POSIXct as other functions need it
+            igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
+        my.unique.id = 1:edge.count # as a unique identifier only
+    )
+    ## sort by date
+    df = df[ with(df, order(date)), ]
+
+    ## identify bins
+    logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
+    bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
+    bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
+    bins = sort(unique(bins.vector))
+    ## split network by bins
+    networks = split.network.by.bins(network, bins, bins.vector)
 
     return(networks)
 }
@@ -310,8 +314,17 @@ split.network.by.bins = function(network, bins, bins.vector) {
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: starting.")
+    ## find date bins from given dates
+    dates.breaks = c(
+        ## time periods of length 'time.period'
+        as.Date(seq.POSIXt(from = min(dates), to = max(dates), by = time.period)),
+        ## add last bin
+        as.Date(max(dates)) + 1
+    )
     ## find bins for given dates
-    dates.bins = cut(dates, breaks = time.period)
+    dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
+    dates.bins = factor(dates.bins)
+    levels(dates.bins) = head(dates.breaks, -1)
     ## get bins for returning
     bins = levels(dates.bins)
     ## add end date for last bin
@@ -326,7 +339,7 @@ split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: finished.")
     return(list(
         vector = dates.bins,
-        bins = bins
+        bins = strftime(dates.breaks)
     ))
 }
 

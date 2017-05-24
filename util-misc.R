@@ -314,7 +314,7 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 ## be added to it during network construction (defined as a default edge attribute).
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
-  edges = as.data.frame(igaph::get.edgelist(net))
+  edges = as.data.frame(igraph::get.edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
   dates = igraph::get.edge.attribute(net, "date")
@@ -384,14 +384,14 @@ create.empty.network = function(directed = TRUE) {
 
 get.sample.network = function() {
     ## INDEPENDENT NETWORKS
-    authors = igraph::graph.empty(directed = TRUE) +
+    authors = igraph::graph.empty(directed = FALSE) +
         igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
         igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
 
     artifacts = igraph::graph.empty(directed = FALSE) +
         igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6") +
         igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
-    artifacts = igraph::as.directed(artifacts, mode = "mutual")
+    # artifacts = igraph::as.directed(artifacts, mode = "mutual")
 
     authors.to.artifacts.df = data.frame(
         author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),

@@ -34,6 +34,8 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 ## CONFIGURATION
 
 conf = CodefaceConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+network.conf = NetworkConf$new()
+# network.conf$update(...)
 
 ## get ranges
 ranges = conf$get.ranges()
@@ -42,8 +44,7 @@ revisions.callgraph = conf$get.revisions.callgraph()
 
 ## PROJECT-LEVEL DATA
 
-network.conf = NetworkConf$new()
-x = CodefaceProjectData$new(conf)
+x = CodefaceProjectData$new(conf, network.conf)
 
 x$get.network.conf.variable(var.name = "synchronicity.time.window")
 x$get.commits.raw()
@@ -65,7 +66,6 @@ x$get.artifact.network()
 x$get.networks()
 g = x$get.bipartite.network()
 plot.bipartite.network(g)
-
 
 # ## save binary objects
 # net = x$get.author.network()
