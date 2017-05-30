@@ -84,7 +84,7 @@ read.adjacency.matrix.from.file = function(file, authors, network.conf) {
     g = igraph::graph.adjacency(as.matrix(dat), mode = "directed", weighted = TRUE)
 
     # transform multiple edges to edge weights
-    if (network.conf$get.variable("simplified"))
+    if (network.conf$get.variable("simplify"))
         g = simplify.network(g)
 
     # return constructed igraph object
@@ -96,7 +96,7 @@ read.adjacency.matrix.from.file = function(file, authors, network.conf) {
 ## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
 ## - if directed, the order of things in the sublists is respected
 ## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
-construct.dependency.network.from.list = function(list, directed = FALSE, network.conf) {
+construct.dependency.network.from.list = function(list, network.conf, directed = FALSE) {
 
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
@@ -237,8 +237,7 @@ construct.dependency.network.from.list = function(list, directed = FALSE, networ
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
-    if (network.conf$get.variable("simplified"))
-
+    if (network.conf$get.variable("simplify"))
         net = simplify.network(net)
 
     logging::logdebug("construct.dependency.network.from.list: finished.")

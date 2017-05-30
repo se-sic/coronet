@@ -67,10 +67,10 @@ NetworkConf = R6::R6Class("NetworkConf",
                                     type = "logical"),
         artifact.filter.empty = list(value = TRUE,
                                      type = "logical"),
-        artifact.edge.attributes = list(value = c("message.id", "date", 
+        artifact.edge.attributes = list(value = c("message.id", "date",
                                                   "thread", "hash", "file", "artifact.type"),
                                         type = "character"),
-        simplified = list(value = FALSE,
+        simplify = list(value = FALSE,
                           type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
@@ -87,20 +87,20 @@ NetworkConf = R6::R6Class("NetworkConf",
                      (class(value) == (private[[name]][["type"]])))
         }
     ),
-    
+
     ## public members
     public = list(
-      
+
         # Prints the private variables in the class
         print = function() {
+            logging::loginfo("Printing state of network configuration.")
             for (name in names(private)) {
                 if ((class(private[[name]]) != "function")) {
-                    print(name)
-                    print(private[[name]])
+                   logging::loginfo("%s: %s", name, private[[name]])
                 }
             }
         },
-        
+
         # Update the values in NetworkConf by giving a list containing the new values
         update.values = function(updated.values = list()) {
             for (name in names(updated.values)) {
@@ -109,13 +109,16 @@ NetworkConf = R6::R6Class("NetworkConf",
                       private[[name]][["value"]] = c(updated.values[[name]], "date")
                     } else {
                       private[[name]][["value"]] = updated.values[[name]]
-                    } 
+                    }
                 } else {
-                  logging::logerror("Name or type of '%s' is incorrect.", name)
+                  logging::logwarn("Name or type of '%s' is incorrect. Type given is: '%s'.", name, class(updated.values[[name]]))
+                    if(exists(name, where = private)) {
+                        logging::logwarn("Expected type is: '%s'.", private[[name]][["type"]])
+                    }
                 }
             }
         },
-        
+
         # Returns the variable with the given name
         get.variable = function(var.name) {
             return(private[[var.name]][["value"]])

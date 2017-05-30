@@ -23,25 +23,22 @@ options(mc.cores = 6L)
 
 
 
-CF.DATA = "C:/Users/RNoem/Codeface/codeface-data"
 
 CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
 
 CASESTUDY = "test"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
-## FIXME test:
-## - artifact = featureexpression
-
-#AUTHOR.RELATION = "mail" # mail, cochange
-#ARTIFACT.RELATION = "cochange" # cochange, callgraph
+AUTHOR.RELATION = "mail" # mail, cochange
+ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 
 ## CONFIGURATION
 
 conf = CodefaceConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 network.conf = NetworkConf$new()
-# network.conf$update(...)
+#initialize with AUTHOR.RELATION and ARTIFACT.RELATION
+network.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
 
 ## get ranges
 ranges = conf$get.ranges()
@@ -52,28 +49,28 @@ revisions.callgraph = conf$get.revisions.callgraph()
 
 x = CodefaceProjectData$new(conf, network.conf)
 
-x$get.commits.raw()
-x$get.synchronicity()
-x$get.author2artifact()
-x$get.commits()
-x$get.mails()
-x$get.authors()
-x$get.data.path()
-x$get.author2artifact()
-x$get.author2file()
-x$get.commit2artifact()
-x$get.commit2file()
-x$get.thread2author()
-x$update.network.conf(updated.values = list(author.directed = TRUE))
-x$get.author.network()
-x$update.network.conf(updated.values = list(author.directed = FALSE))
-x$get.author.network()
-x$get.artifact.network()
-x$reset.environment()
-x$get.networks()
-x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
-g = x$get.bipartite.network()
-plot.bipartite.network(g)
+# x$get.commits.raw()
+# x$get.synchronicity()
+# x$get.author2artifact()
+# x$get.commits()
+# x$get.mails()
+# x$get.authors()
+# x$get.data.path()
+# x$get.author2artifact()
+# x$get.author2file()
+# x$get.commit2artifact()
+# x$get.commit2file()
+# x$get.thread2author()
+# x$update.network.conf(updated.values = list(author.directed = TRUE))
+# x$get.author.network()
+# x$update.network.conf(updated.values = list(author.directed = FALSE))
+# x$get.author.network()
+# x$get.artifact.network()
+# x$reset.environment()
+# x$get.networks()
+# x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
+# g = x$get.bipartite.network()
+# plot.bipartite.network(g)
 
 # ## save binary objects
 # net = x$get.author.network()
@@ -117,7 +114,7 @@ y <- CodefaceRangeData$new(conf = conf, network.conf = network.conf, range = ran
 # network.conf = NetworkConf$new()
 # ## author networks
 
-# auth = collect.author.networks(conf)
+# auth = collect.author.networks(conf, network.conf)
 
 # for (net in auth) {
 #     plot.author.network(net)
@@ -125,7 +122,7 @@ y <- CodefaceRangeData$new(conf = conf, network.conf = network.conf, range = ran
 
 # ## artifact networks
 
-# art = collect.artifact.networks(conf)
+# art = collect.artifact.networks(conf, network.conf)
 
 # for (net in art) {
 #     plot.artifact.network(net)
@@ -133,7 +130,7 @@ y <- CodefaceRangeData$new(conf = conf, network.conf = network.conf, range = ran
 
 # ## bipartite networks
 
-# bp = collect.bipartite.networks(conf)
+# bp = collect.bipartite.networks(conf, network.conf)
 
 # for (net in bp) {
 #     plot.bipartite.network(net)

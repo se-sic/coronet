@@ -363,7 +363,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## construct network based on artifact2author data
 
             artifact2author = self$get.artifact2author()
-            author.net = construct.dependency.network.from.list(artifact2author, network.conf = network.conf)
+            author.net = construct.dependency.network.from.list(artifact2author, network.conf = network.conf,
+                                                                directed = network.conf$get.variable("author.directed"))
 
 
             ## store network
@@ -390,8 +391,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (length(thread2author) != 0) {
                 dev.relation =
 
-                    construct.dependency.network.from.list(thread2author,
-                                                           network.conf$get.variable("author.directed"), network.conf = network.conf)
+                    construct.dependency.network.from.list(thread2author, network.conf = network.conf,
+                                                           directed = network.conf$get.variable("author.directed"))
 
             } else {
                 dev.relation = create.empty.network(network.conf$get.variable("author.directed"))
@@ -419,7 +420,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             commit2artifact = self$get.commit2artifact()
-            artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf$get.variable("artifact.directed"), network.conf = network.conf)
+            artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = network.conf,
+                                                                   directed = network.conf$get.variable("artifact.directed"))
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -473,9 +475,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## constructor
         initialize = function(conf, network.conf) {
-            private$network.conf = network.conf
             if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
                 private$conf = conf
+            }
+
+            if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
+                private$network.conf = network.conf
             }
 
             if (class(self)[1] == "CodefaceProjectData")
@@ -489,9 +494,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 sprintf("CodefaceProjectData<%s>", private$conf$get.repo())
             )
         },
-        
+
         ## RESET ENVIRONMENT ##
-        
+
         # Reset cached data
         reset.environment = function() {
           private$commits = NULL
@@ -512,15 +517,15 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.conf = function() {
             return(private$conf)
         },
-        
-        # Set the current network configuration to the given one.
-        set.network.conf = function(network.conf) {
-          private$network.conf = network.conf
-        },
-        
+
         # Get the current network configuration
         get.network.conf = function() {
             return(private$network.conf)
+        },
+
+        # Set the current network configuration to the given one.
+        set.network.conf = function(network.conf) {
+          private$network.conf = network.conf
         },
 
         ## UPDATE CONFIGURATION ####
@@ -987,7 +992,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
     ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
 
     ## simplify network
-    if (network.conf$get.variable("simplified"))
+    if (network.conf$get.variable("simplify"))
         u = simplify.network(u)
 
     return(u)
