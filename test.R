@@ -21,7 +21,7 @@ logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
 
-
+CF.DATA = "/path/to/codeface-data" # path to codeface data
 
 
 CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
@@ -52,7 +52,8 @@ x = CodefaceProjectData$new(conf, network.conf)
 # x$get.commits.raw()
 # x$get.synchronicity()
 # x$get.author2artifact()
-# x$get.commits()
+# x$get.commits.filtered()
+# x$get.commits.filtered.empty()
 # x$get.mails()
 # x$get.authors()
 # x$get.data.path()
@@ -89,7 +90,8 @@ x = CodefaceProjectData$new(conf, network.conf)
 y <- CodefaceRangeData$new(conf = conf, network.conf = network.conf, range = ranges[[2]])
 # y <- CodefaceRangeData$new(conf = conf, network.conf = network.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
-# y$get.commits()
+# y$get.commits.filtered()
+# y$get.commits.filtered.empty()
 # y$get.mails()
 # y$get.authors()
 # y$get.data.path()

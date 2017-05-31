@@ -50,7 +50,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## raw data
         ## commits and commit data
-        commits = NULL, # data.frame
+        commits.filtered = NULL, # data.frame
+        commits.filtered.empty = NULL, #data.frame
         commits.raw = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
@@ -68,16 +69,46 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## BASIC DATA ####
 
-        ## read the commit data for the range
-        read.commits = function() {
-            data.path = self$get.data.path()
+        #read the commits without empty artifacts
+        read.commits.filtered.empty = function() {
 
-            logging::logdebug("read.commits: starting.")
+            logging::logdebug("read.commits.filtered.empty: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$commits)) {
-                logging::logdebug("read.commits: finished. (already existing)")
-                return(private$commits)
+            if (!is.null(private$commits.filtered.empty)) {
+                logging::logdebug("read.commits.filtered.empty: finished. (already existing)")
+                return(private$commits.filtered.empty)
+            }
+
+            ## get raw commit data
+            commit.data = self$get.commits.filtered()
+
+            ## break if the list of commits is empty
+            if (nrow(commit.data) == 0) {
+                logging::logwarn("There are no commits available for the current environment.")
+                logging::logwarn("Class: %s", self$get.class.name())
+                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                private$commits.filtered.empty = data.frame()
+                return(private$commits.filtered.empty)
+            }
+
+            ## only process commits with non-empty artifact
+            commit.data = subset(commit.data, artifact != "")
+
+            ## store the commit data
+            private$commits.filtered.empty = commit.data
+            logging::logdebug("read.commits.filtered.empty: finished.")
+        },
+
+        ## read the base filtered commit data for the range
+        read.commits.filtered = function() {
+
+            logging::logdebug("read.commits.filtered: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$commits.filtered)) {
+                logging::logdebug("read.commits.filtered: finished. (already existing)")
+                return(private$commits.filtered)
             }
 
             ## get raw commit data
@@ -88,19 +119,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 logging::logwarn("There are no commits available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
                 # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
-                private$commits = data.frame()
-                return(private$commits)
-            }
-
-            ## only process commits with non-empty artifact
-            if (network.conf$get.variable("artifact.filter.empty")) {
-                commit.data = subset(commit.data, artifact != "")
+                private$commits.filtered = data.frame()
+                return(private$commits.filtered)
             }
 
             ## only process commits with the artifact listed in the configuration
-            if (network.conf$get.variable("artifact.filter")) {
-                commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
-            }
+            commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
             if (network.conf$get.variable("artifact.filter.base")) {
@@ -125,8 +149,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             ## store the commit data
-            private$commits = commit.data
-            logging::logdebug("read.commits: finished.")
+            private$commits.filtered = commit.data
+            logging::logdebug("read.commits.filtered: finished.")
         },
 
         read.commits.raw = function() {
@@ -499,7 +523,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         # Reset cached data
         reset.environment = function() {
-          private$commits = NULL
+          private$commits.filtered = NULL
+          private$commits.filtered.empty = NULL
           private$commits.raw = NULL
           private$artifacts = NULL
           private$synchronicity = NULL
@@ -564,16 +589,28 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## RAW DATA ####
 
-        ## get the complete filtered list of commits
-        get.commits = function() {
-            logging::loginfo("Getting commit data.")
+        #get the list of commits without empty artifacts
+        get.commits.filtered.empty = function() {
+            logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
 
             ## if commits are not read already, do this
-            if (is.null(private$commits)) {
-                private$read.commits()
+            if (is.null(private$commits.filtered.empty)) {
+                private$read.commits.filtered.empty()
             }
 
-            return(private$commits)
+            return(private$commits.filtered.empty)
+        },
+
+        ## get the complete filtered list of commits
+        get.commits.filtered = function() {
+            logging::loginfo("Getting commit data filtered by artifact.base.")
+
+            ## if commits are not read already, do this
+            if (is.null(private$commits.filtered)) {
+                private$read.commits.filtered()
+            }
+
+            return(private$commits.filtered)
         },
 
         ## get the complete raw list of commits
@@ -656,7 +693,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if artifacts are not read already, do this
             if (is.null(private$artifacts)) {
-                commits = self$get.commits()
+                commits = self$get.commits.filtered.empty()
 
                 ## get artifacts (empty list if no commits exist)
                 artifacts = unique(commits[["artifact"]])
@@ -676,7 +713,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::loginfo("Getting artifact--author data.")
 
             ## get commits sorted by date
-            sorted.commits = self$get.commits()
+            sorted.commits = self$get.commits.filtered.empty()
 
             ## break if list of commits is empty
             if (ncol(sorted.commits) == 0) {
@@ -713,13 +750,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.author2artifact = function() {
             logging::loginfo("Getting author--artifact data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits)) {
-                private$read.commits()
-            }
+            #get commits
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "author.name", "artifact", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "author.name", "artifact", network.conf = private$network.conf)
 
             return(mylist)
         },
@@ -729,13 +764,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.author2file = function() {
             logging::loginfo("Getting author--file data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits)) {
-                private$read.commits()
-            }
+            #get commits
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "author.name", "file", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "author.name", "file", network.conf = private$network.conf)
 
             return(mylist)
         },
@@ -745,13 +778,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.commit2artifact = function() {
             logging::loginfo("Getting commit--artifact data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits)) {
-                private$read.commits()
-            }
+            #get commits
+            commits = self$get.commits.filtered()
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "hash", "artifact", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "hash", "artifact", network.conf = private$network.conf)
 
             return(mylist)
         },
@@ -761,13 +792,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.commit2file = function() {
             logging::loginfo("Getting commit--file data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits)) {
-                private$read.commits()
-            }
+            #get commits
+            commits = self$get.commits.filtered()
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits, "hash", "file", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "hash", "file", network.conf = private$network.conf)
 
             return(mylist)
         },
