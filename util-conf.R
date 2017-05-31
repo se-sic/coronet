@@ -124,11 +124,11 @@ NetworkConf = R6::R6Class("NetworkConf",
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## CodefaceConf
+## ProjectConf
 ##
-## Represents the Codeface configuration
+## Represents the Project configuration
 
-CodefaceConf = R6::R6Class("CodefaceConf",
+ProjectConf = R6::R6Class("ProjectConf",
 
     ## private members
     private = list(
@@ -341,97 +341,14 @@ CodefaceConf = R6::R6Class("CodefaceConf",
 
         ## CONFIGURATION ENTRIES
 
-        ## project
-        get.project = function() {
-            return(private$get.conf.entry("project"))
-        },
-
-        ## repo
-        get.repo = function() {
-            return(private$get.conf.entry("repo"))
-        },
-
-        ## description
-        get.description = function() {
-            return(private$get.conf.entry("description"))
-        },
-
-        ## mailinglists
-        get.mailinglists = function() {
-            return(private$get.conf.entry("mailinglists"))
-        },
-
-        ## tagging
-        get.tagging = function() {
-            return(private$get.conf.entry("tagging"))
-        },
-
-        ## artifact
-        get.artifact = function() {
-            return(private$get.conf.entry("artifact"))
-        },
-
-        ## artifact.short
-        get.artifact.short = function() {
-            return(private$get.conf.entry("artifact.short"))
-        },
-
-        ## artifact
-        get.artifact.codeface = function() {
-            return(private$get.conf.entry("artifact.codeface"))
-        },
-
-        ## data.path
-        get.datapath = function() {
-            return(private$get.conf.entry("datapath"))
-        },
-
-        ## data.path.callgraph
-        get.datapath.callgraph = function() {
-            return(private$get.conf.entry("datapath.callgraph"))
-        },
-
-        ## data.path.synchronicity
-        get.datapath.synchronicity = function() {
-            return(private$get.conf.entry("datapath.synchronicity"))
-        },
-
-        ## revisions
-        get.revisions = function() {
-            return(private$get.conf.entry("revisions"))
-        },
-
-        ## revisions.dates
-        get.revisions.dates = function() {
-            return(private$get.conf.entry("revisions.dates"))
-        },
-
-        ## revisions.callgraph
-        get.revisions.callgraph = function() {
-            return(private$get.conf.entry("revisions.callgraph"))
-        },
-
-        ## ranges
-        get.ranges = function() {
-            return(private$get.conf.entry("ranges"))
-        },
-
-        ## ranges.callgraph
-        get.ranges.callgraph = function() {
-            return(private$get.conf.entry("ranges.callgraph"))
-        },
-
-        ## get a stripped-down version of the ranges
-        ## (for use while plotting)
-        get.ranges.simplified = function() {
-            # remove names ,e.g. "version", from release cycle names
-            return(self$get.ranges())
+        get.entry = function(entry.name) {
+            return(private$get.conf.entry(entry.name))
         },
 
         ## get the corresponding call-graph revision for the given range
         get.callgraph.revision.from.range = function(range) {
-            idx = which(self$get.ranges() == range)
-            rev = self$get.revisions.callgraph()[idx + 1]
+            idx = which(self$get.entry("ranges") == range)
+            rev = self$get.entry("revisions.callgraph")[idx + 1]
             return(rev)
         }
 

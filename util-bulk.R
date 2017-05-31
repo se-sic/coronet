@@ -18,17 +18,17 @@ requireNamespace("igraph") # networks
 ##
 
 
-collect.bipartite.networks = function(conf, network.conf, step = 1) {
+collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, network.conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
         bp.network = range.data$get.bipartite.network()
@@ -53,18 +53,18 @@ collect.bipartite.networks = function(conf, network.conf, step = 1) {
 ##
 
 
-collect.author.networks = function(conf, network.conf, step = 1) {
+collect.author.networks = function(project.conf, network.conf, step = 1) {
 
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, network.conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the author network
         author.network = range.data$get.author.network()
@@ -89,17 +89,17 @@ collect.author.networks = function(conf, network.conf, step = 1) {
 ##
 
 
-collect.artifact.networks = function(conf, network.conf, step = 1) {
+collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, network.conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the artifact network
         artifact.network = range.data$get.artifact.network()
@@ -123,21 +123,21 @@ collect.artifact.networks = function(conf, network.conf, step = 1) {
 ## Construct data
 ##
 
-construct.data = function(conf, network.conf, callgraphs = FALSE, step = 1) {
+construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     data = lapply(ranges, function(range) {
         revision.callgraph = ifelse(callgraphs,
-                                    conf$get.callgraph.revision.from.range(range),
+                                    project.conf$get.callgraph.revision.from.range(range),
                                     "")
 
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, network.conf, range, revision.callgraph)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list

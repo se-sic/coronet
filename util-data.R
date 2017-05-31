@@ -43,7 +43,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
     ## private members ####
     private = list(
         ## configuration
-        conf = NULL, # list
+        project.conf = NULL, # list
 
         network.conf = NULL,
 
@@ -87,7 +87,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (nrow(commit.data) == 0) {
                 logging::logwarn("There are no commits available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
                 private$commits.filtered.empty = data.frame()
                 return(private$commits.filtered.empty)
             }
@@ -118,13 +118,14 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (nrow(commit.data) == 0) {
                 logging::logwarn("There are no commits available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
                 private$commits.filtered = data.frame()
                 return(private$commits.filtered)
             }
 
-            ## only process commits with the artifact listed in the configuration
-            commit.data = subset(commit.data, artifact.type == private$conf$get.artifact.codeface())
+            ## only process commits with the artifact listed in the configuration or missing
+            commit.data = subset(commit.data, artifact.type %in%
+                                     c(private$project.conf$get.entry("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
             if (network.conf$get.variable("artifact.filter.base")) {
@@ -175,7 +176,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (inherits(commit.data, 'try-error')) {
                 logging::logwarn("There are no commits available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
                 private$commits.raw = data.frame()
                 return()
             }
@@ -194,7 +195,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## rewrite data.frame when we want file-based data
             ## (we have proximity-based data as foundation)
-            if (private$conf$get.artifact() == "file") {
+            if (private$project.conf$get.entry("artifact") == "file") {
                 ## aggregate diff size by hash and file
                 commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
                                             group by hash, file order by `date`, `author.name`, `id`, `file`, `artifact`")
@@ -211,7 +212,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## rewrite data.frame when we want function-based data
             ## (we have proximity-based data as foundation)
-            if (private$conf$get.artifact() == "function") {
+            if (private$project.conf$get.entry("artifact") == "function") {
                 ## artifact = file name + "::" . function name
                 artifacts.new = paste(commit.data[["file"]], commit.data[["artifact"]], sep = "::")
 
@@ -250,7 +251,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## construct path and file
             data.path = self$get.data.path.synchronicity()
-            file.name = paste0("commit_sync_analysis_", private$conf$get.artifact(), "s_", network.conf$get.variable("synchronicity.time.window"), ".dat")
+            file.name = paste0("commit_sync_analysis_", private$project.conf$get.entry("artifact"), "s_", network.conf$get.variable("synchronicity.time.window"), ".dat")
             file = file.path(data.path, file.name)
 
             ## break if file does not exist
@@ -297,7 +298,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (inherits(mail.data, 'try-error')) {
                 logging::logwarn("There are no mails available for the current environment.")
                 logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$conf$get.conf.as.string())
+                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
                 private$mails = data.frame()
                 return()
             }
@@ -349,7 +350,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (inherits(authors.df, 'try-error')) {
                 logging::logerror("There are no authors available for the current environment.")
                 logging::logerror("Class: %s", self$get.class.name())
-                logging::logerror("Configuration: %s", private$conf$get.conf.as.string())
+                logging::logerror("Configuration: %s", private$project.conf$get.conf.as.string())
                 stop("Stopped due to missing authors.")
             }
 
@@ -476,13 +477,13 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## construct path and file
             file.dir = self$get.data.path.callgraph()
-            file.name = paste0("cg_nw_", private$conf$get.artifact.short(), "_", private$revision.callgraph, ".net")
+            file.name = paste0("cg_nw_", private$project.conf$get.entry("artifact.short"), "_", private$revision.callgraph, ".net")
             file = file.path(file.dir, file.name)
 
             ## read network from disk
             artifacts.net = read.network.from.file(file)
             ## post-process network
-            artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$conf$get.artifact())
+            artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$project.conf$get.entry("artifact"))
 
             ## store network
             private$artifacts.network.callgraph = artifacts.net
@@ -498,9 +499,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
     public = list(
 
         ## constructor
-        initialize = function(conf, network.conf) {
-            if (!missing(conf) && "CodefaceConf" %in% class(conf)) {
-                private$conf = conf
+        initialize = function(project.conf, network.conf) {
+            if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
+                private$project.conf = project.conf
             }
 
             if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
@@ -515,7 +516,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceProjectData<%s>", private$conf$get.repo())
+                sprintf("CodefaceProjectData<%s>", private$project.conf$get.entry("repo"))
             )
         },
 
@@ -539,8 +540,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## CONFIGURATION ####
         # Get the current project configuration
-        get.conf = function() {
-            return(private$conf)
+        get.project.conf = function() {
+            return(private$project.conf)
         },
 
         # Get the current network configuration
@@ -576,13 +577,13 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## construct the absolute path to the project's result folder
         get.data.path = function() {
-            data.path = private$conf$get.datapath()
+            data.path = private$project.conf$get.entry("datapath")
             return(data.path)
         },
 
         ## construct the absolute path to the range's result folder for synchronicity data
         get.data.path.synchronicity = function() {
-            data.path = private$conf$get.datapath.synchronicity()
+            data.path = private$project.conf$get.entry("datapath.synchronicity")
             return(data.path)
         },
 
@@ -934,9 +935,9 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
     public = list(
 
         ## constructor
-        initialize = function(conf, network.conf, range, revision.callgraph = "") {
+        initialize = function(project.conf, network.conf, range, revision.callgraph = "") {
             ## call super constructor
-            super$initialize(conf, network.conf)
+            super$initialize(project.conf, network.conf)
 
             if (!missing(range) && is.character(range)) {
                 private$range <- range
@@ -952,7 +953,7 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceRangeData<%s, %s, %s>", private$conf$get.repo(), private$range, private$revision.callgraph)
+                sprintf("CodefaceRangeData<%s, %s, %s>", private$project.conf$get.entry("repo"), private$range, private$revision.callgraph)
             )
         },
 
@@ -961,14 +962,14 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
         ## construct the absolute path to the range's result folder
         get.data.path = function() {
-            data.path = private$conf$get.datapath()
+            data.path = private$project.conf$get.entry("datapath")
             range = private$range
             return(file.path(data.path, range))
         },
 
         ## construct the absolute path to the range's result folder for callgraphs
         get.data.path.callgraph = function() {
-            data.path = file.path(private$conf$get.datapath.callgraph(), private$revision.callgraph)
+            data.path = file.path(private$project.conf$get.entry("datapath.callgraph"), private$revision.callgraph)
             return(data.path)
         },
 
