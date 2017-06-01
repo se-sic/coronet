@@ -49,6 +49,41 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bipartite networks
+##
+
+
+collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
+
+    ## we need to iterate over all ranges
+    ranges = project.conf$get.entry("ranges")
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
+
+    ## collect the network objects for all the ranges
+    networks = lapply(ranges, function(range) {
+        ## construct range data
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+
+        ## get the bipartite network
+        bp.network = range.data$get.bipartite.network()
+
+        ## set range attribute
+        bp.network = igraph::set.graph.attribute(bp.network, "range", range)
+        attr(bp.network, "range") = range
+
+        # add to global list
+        return(bp.network)
+    })
+
+    ## set names of list to range values
+    names(networks) = ranges
+
+    return(networks)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Author networks
 ##
 

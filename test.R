@@ -70,6 +70,8 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$reset.environment()
 # x$get.networks()
 # x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
+# h = x$get.bipartite.network()
+# plot.bipartite.network(h)
 # g = x$get.multi.network()
 # plot.bipartite.network(g)
 
@@ -108,6 +110,8 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # y$get.artifact.network()
 # y$get.networks()
 # y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
+# h = y$get.bipartite.network()
+# plot.bipartite.network(h)
 # g = y$get.multi.network()
 # plot.bipartite.network(g)
 
@@ -129,6 +133,14 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 #
 # for (net in art) {
 #     plot.artifact.network(net)
+# }
+
+# ## bipartite networks
+#
+# bp = collect.multi.networks(proj.conf, net.conf)
+#
+# for (net in bp) {
+#     plot.bipartite.network(net)
 # }
 
 # ## multi networks

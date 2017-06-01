@@ -845,16 +845,34 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
         },
 
+        ## get the (real) bipartite network
+        get.bipartite.network = function() {
+            ## authors-artifact relation
+            authors.to.artifacts = self$get.author2artifact()
+
+            ## extract vertices
+            authors = names(authors.to.artifacts)
+            artifacts = self$get.artifacts()
+
+            ## construct networks from vertices
+            authors.net = create.empty.network(directed = FALSE) + igraph::vertices(authors)
+            artifacts.net = create.empty.network(directed = FALSE) + igraph::vertices(artifacts)
+
+            ## combine the networks
+            u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
+                                 network.conf = private$network.conf)
+            return(u)
+        },
+
         ## get all networks (build unification to avoid null-pointers)
         get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
-            ## get method arguments
-            author.relation = private$network.conf$get.variable("author.relation")
-            artifact.relation = private$network.conf$get.variable("artifact.relation")
-
             ## authors-artifact relation
             authors.to.artifacts = self$get.author2artifact()
+
+            ## bipartite network
+            bipartite.net = self$get.bipartite.network()
 
             ## authors relation
             authors.net = self$get.author.network()
@@ -878,6 +896,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
+                "bipartite.net" = bipartite.net,
                 "authors.net" = authors.net,
                 "artifacts.net" = artifacts.net
             ))
