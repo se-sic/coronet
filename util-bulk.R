@@ -14,11 +14,11 @@ requireNamespace("igraph") # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Bipartite networks
+## Multi networks
 ##
 
 
-collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
+collect.multi.networks = function(project.conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -31,14 +31,14 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
         range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
-        bp.network = range.data$get.bipartite.network()
+        multi.network = range.data$get.multi.network()
 
         ## set range attribute
-        bp.network = igraph::set.graph.attribute(bp.network, "range", range)
-        attr(bp.network, "range") = range
+        multi.network = igraph::set.graph.attribute(multi.network, "range", range)
+        attr(multi.network, "range") = range
 
         # add to global list
-        return(bp.network)
+        return(multi.network)
     })
 
     ## set names of list to range values

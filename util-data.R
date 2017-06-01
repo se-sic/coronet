@@ -883,11 +883,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ))
         },
 
-        ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function() {
-            logging::loginfo("Constructing bipartite network.")
+        ## get the multi networks (get.networks combined in one network)
+        get.multi.network = function() {
+            logging::loginfo("Constructing multi network.")
 
-            ## construct the network parts
+            ## construct the network parts we need for the multi network
             networks = self$get.networks()
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]

@@ -70,7 +70,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$reset.environment()
 # x$get.networks()
 # x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
-# g = x$get.bipartite.network()
+# g = x$get.multi.network()
 # plot.bipartite.network(g)
 
 # ## save binary objects
@@ -108,33 +108,34 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # y$get.artifact.network()
 # y$get.networks()
 # y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
-# g = y$get.bipartite.network()
-# plot.bipartite.network(g, labels = FALSE, grayscale = FALSE)
+# g = y$get.multi.network()
+# plot.bipartite.network(g)
 
 
 ## BULK METHODS
 # net.conf = NetworkConf$new()
+
 # ## author networks
-
+#
 # auth = collect.author.networks(proj.conf, net.conf)
-
+#
 # for (net in auth) {
 #     plot.author.network(net)
 # }
 
 # ## artifact networks
-
+#
 # art = collect.artifact.networks(proj.conf, net.conf)
-
+#
 # for (net in art) {
 #     plot.artifact.network(net)
 # }
 
-# ## bipartite networks
-
-# bp = collect.bipartite.networks(proj.conf, net.conf)
-
-# for (net in bp) {
+# ## multi networks
+#
+# multi = collect.multi.networks(proj.conf, net.conf)
+#
+# for (net in multi) {
 #     plot.bipartite.network(net)
 # }
 
