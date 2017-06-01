@@ -128,12 +128,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                                      c(private$project.conf$get.entry("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (network.conf$get.variable("artifact.filter.base")) {
+            if (private$network.conf$get.variable("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
             ## append synchronicity data if wanted
-            if (network.conf$get.variable("synchronicity")) {
+            if (private$network.conf$get.variable("synchronicity")) {
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
             }
@@ -247,11 +247,13 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## check time.window
             allowed.time.windows = c(1, 5, 10)
-            stopifnot((network.conf$get.variable("synchronicity.time.window")) %in% allowed.time.windows)
+            stopifnot((private$network.conf$get.variable("synchronicity.time.window")) %in% allowed.time.windows)
 
             ## construct path and file
             data.path = self$get.data.path.synchronicity()
-            file.name = paste0("commit_sync_analysis_", private$project.conf$get.entry("artifact"), "s_", network.conf$get.variable("synchronicity.time.window"), ".dat")
+            file.name = sprintf("commit_sync_analysis_%ss_%s.dat",
+                               private$project.conf$get.entry("artifact"),
+                               private$network.conf$get.variable("synchronicity.time.window"))
             file = file.path(data.path, file.name)
 
             ## break if file does not exist
@@ -388,8 +390,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## construct network based on artifact2author data
 
             artifact2author = self$get.artifact2author()
-            author.net = construct.dependency.network.from.list(artifact2author, network.conf = network.conf,
-                                                                directed = network.conf$get.variable("author.directed"))
+            author.net = construct.dependency.network.from.list(artifact2author, network.conf = private$network.conf,
+                                                                directed = private$network.conf$get.variable("author.directed"))
 
 
             ## store network
@@ -416,11 +418,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             if (length(thread2author) != 0) {
                 dev.relation =
 
-                    construct.dependency.network.from.list(thread2author, network.conf = network.conf,
-                                                           directed = network.conf$get.variable("author.directed"))
+                    construct.dependency.network.from.list(thread2author, network.conf = private$network.conf,
+                                                           directed = private$network.conf$get.variable("author.directed"))
 
             } else {
-                dev.relation = create.empty.network(network.conf$get.variable("author.directed"))
+                dev.relation = create.empty.network(private$network.conf$get.variable("author.directed"))
             }
 
             ## store network
@@ -445,8 +447,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             commit2artifact = self$get.commit2artifact()
-            artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = network.conf,
-                                                                   directed = network.conf$get.variable("artifact.directed"))
+            artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = private$network.conf,
+                                                                   directed = private$network.conf$get.variable("artifact.directed"))
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -822,7 +824,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## get the developer relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
-            relation = network.conf$get.variable("author.relation")
+            relation = private$network.conf$get.variable("author.relation")
             if (relation == "cochange")
                 return(private$get.author.network.cochange())
             else if (relation == "mail")
@@ -834,7 +836,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## get artifact relation as network (generic)
         get.artifact.network = function() {
             logging::loginfo("Constructing artifact network.")
-          relation = network.conf$get.variable("artifact.relation")
+          relation = private$network.conf$get.variable("artifact.relation")
             if (relation == "cochange")
                 return(private$get.artifact.network.cochange())
             else if (relation == "callgraph")
@@ -843,16 +845,34 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
         },
 
+        ## get the (real) bipartite network
+        get.bipartite.network = function() {
+            ## authors-artifact relation
+            authors.to.artifacts = self$get.author2artifact()
+
+            ## extract vertices
+            authors = names(authors.to.artifacts)
+            artifacts = self$get.artifacts()
+
+            ## construct networks from vertices
+            authors.net = create.empty.network(directed = FALSE) + igraph::vertices(authors)
+            artifacts.net = create.empty.network(directed = FALSE) + igraph::vertices(artifacts)
+
+            ## combine the networks
+            u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
+                                 network.conf = private$network.conf)
+            return(u)
+        },
+
         ## get all networks (build unification to avoid null-pointers)
         get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
-            ## get method arguments
-            author.relation = network.conf$get.variable("author.relation")
-            artifact.relation = network.conf$get.variable("artifact.relation")
-
             ## authors-artifact relation
             authors.to.artifacts = self$get.author2artifact()
+
+            ## bipartite network
+            bipartite.net = self$get.bipartite.network()
 
             ## authors relation
             authors.net = self$get.author.network()
@@ -876,16 +896,17 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
+                "bipartite.net" = bipartite.net,
                 "authors.net" = authors.net,
                 "artifacts.net" = artifacts.net
             ))
         },
 
-        ## get the bipartite networks (get.networks combined in one network)
-        get.bipartite.network = function() {
-            logging::loginfo("Constructing bipartite network.")
+        ## get the multi networks (get.networks combined in one network)
+        get.multi.network = function() {
+            logging::loginfo("Constructing multi network.")
 
-            ## construct the network parts
+            ## construct the network parts we need for the multi network
             networks = self$get.networks()
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]

@@ -88,12 +88,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
     names(data.split) = bins.ranges
 
+    ## adapt project configuration
+    project.data$get.project.conf()$set.revisions(bins, bins.date)
+
     ## construct CodefaceRangeData objects
     logging::logdebug("Constructing CodefaceRangeData objects.")
     cf.data = parallel::mclapply(bins.ranges, function(range) {
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
-        cf.range.data = CodefaceRangeData$new(project.data$get.conf(), project.data$get.network.conf(), range)
+        cf.range.data = CodefaceRangeData$new(project.data$get.project.conf(), project.data$get.network.conf(), range)
         ## FIXME add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]

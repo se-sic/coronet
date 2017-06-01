@@ -14,6 +14,41 @@ requireNamespace("igraph") # networks
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Multi networks
+##
+
+
+collect.multi.networks = function(project.conf, network.conf, step = 1) {
+
+    ## we need to iterate over all ranges
+    ranges = project.conf$get.entry("ranges")
+    ## subset according to given step size
+    ranges = ranges[seq(1, length(ranges), step)]
+
+    ## collect the network objects for all the ranges
+    networks = lapply(ranges, function(range) {
+        ## construct range data
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+
+        ## get the bipartite network
+        multi.network = range.data$get.multi.network()
+
+        ## set range attribute
+        multi.network = igraph::set.graph.attribute(multi.network, "range", range)
+        attr(multi.network, "range") = range
+
+        # add to global list
+        return(multi.network)
+    })
+
+    ## set names of list to range values
+    names(networks) = ranges
+
+    return(networks)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Bipartite networks
 ##
 
