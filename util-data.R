@@ -356,7 +356,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             ## construct network based on artifact2author data
-            artifact2author = self$get.artifact2author(filter.base.artifact = filter.base.artifact, extra.data = extra.edge.attr)
+            artifact2author = self$get.artifact2author(filter.base.artifact = filter.base.artifact, extra.data = extra.edge.attr,
+                                                       synchronicity = synchronicity, synchronicity.window = synchronicity.window)
             author.net = construct.dependency.network.from.list(artifact2author, directed = directed,
                                                                 simple.network = simple.network,
                                                                 extra.edge.attr = extra.edge.attr)
@@ -638,7 +639,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## DATA ####
 
         ## get the authors for each artifact
-        get.artifact2author = function(filter.base.artifact = TRUE, extra.data = c()) {
+        get.artifact2author = function(filter.base.artifact = TRUE, extra.data = c(),
+                                       synchronicity = FALSE, synchronicity.window = 5) {
             logging::loginfo("Getting artifact--author data.")
 
             ## get commits sorted by date
