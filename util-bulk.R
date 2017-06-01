@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("parallel") # for parallel computation
@@ -11,31 +17,21 @@ requireNamespace("igraph") # networks
 ## Bipartite networks
 ##
 
-collect.bipartite.networks = function(conf, author.relation = c("mail", "cochange"), artifact.relation = c("cochange", "callgraph"),
-                                      simple.network = TRUE, author.directed = FALSE, artifact.extra.edge.attr = c(),
-                                      artifact.filter = TRUE, artifact.filter.base = TRUE,
-                                      step = 1) {
 
-    ## get argument
-    author.relation = match.arg(author.relation)
-    artifact.relation = match.arg(artifact.relation)
+collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
-        bp.network = range.data$get.bipartite.network(
-            author.relation = author.relation, artifact.relation = artifact.relation,
-            simple.network = simple.network, author.directed = author.directed, artifact.extra.edge.attr = artifact.extra.edge.attr,
-            artifact.filter = artifact.filter, artifact.filter.base = artifact.filter.base
-        )
+        bp.network = range.data$get.bipartite.network()
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
@@ -56,25 +52,22 @@ collect.bipartite.networks = function(conf, author.relation = c("mail", "cochang
 ## Author networks
 ##
 
-collect.author.networks = function(conf, author.relation = c("mail", "cochange"),
-                                   author.directed = FALSE, simple.network = TRUE,
-                                   step = 1) {
 
-    ## get argument
-    author.relation = match.arg(author.relation)
+collect.author.networks = function(project.conf, network.conf, step = 1) {
+
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the author network
-        author.network = range.data$get.author.network(author.relation, directed = author.directed, simple.network = simple.network)
+        author.network = range.data$get.author.network()
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
@@ -95,27 +88,21 @@ collect.author.networks = function(conf, author.relation = c("mail", "cochange")
 ## Artifact networks
 ##
 
-collect.artifact.networks = function(conf, artifact.relation = c("cochange", "callgraph"),
-                                     filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c(),
-                                     step = 1) {
 
-    ## get argument
-    artifact.relation = match.arg(artifact.relation)
+collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
 
         ## get the artifact network
-        artifact.network = range.data$get.artifact.network(artifact.relation, filter.artifact = filter.artifact,
-                                                           filter.base.artifact = filter.base.artifact,
-                                                           extra.edge.attr = extra.edge.attr)
+        artifact.network = range.data$get.artifact.network()
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
@@ -136,22 +123,21 @@ collect.artifact.networks = function(conf, artifact.relation = c("cochange", "ca
 ## Construct data
 ##
 
-construct.data = function(conf, callgraphs = FALSE, step = 1) {
+construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
 
     ## we need to iterate over all ranges
-    ranges = conf$get.ranges()
+    ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     data = lapply(ranges, function(range) {
-
         revision.callgraph = ifelse(callgraphs,
-                                    conf$get.callgraph.revision.from.range(range),
+                                    project.conf$get.callgraph.revision.from.range(range),
                                     "")
 
         ## construct range data
-        range.data = CodefaceRangeData$new(conf, range, revision.callgraph)
+        range.data = CodefaceRangeData$new(project.conf, network.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list

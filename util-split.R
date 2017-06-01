@@ -93,7 +93,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     cf.data = parallel::mclapply(bins.ranges, function(range) {
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
-        cf.range.data = CodefaceRangeData$new(project.data$get.conf(), range)
+        cf.range.data = CodefaceRangeData$new(project.data$get.conf(), project.data$get.network.conf(), range)
         ## FIXME add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
@@ -104,7 +104,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## 2) mails
         cf.range.data$set.mails(df.list[["mails"]])
         ## 3) synchronicity data
-        cf.range.data$set.synchronicity(project.data$get.synchronicity()) ## FIXME what about parameters?!
+        cf.range.data$set.synchronicity(project.data$get.synchronicity())
         ## 4) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
 

@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 source("util-misc.R")
 source("util-conf.R")
 source("util-data.R")
@@ -15,11 +21,12 @@ logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
 
+CF.DATA = "/path/to/codeface-data" # path to codeface data
 
-CF.DATA = "/local/hunsen/projects/codeface-data"
+
 CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
 
-CASESTUDY = "busybox"
+CASESTUDY = "test"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 AUTHOR.RELATION = "mail" # mail, cochange
@@ -28,97 +35,111 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 ## CONFIGURATION
 
-conf = CodefaceConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+project.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+network.conf = NetworkConf$new()
+#initialize with AUTHOR.RELATION and ARTIFACT.RELATION
+network.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
 
 ## get ranges
-ranges = conf$get.ranges()
-revisions.callgraph = conf$get.revisions.callgraph()
+ranges = project.conf$get.entry(entry.name = "ranges")
+revisions.callgraph = project.conf$get.entry("revisions.callgraph")
 
 
 ## PROJECT-LEVEL DATA
 
-x = CodefaceProjectData$new(conf)
+x = CodefaceProjectData$new(project.conf, network.conf)
+
 # x$get.commits.raw()
-# x$get.synchronicity(time.window = c(5))
+# x$get.synchronicity()
 # x$get.author2artifact()
-# x$get.commits()
+# x$get.commits.filtered()
+# x$get.commits.filtered.empty()
 # x$get.mails()
 # x$get.authors()
 # x$get.data.path()
 # x$get.author2artifact()
 # x$get.author2file()
-# x$get.commit2artifact(extra.data = c("file"))
+# x$get.commit2artifact()
 # x$get.commit2file()
-# x$get.thread2author(extra.data = "date")
-# x$get.author.network(relation = AUTHOR.RELATION, directed = TRUE, simple.network = FALSE)
-# x$get.author.network(relation = AUTHOR.RELATION, directed = FALSE)
-# x$get.artifact.network(relation = ARTIFACT.RELATION, extra.edge.attr = c("hash"))
-# x$get.networks(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION)
-# g = x$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, artifact.filter.base = FALSE,
-#                             author.only.committers = TRUE, author.directed = FALSE)
+# x$get.thread2author()
+# x$update.network.conf(updated.values = list(author.directed = TRUE))
+# x$get.author.network()
+# x$update.network.conf(updated.values = list(author.directed = FALSE))
+# x$get.author.network()
+# x$get.artifact.network()
+# x$reset.environment()
+# x$get.networks()
+# x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
+# g = x$get.bipartite.network()
 # plot.bipartite.network(g)
 
 # ## save binary objects
-# net = x$get.author.network(relation = "mail", directed = TRUE, simple.network = FALSE)
-# save(net, file = sprintf("busybox_%s.network", AUTHOR.RELATION))
+# net = x$get.author.network()
+# save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
 # ## example for extensive configuration
-# net = x$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION,
-#                               author.directed = TRUE, author.only.committers = FALSE,
-#                               artifact.extra.edge.attr = c("date", "hash"), artifact.filter.empty = TRUE,
-#                               artifact.filter = TRUE, artifact.filter.base = TRUE,
-#                               simple.network = FALSE, contract.edges = FALSE)
-# save(net, file = sprintf("busybox_%s_%s_%s.network", AUTHOR.RELATION, ARTIFACT, ARTIFACT.RELATION))
+
+# net = x$get.bipartite.network()
+
+# save(net, file = sprintf("busybox_%s_%s_%s.network",  x$get.network.conf.variable(var.name = "author.relation"),
+#                   ARTIFACT,  x$get.network.conf.variable(var.name = "artifact.relation")))
 
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
-# y <- CodefaceRangeData$new(conf = conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.conf, range = ranges[[2]])
+# y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
-# y$get.commits()
+# y$get.commits.filtered()
+# y$get.commits.filtered.empty()
 # y$get.mails()
 # y$get.authors()
 # y$get.data.path()
 # y$get.data.path.callgraph()
 # y$get.author2artifact()
 # y$get.author2file()
-# y$get.commit2artifact(extra.data = c("file"))
+# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("file")))
+# y$get.commit2artifact()
 # y$get.commit2file()
-# y$get.thread2author(extra.data = "date")
-# y$get.author.network(relation = AUTHOR.RELATION, directed = FALSE, simple.network = FALSE)
-# y$get.artifact.network(relation = ARTIFACT.RELATION, extra.edge.attr = c("hash"))
-# y$get.networks(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION)
-# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, artifact.filter.base = FALSE,
-#                             author.only.committers = TRUE, author.directed = TRUE, simple.network = FALSE)
+# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("date")))
+# y$get.thread2author()
+# y$get.author.network()
+# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("hash")))
+# y$get.artifact.network()
+# y$get.networks()
+# y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
+# g = y$get.bipartite.network()
 # plot.bipartite.network(g, labels = FALSE, grayscale = FALSE)
 
 
 ## BULK METHODS
-
+# network.conf = NetworkConf$new()
 # ## author networks
-# auth = collect.author.networks(conf, author.relation = AUTHOR.RELATION, author.directed = TRUE, simple.network = FALSE)
+
+# auth = collect.author.networks(project.conf, network.conf)
+
 # for (net in auth) {
 #     plot.author.network(net)
 # }
 
 # ## artifact networks
-# art = collect.artifact.networks(conf, artifact.relation = c("cochange", "callgraph"),
-#                               filter.artifact = TRUE, filter.base.artifact = TRUE, extra.edge.attr = c("hash"))
+
+# art = collect.artifact.networks(project.conf, network.conf)
+
 # for (net in art) {
 #     plot.artifact.network(net)
 # }
 
 # ## bipartite networks
-# bp = collect.bipartite.networks(conf, author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION,
-#                              simple.network = TRUE, author.directed = TRUE, artifact.extra.edge.attr = c("hash"),
-#                              artifact.filter = TRUE, artifact.filter.base = FALSE)
+
+# bp = collect.bipartite.networks(project.conf, network.conf)
+
 # for (net in bp) {
 #     plot.bipartite.network(net)
 # }
 
 # ## lapply on data objects
-# data = construct.data(conf, callgraphs = TRUE)
+# data = construct.data(project.conf, callgraphs = TRUE)
 # run.lapply(data, "get.data.path.callgraph")
 
 
@@ -127,7 +148,7 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits")
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
-#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+#     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
@@ -135,37 +156,37 @@ y <- CodefaceRangeData$new(conf = conf, range = ranges[[57]])
 # cf.data = split.data.time.based(x, bins = mybins)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
-#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+#     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
 # cf.data = split.data.activity.based(x, activity.amount = 10000, activity.type = "mails")
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
-#     plot.network(y$get.bipartite.network(artifact.filter.base = FALSE))
+#     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
-# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# g = y$get.bipartite.network()
 # nets = split.network.time.based(g, time.period = "1 month")
 # for (net in nets) {
 #     plot.network(net)
 # }
 
-# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# g = y$get.bipartite.network()
 # mybins = as.POSIXct(c("2013-05-23", "2013-06-11", "2013-06-27"))
 # nets = split.network.time.based(g, bins = mybins)
 # for (net in nets) {
 #     plot.network(net)
 # }
 
-# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# g = y$get.bipartite.network()
 # nets = split.network.activity.based(g, number.windows = 2)
 # for (net in nets) {
 #     plot.network(net)
 # }
 
-# g = y$get.bipartite.network(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION, author.directed = FALSE, simple.network = FALSE)
+# g = y$get.bipartite.network()
 # nets = split.network.activity.based(g, number.edges = 500)
 # for (net in nets) {
 #     plot.network(net)

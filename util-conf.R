@@ -1,6 +1,12 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
 
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+## (c) Christian Hechtl 2017
+## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("R6") # for R6 classes
@@ -36,11 +42,93 @@ ARTIFACT.CODEFACE = list(
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## CodefaceConf
+## NetworkConf
 ##
-## Represents the Codeface configuration
+## Represents the network configurations
 
-CodefaceConf = R6::R6Class("CodefaceConf",
+NetworkConf = R6::R6Class("NetworkConf",
+    ## private members
+    private = list(
+        #Variables with default values
+        #Values can be changed using update.values method
+        author.relation = list(value = "mail",
+                               type = "character"),
+        author.directed = list(value = FALSE,
+                               type = "logical"),
+        author.only.committers = list(value = FALSE,
+                                      type = "logical"),
+        artifact.relation = list(value = "cochange",
+                                 type = "character"),
+        artifact.directed = list(value = FALSE,
+                                 type = "logical"),
+        artifact.filter.base = list(value = TRUE,
+                                    type = "logical"),
+        artifact.edge.attributes = list(value = c("message.id", "date",
+                                                  "thread", "hash", "file", "artifact.type"),
+                                        type = "character"),
+        simplify = list(value = FALSE,
+                          type = "logical"),
+        skip.threshold = list(value = Inf,
+                              type = "numeric"),
+        synchronicity = list(value = FALSE,
+                             type = "logical"),
+        synchronicity.time.window = list(value = 5,
+                                         type = "numeric"),
+        contract.edges = list(value = FALSE,
+                              type = "logical"),
+
+        # Checks if the given value is of the correct type
+        check.value = function(value, name) {
+            return(exists(name, where = private) &&
+                     (class(value) == (private[[name]][["type"]])))
+        }
+    ),
+
+    ## public members
+    public = list(
+
+        # Prints the private variables in the class
+        print = function() {
+            logging::loginfo("Printing state of network configuration.")
+            for (name in names(private)) {
+                if ((class(private[[name]]) != "function")) {
+                   logging::loginfo("%s: %s", name, private[[name]])
+                }
+            }
+        },
+
+        # Update the values in NetworkConf by giving a list containing the new values
+        update.values = function(updated.values = list()) {
+            for (name in names(updated.values)) {
+                if (private$check.value(value = updated.values[[name]], name = name)) {
+                    if(name == "artifact.edge.attributes" && !("date" %in% updated.values[[name]])) {
+                      private[[name]][["value"]] = c(updated.values[[name]], "date")
+                    } else {
+                      private[[name]][["value"]] = updated.values[[name]]
+                    }
+                } else {
+                  logging::logwarn("Name or type of '%s' is incorrect. Type given is: '%s'.", name, class(updated.values[[name]]))
+                    if(exists(name, where = private)) {
+                        logging::logwarn("Expected type is: '%s'.", private[[name]][["type"]])
+                    }
+                }
+            }
+        },
+
+        # Returns the variable with the given name
+        get.variable = function(var.name) {
+            return(private[[var.name]][["value"]])
+        }
+    )
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## ProjectConf
+##
+## Represents the Project configuration
+
+ProjectConf = R6::R6Class("ProjectConf",
 
     ## private members
     private = list(
@@ -253,97 +341,14 @@ CodefaceConf = R6::R6Class("CodefaceConf",
 
         ## CONFIGURATION ENTRIES
 
-        ## project
-        get.project = function() {
-            return(private$get.conf.entry("project"))
-        },
-
-        ## repo
-        get.repo = function() {
-            return(private$get.conf.entry("repo"))
-        },
-
-        ## description
-        get.description = function() {
-            return(private$get.conf.entry("description"))
-        },
-
-        ## mailinglists
-        get.mailinglists = function() {
-            return(private$get.conf.entry("mailinglists"))
-        },
-
-        ## tagging
-        get.tagging = function() {
-            return(private$get.conf.entry("tagging"))
-        },
-
-        ## artifact
-        get.artifact = function() {
-            return(private$get.conf.entry("artifact"))
-        },
-
-        ## artifact.short
-        get.artifact.short = function() {
-            return(private$get.conf.entry("artifact.short"))
-        },
-
-        ## artifact
-        get.artifact.codeface = function() {
-            return(private$get.conf.entry("artifact.codeface"))
-        },
-
-        ## data.path
-        get.datapath = function() {
-            return(private$get.conf.entry("datapath"))
-        },
-
-        ## data.path.callgraph
-        get.datapath.callgraph = function() {
-            return(private$get.conf.entry("datapath.callgraph"))
-        },
-
-        ## data.path.synchronicity
-        get.datapath.synchronicity = function() {
-            return(private$get.conf.entry("datapath.synchronicity"))
-        },
-
-        ## revisions
-        get.revisions = function() {
-            return(private$get.conf.entry("revisions"))
-        },
-
-        ## revisions.dates
-        get.revisions.dates = function() {
-            return(private$get.conf.entry("revisions.dates"))
-        },
-
-        ## revisions.callgraph
-        get.revisions.callgraph = function() {
-            return(private$get.conf.entry("revisions.callgraph"))
-        },
-
-        ## ranges
-        get.ranges = function() {
-            return(private$get.conf.entry("ranges"))
-        },
-
-        ## ranges.callgraph
-        get.ranges.callgraph = function() {
-            return(private$get.conf.entry("ranges.callgraph"))
-        },
-
-        ## get a stripped-down version of the ranges
-        ## (for use while plotting)
-        get.ranges.simplified = function() {
-            # remove names ,e.g. "version", from release cycle names
-            return(self$get.ranges())
+        get.entry = function(entry.name) {
+            return(private$get.conf.entry(entry.name))
         },
 
         ## get the corresponding call-graph revision for the given range
         get.callgraph.revision.from.range = function(range) {
-            idx = which(self$get.ranges() == range)
-            rev = self$get.revisions.callgraph()[idx + 1]
+            idx = which(self$get.entry("ranges") == range)
+            rev = self$get.entry("revisions.callgraph")[idx + 1]
             return(rev)
         }
 
