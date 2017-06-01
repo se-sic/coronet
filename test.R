@@ -35,19 +35,19 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 ## CONFIGURATION
 
-project.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-network.conf = NetworkConf$new()
+proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+net.conf = NetworkConf$new()
 #initialize with AUTHOR.RELATION and ARTIFACT.RELATION
-network.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
+net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
 
 ## get ranges
-ranges = project.conf$get.entry(entry.name = "ranges")
-revisions.callgraph = project.conf$get.entry("revisions.callgraph")
+ranges = proj.conf$get.entry(entry.name = "ranges")
+revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
 
 
 ## PROJECT-LEVEL DATA
 
-x = CodefaceProjectData$new(project.conf, network.conf)
+x = CodefaceProjectData$new(proj.conf, net.conf)
 
 # x$get.commits.raw()
 # x$get.synchronicity()
@@ -87,8 +87,8 @@ x = CodefaceProjectData$new(project.conf, network.conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.conf, range = ranges[[2]])
-# y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
 # y$get.commits.filtered.empty()
@@ -113,10 +113,10 @@ y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.c
 
 
 ## BULK METHODS
-# network.conf = NetworkConf$new()
+# net.conf = NetworkConf$new()
 # ## author networks
 
-# auth = collect.author.networks(project.conf, network.conf)
+# auth = collect.author.networks(proj.conf, net.conf)
 
 # for (net in auth) {
 #     plot.author.network(net)
@@ -124,7 +124,7 @@ y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.c
 
 # ## artifact networks
 
-# art = collect.artifact.networks(project.conf, network.conf)
+# art = collect.artifact.networks(proj.conf, net.conf)
 
 # for (net in art) {
 #     plot.artifact.network(net)
@@ -132,14 +132,14 @@ y <- CodefaceRangeData$new(project.conf = project.conf, network.conf = network.c
 
 # ## bipartite networks
 
-# bp = collect.bipartite.networks(project.conf, network.conf)
+# bp = collect.bipartite.networks(proj.conf, net.conf)
 
 # for (net in bp) {
 #     plot.bipartite.network(net)
 # }
 
 # ## lapply on data objects
-# data = construct.data(project.conf, callgraphs = TRUE)
+# data = construct.data(proj.conf, callgraphs = TRUE)
 # run.lapply(data, "get.data.path.callgraph")
 
 
