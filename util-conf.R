@@ -116,7 +116,6 @@ CodefaceConf = R6::R6Class("CodefaceConf",
         },
 
 
-
         ## construct path to a Codeface configuration
         ## - data: path to codeface-data folder
         ## - selection.process: one of: threemonth, releases
@@ -192,19 +191,12 @@ CodefaceConf = R6::R6Class("CodefaceConf",
             revisions.dates = revisions.df[["date"]]
             if (!is.null(revisions.dates)) names(revisions.dates) = revisions
 
-            ## store revision data
-            conf$revisions = revisions
-            conf$revisions.dates = revisions.dates
-
-            ## call-graph revisions (do a postprocessing for list of revisions)
-            conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(conf$revisions)
-
-            ## compute revision ranges
-            conf$ranges = private$construct.ranges(conf$revisions)
-            conf$ranges.callgraph = private$construct.ranges(conf$revisions.callgraph)
-
             ## SAVE FULL CONFIGURATION OBJECT
             private$conf = conf
+
+            ## construct and save revisions and ranges
+            ## (this has to be done after storing conf due to the needed access to the conf object)
+            self$set.revisions(revisions, revisions.dates)
 
             ## logging
             logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
@@ -345,6 +337,22 @@ CodefaceConf = R6::R6Class("CodefaceConf",
             idx = which(self$get.ranges() == range)
             rev = self$get.revisions.callgraph()[idx + 1]
             return(rev)
+        },
+
+        ## UPDATING CONFIGURATION ENTRIES
+
+        ## set the revisions and ranges
+        set.revisions = function(revisions, revisions.dates) {
+            ## store revision data
+            private$conf$revisions = revisions
+            private$conf$revisions.dates = revisions.dates
+
+            ## call-graph revisions (do a postprocessing for list of revisions)
+            private$conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(private$conf$revisions)
+
+            ## compute revision ranges
+            private$conf$ranges = private$construct.ranges(private$conf$revisions)
+            private$conf$ranges.callgraph = private$construct.ranges(private$conf$revisions.callgraph)
         }
 
     )

@@ -88,6 +88,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
     names(data.split) = bins.ranges
 
+    ## adapt project configuration
+    project.data$get.conf()$set.revisions(bins, bins.date)
+
     ## construct CodefaceRangeData objects
     logging::logdebug("Constructing CodefaceRangeData objects.")
     cf.data = parallel::mclapply(bins.ranges, function(range) {
