@@ -26,10 +26,12 @@ requireNamespace("parallel")
 #'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
 #' @param split.basis the data name to use as the basis for split bins, either 'commits' or 'mails'
 #'                    [default: commits]
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
 #'
 #' @return the list of CodefaceRangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
-                                 split.basis = c("commits", "mails")) {
+                                 split.basis = c("commits", "mails"), sliding.window = FALSE) {
     ## get actual raw data
     data = list(
         commits = project.data$get.commits.raw(),
@@ -113,6 +115,38 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         return(cf.range.data)
     })
+
+    ## perform additional steps for sliding-window approach
+    if (sliding.window) {
+        ## compute bins for sliding windows: pairwise middle between dates
+        bins.date.middle = mapply(
+            bins.date[1:(length(bins.date) - 1)],
+            bins.date[2:length(bins.date)],
+            FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
+        )
+        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+
+        ## split data for sliding windows
+        cf.data.sliding = split.data.time.based(project.data, bins = bins.date.middle,
+                                                split.basis = split.basis, sliding.window = FALSE)
+
+        ## append data to normally-split data
+        cf.data = append(cf.data, cf.data.sliding)
+
+        ## sort data object properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        cf.data = cf.data[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
+
+        ## update project configuration
+        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        for (cf in cf.data) {
+            ## re-set project configuration due to object duplication
+            cf.conf = cf$set.project.conf(project.data$get.project.conf())
+        }
+    }
 
     ## return list of CodefaceRangeData objects
     return(cf.data)
