@@ -55,6 +55,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         commits.raw = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
+        pasta = NULL, # list
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -147,6 +148,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                     NA
                 )
                 commit.data = cbind(commit.data, synchronicity = dummy.data)
+            }
+
+            if (private$network.conf$get.variable("pasta")) {
+                pasta = parse.pasta.data(conf = private$project.conf)
+                logging::logdebug("read:PASTA!!!!!!!!!")
+                browser()
             }
 
             ## store the commit data

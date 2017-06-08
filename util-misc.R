@@ -457,3 +457,77 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 
     return(get0(variable))
 }
+
+parse.pasta.data = function(conf) {
+    result = list()
+    filepath = paste(conf$get.entry("datapath.pasta"), "similar-mailbox", sep = "/")
+    con = file(filepath, "r")
+    while ( TRUE ) {
+        line = readLines(con, n = 1)
+        if ( length(line) == 0 ) {
+            break
+        }
+        if(!grepl(" => ", line)) {
+            print("Faulty line!")
+        }
+        else if(grepl("> <", line)) {
+            #finds all postions of the pattern to split the single messageIds
+            val1 <- gregexpr(pattern = "> <", line)
+            #finds the position of the pattern to seperate the commithash from the rest
+            val2 <- val <- gregexpr(pattern = " => ", line)
+            #the commithash
+            value <- substr(line, as.numeric(val) + 4, nchar(line))
+            listOfKeys <- c()
+            #stores all positions of seperators
+            for(i in 1:length(val1[[1]])) {
+                listOfKeys <- c(listOfKeys, val1[[1]][i])
+            }
+            #splits the first messageId and stores it in result
+            keyOne <- substr(line, 0, listOfKeys[[1]])
+            if(is.null(result[[key]])) {
+                result[[key]] <- value
+            }
+            else {
+                result[[key]] <- c(result[[key]], value)
+            }
+            #splits messageId 2 till n-1 and stores it into result
+            for(i in 1:length(listOfKeys)) {
+                if(!i > length(listOfKeys)&length(listOfKeys) > 1) {
+                    key <- substr(line, as.numeric(listOfKeys[[i]]) + 2,
+                                  as.numeric(listOfKeys[[i+1]]))
+                    if(is.null(result[[key]])) {
+                        result[[key]] <- value
+                    }
+                    else {
+                        result[[key]] <- c(result[[key]], value)
+                    }
+                    #splits the last messageId and stores it to result
+                    if(i == length(listOfKeys)) {
+                        key2 <- substr(line, as.numeric(listOfKeys[[i]]) + 2,
+                                       as.numeric(val2) - 1)
+                        if(is.null(result[[key]])) {
+                            result[[key]] <- value
+                        }
+                        else {
+                            result[[key]] <- c(result[[key]], value)
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            val <- gregexpr(pattern = " => ", line)
+            key <- substr(line, 0, as.numeric(val) - 1)
+            value <- substr(line, as.numeric(val) + 4, nchar(line))
+            if(is.null(result[[key]])) {
+                result[[key]] <- value
+            }
+            else {
+                result[[key]] <- c(result[[key]], value)
+            }
+        }
+    }
+
+    close(con)
+    return(result)
+}
