@@ -161,10 +161,12 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
 #'
 #' @return the list of CodefaceRangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
-                                     activity.amount) {
+                                     activity.amount, sliding.window = FALSE) {
 
     ## get basis for splitting process
     activity.type = match.arg(activity.type)
@@ -185,13 +187,70 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
-    bins = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)[["bins"]]
+    bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)
+    bins = bins.data[["bins"]]
     bins.date = as.POSIXct(bins)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
-    data.split = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type)
-    return(data.split)
+    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type)
+
+    ## perform additional steps for sliding-window approach:
+    ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
+    ## then, compute bins on the cropped data
+    if (sliding.window) {
+        ## get the list of unique items that are used for the bin computation and, thus, also the
+        ## cropping of data
+        items.unique = unique(data[[ activity.type ]][[ id.column[[activity.type]] ]])
+        items.unique.count = length(items.unique)
+
+        ## offsets used for cropping (half the first/last bin)
+        offset.start = activity.amount / 2
+        offset.end = floor((length(items.unique) %% activity.amount) / 2) ## TODO floor() or ceiling()?
+        ## cut the data appropriately
+        items.cut = c(
+            items.unique[1:offset.start],
+            items.unique[(items.unique.count - offset.end):items.unique.count]
+        )
+
+        ## store the data again
+        data.to.cut = data[[ activity.type ]][[ id.column[[activity.type]] ]] %in% items.cut
+        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut ]
+
+        ## clone the project data and update raw data to split it again
+        project.data.clone = project.data$clone()
+        project.data.clone$set.commits.raw(data[["commits"]])
+        project.data.clone$set.mails(data[["mails"]])
+
+        ## split data for sliding windows
+        cf.data.sliding = split.data.activity.based(project.data.clone, activity.type = activity.type,
+                                                    activity.amount = activity.amount, sliding.window = FALSE)
+
+        ## append data to normally-split data
+        cf.data = append(cf.data, cf.data.sliding)
+
+        ## compute bins for sliding windows: pairwise middle between dates
+        bins.date.middle = attr(cf.data.sliding, "bins")
+
+        ## sort data object properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        cf.data = cf.data[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
+
+        ## update project configuration
+        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        for (cf in cf.data) {
+            ## re-set project configuration due to object duplication
+            cf.conf = cf$set.project.conf(project.data$get.project.conf(), reset.environment = FALSE)
+        }
+    }
+
+    ## set bin attribute for sliding-window functionality
+    attr(cf.data, "bins") = bins.date
+
+    return(cf.data)
 }
 
 #' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
