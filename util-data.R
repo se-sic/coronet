@@ -548,9 +548,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         },
 
         # Set the current project configuration to the given one.
-        set.project.conf = function(project.conf) {
+        set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = project.conf
-            self$reset.environment()
+
+            if (reset.environment) {
+                self$reset.environment()
+            }
         },
 
         # Get the current network configuration
