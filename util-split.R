@@ -57,7 +57,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         bins = strftime(bins)
         bins.labels = head(bins, -1)
         ## logging
-        logging::loginfo("Splitting data '%s' into time ranges '%s'.",
+        logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
     }
     bins.date = as.POSIXct(bins)
@@ -176,7 +176,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #'             If set, the 'time.period' parameter is ignored.
 #'
 #' @return a list of igraph networks, each referring to one time period
-split.network.time.based = function(network, time.period, bins = NULL) {
+split.network.time.based = function(network, time.period = "3 months", bins = NULL) {
     ## extract date attributes from edges
     dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
 
@@ -186,13 +186,13 @@ split.network.time.based = function(network, time.period, bins = NULL) {
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
-        logging::loginfo("Splitting network into time ranges of %s.", time.period)
+        logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
     } else {
         bins.info = split.get.bins.time.based(dates, time.period)
         bins.vector = bins.info[["vector"]]
         bins = head(bins.info[["bins"]], -1)
         ## logging
-        logging::loginfo("Splitting network '%s' into time ranges '%s'.",
+        logging::loginfo("Splitting network into time ranges [%s].",
                          paste(bins.info[["bins"]], collapse = ", "))
     }
 
