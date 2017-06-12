@@ -348,10 +348,11 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #' @param network the igraph network to split
 #' @param number.edges the amount of edges describing the size of the ranges
 #'                     (implying an open number of resulting ranges)
-#' @param number.windows the number of networks to get from this function
+#' @param number.windows the number of consecutive networks to get from this function
 #'                       (implying an equally distributed amount of edges in each range)
 #' @param sliding.window logical indicating whether the splitting should be performed using
-#'                       a sliding-window approach [default: FALSE]
+#'                       a sliding-window approach (increases 'number.windows' accordingly)
+#'                       [default: FALSE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
 split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL,
