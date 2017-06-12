@@ -41,11 +41,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## private members ####
     private = list(
-        ## configuration
+        ## configuration objects
         project.conf = NULL, # list
-
         network.conf = NULL,
-
 
         ## raw data
         ## commits and commit data
@@ -498,7 +496,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## public members ####
     public = list(
-
         ## constructor
         initialize = function(project.conf, network.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
@@ -513,6 +510,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
+
         ## TO STRING ;) ####
 
         get.class.name = function() {
@@ -520,6 +518,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 sprintf("CodefaceProjectData<%s>", private$project.conf$get.entry("repo"))
             )
         },
+
 
         ## RESET ENVIRONMENT ##
 
@@ -577,6 +576,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.network.conf.variable = function(var.name) {
             return(private$network.conf$get.variable(var.name))
         },
+
 
         ## BACKUP ####
 
@@ -984,7 +984,11 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceRangeData<%s, %s, %s>", private$project.conf$get.entry("repo"), private$range, private$revision.callgraph)
+                sprintf("CodefaceRangeData<%s, %s, %s>",
+                        private$project.conf$get.entry("repo"),
+                        private$range,
+                        private$revision.callgraph
+                )
             )
         },
 

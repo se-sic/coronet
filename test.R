@@ -22,7 +22,6 @@ options(mc.cores = 6L)
 
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
-
 CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
 CASESTUDY = "busybox"

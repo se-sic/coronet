@@ -17,7 +17,6 @@ requireNamespace("igraph") # networks
 
 
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
-
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
@@ -52,7 +51,6 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 
 
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
-
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
@@ -87,8 +85,6 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 
 
 collect.author.networks = function(project.conf, network.conf, step = 1) {
-
-
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
@@ -123,7 +119,6 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 
 
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
-
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
     ## subset according to given step size
@@ -157,7 +152,6 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 ##
 
 construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
-
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
     ## subset according to given step size

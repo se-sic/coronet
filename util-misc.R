@@ -62,8 +62,8 @@ get.thing2thing = function(base.data, thing1, thing2, network.conf) {
 ## - no row names
 ## Column names are mapped to the developers' names, row names are set identically
 read.adjacency.matrix.from.file = function(file, authors, network.conf) {
-
-    if(!file.exists(file)) { # no analysis for the current range
+    # no analysis for the current range
+    if(!file.exists(file)) {
         return(create.empty.network())
     }
 
@@ -95,7 +95,6 @@ read.adjacency.matrix.from.file = function(file, authors, network.conf) {
 ## - if directed, the order of things in the sublists is respected
 ## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
 construct.dependency.network.from.list = function(list, network.conf, directed = FALSE) {
-
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
 
@@ -127,7 +126,6 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                 item = set[item.no, ]
 
                 ## get vertex data
-
                 item.node = item[, 1]
                 cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(item)
                 item.edge.attrs = item[1, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE]
@@ -263,7 +261,6 @@ read.network.from.file = function(file, format = "pajek") {
 ## As there may be artifacts existing that have not been touched by a developer,
 ## the two sets need to be unified to avoid null-pointer exceptions
 unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
-
     # get vertex names and set of all related artifacts
     artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
     artifacts = unique(plyr::rbind.fill(author.to.artifact)[["artifact"]] )
@@ -277,7 +274,6 @@ unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
                                        igraph::get.vertex.attribute(net, "name"))
 
     return(net)
-
 }
 
 
@@ -353,7 +349,6 @@ EDGE.ATTR.HANDLING = list(
 
 ## Simplify a network
 simplify.network = function(network) {
-
     ## simplify networks (contract edges and remove loops)
     network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 

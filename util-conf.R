@@ -65,7 +65,7 @@ NetworkConf = R6::R6Class("NetworkConf",
                                                   "thread", "hash", "file", "artifact.type"),
                                         type = "character"),
         simplify = list(value = FALSE,
-                          type = "logical"),
+                        type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
         synchronicity = list(value = FALSE,
@@ -77,8 +77,10 @@ NetworkConf = R6::R6Class("NetworkConf",
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
-            return(exists(name, where = private) &&
-                     (class(value) == (private[[name]][["type"]])))
+            return(
+                exists(name, where = private) &&
+                    (class(value) == (private[[name]][["type"]]))
+            )
         }
     ),
 
