@@ -1,11 +1,10 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
-
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("R6") # for R6 classes
@@ -42,11 +41,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## private members ####
     private = list(
-        ## configuration
+        ## configuration objects
         project.conf = NULL, # list
-
         network.conf = NULL,
-
 
         ## raw data
         ## commits and commit data
@@ -499,7 +496,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## public members ####
     public = list(
-
         ## constructor
         initialize = function(project.conf, network.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
@@ -514,6 +510,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
+
         ## TO STRING ;) ####
 
         get.class.name = function() {
@@ -521,6 +518,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 sprintf("CodefaceProjectData<%s>", private$project.conf$get.entry("repo"))
             )
         },
+
 
         ## RESET ENVIRONMENT ##
 
@@ -541,9 +539,19 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
 
         ## CONFIGURATION ####
+
         # Get the current project configuration
         get.project.conf = function() {
             return(private$project.conf)
+        },
+
+        # Set the current project configuration to the given one.
+        set.project.conf = function(project.conf, reset.environment = FALSE) {
+            private$project.conf = project.conf
+
+            if (reset.environment) {
+                self$reset.environment()
+            }
         },
 
         # Get the current network configuration
@@ -554,6 +562,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         # Set the current network configuration to the given one.
         set.network.conf = function(network.conf) {
           private$network.conf = network.conf
+          self$reset.environment()
         },
 
         ## UPDATE CONFIGURATION ####
@@ -567,6 +576,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.network.conf.variable = function(var.name) {
             return(private$network.conf$get.variable(var.name))
         },
+
 
         ## BACKUP ####
 
@@ -974,7 +984,11 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceRangeData<%s, %s, %s>", private$project.conf$get.entry("repo"), private$range, private$revision.callgraph)
+                sprintf("CodefaceRangeData<%s, %s, %s>",
+                        private$project.conf$get.entry("repo"),
+                        private$range,
+                        private$revision.callgraph
+                )
             )
         },
 

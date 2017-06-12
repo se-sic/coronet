@@ -12,7 +12,6 @@ requireNamespace("igraph") # networks
 ## Given networks need type attributes on all vertices and edges
 
 plot.network = function(net, labels = TRUE, grayscale = FALSE) {
-
     ## colors and shapes
     vertex.colors = c("#00AEFF", "#FF8B00", "#FF0000")
     edge.colors = c("#999999", "#14CC3B", "#FF0000")
@@ -88,10 +87,10 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     else {
         plot.new()
     }
+
     legend("bottom", c("Developers", "Artifacts", "Unipartite Edges", "Bipartite Edges"), bty = "n", ncol = 2,
            pch = vertex.shapes.pch.legend, col = vertex.colors.legend, pt.bg = vertex.colors.legend, lty = edge.lty.legend,
            cex = 1.25, pt.cex = 2, lwd = 2)
-
 }
 
 
@@ -100,14 +99,12 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
 ##
 
 plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
-
     ## correct missing type attributes
     igraph::E(net)[ is.na(type) ]$type = 5
     igraph::V(net)[ is.na(type) ]$type = 5
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
-
 }
 
 
@@ -116,14 +113,12 @@ plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
 ##
 
 plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
-
     ## correct missing type attributes
     net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = igraph::set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
-
 }
 
 
@@ -132,14 +127,12 @@ plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
 ##
 
 plot.artifact.network = function(net, labels = TRUE, grayscale = FALSE) {
-
     ## correct missing type attributes
     net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
     net = igraph::set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
 
     ## plot
     plot.network(net, labels = labels, grayscale = grayscale)
-
 }
 
 
