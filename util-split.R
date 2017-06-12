@@ -65,11 +65,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     bins.date = as.POSIXct(bins)
 
     ## construct ranges
-    bins.ranges = paste(
-        bins[1:(length(bins) - 1)],
-        bins[2:length(bins)],
-        sep = "-"
-    )
+    bins.ranges = construct.ranges(bins)
     names(bins.ranges) = bins.ranges
 
     ## split data
@@ -331,6 +327,9 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         bins.date = sort(c(bins.date, bins.date.middle))
     }
 
+    ## set ranges as names
+    names(nets) = construct.ranges(bins.date, sliding.window = sliding.window)
+
     return(nets)
 }
 
@@ -438,6 +437,9 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## set bin attribute for sliding-window functionality
     attr(networks, "bins") = bins.date
+
+    ## set ranges as names
+    names(networks) = construct.ranges(bins.date, sliding.window = sliding.window)
 
     return(networks)
 }
