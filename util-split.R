@@ -2,6 +2,10 @@
 ## hunsen@fim.uni-passau.de
 ## (c) Sofie Kemper, 2017
 ## kemperso@fim.uni-passau.de
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+## (c) Christian Hechtl, 2017
+## hechtl@fim.uni-passau.de
 
 
 ## libraries
