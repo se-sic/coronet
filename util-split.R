@@ -401,7 +401,6 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     })
     ## unlist bins
     bins.date = do.call(c, bins.date)
-    bins.date = unique(bins.date)
     ## convert to character strings
     bins.date.char = strftime(bins.date)
 
