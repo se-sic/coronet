@@ -24,9 +24,9 @@ options(mc.cores = 6L)
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
 
-CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
+CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
-CASESTUDY = "test"
+CASESTUDY = "busybox"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 AUTHOR.RELATION = "mail" # mail, cochange
@@ -89,7 +89,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## RANGE-LEVEL DATA
 
-# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
 # y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
@@ -158,7 +158,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## SPLITTING DATA
 
-# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits")
+# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
@@ -181,7 +181,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # print(run.lapply(cf.data, "get.class.name"))
 
 # g = y$get.bipartite.network()
-# nets = split.network.time.based(g, time.period = "1 month")
+# nets = split.network.time.based(g, time.period = "1 month", sliding.window = TRUE)
 # for (net in nets) {
 #     plot.network(net)
 # }
@@ -200,7 +200,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # }
 
 # g = y$get.bipartite.network()
-# nets = split.network.activity.based(g, number.edges = 500)
+# nets = split.network.activity.based(g, number.edges = 500, sliding.window = TRUE)
 # for (net in nets) {
 #     plot.network(net)
 # }
