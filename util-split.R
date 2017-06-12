@@ -320,9 +320,9 @@ split.get.bins.time.based = function(dates, time.period) {
     ## find date bins from given dates
     dates.breaks = c(
         ## time periods of length 'time.period'
-        as.Date(seq.POSIXt(from = min(dates), to = max(dates), by = time.period)),
+        seq.POSIXt(from = min(dates), to = max(dates), by = time.period),
         ## add last bin
-        as.Date(max(dates)) + 1
+        max(dates) + 1
     )
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
@@ -367,7 +367,7 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     bins.number.complete = length(ids.unique) %/% activity.amount
     bins.number.incomplete = length(ids.unique) %% activity.amount
     bins.activity = c(
-        rep(1:bins.number.complete, each = activity.amount),
+        if (bins.number.complete != 0) rep(1:bins.number.complete, each = activity.amount),
         rep(bins.number.complete + 1, bins.number.incomplete)
     )
     bins.number = max(bins.activity)
