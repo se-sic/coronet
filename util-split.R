@@ -267,9 +267,12 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
 #'             If set, the 'time.period' parameter is ignored.
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
 #'
 #' @return a list of igraph networks, each referring to one time period
-split.network.time.based = function(network, time.period = "3 months", bins = NULL) {
+split.network.time.based = function(network, time.period = "3 months", bins = NULL,
+                                    sliding.window = FALSE) {
     ## extract date attributes from edges
     dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
 
@@ -283,6 +286,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     } else {
         bins.info = split.get.bins.time.based(dates, time.period)
         bins.vector = bins.info[["vector"]]
+        bins.date = as.POSIXct(bins.info[["bins"]])
         bins = head(bins.info[["bins"]], -1)
         ## logging
         logging::loginfo("Splitting network into time ranges [%s].",
@@ -290,6 +294,42 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     }
 
     nets = split.network.by.bins(network, bins, bins.vector)
+
+    ## perform additional steps for sliding-window approach
+    if (sliding.window) {
+        ## compute bins for sliding windows: pairwise middle between dates
+        bins.date.middle = mapply(
+            bins.date[1:(length(bins.date) - 1)],
+            bins.date[2:length(bins.date)],
+            FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
+        )
+        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+
+        ## order edges by date
+        edges.all = igraph::E(network)
+        edges.dates = igraph::get.edge.attribute(network, "date")
+
+        ## identify edges to cut for sliding-window approach
+        edges.cut = sapply(edges.dates, function(date) {
+            date < bins.date.middle[1] || date > bins.date.middle[length(bins.date.middle)]
+        })
+
+        ## delete edges from the network and create a new network
+        network.cut = igraph::delete.edges(network, edges.all[edges.cut])
+
+        ## split network for sliding windows
+        nets.sliding = split.network.time.based(network.cut, bins = bins.date.middle, sliding.window = FALSE)
+
+        ## append data to normally-split data
+        nets = append(nets, nets.sliding)
+
+        ## sort data object properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        nets = nets[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
+    }
 
     return(nets)
 }
@@ -307,9 +347,12 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #'                     (implying an open number of resulting ranges)
 #' @param number.windows the number of networks to get from this function
 #'                       (implying an equally distributed amount of edges in each range)
+#' @param sliding.window logical indicating whether the splitting should be performed using
+#'                       a sliding-window approach [default: FALSE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
-split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL) {
+split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL,
+                                        sliding.window = FALSE) {
     ## get total edge count
     edge.count = igraph::ecount(network)
 
@@ -349,11 +392,52 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## identify bins
     logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
-    bins.vector = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)[["vector"]]
+    bins.data = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)
+    bins.date = bins.data[["bins"]]
+    bins.vector = bins.data[["vector"]]
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
     bins = sort(unique(bins.vector))
     ## split network by bins
     networks = split.network.by.bins(network, bins, bins.vector)
+
+    ## perform additional steps for sliding-window approach
+    ## for activity-based sliding-window bins to work, we need to crop edges appropriately and,
+    ## then, compute bins on the cropped networks
+    if (sliding.window) {
+        ## order edges by date
+        edges.by.date = igraph::E(network)[ order(df[["date"]]) ]
+
+        ## offsets used for cropping (half the first/last bin)
+        offset.start = number.edges / 2
+        offset.end = floor((edge.count %% number.edges) / 2) ## TODO floor() or ceiling()?
+        ## cut the data appropriately
+        edges.cut = c(
+            edges.by.date[1:offset.start],
+            edges.by.date[(edge.count - offset.end):edge.count]
+        )
+
+        ## delete edges from the network and create a new network
+        network.cut = igraph::delete.edges(network, edges.cut)
+
+        ## split network for sliding windows
+        networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges, sliding.window = FALSE)
+
+        ## append data to normally-split data
+        networks = append(networks, networks.sliding)
+
+        ## compute bins for sliding windows: pairwise middle between dates
+        bins.date.middle = attr(networks.sliding, "bins")
+
+        ## sort data object properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        networks = networks[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
+    }
+
+    ## set bin attribute for sliding-window functionality
+    attr(networks, "bins") = bins.date
 
     return(networks)
 }
