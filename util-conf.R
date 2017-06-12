@@ -170,25 +170,6 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(r)
         },
 
-        construct.ranges = function(revs, sliding.window = FALSE) {
-            ## setting offset to construct ranges, i.e.,
-            ## combine each $offset revisions
-            offset = 1
-
-            ## with sliding window, we combine each second revision
-            if (sliding.window)
-                offset = 2
-
-            ## extract sequences of revisions
-            seq1 = revs[ 1:(length(revs) - offset) ]
-            seq2 = revs[ (offset + 1):length(revs) ]
-
-            ## construct ranges
-            ranges = paste(seq1, seq2, sep = "-")
-
-            return(ranges)
-        },
-
 
         ## / / / / / / / / / / / / / /
         ## Path construction
@@ -370,9 +351,33 @@ ProjectConf = R6::R6Class("ProjectConf",
             private$conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(private$conf$revisions)
 
             ## compute revision ranges
-            private$conf$ranges = private$construct.ranges(private$conf$revisions, sliding.window = sliding.window)
-            private$conf$ranges.callgraph = private$construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
+            private$conf$ranges = construct.ranges(private$conf$revisions, sliding.window = sliding.window)
+            private$conf$ranges.callgraph = construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
         }
 
     )
 )
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construction of range strings
+##
+
+construct.ranges = function(revs, sliding.window = FALSE) {
+    ## setting offset to construct ranges, i.e.,
+    ## combine each $offset revisions
+    offset = 1
+
+    ## with sliding window, we combine each second revision
+    if (sliding.window)
+        offset = 2
+
+    ## extract sequences of revisions
+    seq1 = revs[ 1:(length(revs) - offset) ]
+    seq2 = revs[ (offset + 1):length(revs) ]
+
+    ## construct ranges
+    ranges = paste(seq1, seq2, sep = "-")
+
+    return(ranges)
+}
