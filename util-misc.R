@@ -461,9 +461,9 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 parse.pasta.data = function(conf) {
     result = list()
     filepath = paste(conf$get.entry("datapath.pasta"), "similar-mailbox", sep = "/")
-    con = file(filepath, "r")
-    while ( TRUE ) {
-        line = readLines(con, n = 1)
+    lines = readLines(filepath)
+    for(i in 1:length(lines)) {
+        line = lines[i]
         if ( length(line) == 0 ) {
             break
         }
@@ -527,7 +527,5 @@ parse.pasta.data = function(conf) {
             }
         }
     }
-
-    close(con)
     return(result)
 }
