@@ -554,6 +554,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         # Set the current network configuration to the given one.
         set.network.conf = function(network.conf) {
           private$network.conf = network.conf
+          self$reset.environment()
         },
 
         ## UPDATE CONFIGURATION ####
