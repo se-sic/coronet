@@ -151,9 +151,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             if (private$network.conf$get.variable("pasta")) {
-                pasta = parse.pasta.data(conf = private$project.conf)
-                logging::logdebug("read:PASTA!!!!!!!!!")
-                browser()
+                pasta = self$get.pasta()
             }
 
             ## store the commit data
@@ -658,6 +656,17 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         set.synchronicity = function(data) {
             logging::loginfo("Setting synchronicity data.")
             private$synchronicity = data
+        },
+
+        get.pasta = function() {
+            logging::loginfo("Getting pasta data.")
+
+            ## if commits are not read already, do this
+            if (is.null(private$pasta)) {
+                private$pasta = parse.pasta.data(private$project.conf)
+            }
+
+            return(private$pasta)
         },
 
         ## get the complete list of mails
