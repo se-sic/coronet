@@ -57,7 +57,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         bins = strftime(bins)
         bins.labels = head(bins, -1)
         ## logging
-        logging::loginfo("Splitting data '%s' into time ranges '%s'.",
+        logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
     }
     bins.date = as.POSIXct(bins)
@@ -176,7 +176,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #'             If set, the 'time.period' parameter is ignored.
 #'
 #' @return a list of igraph networks, each referring to one time period
-split.network.time.based = function(network, time.period, bins = NULL) {
+split.network.time.based = function(network, time.period = "3 months", bins = NULL) {
     ## extract date attributes from edges
     dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
 
@@ -186,13 +186,13 @@ split.network.time.based = function(network, time.period, bins = NULL) {
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
-        logging::loginfo("Splitting network into time ranges of %s.", time.period)
+        logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
     } else {
         bins.info = split.get.bins.time.based(dates, time.period)
         bins.vector = bins.info[["vector"]]
         bins = head(bins.info[["bins"]], -1)
         ## logging
-        logging::loginfo("Splitting network '%s' into time ranges '%s'.",
+        logging::loginfo("Splitting network into time ranges [%s].",
                          paste(bins.info[["bins"]], collapse = ", "))
     }
 
@@ -320,9 +320,9 @@ split.get.bins.time.based = function(dates, time.period) {
     ## find date bins from given dates
     dates.breaks = c(
         ## time periods of length 'time.period'
-        as.Date(seq.POSIXt(from = min(dates), to = max(dates), by = time.period)),
+        seq.POSIXt(from = min(dates), to = max(dates), by = time.period),
         ## add last bin
-        as.Date(max(dates)) + 1
+        max(dates) + 1
     )
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
@@ -367,7 +367,7 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     bins.number.complete = length(ids.unique) %/% activity.amount
     bins.number.incomplete = length(ids.unique) %% activity.amount
     bins.activity = c(
-        rep(1:bins.number.complete, each = activity.amount),
+        if (bins.number.complete != 0) rep(1:bins.number.complete, each = activity.amount),
         rep(bins.number.complete + 1, bins.number.incomplete)
     )
     bins.number = max(bins.activity)
@@ -401,7 +401,6 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     })
     ## unlist bins
     bins.date = do.call(c, bins.date)
-    bins.date = unique(bins.date)
     ## convert to character strings
     bins.date.char = strftime(bins.date)
 
