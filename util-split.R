@@ -205,8 +205,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         items.unique.count = length(items.unique)
 
         ## offsets used for cropping (half the first/last bin)
-        offset.start = activity.amount / 2
-        offset.end = floor((length(items.unique) %% activity.amount) / 2) ## TODO floor() or ceiling()?
+        offset.start = floor(activity.amount / 2)
+        offset.end = floor((items.unique.count %% activity.amount) / 2)
         ## cut the data appropriately
         items.cut = c(
             items.unique[1:offset.start],
@@ -412,8 +412,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         edges.by.date = igraph::E(network)[ order(df[["date"]]) ]
 
         ## offsets used for cropping (half the first/last bin)
-        offset.start = number.edges / 2
-        offset.end = floor((edge.count %% number.edges) / 2) ## TODO floor() or ceiling()?
+        offset.start = floor(number.edges / 2)
+        offset.end = floor((edge.count %% number.edges) / 2)
         ## cut the data appropriately
         edges.cut = c(
             edges.by.date[1:offset.start],
