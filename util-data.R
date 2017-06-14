@@ -422,7 +422,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                                                        filter.base.artifact = filter.base.artifact,
                                                        extra.data = extra.edge.attr)
             artifacts.net = construct.dependency.network.from.list(commit2artifact, extra.edge.attr = extra.edge.attr,
-                                                                   simple.network = simple.network)
+                                                                   simple.network = simple.network, directed = FALSE)
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
