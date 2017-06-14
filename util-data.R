@@ -261,7 +261,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 return()
             }
 
-            ## load commit.ids object
+            ## load commit.hashes object
             load(file = file)
             synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
             nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
