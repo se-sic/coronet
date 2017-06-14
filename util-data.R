@@ -445,7 +445,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             commit2artifact = self$get.commit2artifact()
             artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = private$network.conf,
-                                                                   directed = private$network.conf$get.variable("artifact.directed"))
+                                                                   directed = FALSE)
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
