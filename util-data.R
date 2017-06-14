@@ -919,7 +919,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                contraction.mode = ifelse(FALSE, "collapse", "each")
+                contraction.mode = ifelse(
+                    private$network.conf$get.variable("contract.edges"),
+                    "collapse",
+                    "each"
+                )
                 artifacts.net = igraph::as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
