@@ -61,19 +61,19 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "logical"),
         artifact.filter.base = list(value = TRUE,
                                     type = "logical"),
-        artifact.edge.attributes = list(value = c("message.id", "date",
-                                                  "thread", "hash", "file", "artifact.type"),
-                                        type = "character"),
+        edge.attributes = list(value = c("message.id", "date",
+                                         "thread", "hash", "file", "artifact.type"),
+                               type = "character"),
         simplify = list(value = FALSE,
                         type = "logical"),
+        contract.edges = list(value = FALSE,
+                              type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
         synchronicity = list(value = FALSE,
                              type = "logical"),
         synchronicity.time.window = list(value = 5,
                                          type = "numeric"),
-        contract.edges = list(value = FALSE,
-                              type = "logical"),
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
@@ -101,7 +101,7 @@ NetworkConf = R6::R6Class("NetworkConf",
         update.values = function(updated.values = list()) {
             for (name in names(updated.values)) {
                 if (private$check.value(value = updated.values[[name]], name = name)) {
-                    if(name == "artifact.edge.attributes" && !("date" %in% updated.values[[name]])) {
+                    if(name == "edge.attributes" && !("date" %in% updated.values[[name]])) {
                       private[[name]][["value"]] = c(updated.values[[name]], "date")
                     } else {
                       private[[name]][["value"]] = updated.values[[name]]
