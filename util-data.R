@@ -1065,8 +1065,8 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     ## get extra edge attributes
     extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
-        cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(a.df)
-        return(a.df[, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE])
+        cols.which = network.conf$get.variable("edge.attributes") %in% colnames(a.df)
+        return(a.df[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE])
     })
     extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
     extra.edge.attributes.df["weight"] = 1 # add weight
