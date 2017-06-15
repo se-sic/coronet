@@ -448,7 +448,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             commit2artifact = self$get.commit2artifact()
             artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = private$network.conf,
-                                                                   directed = private$network.conf$get.variable("artifact.directed"))
+                                                                   directed = FALSE)
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -919,7 +919,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                contraction.mode = ifelse(FALSE, "collapse", "each")
+                contraction.mode = ifelse(
+                    private$network.conf$get.variable("contract.edges"),
+                    "collapse",
+                    "each"
+                )
                 artifacts.net = igraph::as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
@@ -1065,8 +1069,8 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     ## get extra edge attributes
     extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
-        cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(a.df)
-        return(a.df[, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE])
+        cols.which = network.conf$get.variable("edge.attributes") %in% colnames(a.df)
+        return(a.df[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE])
     })
     extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
     extra.edge.attributes.df["weight"] = 1 # add weight
