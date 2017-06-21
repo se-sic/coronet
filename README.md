@@ -127,11 +127,11 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * Read and add synchronicity data to commits and co-change-based networks
   * [`TRUE`, *`FALSE`*]
 - `synchronicity.time.window`:
-  * The time-window to use for synchronicity data if enabled by `synchronicity = TRUE`
+  * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
   * [1, *5*, 10]
   * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
 - `pasta` **[WIP]**
-  * Read and [PaStA](https://github.com/lfd/PaStA/) data
+  * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
   * [`TRUE`, *`FALSE`*]
   * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`
 
@@ -182,7 +182,7 @@ There is no way to update the entries, except for the revision-based parameters.
   * The revisions as used in call-graph file name
 - `ranges`
   * The revision ranges constructed from the list of `revisions`
-  * The ranges are be constructed in sliding-window manner when a data object is split using the sliding-window approach
+  * The ranges are constructed in sliding-window manner when a data object is split using the sliding-window approach
 - `ranges.callgraph`
   * The revision ranges based on the list `revisions.callgraph`
 
