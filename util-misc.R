@@ -1,10 +1,8 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
-
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
 
@@ -32,8 +30,8 @@ get.thing2thing = function(base.data, thing1, thing2, network.conf) {
 
     # get right portion of data
     data = base.data[c(thing1, thing2)]
-    cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(base.data)
-    cols = c(thing1, thing2, network.conf$get.variable("artifact.edge.attributes")[cols.which])
+    cols.which = network.conf$get.variable("edge.attributes") %in% colnames(base.data)
+    cols = c(thing1, thing2, network.conf$get.variable("edge.attributes")[cols.which])
 
     extra.data.df = base.data[cols]
     # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
@@ -64,8 +62,8 @@ get.thing2thing = function(base.data, thing1, thing2, network.conf) {
 ## - no row names
 ## Column names are mapped to the developers' names, row names are set identically
 read.adjacency.matrix.from.file = function(file, authors, network.conf) {
-
-    if(!file.exists(file)) { # no analysis for the current range
+    # no analysis for the current range
+    if(!file.exists(file)) {
         return(create.empty.network())
     }
 
@@ -97,7 +95,6 @@ read.adjacency.matrix.from.file = function(file, authors, network.conf) {
 ## - if directed, the order of things in the sublists is respected
 ## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
 construct.dependency.network.from.list = function(list, network.conf, directed = FALSE) {
-
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
 
@@ -129,10 +126,9 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                 item = set[item.no, ]
 
                 ## get vertex data
-
                 item.node = item[, 1]
-                cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[1, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE]
+                cols.which = network.conf$get.variable("edge.attributes") %in% colnames(item)
+                item.edge.attrs = item[1, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -264,8 +260,8 @@ read.network.from.file = function(file, format = "pajek") {
 ##
 ## As there may be artifacts existing that have not been touched by a developer,
 ## the two sets need to be unified to avoid null-pointer exceptions
+## FIXME this function should be inlined in 'CodefaceProjectData$get.networks'!
 unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
-
     # get vertex names and set of all related artifacts
     artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
     artifacts = unique(plyr::rbind.fill(author.to.artifact)[["artifact"]] )
@@ -274,12 +270,11 @@ unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
     diff = setdiff(artifacts, artifacts.net.vertices)
 
     # add missing vertices to existing network
-    net = artifacts.net + igraph::vertices(diff)
+    net = artifacts.net + igraph::vertices(diff, type = TYPE.ARTIFACT)
     net = igraph::set.vertex.attribute(net, "id", index = igraph::V(net),
                                        igraph::get.vertex.attribute(net, "name"))
 
     return(net)
-
 }
 
 
@@ -355,7 +350,6 @@ EDGE.ATTR.HANDLING = list(
 
 ## Simplify a network
 simplify.network = function(network) {
-
     ## simplify networks (contract edges and remove loops)
     network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 
@@ -389,7 +383,7 @@ create.empty.network = function(directed = TRUE) {
 ## Exemplary network for illustration purposes
 ##
 
-get.sample.network = function() {
+get.sample.network = function(network.conf = NetworkConf$new()) {
     ## INDEPENDENT NETWORKS
     authors = igraph::graph.empty(directed = FALSE) +
         igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
@@ -404,10 +398,10 @@ get.sample.network = function() {
         author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
         artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
     )
-    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
+    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact", network.conf)
 
     ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts)
+    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
     return(network)

@@ -1,11 +1,10 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
-
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+
 
 ## libraries
 requireNamespace("R6") # for R6 classes
@@ -42,11 +41,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## private members ####
     private = list(
-        ## configuration
+        ## configuration objects
         project.conf = NULL, # list
-
         network.conf = NULL,
-
 
         ## raw data
         ## commits and commit data
@@ -264,7 +261,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 return()
             }
 
-            ## load commit.ids object
+            ## load commit.hashes object
             load(file = file)
             synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
             nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
@@ -448,7 +445,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             commit2artifact = self$get.commit2artifact()
             artifacts.net = construct.dependency.network.from.list(commit2artifact, network.conf = private$network.conf,
-                                                                   directed = private$network.conf$get.variable("artifact.directed"))
+                                                                   directed = FALSE)
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -499,7 +496,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
     ## public members ####
     public = list(
-
         ## constructor
         initialize = function(project.conf, network.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
@@ -514,6 +510,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
+
         ## TO STRING ;) ####
 
         get.class.name = function() {
@@ -521,6 +518,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 sprintf("CodefaceProjectData<%s>", private$project.conf$get.entry("repo"))
             )
         },
+
 
         ## RESET ENVIRONMENT ##
 
@@ -541,9 +539,19 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
 
         ## CONFIGURATION ####
+
         # Get the current project configuration
         get.project.conf = function() {
             return(private$project.conf)
+        },
+
+        # Set the current project configuration to the given one.
+        set.project.conf = function(project.conf, reset.environment = FALSE) {
+            private$project.conf = project.conf
+
+            if (reset.environment) {
+                self$reset.environment()
+            }
         },
 
         # Get the current network configuration
@@ -554,6 +562,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         # Set the current network configuration to the given one.
         set.network.conf = function(network.conf) {
           private$network.conf = network.conf
+          self$reset.environment()
         },
 
         ## UPDATE CONFIGURATION ####
@@ -567,6 +576,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.network.conf.variable = function(var.name) {
             return(private$network.conf$get.variable(var.name))
         },
+
 
         ## BACKUP ####
 
@@ -824,25 +834,46 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## get the developer relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
+
+            ## construct network
             relation = private$network.conf$get.variable("author.relation")
-            if (relation == "cochange")
-                return(private$get.author.network.cochange())
-            else if (relation == "mail")
-                return(private$get.author.network.mail())
-            else
+            net = switch(
+                relation,
+                cochange =
+                    private$get.author.network.cochange(),
+                mail =
+                    private$get.author.network.mail(),
                 stop(sprintf("The author relation '%s' does not exist.", relation))
+            )
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$type = TYPE.AUTHOR
+            igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            return(net)
         },
 
         ## get artifact relation as network (generic)
         get.artifact.network = function() {
             logging::loginfo("Constructing artifact network.")
-          relation = private$network.conf$get.variable("artifact.relation")
-            if (relation == "cochange")
-                return(private$get.artifact.network.cochange())
-            else if (relation == "callgraph")
-                return(private$get.artifact.network.callgraph())
-            else
+
+            ## construct network
+            relation = private$network.conf$get.variable("artifact.relation")
+
+            net = switch(
+                relation,
+                cochange =
+                    private$get.artifact.network.cochange(),
+                callgraph =
+                    private$get.artifact.network.callgraph(),
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
+            )
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$type = TYPE.ARTIFACT
+            igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            return(net)
         },
 
         ## get the (real) bipartite network
@@ -855,8 +886,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             artifacts = self$get.artifacts()
 
             ## construct networks from vertices
-            authors.net = create.empty.network(directed = FALSE) + igraph::vertices(authors)
-            artifacts.net = create.empty.network(directed = FALSE) + igraph::vertices(artifacts)
+            authors.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
+            artifacts.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(artifacts, name = artifacts, type = TYPE.ARTIFACT)
 
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
@@ -880,7 +913,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## unify vertices with developer-artifact relation
             authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
             authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net))
+            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
 
             ## remove all authors from the corresponding network who do not have touched any artifact
             if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts)) {
@@ -918,7 +951,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                contraction.mode = ifelse(FALSE, "collapse", "each")
+                contraction.mode = ifelse(
+                    private$network.conf$get.variable("contract.edges"),
+                    "collapse",
+                    "each"
+                )
                 artifacts.net = igraph::as.undirected(artifacts.net, mode = contraction.mode, edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
@@ -974,7 +1011,11 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
 
         get.class.name = function() {
             return(
-                sprintf("CodefaceRangeData<%s, %s, %s>", private$project.conf$get.entry("repo"), private$range, private$revision.callgraph)
+                sprintf("CodefaceRangeData<%s, %s, %s>",
+                        private$project.conf$get.entry("repo"),
+                        private$range,
+                        private$revision.callgraph
+                )
             )
         },
 
@@ -1032,15 +1073,8 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
     ## combine networks
     u = igraph::disjoint_union(authors.net, artifacts.net)
 
-    ## set vertex and edge attributes for identifaction
-    igraph::V(u)[ name %in% authors ]$type = TYPE.AUTHOR
-    igraph::V(u)[ name %in% artifacts ]$type = TYPE.ARTIFACT
-    igraph::E(u)$type = TYPE.EDGES.INTRA
-
     ## add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf = network.conf)
-
-    ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
 
     ## simplify network
     if (network.conf$get.variable("simplify"))
@@ -1064,8 +1098,8 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     ## get extra edge attributes
     extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
-        cols.which = network.conf$get.variable("artifact.edge.attributes") %in% colnames(a.df)
-        return(a.df[, network.conf$get.variable("artifact.edge.attributes")[cols.which], drop = FALSE])
+        cols.which = network.conf$get.variable("edge.attributes") %in% colnames(a.df)
+        return(a.df[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE])
     })
     extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
     extra.edge.attributes.df["weight"] = 1 # add weight

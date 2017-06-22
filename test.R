@@ -1,11 +1,10 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
-
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+
 
 source("util-misc.R")
 source("util-conf.R")
@@ -23,10 +22,9 @@ options(mc.cores = 6L)
 
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
+CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
-CF.SELECTION.PROCESS = "testing" # releases, threemonth(, testing)
-
-CASESTUDY = "test"
+CASESTUDY = "busybox"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 AUTHOR.RELATION = "mail" # mail, cochange
@@ -71,9 +69,9 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$get.networks()
 # x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
 # h = x$get.bipartite.network()
-# plot.bipartite.network(h)
+# plot.network(h)
 # g = x$get.multi.network()
-# plot.bipartite.network(g)
+# plot.network(g)
 
 # ## save binary objects
 # net = x$get.author.network()
@@ -89,7 +87,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## RANGE-LEVEL DATA
 
-# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
 # y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
@@ -100,20 +98,20 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # y$get.data.path.callgraph()
 # y$get.author2artifact()
 # y$get.author2file()
-# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("file")))
+# y$update.network.conf(updated.values = list(edge.attributes = list("file")))
 # y$get.commit2artifact()
 # y$get.commit2file()
-# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("date")))
+# y$update.network.conf(updated.values = list(edge.attributes = list("date")))
 # y$get.thread2author()
 # y$get.author.network()
-# y$update.network.conf(updated.values = list(artifact.edge.attributes = list("hash")))
+# y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
 # y$get.artifact.network()
 # y$get.networks()
 # y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
 # h = y$get.bipartite.network()
-# plot.bipartite.network(h)
+# plot.network(h)
 # g = y$get.multi.network()
-# plot.bipartite.network(g)
+# plot.network(g)
 
 
 ## BULK METHODS
@@ -124,7 +122,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # auth = collect.author.networks(proj.conf, net.conf)
 #
 # for (net in auth) {
-#     plot.author.network(net)
+#     plot.network(net)
 # }
 
 # ## artifact networks
@@ -132,15 +130,15 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # art = collect.artifact.networks(proj.conf, net.conf)
 #
 # for (net in art) {
-#     plot.artifact.network(net)
+#     plot.network(net)
 # }
 
 # ## bipartite networks
 #
-# bp = collect.multi.networks(proj.conf, net.conf)
+# bp = collect.bipartite.networks(proj.conf, net.conf)
 #
 # for (net in bp) {
-#     plot.bipartite.network(net)
+#     plot.network(net)
 # }
 
 # ## multi networks
@@ -148,7 +146,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # multi = collect.multi.networks(proj.conf, net.conf)
 #
 # for (net in multi) {
-#     plot.bipartite.network(net)
+#     plot.network(net)
 # }
 
 # ## lapply on data objects
@@ -158,7 +156,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## SPLITTING DATA
 
-# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits")
+# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
@@ -181,7 +179,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # print(run.lapply(cf.data, "get.class.name"))
 
 # g = y$get.bipartite.network()
-# nets = split.network.time.based(g, time.period = "1 month")
+# nets = split.network.time.based(g, time.period = "1 month", sliding.window = TRUE)
 # for (net in nets) {
 #     plot.network(net)
 # }
@@ -200,7 +198,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # }
 
 # g = y$get.bipartite.network()
-# nets = split.network.activity.based(g, number.edges = 500)
+# nets = split.network.activity.based(g, number.edges = 500, sliding.window = TRUE)
 # for (net in nets) {
 #     plot.network(net)
 # }
@@ -209,10 +207,10 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 # pdf(file = "sample-network.pdf", width = 9, height = 5)
 # g = get.sample.network()
-# plot.bipartite.network(g, grayscale = FALSE)
+# plot.network(g, grayscale = FALSE)
 # dev.off()
 
 # pdf(file = "sample-network-bw.pdf", width = 9, height = 5)
 # g = get.sample.network()
-# plot.bipartite.network(g, grayscale = TRUE)
+# plot.network(g, grayscale = TRUE)
 # dev.off()
