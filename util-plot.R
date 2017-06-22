@@ -32,6 +32,10 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     edge.lty.legend = c(NA, NA, edge.lty[1:2])
     vertex.shapes.pch.legend = c(vertex.shapes.pch[1:2], NA, NA)
 
+    ## correct missing type attributes
+    igraph::V(net)[ is.na(type) ]$type = 3
+    igraph::E(net)[ is.na(type) ]$type = 5
+
     ## vertex color by "type" attribute
     igraph::V(net)$color <- vertex.colors[igraph::V(net)$type]
     igraph::V(net)$shape <- vertex.shapes[igraph::V(net)$type]
@@ -91,48 +95,6 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     legend("bottom", c("Developers", "Artifacts", "Unipartite Edges", "Bipartite Edges"), bty = "n", ncol = 2,
            pch = vertex.shapes.pch.legend, col = vertex.colors.legend, pt.bg = vertex.colors.legend, lty = edge.lty.legend,
            cex = 1.25, pt.cex = 2, lwd = 2)
-}
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Utility function for plotting bipartite networks
-##
-
-plot.bipartite.network = function(net, labels = TRUE, grayscale = FALSE) {
-    ## correct missing type attributes
-    igraph::E(net)[ is.na(type) ]$type = 5
-    igraph::V(net)[ is.na(type) ]$type = 5
-
-    ## plot
-    plot.network(net, labels = labels, grayscale = grayscale)
-}
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Utility function for plotting author networks
-##
-
-plot.author.network = function(net, labels = TRUE, grayscale = FALSE) {
-    ## correct missing type attributes
-    net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
-    net = igraph::set.vertex.attribute(net, "type", value = TYPE.AUTHOR)
-
-    ## plot
-    plot.network(net, labels = labels, grayscale = grayscale)
-}
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Utility function for plotting artifact networks
-##
-
-plot.artifact.network = function(net, labels = TRUE, grayscale = FALSE) {
-    ## correct missing type attributes
-    net = igraph::set.edge.attribute(net, "type", value = TYPE.EDGES.INTRA)
-    net = igraph::set.vertex.attribute(net, "type", value = TYPE.ARTIFACT)
-
-    ## plot
-    plot.network(net, labels = labels, grayscale = grayscale)
 }
 
 

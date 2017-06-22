@@ -69,9 +69,9 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$get.networks()
 # x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
 # h = x$get.bipartite.network()
-# plot.bipartite.network(h)
+# plot.network(h)
 # g = x$get.multi.network()
-# plot.bipartite.network(g)
+# plot.network(g)
 
 # ## save binary objects
 # net = x$get.author.network()
@@ -109,9 +109,9 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 # y$get.networks()
 # y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
 # h = y$get.bipartite.network()
-# plot.bipartite.network(h)
+# plot.network(h)
 # g = y$get.multi.network()
-# plot.bipartite.network(g)
+# plot.network(g)
 
 
 ## BULK METHODS
@@ -122,7 +122,7 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 # auth = collect.author.networks(proj.conf, net.conf)
 #
 # for (net in auth) {
-#     plot.author.network(net)
+#     plot.network(net)
 # }
 
 # ## artifact networks
@@ -130,15 +130,15 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 # art = collect.artifact.networks(proj.conf, net.conf)
 #
 # for (net in art) {
-#     plot.artifact.network(net)
+#     plot.network(net)
 # }
 
 # ## bipartite networks
 #
-# bp = collect.multi.networks(proj.conf, net.conf)
+# bp = collect.bipartite.networks(proj.conf, net.conf)
 #
 # for (net in bp) {
-#     plot.bipartite.network(net)
+#     plot.network(net)
 # }
 
 # ## multi networks
@@ -146,7 +146,7 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 # multi = collect.multi.networks(proj.conf, net.conf)
 #
 # for (net in multi) {
-#     plot.bipartite.network(net)
+#     plot.network(net)
 # }
 
 # ## lapply on data objects
@@ -207,10 +207,10 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 
 # pdf(file = "sample-network.pdf", width = 9, height = 5)
 # g = get.sample.network()
-# plot.bipartite.network(g, grayscale = FALSE)
+# plot.network(g, grayscale = FALSE)
 # dev.off()
 
 # pdf(file = "sample-network-bw.pdf", width = 9, height = 5)
 # g = get.sample.network()
-# plot.bipartite.network(g, grayscale = TRUE)
+# plot.network(g, grayscale = TRUE)
 # dev.off()
