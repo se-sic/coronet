@@ -269,7 +269,7 @@ unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
     diff = setdiff(artifacts, artifacts.net.vertices)
 
     # add missing vertices to existing network
-    net = artifacts.net + igraph::vertices(diff)
+    net = artifacts.net + igraph::vertices(diff, type = TYPE.ARTIFACT)
     net = igraph::set.vertex.attribute(net, "id", index = igraph::V(net),
                                        igraph::get.vertex.attribute(net, "name"))
 

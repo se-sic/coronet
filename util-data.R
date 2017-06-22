@@ -834,25 +834,46 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## get the developer relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
+
+            ## construct network
             relation = private$network.conf$get.variable("author.relation")
-            if (relation == "cochange")
-                return(private$get.author.network.cochange())
-            else if (relation == "mail")
-                return(private$get.author.network.mail())
-            else
+            net = switch(
+                relation,
+                cochange =
+                    private$get.author.network.cochange(),
+                mail =
+                    private$get.author.network.mail(),
                 stop(sprintf("The author relation '%s' does not exist.", relation))
+            )
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$type = TYPE.AUTHOR
+            igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            return(net)
         },
 
         ## get artifact relation as network (generic)
         get.artifact.network = function() {
             logging::loginfo("Constructing artifact network.")
-          relation = private$network.conf$get.variable("artifact.relation")
-            if (relation == "cochange")
-                return(private$get.artifact.network.cochange())
-            else if (relation == "callgraph")
-                return(private$get.artifact.network.callgraph())
-            else
+
+            ## construct network
+            relation = private$network.conf$get.variable("artifact.relation")
+
+            net = switch(
+                relation,
+                cochange =
+                    private$get.artifact.network.cochange(),
+                callgraph =
+                    private$get.artifact.network.callgraph(),
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
+            )
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$type = TYPE.ARTIFACT
+            igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            return(net)
         },
 
         ## get the (real) bipartite network
@@ -865,8 +886,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             artifacts = self$get.artifacts()
 
             ## construct networks from vertices
-            authors.net = create.empty.network(directed = FALSE) + igraph::vertices(authors)
-            artifacts.net = create.empty.network(directed = FALSE) + igraph::vertices(artifacts)
+            authors.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
+            artifacts.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(artifacts, name = artifacts, type = TYPE.ARTIFACT)
 
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
@@ -890,7 +913,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## unify vertices with developer-artifact relation
             authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
             authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net))
+            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
 
             ## remove all authors from the corresponding network who do not have touched any artifact
             if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts)) {
@@ -1049,11 +1072,6 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
 
     ## combine networks
     u = igraph::disjoint_union(authors.net, artifacts.net)
-
-    ## set vertex and edge attributes for identifaction
-    igraph::V(u)[ name %in% authors ]$type = TYPE.AUTHOR
-    igraph::V(u)[ name %in% artifacts ]$type = TYPE.ARTIFACT
-    igraph::E(u)$type = TYPE.EDGES.INTRA
 
     ## add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf = network.conf)
