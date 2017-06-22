@@ -382,7 +382,7 @@ create.empty.network = function(directed = TRUE) {
 ## Exemplary network for illustration purposes
 ##
 
-get.sample.network = function() {
+get.sample.network = function(network.conf = NetworkConf$new()) {
     ## INDEPENDENT NETWORKS
     authors = igraph::graph.empty(directed = FALSE) +
         igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
@@ -397,10 +397,10 @@ get.sample.network = function() {
         author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
         artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
     )
-    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
+    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact", network.conf)
 
     ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts)
+    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
     return(network)
