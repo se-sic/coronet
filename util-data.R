@@ -1076,8 +1076,6 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
     ## add edges for devs.to.arts relation
     u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf = network.conf)
 
-    ## FIXME simplify + as.undirected yield list of lists for date attributes (probably also others)
-
     ## simplify network
     if (network.conf$get.variable("simplify"))
         u = simplify.network(u)
