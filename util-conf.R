@@ -1,10 +1,8 @@
 ## (c) Claus Hunsen, 2016, 2017
 ## hunsen@fim.uni-passau.de
-
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
 
@@ -63,24 +61,26 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "logical"),
         artifact.filter.base = list(value = TRUE,
                                     type = "logical"),
-        artifact.edge.attributes = list(value = c("message.id", "date",
-                                                  "thread", "hash", "file", "artifact.type"),
-                                        type = "character"),
+        edge.attributes = list(value = c("message.id", "date",
+                                         "thread", "hash", "file", "artifact.type"),
+                               type = "character"),
         simplify = list(value = FALSE,
-                          type = "logical"),
+                        type = "logical"),
+        contract.edges = list(value = FALSE,
+                              type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
         synchronicity = list(value = FALSE,
                              type = "logical"),
         synchronicity.time.window = list(value = 5,
                                          type = "numeric"),
-        contract.edges = list(value = FALSE,
-                              type = "logical"),
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
-            return(exists(name, where = private) &&
-                     (class(value) == (private[[name]][["type"]])))
+            return(
+                exists(name, where = private) &&
+                    (class(value) == (private[[name]][["type"]]))
+            )
         }
     ),
 
@@ -101,7 +101,7 @@ NetworkConf = R6::R6Class("NetworkConf",
         update.values = function(updated.values = list()) {
             for (name in names(updated.values)) {
                 if (private$check.value(value = updated.values[[name]], name = name)) {
-                    if(name == "artifact.edge.attributes" && !("date" %in% updated.values[[name]])) {
+                    if(name == "edge.attributes" && !("date" %in% updated.values[[name]])) {
                       private[[name]][["value"]] = c(updated.values[[name]], "date")
                     } else {
                       private[[name]][["value"]] = updated.values[[name]]
@@ -168,11 +168,6 @@ ProjectConf = R6::R6Class("ProjectConf",
             r = gsub("OpenSSL_", "", r) # remove name prefix (OpenSSL)
             r = gsub("\\.", "_", r) # replace dots by underscores
             return(r)
-        },
-
-        construct.ranges = function(revs) {
-            ranges = paste(revs[1:(length(revs) - 1)], revs[2:length(revs)], sep = "-")
-            return(ranges)
         },
 
 
@@ -347,7 +342,7 @@ ProjectConf = R6::R6Class("ProjectConf",
         ## UPDATING CONFIGURATION ENTRIES
 
         ## set the revisions and ranges
-        set.revisions = function(revisions, revisions.dates) {
+        set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
             ## store revision data
             private$conf$revisions = revisions
             private$conf$revisions.dates = revisions.dates
@@ -356,9 +351,33 @@ ProjectConf = R6::R6Class("ProjectConf",
             private$conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(private$conf$revisions)
 
             ## compute revision ranges
-            private$conf$ranges = private$construct.ranges(private$conf$revisions)
-            private$conf$ranges.callgraph = private$construct.ranges(private$conf$revisions.callgraph)
+            private$conf$ranges = construct.ranges(private$conf$revisions, sliding.window = sliding.window)
+            private$conf$ranges.callgraph = construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
         }
 
     )
 )
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construction of range strings
+##
+
+construct.ranges = function(revs, sliding.window = FALSE) {
+    ## setting offset to construct ranges, i.e.,
+    ## combine each $offset revisions
+    offset = 1
+
+    ## with sliding window, we combine each second revision
+    if (sliding.window)
+        offset = 2
+
+    ## extract sequences of revisions
+    seq1 = revs[ 1:(length(revs) - offset) ]
+    seq2 = revs[ (offset + 1):length(revs) ]
+
+    ## construct ranges
+    ranges = paste(seq1, seq2, sep = "-")
+
+    return(ranges)
+}
