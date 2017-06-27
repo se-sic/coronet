@@ -12,6 +12,7 @@ source("util-data.R")
 source("util-split.R")
 source("util-bulk.R")
 source("util-plot.R")
+source("util-read.R")
 
 requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")

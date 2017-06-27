@@ -74,6 +74,11 @@ NetworkConf = R6::R6Class("NetworkConf",
                              type = "logical"),
         synchronicity.time.window = list(value = 5,
                                          type = "numeric"),
+        pasta = list(value = TRUE,
+                             type = "logical"),
+        contract.edges = list(value = FALSE,
+                              type = "logical"),
+
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
@@ -198,6 +203,10 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "synchronicity", sep = "_")))
         },
 
+        get.pasta.folder = function(data, selection.process, casestudy) {
+            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "pasta", sep = "_")))
+        },
+
 
         ## construct path to a Codeface configuration
         ## - data: path to codeface-data folder
@@ -251,6 +260,8 @@ ProjectConf = R6::R6Class("ProjectConf",
             conf$datapath.callgraph = private$get.callgraph.folder(data, selection.process, casestudy)
             ## store path to synchronicity data
             conf$datapath.synchronicity = private$get.synchronicity.folder(data, selection.process, casestudy)
+            ## store path to pasta data
+            conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
 
             ## READ REVISIONS META-DATA
 
