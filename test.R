@@ -5,13 +5,7 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
-
-source("util-misc.R")
-source("util-conf.R")
-source("util-data.R")
-source("util-split.R")
-source("util-bulk.R")
-source("util-plot.R")
+source("util-init.R")
 
 requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
