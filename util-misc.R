@@ -109,7 +109,7 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(1:nrow(set)) - 1
+            number.edges = sum(0:(nrow(set) - 1))
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
