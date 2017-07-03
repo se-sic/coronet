@@ -127,8 +127,10 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
                 ## get vertex data
                 item.node = item[, 1]
+
+                ## get edge attributes
                 cols.which = network.conf$get.variable("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[1, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+                item.edge.attrs = item[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -190,8 +192,12 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                 edge = data.frame(comb[1], comb[2])
 
                 ## get edge attibutes
-                edge.attrs = set[ set[,1] %in% comb, -c(1) ] # everything without first column (i.e., the nodes)
-                edgelist = cbind(edge, edge.attrs) # add edge attributes to edge list
+                edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
+                cols.which = network.conf$get.variable("edge.attributes") %in% colnames(edge.attrs)
+                edge.attrs = edge.attrs[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+
+                # add edge attributes to edge list
+                edgelist = cbind(edge, edge.attrs)
 
                 return(edgelist)
             })
