@@ -30,6 +30,7 @@ source("path/to/util-init.R", chdir = TRUE)
 - `parallel`: For parallelization
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
+- `testthat`: For the test suite
 
 
 ## How-To
@@ -216,6 +217,8 @@ For more examples, please look in the file `test.R`.
   * Initialization file that can be used by other analysis projects (see Section *Submodule*)
 - `test.R`
   * Showcase file (see Section *How-To*)
+- `tests.R`
+  * Test suite (running all tests in `tests` subfolder)
 
 ## Work in progress
 
