@@ -208,3 +208,15 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 # g = get.sample.network()
 # plot.network(g, grayscale = TRUE)
 # dev.off()
+
+
+## MOTIF IDENTIFICATION
+
+# g = save.and.load("g", "y.multi.dat", skip = FALSE, if.not.found = function() {
+#     g = y$get.multi.network()
+#     return(g)
+# })
+# g.motifs = motifs.count(network = g, remove.duplicates = TRUE,
+#                         motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
+#                         motif.communicating = MOTIFS.LINE,
+#                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
