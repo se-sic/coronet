@@ -33,7 +33,7 @@ requireNamespace("parallel")
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
-#' @return the list of CodefaceRangeData objects, each referring to one time period
+#' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  split.basis = c("commits", "mails"), sliding.window = FALSE) {
     ## get actual raw data
@@ -93,12 +93,12 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## adapt project configuration
     project.data$get.project.conf()$set.revisions(bins, bins.date)
 
-    ## construct CodefaceRangeData objects
-    logging::logdebug("Constructing CodefaceRangeData objects.")
+    ## construct RangeData objects
+    logging::logdebug("Constructing RangeData objects.")
     cf.data = parallel::mclapply(bins.ranges, function(range) {
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
-        cf.range.data = CodefaceRangeData$new(project.data$get.project.conf(), project.data$get.network.conf(), range)
+        cf.range.data = RangeData$new(project.data$get.project.conf(), project.data$get.network.conf(), range)
         ## FIXME add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
@@ -148,7 +148,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         }
     }
 
-    ## return list of CodefaceRangeData objects
+    ## return list of RangeData objects
     return(cf.data)
 }
 
@@ -164,7 +164,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
-#' @return the list of CodefaceRangeData objects, each referring to one time period
+#' @return the list of RangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
                                      activity.amount, sliding.window = FALSE) {
 

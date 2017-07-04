@@ -59,7 +59,7 @@ net.conf$update.values(list(author.relation = AUTHOR.RELATION,
 ranges = proj.conf$get.entry(entry.name = "ranges")
 
 ## create data object which actually holds and handles data
-cf.data = CodefaceProjectData$new(proj.conf, net.conf)
+cf.data = ProjectData$new(proj.conf, net.conf)
 
 ## create and get the bipartite network
 ## (construction configured by net.conf)
@@ -135,7 +135,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * [`TRUE`, *`FALSE`*]
   * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`
 
-The classes `CodefaceProjectData` and `CodefaceRangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
+The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
 You can also update the object at any time, but as soon as you do so, all
 cached data of the data object are reset and have to be rebuilt.
 

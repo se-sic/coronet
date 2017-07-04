@@ -260,7 +260,7 @@ read.network.from.file = function(file, format = "pajek") {
 ##
 ## As there may be artifacts existing that have not been touched by a developer,
 ## the two sets need to be unified to avoid null-pointer exceptions
-## FIXME this function should be inlined in 'CodefaceProjectData$get.networks'!
+## FIXME this function should be inlined in 'ProjectData$get.networks'!
 unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
     # get vertex names and set of all related artifacts
     artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
