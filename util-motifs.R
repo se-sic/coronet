@@ -19,16 +19,17 @@ MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
 
 ## / / / / / / / / / / / / / /
 ## Triangle motif
+## (two authors are connected to one artifact)
 ##
 
-## positive triangle motif
+## positive triangle motif (including communication)
 MOTIFS.TRIANGLE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
     igraph::edges("D1","A" , "D2","A", "D1","D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
-## negative triangle motif
+## negative triangle motif (excluding communication)
 MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A", type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
     igraph::edges("D1","A" , "D2","A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
@@ -36,16 +37,17 @@ MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 
 ## / / / / / / / / / / / / / /
 ## Square motif
+## (two authors are connected to two distinct artifact that are coupled)
 ##
 
-## positive square motif
+## positive square motif (including communication)
 MOTIFS.SQUARE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
     igraph::edges("D1","A1" , "D2","A2", "A1","A2", "D1","D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA))
 
-## negative square motif
+## negative square motif (excluding communication)
 MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
@@ -53,18 +55,30 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 
+## / / / / / / / / / / / / / /
+## Motif-identification functions
+##
 
-#' Title
+#' Search for the given \code{motif} in the given \code{network}.
 #'
-#' @param network
-#' @param motif
-#' @param color.attr
-#' @param remove.duplicates
+#' @param network The network in which the given \code{motif} is searched
+#' @param motif The motif to search for in the given \code{network}
+#' @param color.attr The the vertex and edge attribute that is used to match the vertices
+#'                   and the edges in the \code{motif} with the ones in the given \code{network}.
+#'                   This means that a vertex A with the attribute declared in \code{color.attr}
+#'                   in the \code{motif} is only matched with vertices with the same attribute in
+#'                   the network. The same holds for edges.
+#' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
+#'                          removed. This logical value basically resembles the idea of respecting
+#'                          the order within a matched motif or not.
 #'
-#' @return
-#' @export
+#' @return A list of vertex sequences denoting the matched motifs, ordered by \code{color.attr}
+#'         and "name" vertex attributes
 #'
 #' @examples
+#' motifs.search.in.network(get.sample.network(), MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
+#'
+#' FIXME use 'lad' method for igraph::subgraph_isomorphisms as 'induced == TRUE' already filters false-positives?
 motifs.search.in.network = function(network, motif, color.attr = "type", remove.duplicates = TRUE) {
 
     ## find motif in network
@@ -75,7 +89,7 @@ motifs.search.in.network = function(network, motif, color.attr = "type", remove.
     ## normalize found vertex sequences (sort vertices)
     vs.cleaned = lapply(vs, function(seq) {
         ## get types and names of vertices
-        types = igraph::get.vertex.attribute(network, "type", index = seq)
+        types = igraph::get.vertex.attribute(network, color.attr, index = seq)
         names = igraph::get.vertex.attribute(network, "name", index = seq)
 
         ## sort vertex sequence by types and names
@@ -104,63 +118,85 @@ motifs.search.in.network = function(network, motif, color.attr = "type", remove.
     return(vs.final)
 }
 
-
-#' Title
+#' Retrieve the motif count for the given group of motifs.
 #'
-#' @param net
-#' @param motif.collaborating
-#' @param motif.mailing
-#' @param motif.collaborating.and.mailing
-#' @param remove.duplicates
+#' @param network The network to use for the search
+#' @param motif.collaborating A motif describing the collaboration of authors on artifacts
+#' @param motif.communicating A motif describing communication among authors only
+#' @param motif.collaborating.and.communicating A motif describing authors collaborating
+#'                                              and communicating at the same time
+#' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
+#'                          removed. This logical value basically resembles the idea of respecting
+#'                          the order within a matched motif or not.
 #'
-#' @return
+#' @return A named list,
+#'         the item 'authors': the total number of authors in the network,
+#'         the item 'artifacts': the total number of artifacts in the network,
+#'         the item 'complete': the total number of author pairs,
+#'         the item 'collaborating': the number of author pairs that collaborate
+#'                                   (i.e., amount of matched instances of \code{motif.collaborating}),
+#'         the item 'collaborating.raw': the matched instances of \code{motif.collaborating}),
+#'         the item 'communicating': the number of author pairs that communicate
+#'                                   (i.e., amount of matched instances of \code{motif.communicating}),
+#'         the item 'communicating.raw': the matched instances of \code{motif.communicating}),
+#'         the item 'collaborating.and.communicating': the number of author pairs that collaborate and communicate
+#'                                   (i.e., amount of matched instances of \code{motif.collaborating.and.communicating})
+#'         the item 'collaborating.and.communicating.raw': the matched instances of \code{motif.collaborating.and.communicating}),
 #'
-#' @examples
-motifs.count = function(network, motif.collaborating, motif.mailing, motif.collaborating.and.mailing,
+#'         the item 'p1': the fraction of author pairs communicating,
+#'         the item 'p2': the fraction of collaborating author pairs that are also communicating
+#'                        (i.e., the fraction of fulfilled coordination requirements),
+#'         the item 'correct': a sanitiy check whether
+#'                             collaborating.and.communicating.raw == intersect(collaborating.raw, communicating.raw)
+#'
+#' FIXME give the motifs as a named list that can be used for iteration!
+#' FIXME change handling of raw data (store as attribute, make it optional, ...)
+motifs.count = function(network, motif.collaborating, motif.communicating, motif.collaborating.and.communicating,
                         remove.duplicates = TRUE) {
-
-    ## get isomorphisms
-    collaborating = motifs.search.in.network(network = network, motif = motif.collaborating, color.attr = "type", remove.duplicates = remove.duplicates)
-    mailing = motifs.search.in.network(network = network, motif = motif.mailing, color.attr = "type", remove.duplicates = remove.duplicates)
-    collaborating.and.mailing = motifs.search.in.network(network = network, motif = motif.collaborating.and.mailing, color.attr = "type", remove.duplicates = remove.duplicates)
+    ## get isomorphisms, i.e., motifs in the network
+    collaborating = motifs.search.in.network(network = network, motif = motif.collaborating,
+                                             color.attr = "type", remove.duplicates = remove.duplicates)
+    communicating = motifs.search.in.network(network = network, motif = motif.communicating,
+                                             color.attr = "type", remove.duplicates = remove.duplicates)
+    collaborating.and.communicating = motifs.search.in.network(network = network, motif = motif.collaborating.and.communicating,
+                                                               color.attr = "type", remove.duplicates = remove.duplicates)
 
     ## compute intersections for verification of matched sets
     cleaned.collaborating = unique(motifs.remove.artifacts.from.matched.motifs(network, collaborating))
-    cleaned.collaborating.and.mailing = unique(motifs.remove.artifacts.from.matched.motifs(network, collaborating.and.mailing))
-    correct = setequal(cleaned.collaborating.and.mailing, intersect(cleaned.collaborating, mailing))
+    cleaned.collaborating.and.communicating = unique(motifs.remove.artifacts.from.matched.motifs(network, collaborating.and.communicating))
+    correct = setequal(cleaned.collaborating.and.communicating, intersect(cleaned.collaborating, communicating))
 
-    ## get list of developers
-    devs.length = length(igraph::V(network)[ type == TYPE.AUTHOR ])
+    ## get list of authors
+    authors.length = length(igraph::V(network)[ type == TYPE.AUTHOR ])
     artifacts.length = length(igraph::V(network)[ type == TYPE.ARTIFACT ])
-    dev.pairs = choose(devs.length, 2)
+    authors.pairs = choose(authors.length, 2)
 
     # return an object for later inspection
     return(list(
-        "developers" = devs.length, # total number of developers
+        "authors" = authors.length, # total number of authors
         "artifacts" = artifacts.length, # total number of artifacts
-        "complete" = dev.pairs, # total number of developer pairs
-        "collaborating" = length(collaborating), # number of developer pairs that collaborate
+        "complete" = authors.pairs, # total number of author pairs
+        "collaborating" = length(collaborating), # number of author pairs that collaborate
         "collaborating.raw" = collaborating,
-        "mailing" = length(mailing), # number of developer pairs that exchange emails
-        "mailing.raw" = mailing,
-        "collaborating.and.mailing" = length(collaborating.and.mailing), # number of developer pairs that collaborate and exchange emails
-        "collaborating.and.mailing.raw" = collaborating.and.mailing,
-        "correct" = correct, # sanity check
-        "p1" = length(mailing) / dev.pairs, # fraction p1
-        "p2" = length(collaborating.and.mailing) / length(collaborating) # fraction p2
+        "communicating" = length(communicating), # number of author pairs that communicate
+        "communicating.raw" = communicating,
+        "collaborating.and.communicating" = length(collaborating.and.communicating), # number of author pairs that collaborate and communicate
+        "collaborating.and.communicating.raw" = collaborating.and.communicating,
+        "p1" = length(communicating) / authors.pairs, # fraction p1
+        "p2" = length(collaborating.and.communicating) / length(collaborating), # fraction p2
+        "correct" = correct # sanity check
     ))
-
 }
 
-
-#' Title
+#' Retrieve the motif count for a predefined list of motifs.
 #'
-#' @param network
+#' @param network The network to use for the search
 #'
-#' @return
-#' @export
+#' @return A named list,
+#'         the item 'triangle': the motif data for the triangle motifs,
+#'         the item 'square': the motif data for the square motifs.
 #'
-#' @examples
+#'         The items' data is preserved as returned from \code{motifs.count}.
 motifs.count.all = function(network) {
     # get motif counts
     triangle = motifs.count(network, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.LINE, MOTIFS.TRIANGLE.POSITIVE)
@@ -174,19 +210,16 @@ motifs.count.all = function(network) {
 }
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Low-level functionality
+##
 
-#### internal
-
-
-#' Title
+#' Remove vertices of type \code{TYPE.ARTIFACT} from the given vertex sequence \code{vs}.
 #'
-#' @param network
-#' @param vs
+#' @param network The network from the the vertex sequence comes from
+#' @param vs The vertex sequence to modify
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return The vertex sequence \code{vs} with the vertices of type \code{TYPE.ARTIFACT} removed
 motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
     vs.cleaned = lapply(vs, function(seq) {
         ## get types of nodes
@@ -197,5 +230,3 @@ motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
     })
     return(vs.cleaned)
 }
-
-
