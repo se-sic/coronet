@@ -74,10 +74,8 @@ NetworkConf = R6::R6Class("NetworkConf",
                              type = "logical"),
         synchronicity.time.window = list(value = 5,
                                          type = "numeric"),
-        pasta = list(value = TRUE,
+        pasta = list(value = FALSE,
                              type = "logical"),
-        contract.edges = list(value = FALSE,
-                              type = "logical"),
 
 
         # Checks if the given value is of the correct type
