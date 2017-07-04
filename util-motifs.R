@@ -214,13 +214,20 @@ motifs.count.all = function(network) {
 ## Low-level functionality
 ##
 
-#' Remove vertices of type \code{TYPE.ARTIFACT} from the given vertex sequence \code{vs}.
+#' Remove vertices of type \code{TYPE.ARTIFACT} from the given vertex sequence(s) \code{vs}.
 #'
 #' @param network The network from the the vertex sequence comes from
-#' @param vs The vertex sequence to modify
+#' @param vs The vertex sequences to modify
 #'
-#' @return The vertex sequence \code{vs} with the vertices of type \code{TYPE.ARTIFACT} removed
+#' @return A list with the vertex sequences \code{vs} with the vertices of type \code{TYPE.ARTIFACT} removed
 motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
+    ## if we do not have a list here, we need to encapsulate the parameter since
+    ## we would iterate over the individual vertices in the lapply later
+    if (!is.list(vs)) {
+        vs = list(vs)
+    }
+
+    ## iterate over all vertex sequences to remove artifacts
     vs.cleaned = lapply(vs, function(seq) {
         ## get types of nodes
         types = igraph::get.vertex.attribute(network, "type", index = seq)
@@ -228,5 +235,6 @@ motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
         seq = seq[ types != TYPE.ARTIFACT ]
         return(seq)
     })
+
     return(vs.cleaned)
 }
