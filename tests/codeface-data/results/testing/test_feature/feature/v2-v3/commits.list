@@ -1,0 +1,4 @@
+32710;"2016-07-12 16:05:41";"Olaf";"olaf@example.org";"3a0ed78458b3976243db6829f63eba3eead26774";1;1;0;1;"test2.c";"Base_Feature";"Feature";1
+32710;"2016-07-12 16:05:41";"Olaf";"olaf@example.org";"3a0ed78458b3976243db6829f63eba3eead26774";1;1;0;1;"test2.c";"Base_Feature";"FeatureExpression";1
+32711;"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"0a1a5c523d835459c42f33e863623138555e2526";1;1;0;1;"test2.c";"Base_Feature";"Feature";1
+32711;"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"0a1a5c523d835459c42f33e863623138555e2526";1;1;0;1;"test2.c";"Base_Feature";"FeatureExpression";1
