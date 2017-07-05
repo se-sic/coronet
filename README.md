@@ -108,7 +108,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   - [*`TRUE`*, `FALSE`]
 - `edge.attributes`
   * The list of edge-attribute names and information
-  * a subset of the following as vector: [*`"date"`, `"message.id"`, `"thread"`, `"hash"`, `"file"`*]
+  * a subset of the following as vector: [*`"date"`, `"message.id"`, `"thread"`, `"hash"`, `"file"`, `"artifact.type"`, `"artifact"`*]
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: Only the applicable part of the given vector of names is respected.
 - `simplify`
