@@ -71,7 +71,7 @@ plot.bipartite.network(bpn)
 
 There are two different classes of configuration objects in this library.
 - The `ProjectConf` class, which determines all configuration parameters needed for the configured project (mainly data paths) and
-- the `NetworkConf` class, which is used for all configuration parameters  concerning data retrieval and network construction.
+- the `NetworkConf` class, which is used for all configuration parameters concerning data retrieval and network construction.
 
 You can find an overview on all the parameters in these classes below in this file.
 For examples on how to use both classes and how to build networks with them, please look in the file `test.R`.
@@ -108,9 +108,13 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   - [*`TRUE`*, `FALSE`]
 - `edge.attributes`
   * The list of edge-attribute names and information
-  * a subset of the following as vector: [*`"date"`, `"message.id"`, `"thread"`, `"hash"`, `"file"`, `"artifact.type"`, `"artifact"`*]
+  * a subset of the following as a single vector:
+       - timestamp information: *`"date"`*
+       - author information: `"author.name"`, `"author.email"`
+       - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
+       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
-  * **Note**: Only the applicable part of the given vector of names is respected.
+  * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
