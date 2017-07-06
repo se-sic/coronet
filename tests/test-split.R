@@ -14,7 +14,7 @@ CASESTUDY = "test"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 ## use only when debugging this file independently
-# CF.DATA = file.path(".", "tests", "codeface-data")
+if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 
 ##
