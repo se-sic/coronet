@@ -262,28 +262,6 @@ read.network.from.file = function(file, format = "pajek") {
 }
 
 
-## Unify the set of vertices in artifacts and author2artifact mapping
-##
-## As there may be artifacts existing that have not been touched by a developer,
-## the two sets need to be unified to avoid null-pointer exceptions
-## FIXME this function should be inlined in 'CodefaceProjectData$get.networks'!
-unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
-    # get vertex names and set of all related artifacts
-    artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
-    artifacts = unique(plyr::rbind.fill(author.to.artifact)[["artifact"]] )
-
-    # get only the missing ones
-    diff = setdiff(artifacts, artifacts.net.vertices)
-
-    # add missing vertices to existing network
-    net = artifacts.net + igraph::vertices(diff, type = TYPE.ARTIFACT)
-    net = igraph::set.vertex.attribute(net, "id", index = igraph::V(net),
-                                       igraph::get.vertex.attribute(net, "name"))
-
-    return(net)
-}
-
-
 ## Process vertex names in artifact networks for consistent names
 ##
 ## Feature and file networks can have unique naming structures existent

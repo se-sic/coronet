@@ -846,6 +846,23 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 stop(sprintf("The author relation '%s' does not exist.", relation))
             )
 
+            ## add all missing authors to the network if wanted
+            if (private$network.conf$get.variable("author.all.authors")) {
+                authors.all = self$get.authors()[[ "author.name" ]]
+                authors.net = igraph::get.vertex.attribute(net, "name")
+                net = net + igraph::vertices(setdiff(authors.all, authors.net))
+            }
+
+            ## remove all authors from the corresponding network who do not have touched any artifact
+            if (private$network.conf$get.variable("author.only.committers")) {
+                ## authors-artifact relation
+                authors.from.net = igraph::get.vertex.attribute(net, "name")
+                authors.from.artifacts = names(self$get.author2artifact())
+                if (!is.null(authors.from.artifacts)) {
+                    net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
+                }
+            }
+
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.AUTHOR
             igraph::E(net)$type = TYPE.EDGES.INTRA
@@ -881,8 +898,14 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## authors-artifact relation
             authors.to.artifacts = self$get.author2artifact()
 
-            ## extract vertices
-            authors = names(authors.to.artifacts)
+            ## extract vertices for author network
+            if (private$network.conf$get.variable("author.all.authors") &&
+                !private$network.conf$get.variable("author.only.committers")) {
+                authors = self$get.authors()[[ "author.name" ]]
+            } else {
+                authors = names(authors.to.artifacts)
+            }
+            ## extract vertices for author network
             artifacts = self$get.artifacts()
 
             ## construct networks from vertices
@@ -909,23 +932,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## authors relation
             authors.net = self$get.author.network()
-
-            ## unify vertices with developer-artifact relation
-            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
-            authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
-
-            ## remove all authors from the corresponding network who do not have touched any artifact
-            if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts)) {
-                authors.net = igraph::delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
-            }
-
             ## artifact relation
             artifacts.net = self$get.artifact.network()
-            # merge vertices on artifact network to avoid NULL references
-            artifacts.net = unify.artifact.vertices(artifacts.net, authors.to.artifacts)
-            # ## compute communities # TODO in the end, this needs to read Thomas' files!
-            # artifacts.comm = get.communities(artifact.net)
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
@@ -944,6 +952,15 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             artifacts.net = networks[["artifacts.net"]]
+
+            ## unify vertices with author-artifact relation
+            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
+            authors.from.artifacts = names(authors.to.artifacts)
+            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
+            ## unify vertices with artifacts from bipartite and artifact relation
+            artifacts.all = self$get.artifacts()
+            artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
+            artifacts.net = artifacts.net + igraph::vertices(setdiff(artifacts.all, artifacts.from.net), type = TYPE.ARTIFACT)
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
