@@ -368,7 +368,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## AUTHOR NETWORKS ####
 
-        ## get the co-change-based developer relation as network
+        ## get the co-change-based author relation as network
         get.author.network.cochange = function() {
 
             logging::logdebug("get.author.network.cochange: starting.")
@@ -398,7 +398,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(author.net)
         },
 
-        ## get the thread-based developer relation as network
+        ## get the thread-based author relation as network
         get.author.network.mail = function() {
 
             logging::logdebug("get.author.network.mail: starting.")
@@ -412,21 +412,21 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             edge.attributes = c("date", "message.id", "thread")
             thread2author = self$get.thread2author()
 
+            ## TODO do we need the if-else statement here? (is this captured by the called function?)
             if (length(thread2author) != 0) {
-                dev.relation =
-
-                    construct.dependency.network.from.list(thread2author, network.conf = private$network.conf,
-                                                           directed = private$network.conf$get.variable("author.directed"))
-
+                author.relation = construct.dependency.network.from.list(
+                    thread2author, network.conf = private$network.conf,
+                    directed = private$network.conf$get.variable("author.directed")
+                )
             } else {
-                dev.relation = create.empty.network(private$network.conf$get.variable("author.directed"))
+                author.relation = create.empty.network(private$network.conf$get.variable("author.directed"))
             }
 
             ## store network
-            private$authors.network.mail = dev.relation
+            private$authors.network.mail = author.relation
             logging::logdebug("get.author.network.mail: finished.")
 
-            return(dev.relation)
+            return(author.relation)
         },
 
 
@@ -522,7 +522,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## RESET ENVIRONMENT ##
 
-        # Reset cached data
+        ## reset cached data
         reset.environment = function() {
           private$commits.filtered = NULL
           private$commits.filtered.empty = NULL
@@ -540,12 +540,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## CONFIGURATION ####
 
-        # Get the current project configuration
+        ## get the current project configuration
         get.project.conf = function() {
             return(private$project.conf)
         },
 
-        # Set the current project configuration to the given one.
+        ## set the current project configuration to the given one
         set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = project.conf
 
@@ -554,25 +554,27 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
         },
 
-        # Get the current network configuration
+        ## get the current network configuration
         get.network.conf = function() {
             return(private$network.conf)
         },
 
-        # Set the current network configuration to the given one.
+        ## set the current network configuration to the given one
         set.network.conf = function(network.conf) {
           private$network.conf = network.conf
           self$reset.environment()
         },
 
+
         ## UPDATE CONFIGURATION ####
+
+        ## update network-configuration parameters
         update.network.conf = function(updated.values = list()) {
           private$network.conf$update.values(updated.values = updated.values)
           self$reset.environment()
         },
 
-        # for testing reasons
-        # might be used for other purposes
+        ## get network-configuration parameters
         get.network.conf.variable = function(var.name) {
             return(private$network.conf$get.variable(var.name))
         },
@@ -831,7 +833,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(mylist)
         },
 
-        ## get the developer relation as network (generic)
+        ## get the author relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
 
@@ -924,13 +926,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
-            ## authors-artifact relation
+            ## author-artifact relation
             authors.to.artifacts = self$get.author2artifact()
-
             ## bipartite network
             bipartite.net = self$get.bipartite.network()
-
-            ## authors relation
+            ## author relation
             authors.net = self$get.author.network()
             ## artifact relation
             artifacts.net = self$get.artifact.network()
@@ -1103,8 +1103,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
 add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
-
-    # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
+    ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
         a = a.df[["artifact"]]
         new.edges = lapply(a, function(art) {
