@@ -70,7 +70,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
         commits.raw = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits.raw[1:4, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data.frame(),
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits.raw[5:8, ]
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits.raw[5:9, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data.frame(),
