@@ -528,15 +528,16 @@ split.get.bins.time.based = function(dates, time.period) {
     ))
 }
 
-#' Compute bin information for a activity-based splitting based on the given amount of activity.
+#' Compute bin information for a activity-based splitting based on the given amount of activity
+#' based on the actual order of the rows in the given data.frame 'df'.
 #'
-#' @param df the data.frame representing the data
+#' @param df the sorted data.frame representing the data
 #' @param id a character string denoting the ID column of the data.frame 'df'
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
 #'
 #' @return a list,
-#'         the item 'vector': the bins each row in 'df' belongs to,
+#'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),
 #'         the item 'bins': the bin labels,  described by dates, each bin containing
 #'         'acitivity.amount' many unique items; each item in the vector indicates
 #'         the start of a bin, although the last item indicates the end of the last bin
