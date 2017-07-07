@@ -61,8 +61,11 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "logical"),
         artifact.filter.base = list(value = TRUE,
                                     type = "logical"),
-        edge.attributes = list(value = c("message.id", "date",
-                                         "thread", "hash", "file", "artifact.type"),
+        edge.attributes = list(value = c(
+                                   "date", # general
+                                   "message.id", "thread", # mail data
+                                   "hash", "file", "artifact.type", "artifact" # commit data
+                               ),
                                type = "character"),
         simplify = list(value = FALSE,
                         type = "logical"),
