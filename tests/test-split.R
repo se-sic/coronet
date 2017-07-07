@@ -781,3 +781,47 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     expect_equal(results, expected, info = "split.get.bins.activity.based (2)")
 
 })
+
+
+##
+## Tests for consistency of data and network time-based splitting
+##
+
+test_that("Check consistency of data and network time-based splitting.", {
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
+
+    ## retrieve project data
+    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    ## retrieve author network
+    project.net = project.data$get.author.network()
+
+    ## set time period for splitting
+    time.period = "7 mins"
+
+    ## split data
+    results.data = split.data.time.based(project.data, time.period = time.period, split.basis = "commits")
+    results.data.network = lapply(results.data, function(d) d$get.author.network())
+
+    ## split network
+    results.network = split.network.time.based(project.net, time.period = time.period)
+
+    ## check ranges
+    expect_equal(names(results.network), names(results.data.network))
+
+    ## the chosen time-window size results in the following condition:
+    ## 1) Thomas and Karl only appear in the second time window, both working on the base feature.
+    ## 2) Olaf only appears in the first time window, working on the base feature as the only author.
+    ## Thus, when splitting the project-level network, there are edges from Olaf to Karl and Thomas,
+    ## crossing the time-window border. Hence, when deleting the respective vertices from the networks,
+    ## the data-based networks should match the network-based networks.
+    results.network[[1]] = igraph::delete.vertices(results.network[[1]], c("Thomas", "Karl"))
+    results.network[[2]] = igraph::delete.vertices(results.network[[2]], c("Olaf"))
+    check.identical = mapply(results.data.network, results.network, FUN = function(d, n) {
+        igraph::identical_graphs(d, n)
+    })
+
+})
