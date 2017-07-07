@@ -783,7 +783,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::loginfo("Getting commit--artifact data.")
 
             #get commits
-            commits = self$get.commits.filtered()
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
             mylist = get.thing2thing(commits, "hash", "artifact", network.conf = private$network.conf)
@@ -797,7 +797,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::loginfo("Getting commit--file data.")
 
             #get commits
-            commits = self$get.commits.filtered()
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
             mylist = get.thing2thing(commits, "hash", "file", network.conf = private$network.conf)

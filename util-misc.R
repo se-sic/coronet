@@ -109,7 +109,7 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(1:nrow(set)) - 1
+            number.edges = sum(0:(nrow(set) - 1))
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
@@ -389,25 +389,25 @@ create.empty.network = function(directed = TRUE) {
 ## Exemplary network for illustration purposes
 ##
 
-get.sample.network = function() {
+get.sample.network = function(network.conf = NetworkConf$new()) {
     ## INDEPENDENT NETWORKS
     authors = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
-        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
+        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6", type = TYPE.AUTHOR) +
+        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5", type = TYPE.EDGES.INTRA)
 
     artifacts = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6") +
-        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
+        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6", type = TYPE.ARTIFACT) +
+        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6", type = TYPE.EDGES.INTRA)
     # artifacts = igraph::as.directed(artifacts, mode = "mutual")
 
     authors.to.artifacts.df = data.frame(
         author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
         artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
     )
-    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact")
+    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact", network.conf)
 
     ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts)
+    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
     return(network)

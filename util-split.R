@@ -324,22 +324,20 @@ split.get.bins.time.based = function(dates, time.period) {
         ## add last bin
         max(dates) + 1
     )
+    dates.breaks.chr = strftime(head(dates.breaks, -1))
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
-    levels(dates.bins) = head(dates.breaks, -1)
-    ## get bins for returning
-    bins = levels(dates.bins)
-    ## add end date for last bin
-    bins = c(
-        bins,
-        strftime(seq(
-            as.POSIXct(tail(bins, 1)),
-            by = time.period,
-            length = 2)[2]
-        )
+    ## set factor's levels appropriately
+    levels(dates.bins) = dates.breaks.chr[ as.integer(levels(dates.bins)) ] # get the dates
+    levels(dates.bins) = c( # append all missing dates
+        levels(dates.bins),
+        dates.breaks.chr[ !(dates.breaks.chr %in% levels(dates.bins)) ]
     )
+
     logging::logdebug("split.get.bins.time.based: finished.")
+
+    ## return properly
     return(list(
         vector = dates.bins,
         bins = strftime(dates.breaks)
