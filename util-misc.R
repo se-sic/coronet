@@ -334,15 +334,27 @@ EDGE.ATTR.HANDLING = list(
 
 ## Simplify a network
 simplify.network = function(network) {
+    logging::logdebug("simplify.network: starting.")
+    logging::loginfo("Simplifying network.")
+
     ## simplify networks (contract edges and remove loops)
     network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 
+    logging::logdebug("simplify.network: finished.")
     return(network)
 }
 
 ## Simplify a list of networks
 simplify.networks = function(networks){
+    logging::logdebug("simplify.networks: starting.")
+    logging::loginfo(
+        "Simplifying networks (names = [%s]).",
+        paste(names(networks), collapse = ", ")
+    )
+
     nets = parallel::mclapply(networks, simplify.network)
+
+    logging::logdebug("simplify.networks: finished.")
 }
 
 
