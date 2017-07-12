@@ -833,6 +833,38 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(mylist)
         },
 
+        ## get the mails for each author
+        get.author2mail = function() {
+            logging::loginfo("Getting author--mail data.")
+
+            ## if mails are not read already, do this
+            if (is.null(private$mails)) {
+                private$read.mails()
+            }
+
+            ## store the mails per author
+            mylist = get.thing2thing(private$mails, "author.name", "message.id",
+                                     network.conf = private$network.conf)
+
+            return(mylist)
+        },
+
+        ## get the threads for each author
+        get.author2thread = function() {
+            logging::loginfo("Getting author--thread data.")
+
+            ## if mails are not read already, do this
+            if (is.null(private$mails)) {
+                private$read.mails()
+            }
+
+            ## store the threads per author
+            mylist = get.thing2thing(private$mails, "author.name", "thread",
+                                     network.conf = private$network.conf)
+
+            return(mylist)
+        },
+
         ## get the author relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
