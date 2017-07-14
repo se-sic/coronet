@@ -15,23 +15,10 @@ requireNamespace("parallel") # for parallel computation
 options(stringsAsFactors = FALSE)
 
 
-## / / / / / / / / / / / / / /
-## NETWORk META-CONFIGURATION
-##
-
-## node types
-TYPE.AUTHOR = 1
-TYPE.ARTIFACT = 2
-
-# edge types
-TYPE.EDGES.INTRA = 3
-TYPE.EDGES.INTER = 4
-
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData
 ##
-## Represents the data for one revision range on Codeface Data
+## Represents the data for building Networks
 
 #### ProjectData ####
 ProjectData = R6::R6Class("ProjectData",
@@ -40,7 +27,6 @@ ProjectData = R6::R6Class("ProjectData",
     private = list(
         ## configuration objects
         project.conf = NULL, # list
-        network.conf = NULL,
 
         ## raw data
         ## commits and commit data
@@ -117,7 +103,7 @@ ProjectData = R6::R6Class("ProjectData",
                                      c(private$project.conf$get.entry("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$network.conf$get.variable("artifact.filter.base")) {
+            if (private$project.conf$get.entry("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
@@ -154,13 +140,9 @@ ProjectData = R6::R6Class("ProjectData",
     ## public members ####
     public = list(
         ## constructor
-        initialize = function(project.conf, network.conf) {
+        initialize = function(project.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
                 private$project.conf = project.conf
-            }
-
-            if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
-                private$network.conf = network.conf
             }
 
             if (class(self)[1] == "ProjectData")
@@ -183,10 +165,7 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
           private$commits.filtered = NULL
           private$commits.filtered.empty = NULL
-          private$commits.raw = NULL
           private$artifacts = NULL
-          private$synchronicity = NULL
-          private$mails = NULL
           private$authors = NULL
         },
 
@@ -384,7 +363,7 @@ ProjectData = R6::R6Class("ProjectData",
             sorted.commits = sorted.commits[order(sorted.commits[["date"]], decreasing = FALSE), ] # sort!
 
             ## store the authors per artifact
-            mylist = get.thing2thing(sorted.commits, "artifact", "author.name", network.conf = private$network.conf)
+            mylist = get.key.to.value.from.df(sorted.commits, "artifact", "author.name")
 
             return(mylist)
         },
@@ -394,7 +373,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting author--artifact data.")
 
             ## store the authors per artifact
-            mylist = get.thing2thing(self$get.commits.filtered.empty(), "author.name", "artifact", network.conf = private$network.conf)
+            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "author.name", "artifact")
 
             return(mylist)
         },
@@ -404,7 +383,7 @@ ProjectData = R6::R6Class("ProjectData",
           logging::loginfo("Getting commit--artifact data.")
 
           ## store the authors per artifact
-          mylist = get.thing2thing(self$get.commits.filtered(), "hash", "artifact", network.conf = private$network.conf)
+          mylist = get.key.to.value.from.df(self$get.commits.filtered(), "hash", "artifact")
 
           return(mylist)
         },
@@ -414,7 +393,7 @@ ProjectData = R6::R6Class("ProjectData",
           logging::loginfo("Getting thread--author data.")
 
           ## store the authors per thread
-          mylist = get.thing2thing(self$get.mails(), "thread", "author.name", network.conf = private$network.conf)
+          mylist = get.key.to.value.from.df(self$get.mails(), "thread", "author.name")
 
           return(mylist)
         },
@@ -429,7 +408,7 @@ ProjectData = R6::R6Class("ProjectData",
           logging::loginfo("Getting author--commit data.")
 
           ## store the authors per artifact
-          mylist = get.thing2thing(self$get.commits.raw(), "author.name", "hash", network.conf = private$network.conf)
+          mylist = get.key.to.value.from.df(self$get.commits.raw(), "author.name", "hash")
           mylist = parallel::mclapply(mylist, unique)
 
           return(mylist)
@@ -440,7 +419,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting author--file data.")
 
             ## store the authors per artifact
-            mylist = get.thing2thing(self$get.commits.filtered.empty(), "author.name", "file", network.conf = private$network.conf)
+            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "author.name", "file")
 
             return(mylist)
         },
@@ -450,7 +429,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting commit--file data.")
 
             ## store the authors per artifact
-            mylist = get.thing2thing(self$get.commits.filtered(), "hash", "file", network.conf = private$network.conf)
+            mylist = get.key.to.value.from.df(self$get.commits.filtered(), "hash", "file")
 
             return(mylist)
         }
@@ -463,7 +442,7 @@ ProjectData = R6::R6Class("ProjectData",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## RangeData
 ##
-## Represents the data for one revision range on Codeface Data
+## Represents the data for one revision range for building Networks
 
 #### RangeData ####
 RangeData = R6::R6Class("RangeData",
@@ -480,9 +459,9 @@ RangeData = R6::R6Class("RangeData",
     public = list(
 
         ## constructor
-        initialize = function(project.conf, network.conf, range, revision.callgraph = "") {
+        initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
-            super$initialize(project.conf, network.conf)
+            super$initialize(project.conf)
 
             if (!missing(range) && is.character(range)) {
                 private$range <- range
@@ -537,3 +516,42 @@ RangeData = R6::R6Class("RangeData",
 
     )
 )
+
+## Transform base.data (data.frame) to a list
+## - group by thing1
+## - use thing2 as sublist items
+get.key.to.value.from.df = function(base.data, thing1, thing2) {
+  if (nrow(base.data) == 0) {
+    logging::logwarn("Trying to get subset of non-existent data.")
+    logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
+    return(list())
+  }
+  logging::logdebug("get.key.to.value.from.df: starting.")
+
+  # get right portion of data
+  data = base.data[c(thing1, thing2)]
+  cols.which = colnames(base.data) %!in% c(thing1, thing2)
+  cols = c(thing1, thing2, colnames(base.data) %!in% c(thing1, thing2))
+
+  extra.data.df = base.data[cols]
+  # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
+  colnames(extra.data.df) = cols
+
+  # group list by thing1 and construct a list: thing1 -> (thing2, extra.data)
+  transform.df.per.item = function(df) {
+    group = unique(df[[thing1]])
+    df = df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
+    attr(df, "group.type") = thing1
+    attr(df, "group.name") = group
+    return(df)
+  }
+  mylist = plyr::dlply(extra.data.df, thing1, transform.df.per.item)
+
+  # remove object attributes introduced by dlply
+  attr(mylist, "split_labels") = NULL
+  attr(mylist, "split_type") = NULL
+
+  logging::logdebug("get.key.to.value.from.df: finished.")
+
+  return(mylist)
+}

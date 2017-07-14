@@ -59,8 +59,6 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "character"),
         artifact.directed = list(value = FALSE,
                                  type = "logical"),
-        artifact.filter.base = list(value = TRUE,
-                                    type = "logical"),
         edge.attributes = list(value = c("message.id", "date",
                                          "thread", "hash", "file", "artifact.type"),
                                type = "character"),
@@ -70,10 +68,6 @@ NetworkConf = R6::R6Class("NetworkConf",
                               type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
-        synchronicity = list(value = FALSE,
-                             type = "logical"),
-        synchronicity.time.window = list(value = 5,
-                                         type = "numeric"),
         pasta = list(value = FALSE,
                              type = "logical"),
 
@@ -141,6 +135,9 @@ ProjectConf = R6::R6Class("ProjectConf",
         casestudy = NULL, # character
         artifact = NULL, # character
         conf = NULL, # list
+        synchronicity = FALSE,
+        synchronicity.time.window = 5,
+        artifact.filter.base = TRUE,
 
         ## / / / / / / / / / / / / / /
         ## Revisions and ranges

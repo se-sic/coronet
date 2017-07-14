@@ -13,7 +13,17 @@ requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr") # for dlply function
 requireNamespace("igraph") # networks
 
+## / / / / / / / / / / / / / /
+## NETWORk META-CONFIGURATION
+##
 
+## node types
+TYPE.AUTHOR = 1
+TYPE.ARTIFACT = 2
+
+# edge types
+TYPE.EDGES.INTRA = 3
+TYPE.EDGES.INTER = 4
 
 
 ## NetworkBuilder ####
@@ -394,4 +404,32 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
   return(new.net)
 
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Exemplary network for illustration purposes
+##
+
+get.sample.network = function(network.conf = NetworkConf$new()) {
+  ## INDEPENDENT NETWORKS
+  authors = igraph::graph.empty(directed = FALSE) +
+    igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
+    igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
+
+  artifacts = igraph::graph.empty(directed = FALSE) +
+    igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6") +
+    igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
+  # artifacts = igraph::as.directed(artifacts, mode = "mutual")
+
+  authors.to.artifacts.df = data.frame(
+    author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
+    artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
+  )
+  authors.to.artifacts = get.key.to.value.from.df(authors.to.artifacts.df, "author.name", "artifact")
+
+  ## combine networks
+  network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
+  network = igraph::set.graph.attribute(network, "sample.network", TRUE)
+
+  return(network)
 }
