@@ -13,10 +13,6 @@ requireNamespace("igraph") # networks
 requireNamespace("logging")
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Utility function for reading file formats
-##
-
 ## Construct a dependency network from the given list of lists
 ## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
 ## - if directed, the order of things in the sublists is respected

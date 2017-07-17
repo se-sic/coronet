@@ -103,12 +103,12 @@ ProjectData = R6::R6Class("ProjectData",
                                      c(private$project.conf$get.entry("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$project.conf$get.entry("artifact.filter.base")) {
+            if (private$project.conf$get.artifact.filter.base()) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
             ## append synchronicity data if wanted
-            if (private$network.conf$get.variable("synchronicity")) {
+            if (private$project.conf$get.synchronicity()) {
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
             }
@@ -124,7 +124,7 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.data = cbind(commit.data, synchronicity = dummy.data)
             }
 
-            if (private$network.conf$get.variable("pasta")) {
+            if (private$project.conf$get.pasta()) {
                 pasta = self$get.pasta()
             }
 
@@ -266,7 +266,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$synchronicity)) {
                 private$synchronicity = read.synchronicity(self$get.data.path.synchronicity(),
                                                            private$project.conf$get.entry("artifact"),
-                                                           private$network.conf$get.variable("synchronicity.time.window"))
+                                                           private$project.conf$get.synchronicity.time.window())
             }
 
             return(private$synchronicity)

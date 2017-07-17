@@ -343,7 +343,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Union of networks
+## Union of networks ####
 ##
 
 ## combine networks to a bipartite network
