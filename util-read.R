@@ -1,14 +1,17 @@
+## (c) Claus Hunsen, 2016, 2017
+## hunsen@fim.uni-passau.de
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
-
-## (c) Christian Hechtl 2017
+## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
+requireNamespace("plyr")
 
 read.commits.raw = function(data.path, artifact) {
 
     logging::logdebug("read.commits.raw: starting.")
-
-    commits.raw = NULL
 
     file = file.path(data.path, "commits.list")
 
@@ -19,10 +22,8 @@ read.commits.raw = function(data.path, artifact) {
     ## break if the list of commits is empty
     if (inherits(commit.data, 'try-error')) {
         logging::logwarn("There are no commits available for the current environment.")
-        ##logging::logwarn("Class: %s", self$get.class.name())               ??????
-        # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-        commits.raw = data.frame()
-        return()
+        logging::logwarn("Datapath: %s", data.path)
+        return(data.frame())
     }
 
     ## set proper column names based on Codeface extraction:
@@ -74,16 +75,14 @@ read.commits.raw = function(data.path, artifact) {
 
 
     ## store the commit data
-    commits.raw = commit.data
     logging::logdebug("read.commits.raw: finished.")
-    return(commits.raw)
+    return(commit.data)
 }
 
 ## read the synchronicity data of commits
-read.synchronicity = function(data.path, artifact, time.window){
+read.synchronicity = function(data.path, artifact, time.window) {
     logging::logdebug("read.synchronicity: starting.")
 
-    synchronicity = NULL;
 
     ## check time.window
     allowed.time.windows = c(1, 5, 10)
@@ -96,9 +95,8 @@ read.synchronicity = function(data.path, artifact, time.window){
     ## break if file does not exist
     if(!file.exists(file)) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
-        ##logging::logwarn("Class: %s", self$get.class.name()) ????
-        synchronicity = data.frame()
-        return(synchronicity)
+        logging::logwarn("Datapath: %s", data.path)
+        return(data.frame())
     }
 
     ## load commit.ids object
@@ -119,8 +117,6 @@ read.mails = function(data.path) {
 
     logging::logdebug("read.mails: starting.")
 
-    mails = NULL
-
     ## get file name of commit data
     file = file.path(data.path, "emails.list")
 
@@ -131,10 +127,8 @@ read.mails = function(data.path) {
     ## break if the list of mails is empty
     if (inherits(mail.data, 'try-error')) {
         logging::logwarn("There are no mails available for the current environment.")
-        ##logging::logwarn("Class: %s", self$get.class.name())  ??
-        # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-        mails = data.frame()
-        return(mails)
+        logging::logwarn("Datapath: %s", data.path)
+        return(data.frame())
     }
 
     ## set proper column names based on Codeface extraction:
@@ -157,16 +151,13 @@ read.mails = function(data.path) {
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## store the mail data
-    mails = mail.data
     logging::logdebug("read.mails: finished.")
-    return(mails)
+    return(mail.data)
 }
 
 read.authors = function(data.path) {
 
     logging::logdebug("read.authors: starting.")
-
-    authors = NULL
 
     ## get file name of commit data
     file = file.path(data.path, "authors.list")
@@ -178,8 +169,7 @@ read.authors = function(data.path) {
     ## break if the list of authors is empty
     if (inherits(authors.df, 'try-error')) {
         logging::logerror("There are no authors available for the current environment.")
-        ##logging::logerror("Class: %s", self$get.class.name()) ??
-        ##logging::logerror("Configuration: %s", project.conf$get.conf.as.string())
+        logging::logwarn("Datapath: %s", data.path)
         stop("Stopped due to missing authors.")
     }
 
@@ -191,79 +181,48 @@ read.authors = function(data.path) {
     )
 
     ## store the ID--author mapping
-    authors = authors.df
     logging::logdebug("read.authors: finished.")
-    return(authors)
+    return(authors.df)
 }
 
 read.pasta = function(data.path) {
-    result = list()
-    filepath = paste(data.path, "similar-mailbox", sep = "/")
-    lines = readLines(filepath)
-    for(i in 1:length(lines)) {
-        line = lines[i]
-        if ( length(line) == 0 ) {
-            break
-        }
-        if(!grepl(" => ", line)) {
-            print("Faulty line!")
-        }
-        else if(grepl("> <", line)) {
-            #finds all postions of the pattern to split the single messageIds
-            val1 <- gregexpr(pattern = "> <", line)
-            #finds the position of the pattern to seperate the commithash from the rest
-            val2 <- val <- gregexpr(pattern = " => ", line)
-            #the commithash
-            value <- substr(line, as.numeric(val) + 4, nchar(line))
-            listOfKeys <- c()
-            #stores all positions of seperators
-            for(i in 1:length(val1[[1]])) {
-                listOfKeys <- c(listOfKeys, val1[[1]][i])
-            }
-            #splits the first messageId and stores it in result
-            keyOne <- substr(line, 0, listOfKeys[[1]])
-            if(is.null(result[[key]])) {
-                result[[key]] <- value
-            }
-            else {
-                result[[key]] <- c(result[[key]], value)
-            }
-            #splits messageId 2 till n-1 and stores it into result
-            for(i in 1:length(listOfKeys)) {
-                if(!i > length(listOfKeys)&length(listOfKeys) > 1) {
-                    key <- substr(line, as.numeric(listOfKeys[[i]]) + 2,
-                                  as.numeric(listOfKeys[[i+1]]))
-                    if(is.null(result[[key]])) {
-                        result[[key]] <- value
-                    }
-                    else {
-                        result[[key]] <- c(result[[key]], value)
-                    }
-                    #splits the last messageId and stores it to result
-                    if(i == length(listOfKeys)) {
-                        key2 <- substr(line, as.numeric(listOfKeys[[i]]) + 2,
-                                       as.numeric(val2) - 1)
-                        if(is.null(result[[key]])) {
-                            result[[key]] <- value
-                        }
-                        else {
-                            result[[key]] <- c(result[[key]], value)
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            val <- gregexpr(pattern = " => ", line)
-            key <- substr(line, 0, as.numeric(val) - 1)
-            value <- substr(line, as.numeric(val) + 4, nchar(line))
-            if(is.null(result[[key]])) {
-                result[[key]] <- value
-            }
-            else {
-                result[[key]] <- c(result[[key]], value)
-            }
-        }
+    # constant for seperating keys and value
+    SEPERATOR = " => "
+    KEY.SEPERATOR = " "
+
+    filepath = file.path(data.path, "similar-mailbox")
+    lines = try(readLines(filepath))
+
+    if (inherits(lines, 'try-error')) {
+        logging::logerror("There are no PaStA-data available for the current environment.")
+        logging::logerror("Datapath: %s", data.path)
+        stop("Stopped due to missing data.")
     }
-    return(result)
+
+    result.list = parallel::mclapply(lines, function(line) {
+        #line = lines[i]
+        if ( nchar(line) == 0 ) {
+            return(NULL)
+        }
+
+        if(!grepl(SEPERATOR, line)) {
+            logging::logwarn("Faulty line: %s", line)
+            return(NULL)
+        }
+
+        # 1) split at arrow
+        # 2) split keys
+        # 3) insert all key-value pairs by iteration (works also if there is only one key)
+        line.split = unlist(strsplit(line, SEPERATOR))
+        keys = line.split[1]
+        value = line.split[2]
+        keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
+
+        # Transform data to data.frame
+        df = data.frame(message.id = keys.split, commit.hash = value)
+        return(df)
+    })
+    result.df = plyr::rbind.fill(result.list)
+    logging::logdebug("read.pasta: finished.")
+    return(result.df)
 }
