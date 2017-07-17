@@ -7,6 +7,7 @@
 
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
+requireNamespace("plyr")
 
 read.commits.raw = function(data.path, artifact) {
 
@@ -198,9 +199,7 @@ read.pasta = function(data.path) {
         stop("Stopped due to missing data.")
     }
 
-    result = list()
-
-    result = parallel::mclapply(lines, function(line) {
+    result.list = parallel::mclapply(lines, function(line) {
         #line = lines[i]
         if ( nchar(line) == 0 ) {
             return(NULL)
@@ -210,27 +209,20 @@ read.pasta = function(data.path) {
             logging::logwarn("Faulty line: %s", line)
             return(NULL)
         }
-        else {
 
-            # 1) split at arrow
-            # 2) split keys
-            # 3) insert all key-value pairs by iteration (works also if there is only one key)
-            line.split = unlist(strsplit(line, SEPERATOR))
-            keys = line.split[1]
-            value = line.split[2]
-            keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
-            for (key in keys.split) {
+        # 1) split at arrow
+        # 2) split keys
+        # 3) insert all key-value pairs by iteration (works also if there is only one key)
+        line.split = unlist(strsplit(line, SEPERATOR))
+        keys = line.split[1]
+        value = line.split[2]
+        keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
 
-                if(is.null(result[[key]])) {
-                    result[[key]] <- value
-                }
-                else {
-                    result[[key]] <- c(result[[key]], value)
-                }
-            }
-        }
-        return(result)
+        # Transform data to data.frame
+        df = data.frame(message.id = keys.split, commit.hash = value)
+        return(df)
     })
+    result.df = plyr::rbind.fill(result.list)
     logging::logdebug("read.pasta: finished.")
-    return(result)
+    return(result.df)
 }

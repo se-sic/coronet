@@ -52,7 +52,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         commits.raw = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
-        pasta = NULL, # list
+        pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -149,12 +149,36 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             if (private$network.conf$get.variable("pasta")) {
                 pasta = self$get.pasta()
+                commit.data = private$add.pasta.data(commit.data)
             }
 
             ## store the commit data
             private$commits.filtered = commit.data
             logging::logdebug("read.commits.filtered: finished.")
 
+        },
+
+        ## add the pasta data to the given data.frame for further analysis
+        add.pasta.data = function(data) {
+            logging::loginfo("Adding pasta data.")
+            data[, "pasta"] = NA
+            if("message.id" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
+            } else if("hash" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
+            }
+            browser()
+            return(data)
         },
 
         ## AUTHOR NETWORKS ####
@@ -479,6 +503,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
                 private$mails = read.mails(self$get.data.path())
+                private$mails = private$add.pasta.data(private$mails)
             }
 
             return(private$mails)
@@ -529,6 +554,30 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
 
         ## DATA ####
+
+        ## get single pasta items
+        get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
+          logging::loginfo("Getting pasta items started.")
+          #if neither message.id nor commit.hash are specified break the code
+          if(is.null(message.id) && is.null(commit.hash)) {
+                logging::logwarn("Neither message.id nor commit.hash specified.")
+                return()
+          }
+
+          #if pasta data are empty call the getter
+          if(is.null(private$pasta)) {
+              self$get.pasta()
+          }
+          #if a message.id is given just return the attached list of commit hashes
+          # else gather all message.ids which contain the given commit.hash and return them
+          if(!is.null(message.id)) {
+            result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+            return(result)
+          } else {
+            result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+            return(result)
+          }
+        },
 
         ## get the authors for each artifact
         get.artifact2author = function() {
