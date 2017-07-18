@@ -502,7 +502,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
                 private$mails = read.mails(self$get.data.path())
-                private$mails = private$add.pasta.data(private$mails)
+                if(private$network.conf$get.variable("pasta")) {
+                    private$mails = private$add.pasta.data(private$mails)
+                }
             }
 
             return(private$mails)
