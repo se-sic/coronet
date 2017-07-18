@@ -153,6 +153,8 @@ In this section, we give an overview on the parameters of the `ProjectConf` clas
 All parameters can be retrieved with the method `ProjectConf$get.entry(...)`, by passing one parameter name as method parameter.
 There is no way to update the entries, except for the revision-based parameters.
 
+### Basic Information
+
 - `project`
   * The project name from the Codeface analysis
   * E.g., `busybox_feature`
@@ -165,6 +167,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `mailinglists`
   * A list of the mailinglists of the project containing their name, type and source
 
+### Artifact-Related Information
 
 - `artifact`
   * The artifact of the project used for all data retrievals
@@ -178,6 +181,9 @@ There is no way to update the entries, except for the revision-based parameters.
   * The Codeface tagging parameter for the project, based on the `artifact` parameter
   * Either `"proximity"` or `"feature"`
 
+### Revision-Related Information
+
+**Note**: This data is updated after performing a data-based splitting (i.e., by calling the functions `split.data.*`).
 
 - `revisions`
   * The analyzed revisions of the project, retrieved from the Codeface database
@@ -191,6 +197,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `ranges.callgraph`
   * The revision ranges based on the list `revisions.callgraph`
 
+### Data Paths
 
 - `datapath`
   * The data path to the Codeface results folder of this project
@@ -201,7 +208,25 @@ There is no way to update the entries, except for the revision-based parameters.
 - `datapath.pasta`
   * The data path to the pasta data
 
-For more examples, please look in the file `test.R`.
+### Splitting Information
+
+**Note**: This data is added to the `ProjectConf` object only after performing a data-based splitting (by calling the functions `split.data.*`).
+
+- `split.type`
+  * Either `"time-based"` or `"activity-based"`, depending on splitting function
+- `split.length`
+  * The string given to time-based splitting (e.g., "3 months") or the activity amount given to acitivity-based splitting
+- `split.basis`
+  * The data used as basis for splitting (either `"commits"` or `"mails"`)
+- `split.sliding.window`
+  * Logical indicator whether a sliding-window approach has been used to split the data or network (either `"TRUE"` or `"FALSE"`)
+- `split.revisions`
+  * The revisions used for splitting (list of character strings)
+- `split.revisions.dates`
+  * The respective date objects for `split.revisions`
+- `split.ranges`
+  * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
+
 
 ## File overview
 
@@ -222,7 +247,8 @@ For more examples, please look in the file `test.R`.
 - `test.R`
   * Showcase file (see Section *How-To*)
 - `tests.R`
-  * Test suite (running all tests in `tests` subfolder)
+  * Test suite (running all tests in `tests/` subfolder)
+
 
 ## Work in progress
 

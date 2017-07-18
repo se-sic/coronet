@@ -358,6 +358,20 @@ ProjectConf = R6::R6Class("ProjectConf",
             ## compute revision ranges
             private$conf$ranges = construct.ranges(private$conf$revisions, sliding.window = sliding.window)
             private$conf$ranges.callgraph = construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
+        },
+
+        ## set splitting information revisions and ranges
+        set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
+            ## set basic slpitting information
+            private$conf$split.type = type
+            private$conf$split.length = length
+            private$conf$split.basis = basis
+            private$conf$split.sliding.window = sliding.window
+
+            ## set splitting information on ranges
+            private$conf$split.revisions = revisions
+            private$conf$split.revisions.dates = revisions.dates
+            private$conf$split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
         }
 
     )

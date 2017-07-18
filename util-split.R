@@ -52,6 +52,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## get bins based on split.basis
         bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period)$bins
         bins.labels = head(bins, -1)
+        split.by.bins = FALSE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
                          project.data$get.class.name(), time.period, split.basis)
@@ -62,6 +63,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         split.basis = NULL
         bins = strftime(bins)
         bins.labels = head(bins, -1)
+        split.by.bins = TRUE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
@@ -99,7 +101,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
         cf.range.data = CodefaceRangeData$new(project.data$get.project.conf(), project.data$get.network.conf(), range)
-        ## FIXME add revision.callgraph parameter
+        ## TODO add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
 
@@ -142,14 +144,25 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
+        bins = strftime(bins.date)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
             cf.conf = cf$set.project.conf(project.data$get.project.conf())
         }
     }
+
+    ## add splitting information to project configuration
+    project.data$get.project.conf()$set.splitting.info(
+        type = "time-based",
+        length = if (split.by.bins) bins else time.period,
+        basis = split.basis,
+        sliding.window = sliding.window,
+        revisions = bins,
+        revisions.dates = bins.date
+    )
 
     ## return list of CodefaceRangeData objects
     return(cf.data)
@@ -244,14 +257,25 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
+        bins = strftime(bins.date)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
             cf.conf = cf$set.project.conf(project.data$get.project.conf(), reset.environment = FALSE)
         }
     }
+
+    ## add splitting information to project configuration
+    project.data$get.project.conf()$set.splitting.info(
+        type = "activity-based",
+        length = activity.amount,
+        basis = activity.type,
+        sliding.window = sliding.window,
+        revisions = bins,
+        revisions.dates = bins.date
+    )
 
     ## set bin attribute for sliding-window functionality
     attr(cf.data, "bins") = bins.date
