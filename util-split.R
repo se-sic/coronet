@@ -117,7 +117,10 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     })
 
     ## perform additional steps for sliding-window approach
-    if (sliding.window) {
+    ## (only if there is more than one range until here)
+    if (sliding.window && length(bins.ranges) <= 1) {
+        logging::logwarn("Sliding-window approach does not apply for one range or less.")
+    } else if (sliding.window) {
         ## compute bins for sliding windows: pairwise middle between dates
         bins.date.middle = mapply(
             bins.date[1:(length(bins.date) - 1)],
@@ -198,7 +201,10 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## perform additional steps for sliding-window approach:
     ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
     ## then, compute bins on the cropped data
-    if (sliding.window) {
+    ## (only if there is more than one range until here)
+    if (sliding.window && length(bins.date) <= 2) {
+        logging::logwarn("Sliding-window approach does not apply for one range or less.")
+    } else if (sliding.window) {
         ## get the list of unique items that are used for the bin computation and, thus, also the
         ## cropping of data
         items.unique = unique(data[[ activity.type ]][[ id.column[[activity.type]] ]])
@@ -215,7 +221,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## store the data again
         data.to.cut = data[[ activity.type ]][[ id.column[[activity.type]] ]] %in% items.cut
-        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut ]
+        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut, ]
 
         ## clone the project data and update raw data to split it again
         project.data.clone = project.data$clone()
