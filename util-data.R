@@ -177,7 +177,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                     }
                 }
             }
-            browser()
             return(data)
         },
 
