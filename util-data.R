@@ -135,17 +135,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
             }
-            ## add synchronicity column anyway
-            else {
-                dummy.data = switch(
-                    as.character(nrow(commit.data)),
-                    ## if there are no data available, we need to add the synchronicity column in a special way
-                    "0" = logical(0),
-                    ## otherwise, add NAs to denote non-existing data
-                    NA
-                )
-                commit.data = cbind(commit.data, synchronicity = dummy.data)
-            }
 
             ## add PaStA data if wanted
             if (private$network.conf$get.variable("pasta")) {
