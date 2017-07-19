@@ -473,8 +473,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             private$synchronicity = data
         },
 
+        ## get the complete PaStA data
         get.pasta = function() {
-            logging::loginfo("Getting pasta data.")
+            logging::loginfo("Getting PaStA data.")
 
             ## if commits are not read already, do this
             if (is.null(private$pasta)) {
@@ -482,6 +483,12 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
 
             return(private$pasta)
+        },
+
+        ## set the complete PaStA data
+        set.pasta = function(data) {
+            logging::loginfo("Setting PaStA data.")
+            private$pasta = data
         },
 
         ## get the complete list of mails
