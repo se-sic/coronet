@@ -193,11 +193,6 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 return(private$authors.network.cochange)
             }
 
-            ## read authors if not done yet
-            if (is.null(private$authors)) {
-                private$read.authors()
-            }
-
             ## construct network based on artifact2author data
             artifact2author = self$get.artifact2author()
             author.net = construct.dependency.network.from.list(artifact2author, network.conf = private$network.conf,
