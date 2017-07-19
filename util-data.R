@@ -52,6 +52,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         commits.raw = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
+        pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -146,223 +147,36 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 commit.data = cbind(commit.data, synchronicity = dummy.data)
             }
 
+            if (private$network.conf$get.variable("pasta")) {
+                pasta = self$get.pasta()
+                commit.data = private$add.pasta.data(commit.data)
+            }
+
             ## store the commit data
             private$commits.filtered = commit.data
             logging::logdebug("read.commits.filtered: finished.")
         },
 
-        read.commits.raw = function() {
-
-            logging::logdebug("read.commits.raw: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$commits.raw)) {
-                logging::logdebug("read.commits.raw: finished. (already existing)")
-                return(private$commits.raw)
+        ## add the pasta data to the given data.frame for further analysis
+        add.pasta.data = function(data) {
+            logging::loginfo("Adding pasta data.")
+            data[, "pasta"] = NA
+            if("message.id" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
+            } else if("hash" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
             }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "commits.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                          fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of commits is empty
-            if (inherits(commit.data, 'try-error')) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.raw = data.frame()
-                return()
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitHash,
-            ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
-            ## cd.file, cd.entityId, cd.entityType, cd.size
-            colnames(commit.data) = c(
-                "id", # id
-                "date", "author.name", "author.email", # author information
-                "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
-                "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
-            )
-
-            ## rewrite data.frame when we want file-based data
-            ## (we have proximity-based data as foundation)
-            if (private$project.conf$get.entry("artifact") == "file") {
-                ## aggregate diff size by hash and file
-                commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
-                                            group by hash, file order by `date`, `author.name`, `id`, `file`, `artifact`")
-
-                ## fix column class for diffsum
-                commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
-
-                ## copy columns to match proper layout for further analyses
-                commit.data["artifact"] = commit.data[["file"]]
-                commit.data["artifact.type"] = "File"
-                commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
-                commit.data["diffsum"] = NULL # remove
-            }
-
-            ## rewrite data.frame when we want function-based data
-            ## (we have proximity-based data as foundation)
-            if (private$project.conf$get.entry("artifact") == "function") {
-                ## artifact = file name + "::" . function name
-                artifacts.new = paste(commit.data[["file"]], commit.data[["artifact"]], sep = "::")
-
-                ## clean up empty artifacts and File_Level artifact
-                artifacts.new = gsub("^::$", "", artifacts.new)
-                artifacts.new = gsub("^(.*)::File_Level$", "File_Level", artifacts.new)
-
-                ## insert new artifact names into commit table
-                commit.data["artifact"] = artifacts.new
-            }
-
-            ## convert dates and sort by them
-            commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
-            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
-
-
-            ## store the commit data
-            private$commits.raw = commit.data
-            logging::logdebug("read.commits.raw: finished.")
-        },
-
-        ## read the synchronicity data of commits
-        read.synchronicity = function(){
-            logging::logdebug("read.synchronicity: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$synchronicity)) {
-                logging::logdebug("read.synchronicity: finished. (already existing)")
-                return(private$sychronicity)
-            }
-
-
-            ## check time.window
-            allowed.time.windows = c(1, 5, 10)
-            stopifnot((private$network.conf$get.variable("synchronicity.time.window")) %in% allowed.time.windows)
-
-            ## construct path and file
-            data.path = self$get.data.path.synchronicity()
-            file.name = sprintf("commit_sync_analysis_%ss_%s.dat",
-                               private$project.conf$get.entry("artifact"),
-                               private$network.conf$get.variable("synchronicity.time.window"))
-            file = file.path(data.path, file.name)
-
-            ## break if file does not exist
-            if(!file.exists(file)) {
-                logging::logwarn("There are no synchronicity data available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                private$synchronicity = data.frame()
-                return()
-            }
-
-            ## load commit.hashes object
-            load(file = file)
-            synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
-            nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
-
-            ## construct data.frame
-            synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
-
-            ## store the synchronicity data
-            private$synchronicity = synchronicity
-            logging::logdebug("read.synchronicity: finished.")
-        },
-
-        ## read the mail data for the range
-        read.mails = function() {
-
-            logging::logdebug("read.mails: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$mails)) {
-                logging::logdebug("read.mails: finished. (already existing)")
-                return(private$mails)
-            }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "emails.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                        fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of mails is empty
-            if (inherits(mail.data, 'try-error')) {
-                logging::logwarn("There are no mails available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$mails = data.frame()
-                return()
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
-            colnames(mail.data) = c(
-                "author.name", "author.email", # author information
-                "message.id", "date", "date.offset", "subject", # meta information
-                "thread" # thread ID
-            )
-
-            ## remove mails without a proper date as they mess up directed mail-based networks
-            ## this basically only applies for project-level analysis
-            empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
-            if (length(empty.dates) > 0)
-                mail.data = mail.data[-empty.dates, ]
-
-            ## convert dates and sort by them
-            mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
-            mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
-
-            ## store the mail data
-            private$mails = mail.data
-            logging::logdebug("read.mails: finished.")
-        },
-
-        ## read the author data for the range
-        read.authors = function() {
-
-            logging::logdebug("read.authors: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$authors)) {
-                logging::logdebug("read.authors: finished. (already existing)")
-                return(private$authors)
-            }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "authors.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                         fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of authors is empty
-            if (inherits(authors.df, 'try-error')) {
-                logging::logerror("There are no authors available for the current environment.")
-                logging::logerror("Class: %s", self$get.class.name())
-                logging::logerror("Configuration: %s", private$project.conf$get.conf.as.string())
-                stop("Stopped due to missing authors.")
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-            colnames(authors.df) = c(
-                "ID", "author.name" # author information
-            )
-
-            ## store the ID--author mapping
-            private$authors = authors.df
-            logging::logdebug("read.authors: finished.")
+            return(data)
         },
 
 
@@ -601,6 +415,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(data.path)
         },
 
+        get.data.path.pasta = function() {
+            data.path = private$project.conf$get.entry("datapath.pasta")
+            return(data.path)
+        },
+
 
         ## RAW DATA ####
 
@@ -634,7 +453,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw()
+                private$commits.raw = read.commits.raw(self$get.data.path(), private$project.conf$get.entry("artifact"))
             }
 
             return(private$commits.raw)
@@ -653,7 +472,9 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$synchronicity)) {
-                private$read.synchronicity()
+                private$synchronicity = read.synchronicity(self$get.data.path.synchronicity(),
+                                                           private$project.conf$get.entry("artifact"),
+                                                           private$network.conf$get.variable("synchronicity.time.window"))
             }
 
             return(private$synchronicity)
@@ -665,13 +486,29 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             private$synchronicity = data
         },
 
+        get.pasta = function() {
+            logging::loginfo("Getting pasta data.")
+
+            ## if commits are not read already, do this
+            if (is.null(private$pasta)) {
+                private$pasta = read.pasta(self$get.data.path.pasta())
+            }
+
+            return(private$pasta)
+        },
+
         ## get the complete list of mails
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
-                private$read.mails()
+                private$mails = read.mails(self$get.data.path())
+
+                ## add PaStA data if wanted
+                if(private$network.conf$get.variable("pasta")) {
+                    private$mails = private$add.pasta.data(private$mails)
+                }
             }
 
             return(private$mails)
@@ -690,7 +527,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if authors are not read already, do this
             if (is.null(private$authors)) {
-                private$read.authors()
+                private$authors = read.authors(self$get.data.path())
             }
 
             return(private$authors)
@@ -722,6 +559,30 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
 
         ## DATA ####
+
+        ## get single pasta items
+        get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
+          logging::loginfo("Getting pasta items started.")
+          #if neither message.id nor commit.hash are specified break the code
+          if(is.null(message.id) && is.null(commit.hash)) {
+                logging::logwarn("Neither message.id nor commit.hash specified.")
+                return()
+          }
+
+          #if pasta data are empty call the getter
+          if(is.null(private$pasta)) {
+              self$get.pasta()
+          }
+          #if a message.id is given just return the attached list of commit hashes
+          # else gather all message.ids which contain the given commit.hash and return them
+          if(!is.null(message.id)) {
+            result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+            return(result)
+          } else {
+            result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+            return(result)
+          }
+        },
 
         ## get the authors for each artifact
         get.artifact2author = function() {
@@ -823,7 +684,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
-                private$read.mails()
+                self$get.mails()
             }
 
             ## store the authors per thread
