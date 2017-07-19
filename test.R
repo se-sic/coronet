@@ -47,7 +47,7 @@ revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
 
 ## PROJECT-LEVEL DATA
 
-x = ProjectData$new(proj.conf, net.conf)
+x = NetworkBuilder$new(project.conf = proj.conf, network.conf = net.conf)
 
 # x$get.commits.raw()
 # x$get.synchronicity()

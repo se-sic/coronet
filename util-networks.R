@@ -76,7 +76,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
       edge.attributes = c("date", "message.id", "thread")
 
-      if (length(thread2author) != 0) {
+      if (length(private$proj.data$get.thread2author()) != 0) {
         dev.relation = construct.dependency.network.from.list(private$proj.data$get.thread2author(), network.conf = private$network.conf,
                                                  directed = private$network.conf$get.variable("author.directed"))
       } else {
@@ -157,7 +157,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
   public = list(
     ## constructor
     initialize = function(project.conf, network.conf) {
-      private$proj.data = ProjectData$new(project.conf, network.conf)
+      private$proj.data = ProjectData$new(project.conf = project.conf)
 
       if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
         private$network.conf = network.conf
@@ -247,11 +247,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
     ## get the (real) bipartite network
     get.bipartite.network = function() {
       ## authors-artifact relation
-      authors.to.artifacts = self$get.author2artifact()
+      authors.to.artifacts = private$proj.data$get.author2artifact()
 
       ## extract vertices
       authors = names(authors.to.artifacts)
-      artifacts = self$get.artifacts()
+      artifacts = private$proj.data$get.artifacts()
 
       ## construct networks from vertices
       authors.net = create.empty.network(directed = FALSE) +
@@ -270,7 +270,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
       logging::loginfo("Constructing all networks.")
 
       ## authors-artifact relation
-      authors.to.artifacts = self$get.author2artifact()
+      authors.to.artifacts = private$proj.data$get.author2artifact()
 
       ## bipartite network
       bipartite.net = self$get.bipartite.network()

@@ -573,8 +573,8 @@ get.key.to.value.from.df = function(base.data, thing1, thing2) {
 
   # get right portion of data
   data = base.data[c(thing1, thing2)]
-  cols.which = colnames(base.data) %!in% c(thing1, thing2)
-  cols = c(thing1, thing2, colnames(base.data) %!in% c(thing1, thing2))
+  cols.which = colnames(base.data)
+  cols = c(thing1, thing2, colnames(base.data))
 
   extra.data.df = base.data[cols]
   # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
