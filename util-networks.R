@@ -137,13 +137,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
       ## construct path and file
       file.dir = private$proj.data$get.data.path.callgraph()
-      file.name = paste0("cg_nw_", private$proj.data$get.project.conf$get.entry("artifact.short"), "_", private$proj.data$get.revision.callgraph, ".net")
+      file.name = paste0("cg_nw_", private$proj.data$get.project.conf()$get.entry("artifact.short"), "_", private$proj.data$get.revision.callgraph, ".net")
       file = file.path(file.dir, file.name)
 
       ## read network from disk
       artifacts.net = read.network.from.file(file)
       ## post-process network
-      artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$proj.data$get.project.conf$get.entry("artifact"))
+      artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$proj.data$get.project.conf()$get.entry("artifact"))
 
       ## store network
       private$artifacts.network.callgraph = artifacts.net
