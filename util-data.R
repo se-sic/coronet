@@ -560,37 +560,41 @@ RangeData = R6::R6Class("RangeData",
     )
 )
 
-## Transform base.data (data.frame) to a list
-## - group by thing1
-## - use thing2 as sublist items
-get.key.to.value.from.df = function(base.data, thing1, thing2) {
+## Transform data.frame 'base.data' to a list
+## - split by column given by thing1
+## - use thing2 as first column in sublist items
+## - append all other existing columns (including thing1 and thing2)
+## - each item in the results list gets attributes
+##   - group.type (=thing1) and
+##   - group.name (=unique(item[[thing1]]))
+get.key.to.value.from.df = function(base.data, thing1, thing2, ...) {
+  logging::logdebug("get.key.to.value.from.df: starting.")
+
+  ## if there is not data to subset, return am enpty list directly
   if (nrow(base.data) == 0) {
     logging::logwarn("Trying to get subset of non-existent data.")
     logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
+    logging::logdebug("get.key.to.value.from.df: finished.")
     return(list())
   }
-  logging::logdebug("get.key.to.value.from.df: starting.")
 
-  # get right portion of data
-  data = base.data[c(thing1, thing2)]
-  cols.which = colnames(base.data)
+  ## re-arrange columns and use things as first columns
   cols = c(thing1, thing2, colnames(base.data))
+  base.data = base.data[cols]
 
-  extra.data.df = base.data[cols]
-  # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
-  colnames(extra.data.df) = cols
-
-  # group list by thing1 and construct a list: thing1 -> (thing2, extra.data)
+  ## group list by thing1 and construct a list: thing1 -> data.frame(thing2, other columns)
   transform.df.per.item = function(df) {
     group = unique(df[[thing1]])
-    df = df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
+    ## remove (first) thing1 from columns and keep data.frame
+    df = df[, -match(c(thing1), names(df)), drop = FALSE]
+    ## add group information as attributes
     attr(df, "group.type") = thing1
     attr(df, "group.name") = group
     return(df)
   }
-  mylist = plyr::dlply(extra.data.df, thing1, transform.df.per.item)
+  mylist = plyr::dlply(base.data, thing1, transform.df.per.item)
 
-  # remove object attributes introduced by dlply
+  ## remove object attributes introduced by dlply
   attr(mylist, "split_labels") = NULL
   attr(mylist, "split_type") = NULL
 
