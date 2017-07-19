@@ -190,12 +190,12 @@ read.pasta = function(data.path) {
     KEY.SEPERATOR = " "
 
     filepath = file.path(data.path, "similar-mailbox")
-    lines = try(readLines(filepath))
+    lines = try(readLines(filepath), silent = TRUE)
 
     if (inherits(lines, 'try-error')) {
-        logging::logerror("There are no PaStA-data available for the current environment.")
-        logging::logerror("Datapath: %s", data.path)
-        stop("Stopped due to missing data.")
+        logging::logwarn("There are no PaStA data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(data.frame())
     }
 
     result.list = parallel::mclapply(lines, function(line) {
