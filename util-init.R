@@ -4,8 +4,9 @@
 
 source("util-misc.R")
 source("util-conf.R")
-source("util-data.R")
 source("util-read.R")
+source("util-data.R")
+source("util-networks.R")
 source("util-split.R")
 source("util-motifs.R")
 source("util-bulk.R")

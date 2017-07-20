@@ -40,12 +40,12 @@ ARTIFACT.CODEFACE = list(
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## NetworkConf
+## NetworkConf ####
 ##
 ## Represents the network configurations
 
 NetworkConf = R6::R6Class("NetworkConf",
-    ## private members
+    ## private members ####
     private = list(
         #Variables with default values
         #Values can be changed using update.values method
@@ -61,8 +61,6 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "character"),
         artifact.directed = list(value = FALSE,
                                  type = "logical"),
-        artifact.filter.base = list(value = TRUE,
-                                    type = "logical"),
         edge.attributes = list(value = c(
                                    "date", # general
                                    "message.id", "thread", # mail data
@@ -75,24 +73,16 @@ NetworkConf = R6::R6Class("NetworkConf",
                               type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
-        synchronicity = list(value = FALSE,
-                             type = "logical"),
-        synchronicity.time.window = list(value = 5,
-                                         type = "numeric"),
-        pasta = list(value = FALSE,
-                     type = "logical"),
-
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
-            return(
-                exists(name, where = private) &&
+            return(exists(name, where = private) &&
                     (class(value) == (private[[name]][["type"]]))
             )
         }
     ),
 
-    ## public members
+    ## public members ####
     public = list(
 
         # Prints the private variables in the class
@@ -130,15 +120,14 @@ NetworkConf = R6::R6Class("NetworkConf",
     )
 )
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## ProjectConf
+## ProjectConf ####
 ##
 ## Represents the Project configuration
 
 ProjectConf = R6::R6Class("ProjectConf",
 
-    ## private members
+    ## private members ####
     private = list(
 
         data = NULL, # character
@@ -146,6 +135,11 @@ ProjectConf = R6::R6Class("ProjectConf",
         casestudy = NULL, # character
         artifact = NULL, # character
         conf = NULL, # list
+
+        synchronicity = FALSE,
+        synchronicity.time.window = 5,
+        artifact.filter.base = TRUE,
+        pasta = FALSE,
 
         ## / / / / / / / / / / / / / /
         ## Revisions and ranges
@@ -305,7 +299,7 @@ ProjectConf = R6::R6Class("ProjectConf",
 
     ),
 
-    ## public members
+    ## public members ####
     public = list(
 
         ## constructor
@@ -338,7 +332,6 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(yaml::as.yaml(private$conf))
         },
 
-
         ## CONFIGURATION ENTRIES
 
         get.entry = function(entry.name) {
@@ -350,6 +343,50 @@ ProjectConf = R6::R6Class("ProjectConf",
             idx = which(self$get.entry("ranges") == range)
             rev = self$get.entry("revisions.callgraph")[idx + 1]
             return(rev)
+        },
+
+        get.synchronicity = function() {
+            return(private$synchronicity)
+        },
+
+        set.synchronicity = function(synchronicity) {
+            if(class(synchronicity) == "logical")
+                private$synchronicity = synchronicity
+            else
+                logging::logwarn("Wrong data type given in set.synchronicity.")
+        },
+
+        get.synchronicity.time.window = function() {
+          return(private$synchronicity.time.window)
+        },
+
+        set.synchronicity.time.window = function(synchronicity.time.window) {
+          if(class(synchronicity.time.window) == "numeric")
+            private$synchronicity.time.window = synchronicity.time.window
+          else
+            logging::logwarn("Wrong data type given in set.synchronicity.time.window.")
+        },
+
+        get.artifact.filter.base = function() {
+          return(private$artifact.filter.base)
+        },
+
+        set.artifact.filter.base = function(artifact.filter.base) {
+          if(class(artifact.filter.base) == "logical")
+            private$artifact.filter.base = artifact.filter.base
+          else
+            logging::logwarn("Wrong data type given in set.artifact.filter.base")
+        },
+
+        get.pasta = function() {
+          return(private$pasta)
+        },
+
+        set.pasta = function(pasta) {
+          if(class(pasta) == "logical")
+            private$pasta = pasta
+          else
+            logging::logwarn("Wrong data type given in set.pasta.")
         },
 
         ## UPDATING CONFIGURATION ENTRIES

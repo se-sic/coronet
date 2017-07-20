@@ -25,7 +25,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
         multi.network = range.data$get.multi.network()
@@ -59,7 +59,7 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
         bp.network = range.data$get.bipartite.network()
@@ -93,7 +93,7 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the author network
         author.network = range.data$get.author.network()
@@ -127,7 +127,7 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the artifact network
         artifact.network = range.data$get.artifact.network()
@@ -164,7 +164,7 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
                                     "")
 
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range, revision.callgraph)
+        range.data = RangeData$new(project.conf, network.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list
@@ -179,7 +179,7 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Run function on list of CodefaceRangeData
+## Run function on list of RangeData
 ##
 
 run.lapply = function(data, fun) {

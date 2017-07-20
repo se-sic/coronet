@@ -13,83 +13,6 @@ requireNamespace("igraph") # networks
 requireNamespace("logging")
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Utility function for reading file formats
-##
-
-## Transform base.data (data.frame) to a list
-## - group by thing1
-## - use thing2 as sublist items
-get.thing2thing = function(base.data, thing1, thing2, network.conf) {
-    if (nrow(base.data) == 0) {
-        logging::logwarn("Trying to get subset of non-existent data.")
-        logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
-        return(list())
-    }
-    logging::logdebug("get.thing2thing: starting.")
-
-    # get right portion of data
-    data = base.data[c(thing1, thing2)]
-    cols.which = network.conf$get.variable("edge.attributes") %in% colnames(base.data)
-    cols = c(thing1, thing2, network.conf$get.variable("edge.attributes")[cols.which])
-
-    extra.data.df = base.data[cols]
-    # extra.data.df = extra.data.df[order(extra.data.df[[thing1]]), ] # if wanted, sort data.frame while debugging
-    colnames(extra.data.df) = cols
-
-    # group list by thing1 and construct a list: thing1 -> (thing2, extra.data)
-    transform.df.per.item = function(df) {
-        group = unique(df[[thing1]])
-        df = df[, -match(c(thing1), names(df)), drop = FALSE] # remove thing1 from columns and keep data.frame
-        attr(df, "group.type") = thing1
-        attr(df, "group.name") = group
-        return(df)
-    }
-    mylist = plyr::dlply(extra.data.df, thing1, transform.df.per.item)
-
-    # remove object attributes introduced by dlply
-    attr(mylist, "split_labels") = NULL
-    attr(mylist, "split_type") = NULL
-
-    logging::logdebug("get.thing2thing: finished.")
-
-    return(mylist)
-}
-
-
-## Read adjacency matrix as given by Codeface output:
-## - headers exist (developer IDs)
-## - no row names
-## Column names are mapped to the developers' names, row names are set identically
-read.adjacency.matrix.from.file = function(file, authors, network.conf) {
-    # no analysis for the current range
-    if(!file.exists(file)) {
-        return(create.empty.network())
-    }
-
-    # read data.frame from disk (as expected from Codeface output)
-    dat = read.table(file, header = TRUE)
-
-    # get author names whose IDs are
-    authors.id = sapply(colnames(dat), function(x) { gsub("X", "", x) }) # remove "X" from col names
-    authors.name = authors[ match(authors.id, authors[["ID"]]), "author.name"]
-
-    # set row and col names
-    colnames(dat) = authors.name
-    rownames(dat) = authors.name
-
-    # construct igraph object from adjacency matrix
-    g = igraph::graph.adjacency(as.matrix(dat), mode = "directed", weighted = TRUE)
-
-    # transform multiple edges to edge weights
-    if (network.conf$get.variable("simplify"))
-        g = simplify.network(g)
-
-    # return constructed igraph object
-    return(g)
-}
-
-
 ## Construct a dependency network from the given list of lists
 ## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
 ## - if directed, the order of things in the sublists is respected
@@ -372,35 +295,6 @@ create.empty.network = function(directed = TRUE) {
     net = igraph::set.edge.attribute(net, "type", value = 6)
 
     return(net)
-}
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Exemplary network for illustration purposes
-##
-
-get.sample.network = function(network.conf = NetworkConf$new()) {
-    ## INDEPENDENT NETWORKS
-    authors = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6", type = TYPE.AUTHOR) +
-        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5", type = TYPE.EDGES.INTRA)
-
-    artifacts = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6", type = TYPE.ARTIFACT) +
-        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6", type = TYPE.EDGES.INTRA)
-    # artifacts = igraph::as.directed(artifacts, mode = "mutual")
-
-    authors.to.artifacts.df = data.frame(
-        author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
-        artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
-    )
-    authors.to.artifacts = get.thing2thing(authors.to.artifacts.df, "author.name", "artifact", network.conf)
-
-    ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
-    network = igraph::set.graph.attribute(network, "sample.network", TRUE)
-
-    return(network)
 }
 
 

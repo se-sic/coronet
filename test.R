@@ -39,7 +39,7 @@ revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
 
 ## PROJECT-LEVEL DATA
 
-x = CodefaceProjectData$new(proj.conf, net.conf)
+x = NetworkBuilder$new(project.conf = proj.conf, network.conf = net.conf)
 
 # x$get.commits.raw()
 # x$get.synchronicity()
@@ -81,8 +81,8 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
-# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+y <- RangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+# y <- RangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
 # y$get.commits.filtered.empty()
