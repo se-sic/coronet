@@ -94,6 +94,11 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `author.directed`
   * The (time-based) directedness of edges in an author network
   * [`TRUE`, *`FALSE`*]
+- `author.all.authors`
+  * Denotes whether all available authors (from all analyses and data sources) shall be added to the
+network as a basis
+  * **Note**: Depending on the chosen author relation, there may be isolates then
+  * [`TRUE`, *`FALSE`*]
 - `author.only.committers`
   * Remove all authors from an author network (including bipartite and multi networks) who have not committed to the repository
   * [`TRUE`, *`FALSE`*]
@@ -114,6 +119,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
        - author information: `"author.name"`, `"author.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
        - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`
+       - PaStA information: `"pasta"` (see parameter `pasta` below)
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
 - `simplify`
@@ -135,7 +141,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
   * [1, *5*, 10]
   * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
-- `pasta` **[WIP]**
+- `pasta
   * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
   * [`TRUE`, *`FALSE`*]
   * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`
@@ -240,6 +246,8 @@ There is no way to update the entries, except for the revision-based parameters.
   * Helper functions and also legacy functions, both needed in the other files
 - `util-split.R`
   * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
+- `util-motifs.R`
+  * Functionality for the identifaction of network motifs (subgraph patterns)
 - `util-bulk.R`
   * Collection functionality for the different network types (using Codeface revision ranges)
 - `util-init.R`
