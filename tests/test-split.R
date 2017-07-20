@@ -44,7 +44,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
         commits.raw = project.data$get.commits.raw(),
         mails = project.data$get.mails(),
@@ -110,7 +110,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
         commits.raw = project.data$get.commits.raw(),
         mails = project.data$get.mails(),
@@ -181,7 +181,7 @@ test_that("Split a data object time-based (bins == ... ).", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
         commits.raw = project.data$get.commits.raw(),
         mails = project.data$get.mails(),
@@ -237,7 +237,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
         commits.raw = project.data$get.commits.raw(),
         mails = project.data$get.mails(),
@@ -341,7 +341,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
         commits.raw = project.data$get.commits.raw(),
         mails = project.data$get.mails(),
@@ -460,16 +460,18 @@ test_that("Split a network time-based (time.period = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$set.artifact.filter.base(FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ##
     ## simplify = FALSE
     ##
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expected = list(
         "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph.edges(author.net, c(1:2)),
@@ -493,11 +495,11 @@ test_that("Split a network time-based (time.period = ...).", {
     ##
 
     ## update network configuration
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = TRUE))
-    project.data$reset.environment()
+    net.builder$update.network.conf(list(author.relation = "cochange", simplify = TRUE))
+    net.builder$reset.environment()
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
@@ -516,16 +518,18 @@ test_that("Split a network time-based (bins = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$set.artifact.filter.base(FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ##
     ## simplify = FALSE
     ##
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     ## results
     expected = list(
@@ -550,11 +554,11 @@ test_that("Split a network time-based (bins = ...).", {
     ##
 
     ## update network configuration
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = TRUE))
-    project.data$reset.environment()
+    net.conf$update.values(list(author.relation = "cochange", simplify = TRUE))
+    net.builder$reset.environment()
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
@@ -569,12 +573,14 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$set.artifact.filter.base(FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     ##
     ## number.edges (1)
@@ -837,20 +843,22 @@ test_that("Check consistency of data and network time-based splitting.", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$set.artifact.filter.base(FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
-    ## retrieve project data
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    ## retrieve project data and network builder
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
     ## retrieve author network
-    project.net = project.data$get.author.network()
+    project.net = net.builder$get.author.network()
 
     ## set time period for splitting
     time.period = "7 mins"
 
     ## split data
     results.data = split.data.time.based(project.data, time.period = time.period, split.basis = "commits")
-    results.data.network = lapply(results.data, function(d) d$get.author.network())
+    results.data.network = lapply(results.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
 
     ## split network
     results.network = split.network.time.based(project.net, time.period = time.period)
