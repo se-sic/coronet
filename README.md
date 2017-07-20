@@ -30,6 +30,7 @@ source("path/to/util-init.R", chdir = TRUE)
 - `parallel`: For parallelization
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
+- `testthat`: For the test suite
 
 
 ## How-To
@@ -71,7 +72,7 @@ plot.bipartite.network(bpn)
 
 There are two different classes of configuration objects in this library.
 - The `ProjectConf` class, which determines all configuration parameters needed for the configured project (mainly data paths) and
-- the `NetworkConf` class, which is used for all configuration parameters  concerning data retrieval and network construction.
+- the `NetworkConf` class, which is used for all configuration parameters concerning data retrieval and network construction.
 
 You can find an overview on all the parameters in these classes below in this file.
 For examples on how to use both classes and how to build networks with them, please look in the file `test.R`.
@@ -94,7 +95,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The (time-based) directedness of edges in an author network
   * [`TRUE`, *`FALSE`*]
 - `author.only.committers`
-  * Remove all authors from a multi network who have not committed to the repository
+  * Remove all authors from an author network (including bipartite and multi networks) who have not committed to the repository
   * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
   * The relation among artifacts, encoded as edges in an artifact network
@@ -108,9 +109,13 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   - [*`TRUE`*, `FALSE`]
 - `edge.attributes`
   * The list of edge-attribute names and information
-  * a subset of the following as vector: [*`"date"`, `"message.id"`, `"thread"`, `"hash"`, `"file"`*]
+  * a subset of the following as a single vector:
+       - timestamp information: *`"date"`*
+       - author information: `"author.name"`, `"author.email"`
+       - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
+       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
-  * **Note**: Only the applicable part of the given vector of names is respected.
+  * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
@@ -148,6 +153,8 @@ In this section, we give an overview on the parameters of the `ProjectConf` clas
 All parameters can be retrieved with the method `ProjectConf$get.entry(...)`, by passing one parameter name as method parameter.
 There is no way to update the entries, except for the revision-based parameters.
 
+### Basic Information
+
 - `project`
   * The project name from the Codeface analysis
   * E.g., `busybox_feature`
@@ -160,6 +167,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `mailinglists`
   * A list of the mailinglists of the project containing their name, type and source
 
+### Artifact-Related Information
 
 - `artifact`
   * The artifact of the project used for all data retrievals
@@ -173,6 +181,9 @@ There is no way to update the entries, except for the revision-based parameters.
   * The Codeface tagging parameter for the project, based on the `artifact` parameter
   * Either `"proximity"` or `"feature"`
 
+### Revision-Related Information
+
+**Note**: This data is updated after performing a data-based splitting (i.e., by calling the functions `split.data.*`).
 
 - `revisions`
   * The analyzed revisions of the project, retrieved from the Codeface database
@@ -186,6 +197,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `ranges.callgraph`
   * The revision ranges based on the list `revisions.callgraph`
 
+### Data Paths
 
 - `datapath`
   * The data path to the Codeface results folder of this project
@@ -196,7 +208,25 @@ There is no way to update the entries, except for the revision-based parameters.
 - `datapath.pasta`
   * The data path to the pasta data
 
-For more examples, please look in the file `test.R`.
+### Splitting Information
+
+**Note**: This data is added to the `ProjectConf` object only after performing a data-based splitting (by calling the functions `split.data.*`).
+
+- `split.type`
+  * Either `"time-based"` or `"activity-based"`, depending on splitting function
+- `split.length`
+  * The string given to time-based splitting (e.g., "3 months") or the activity amount given to acitivity-based splitting
+- `split.basis`
+  * The data used as basis for splitting (either `"commits"` or `"mails"`)
+- `split.sliding.window`
+  * Logical indicator whether a sliding-window approach has been used to split the data or network (either `"TRUE"` or `"FALSE"`)
+- `split.revisions`
+  * The revisions used for splitting (list of character strings)
+- `split.revisions.dates`
+  * The respective date objects for `split.revisions`
+- `split.ranges`
+  * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
+
 
 ## File overview
 
@@ -216,6 +246,9 @@ For more examples, please look in the file `test.R`.
   * Initialization file that can be used by other analysis projects (see Section *Submodule*)
 - `test.R`
   * Showcase file (see Section *How-To*)
+- `tests.R`
+  * Test suite (running all tests in `tests/` subfolder)
+
 
 ## Work in progress
 

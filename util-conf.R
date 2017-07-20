@@ -53,6 +53,8 @@ NetworkConf = R6::R6Class("NetworkConf",
                                type = "character"),
         author.directed = list(value = FALSE,
                                type = "logical"),
+        author.all.authors = list(value = FALSE,
+                                  type = "logical"),
         author.only.committers = list(value = FALSE,
                                       type = "logical"),
         artifact.relation = list(value = "cochange",
@@ -61,8 +63,11 @@ NetworkConf = R6::R6Class("NetworkConf",
                                  type = "logical"),
         artifact.filter.base = list(value = TRUE,
                                     type = "logical"),
-        edge.attributes = list(value = c("message.id", "date",
-                                         "thread", "hash", "file", "artifact.type"),
+        edge.attributes = list(value = c(
+                                   "date", # general
+                                   "message.id", "thread", # mail data
+                                   "hash", "file", "artifact.type", "artifact" # commit data
+                               ),
                                type = "character"),
         simplify = list(value = FALSE,
                         type = "logical"),
@@ -74,6 +79,9 @@ NetworkConf = R6::R6Class("NetworkConf",
                              type = "logical"),
         synchronicity.time.window = list(value = 5,
                                          type = "numeric"),
+        pasta = list(value = FALSE,
+                     type = "logical"),
+
 
         # Checks if the given value is of the correct type
         check.value = function(value, name) {
@@ -198,6 +206,9 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "synchronicity", sep = "_")))
         },
 
+        get.pasta.folder = function(data, selection.process, casestudy) {
+            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "pasta", sep = "_")))
+        },
 
         ## construct path to a Codeface configuration
         ## - data: path to codeface-data folder
@@ -251,6 +262,8 @@ ProjectConf = R6::R6Class("ProjectConf",
             conf$datapath.callgraph = private$get.callgraph.folder(data, selection.process, casestudy)
             ## store path to synchronicity data
             conf$datapath.synchronicity = private$get.synchronicity.folder(data, selection.process, casestudy)
+            ## store path to pasta data
+            conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
 
             ## READ REVISIONS META-DATA
 
@@ -353,6 +366,20 @@ ProjectConf = R6::R6Class("ProjectConf",
             ## compute revision ranges
             private$conf$ranges = construct.ranges(private$conf$revisions, sliding.window = sliding.window)
             private$conf$ranges.callgraph = construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
+        },
+
+        ## set splitting information revisions and ranges
+        set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
+            ## set basic slpitting information
+            private$conf$split.type = type
+            private$conf$split.length = length
+            private$conf$split.basis = basis
+            private$conf$split.sliding.window = sliding.window
+
+            ## set splitting information on ranges
+            private$conf$split.revisions = revisions
+            private$conf$split.revisions.dates = revisions.dates
+            private$conf$split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
         }
 
     )

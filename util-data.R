@@ -52,6 +52,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         commits.raw = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
+        pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
@@ -134,16 +135,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
             }
-            ## add synchronicity column anyway
-            else {
-                dummy.data = switch(
-                    as.character(nrow(commit.data)),
-                    ## if there are no data available, we need to add the synchronicity column in a special way
-                    "0" = logical(0),
-                    ## otherwise, add NAs to denote non-existing data
-                    NA
-                )
-                commit.data = cbind(commit.data, synchronicity = dummy.data)
+
+            ## add PaStA data if wanted
+            if (private$network.conf$get.variable("pasta")) {
+                self$get.pasta()
+                commit.data = private$add.pasta.data(commit.data)
             }
 
             ## store the commit data
@@ -151,226 +147,33 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::logdebug("read.commits.filtered: finished.")
         },
 
-        read.commits.raw = function() {
-
-            logging::logdebug("read.commits.raw: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$commits.raw)) {
-                logging::logdebug("read.commits.raw: finished. (already existing)")
-                return(private$commits.raw)
+        ## add the pasta data to the given data.frame for further analysis
+        add.pasta.data = function(data) {
+            logging::loginfo("Adding pasta data.")
+            data[, "pasta"] = NA
+            if("message.id" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
+            } else if("hash" %in% colnames(data)) {
+                for(i in 1:nrow(data)) {
+                    pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
+                    if(!length(pasta.item) == 0) {
+                        data$pasta[i] = I(list(pasta.item))
+                    }
+                }
             }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "commits.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                          fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of commits is empty
-            if (inherits(commit.data, 'try-error')) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.raw = data.frame()
-                return()
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitHash,
-            ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
-            ## cd.file, cd.entityId, cd.entityType, cd.size
-            colnames(commit.data) = c(
-                "id", # id
-                "date", "author.name", "author.email", # author information
-                "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
-                "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
-            )
-
-            ## rewrite data.frame when we want file-based data
-            ## (we have proximity-based data as foundation)
-            if (private$project.conf$get.entry("artifact") == "file") {
-                ## aggregate diff size by hash and file
-                commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
-                                            group by hash, file order by `date`, `author.name`, `id`, `file`, `artifact`")
-
-                ## fix column class for diffsum
-                commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
-
-                ## copy columns to match proper layout for further analyses
-                commit.data["artifact"] = commit.data[["file"]]
-                commit.data["artifact.type"] = "File"
-                commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
-                commit.data["diffsum"] = NULL # remove
-            }
-
-            ## rewrite data.frame when we want function-based data
-            ## (we have proximity-based data as foundation)
-            if (private$project.conf$get.entry("artifact") == "function") {
-                ## artifact = file name + "::" . function name
-                artifacts.new = paste(commit.data[["file"]], commit.data[["artifact"]], sep = "::")
-
-                ## clean up empty artifacts and File_Level artifact
-                artifacts.new = gsub("^::$", "", artifacts.new)
-                artifacts.new = gsub("^(.*)::File_Level$", "File_Level", artifacts.new)
-
-                ## insert new artifact names into commit table
-                commit.data["artifact"] = artifacts.new
-            }
-
-            ## convert dates and sort by them
-            commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
-            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
-
-
-            ## store the commit data
-            private$commits.raw = commit.data
-            logging::logdebug("read.commits.raw: finished.")
-        },
-
-        ## read the synchronicity data of commits
-        read.synchronicity = function(){
-            logging::logdebug("read.synchronicity: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$synchronicity)) {
-                logging::logdebug("read.synchronicity: finished. (already existing)")
-                return(private$sychronicity)
-            }
-
-
-            ## check time.window
-            allowed.time.windows = c(1, 5, 10)
-            stopifnot((private$network.conf$get.variable("synchronicity.time.window")) %in% allowed.time.windows)
-
-            ## construct path and file
-            data.path = self$get.data.path.synchronicity()
-            file.name = sprintf("commit_sync_analysis_%ss_%s.dat",
-                               private$project.conf$get.entry("artifact"),
-                               private$network.conf$get.variable("synchronicity.time.window"))
-            file = file.path(data.path, file.name)
-
-            ## break if file does not exist
-            if(!file.exists(file)) {
-                logging::logwarn("There are no synchronicity data available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                private$synchronicity = data.frame()
-                return()
-            }
-
-            ## load commit.hashes object
-            load(file = file)
-            synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
-            nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
-
-            ## construct data.frame
-            synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
-
-            ## store the synchronicity data
-            private$synchronicity = synchronicity
-            logging::logdebug("read.synchronicity: finished.")
-        },
-
-        ## read the mail data for the range
-        read.mails = function() {
-
-            logging::logdebug("read.mails: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$mails)) {
-                logging::logdebug("read.mails: finished. (already existing)")
-                return(private$mails)
-            }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "emails.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                        fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of mails is empty
-            if (inherits(mail.data, 'try-error')) {
-                logging::logwarn("There are no mails available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$mails = data.frame()
-                return()
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
-            colnames(mail.data) = c(
-                "author.name", "author.email", # author information
-                "message.id", "date", "date.offset", "subject", # meta information
-                "thread" # thread ID
-            )
-
-            ## remove mails without a proper date as they mess up directed mail-based networks
-            ## this basically only applies for project-level analysis
-            empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
-            if (length(empty.dates) > 0)
-                mail.data = mail.data[-empty.dates, ]
-
-            ## convert dates and sort by them
-            mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
-            mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
-
-            ## store the mail data
-            private$mails = mail.data
-            logging::logdebug("read.mails: finished.")
-        },
-
-        ## read the author data for the range
-        read.authors = function() {
-
-            logging::logdebug("read.authors: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$authors)) {
-                logging::logdebug("read.authors: finished. (already existing)")
-                return(private$authors)
-            }
-
-            ## get file name of commit data
-            data.path = self$get.data.path()
-            file = file.path(data.path, "authors.list")
-
-            ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-            authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                         fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
-
-            ## break if the list of authors is empty
-            if (inherits(authors.df, 'try-error')) {
-                logging::logerror("There are no authors available for the current environment.")
-                logging::logerror("Class: %s", self$get.class.name())
-                logging::logerror("Configuration: %s", private$project.conf$get.conf.as.string())
-                stop("Stopped due to missing authors.")
-            }
-
-            ## set proper column names based on Codeface extraction:
-            ##
-            ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-            colnames(authors.df) = c(
-                "ID", "author.name" # author information
-            )
-
-            ## store the ID--author mapping
-            private$authors = authors.df
-            logging::logdebug("read.authors: finished.")
+            return(data)
         },
 
 
         ## AUTHOR NETWORKS ####
 
-        ## get the co-change-based developer relation as network
+        ## get the co-change-based author relation as network
         get.author.network.cochange = function() {
-
             logging::logdebug("get.author.network.cochange: starting.")
 
             ## do not compute anything more than once
@@ -379,17 +182,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 return(private$authors.network.cochange)
             }
 
-            ## read authors if not done yet
-            if (is.null(private$authors)) {
-                private$read.authors()
-            }
-
             ## construct network based on artifact2author data
-
             artifact2author = self$get.artifact2author()
             author.net = construct.dependency.network.from.list(artifact2author, network.conf = private$network.conf,
                                                                 directed = private$network.conf$get.variable("author.directed"))
-
 
             ## store network
             private$authors.network.cochange = author.net
@@ -398,7 +194,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             return(author.net)
         },
 
-        ## get the thread-based developer relation as network
+        ## get the thread-based author relation as network
         get.author.network.mail = function() {
 
             logging::logdebug("get.author.network.mail: starting.")
@@ -409,24 +205,24 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
                 return(private$authors.network.mail)
             }
 
-            edge.attributes = c("date", "message.id", "thread")
+            ## get thread--author information
             thread2author = self$get.thread2author()
 
+            ## TODO do we need the if-else statement here? (is this captured by the called function?)
             if (length(thread2author) != 0) {
-                dev.relation =
-
-                    construct.dependency.network.from.list(thread2author, network.conf = private$network.conf,
-                                                           directed = private$network.conf$get.variable("author.directed"))
-
+                author.relation = construct.dependency.network.from.list(
+                    thread2author, network.conf = private$network.conf,
+                    directed = private$network.conf$get.variable("author.directed")
+                )
             } else {
-                dev.relation = create.empty.network(private$network.conf$get.variable("author.directed"))
+                author.relation = create.empty.network(private$network.conf$get.variable("author.directed"))
             }
 
             ## store network
-            private$authors.network.mail = dev.relation
+            private$authors.network.mail = author.relation
             logging::logdebug("get.author.network.mail: finished.")
 
-            return(dev.relation)
+            return(author.relation)
         },
 
 
@@ -522,30 +318,30 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## RESET ENVIRONMENT ##
 
-        # Reset cached data
+        ## reset cached data
         reset.environment = function() {
-          private$commits.filtered = NULL
-          private$commits.filtered.empty = NULL
-          private$commits.raw = NULL
-          private$artifacts = NULL
-          private$synchronicity = NULL
-          private$mails = NULL
-          private$authors = NULL
-          private$authors.network.mail = NULL
-          private$authors.network.cochange = NULL
-          private$artifacts.network.cochange = NULL
-          private$artifacts.network.callgraph = NULL
+            private$commits.filtered = NULL
+            private$commits.filtered.empty = NULL
+            private$commits.raw = NULL
+            private$artifacts = NULL
+            private$synchronicity = NULL
+            private$mails = NULL
+            private$authors = NULL
+            private$authors.network.mail = NULL
+            private$authors.network.cochange = NULL
+            private$artifacts.network.cochange = NULL
+            private$artifacts.network.callgraph = NULL
         },
 
 
         ## CONFIGURATION ####
 
-        # Get the current project configuration
+        ## get the current project configuration
         get.project.conf = function() {
             return(private$project.conf)
         },
 
-        # Set the current project configuration to the given one.
+        ## set the current project configuration to the given one
         set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = project.conf
 
@@ -554,25 +350,27 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             }
         },
 
-        # Get the current network configuration
+        ## get the current network configuration
         get.network.conf = function() {
             return(private$network.conf)
         },
 
-        # Set the current network configuration to the given one.
+        ## set the current network configuration to the given one
         set.network.conf = function(network.conf) {
-          private$network.conf = network.conf
-          self$reset.environment()
+            private$network.conf = network.conf
+            self$reset.environment()
         },
+
 
         ## UPDATE CONFIGURATION ####
+
+        ## update network-configuration parameters
         update.network.conf = function(updated.values = list()) {
-          private$network.conf$update.values(updated.values = updated.values)
-          self$reset.environment()
+            private$network.conf$update.values(updated.values = updated.values)
+            self$reset.environment()
         },
 
-        # for testing reasons
-        # might be used for other purposes
+        ## get network-configuration parameters
         get.network.conf.variable = function(var.name) {
             return(private$network.conf$get.variable(var.name))
         },
@@ -596,6 +394,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         ## construct the absolute path to the range's result folder for synchronicity data
         get.data.path.synchronicity = function() {
             data.path = private$project.conf$get.entry("datapath.synchronicity")
+            return(data.path)
+        },
+
+        get.data.path.pasta = function() {
+            data.path = private$project.conf$get.entry("datapath.pasta")
             return(data.path)
         },
 
@@ -632,7 +435,10 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$commits.raw)) {
-                private$read.commits.raw()
+                private$commits.raw = read.commits.raw(
+                    self$get.data.path(),
+                    private$project.conf$get.entry("artifact")
+                )
             }
 
             return(private$commits.raw)
@@ -651,7 +457,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$synchronicity)) {
-                private$read.synchronicity()
+                private$synchronicity = read.synchronicity(
+                    self$get.data.path.synchronicity(),
+                    private$project.conf$get.entry("artifact"),
+                    private$network.conf$get.variable("synchronicity.time.window")
+                )
             }
 
             return(private$synchronicity)
@@ -663,13 +473,36 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             private$synchronicity = data
         },
 
+        ## get the complete PaStA data
+        get.pasta = function() {
+            logging::loginfo("Getting PaStA data.")
+
+            ## if commits are not read already, do this
+            if (is.null(private$pasta)) {
+                private$pasta = read.pasta(self$get.data.path.pasta())
+            }
+
+            return(private$pasta)
+        },
+
+        ## set the complete PaStA data
+        set.pasta = function(data) {
+            logging::loginfo("Setting PaStA data.")
+            private$pasta = data
+        },
+
         ## get the complete list of mails
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
-                private$read.mails()
+                private$mails = read.mails(self$get.data.path())
+
+                ## add PaStA data if wanted
+                if(private$network.conf$get.variable("pasta")) {
+                    private$mails = private$add.pasta.data(private$mails)
+                }
             }
 
             return(private$mails)
@@ -688,7 +521,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             ## if authors are not read already, do this
             if (is.null(private$authors)) {
-                private$read.authors()
+                private$authors = read.authors(self$get.data.path())
             }
 
             return(private$authors)
@@ -721,23 +554,43 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
         ## DATA ####
 
+        ## get single pasta items
+        get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
+            logging::loginfo("Getting pasta items started.")
+            #if neither message.id nor commit.hash are specified break the code
+            if(is.null(message.id) && is.null(commit.hash)) {
+                logging::logwarn("Neither message.id nor commit.hash specified.")
+                return()
+            }
+
+            ## get pasta data
+            self$get.pasta()
+
+            ## if a message.id is given just return the attached list of commit hashes
+            ## else gather all message.ids which contain the given commit.hash and return them
+            if(!is.null(message.id)) {
+                result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+                return(result)
+            } else {
+                result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+                return(result)
+            }
+        },
+
         ## get the authors for each artifact
         get.artifact2author = function() {
             logging::loginfo("Getting artifact--author data.")
 
             ## get commits sorted by date
-            sorted.commits = self$get.commits.filtered.empty()
+            commits = self$get.commits.filtered.empty()
 
             ## break if list of commits is empty
-            if (ncol(sorted.commits) == 0) {
+            if (ncol(commits) == 0) {
                 return(list())
             }
 
-            ## sort commits by date
-            sorted.commits = sorted.commits[order(sorted.commits[["date"]], decreasing = FALSE), ] # sort!
-
             ## store the authors per artifact
-            mylist = get.thing2thing(sorted.commits, "artifact", "author.name", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "artifact", "author.name", network.conf = private$network.conf)
 
             return(mylist)
         },
@@ -746,13 +599,11 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.author2commit = function() {
             logging::loginfo("Getting author--commit data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits.raw)) {
-                private$read.commits.raw()
-            }
+            ## get raw commits
+            commits = self$get.commits.raw()
 
             ## store the authors per artifact
-            mylist = get.thing2thing(private$commits.raw, "author.name", "hash", network.conf = private$network.conf)
+            mylist = get.thing2thing(commits, "author.name", "hash", network.conf = private$network.conf)
             mylist = parallel::mclapply(mylist, unique)
 
             return(mylist)
@@ -792,7 +643,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::loginfo("Getting commit--artifact data.")
 
             #get commits
-            commits = self$get.commits.filtered()
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
             mylist = get.thing2thing(commits, "hash", "artifact", network.conf = private$network.conf)
@@ -806,7 +657,7 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             logging::loginfo("Getting commit--file data.")
 
             #get commits
-            commits = self$get.commits.filtered()
+            commits = self$get.commits.filtered.empty()
 
             ## store the authors per artifact
             mylist = get.thing2thing(commits, "hash", "file", network.conf = private$network.conf)
@@ -819,19 +670,45 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.thread2author = function() {
             logging::loginfo("Getting thread--author data.")
 
-            ## if mails are not read already, do this
-            if (is.null(private$mails)) {
-                private$read.mails()
-            }
+            ## get mails
+            mails = self$get.mails()
 
             ## store the authors per thread
-            mylist = get.thing2thing(private$mails, "thread", "author.name",
+            mylist = get.thing2thing(mails, "thread", "author.name",
                                      network.conf = private$network.conf)
 
             return(mylist)
         },
 
-        ## get the developer relation as network (generic)
+        ## get the mails for each author
+        get.author2mail = function() {
+            logging::loginfo("Getting author--mail data.")
+
+            ## get mails
+            mails = self$get.mails()
+
+            ## store the mails per author
+            mylist = get.thing2thing(mails, "author.name", "message.id",
+                                     network.conf = private$network.conf)
+
+            return(mylist)
+        },
+
+        ## get the threads for each author
+        get.author2thread = function() {
+            logging::loginfo("Getting author--thread data.")
+
+            ## get mails
+            mails = self$get.mails()
+
+            ## store the threads per author
+            mylist = get.thing2thing(mails, "author.name", "thread",
+                                     network.conf = private$network.conf)
+
+            return(mylist)
+        },
+
+        ## get the author relation as network (generic)
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
 
@@ -839,12 +716,27 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             relation = private$network.conf$get.variable("author.relation")
             net = switch(
                 relation,
-                cochange =
-                    private$get.author.network.cochange(),
-                mail =
-                    private$get.author.network.mail(),
+                cochange = private$get.author.network.cochange(),
+                mail = private$get.author.network.mail(),
                 stop(sprintf("The author relation '%s' does not exist.", relation))
             )
+
+            ## add all missing authors to the network if wanted
+            if (private$network.conf$get.variable("author.all.authors")) {
+                authors.all = self$get.authors()[[ "author.name" ]]
+                authors.net = igraph::get.vertex.attribute(net, "name")
+                net = net + igraph::vertices(setdiff(authors.all, authors.net))
+            }
+
+            ## remove all authors from the corresponding network who do not have touched any artifact
+            if (private$network.conf$get.variable("author.only.committers")) {
+                ## authors-artifact relation
+                authors.from.net = igraph::get.vertex.attribute(net, "name")
+                authors.from.artifacts = names(self$get.author2artifact())
+                if (!is.null(authors.from.artifacts)) {
+                    net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
+                }
+            }
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.AUTHOR
@@ -862,10 +754,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
 
             net = switch(
                 relation,
-                cochange =
-                    private$get.artifact.network.cochange(),
-                callgraph =
-                    private$get.artifact.network.callgraph(),
+                cochange = private$get.artifact.network.cochange(),
+                callgraph = private$get.artifact.network.callgraph(),
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
             )
 
@@ -881,8 +771,14 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## authors-artifact relation
             authors.to.artifacts = self$get.author2artifact()
 
-            ## extract vertices
-            authors = names(authors.to.artifacts)
+            ## extract vertices for author network
+            if (private$network.conf$get.variable("author.all.authors") &&
+                !private$network.conf$get.variable("author.only.committers")) {
+                authors = self$get.authors()[[ "author.name" ]]
+            } else {
+                authors = names(authors.to.artifacts)
+            }
+            ## extract vertices for author network
             artifacts = self$get.artifacts()
 
             ## construct networks from vertices
@@ -901,31 +797,14 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
         get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
-            ## authors-artifact relation
+            ## author-artifact relation
             authors.to.artifacts = self$get.author2artifact()
-
             ## bipartite network
             bipartite.net = self$get.bipartite.network()
-
-            ## authors relation
+            ## author relation
             authors.net = self$get.author.network()
-
-            ## unify vertices with developer-artifact relation
-            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
-            authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
-
-            ## remove all authors from the corresponding network who do not have touched any artifact
-            if (private$network.conf$get.variable("author.only.committers") & !is.null(authors.from.artifacts)) {
-                authors.net = igraph::delete.vertices(authors.net, setdiff(authors.from.net, authors.from.artifacts))
-            }
-
             ## artifact relation
             artifacts.net = self$get.artifact.network()
-            # merge vertices on artifact network to avoid NULL references
-            artifacts.net = unify.artifact.vertices(artifacts.net, authors.to.artifacts)
-            # ## compute communities # TODO in the end, this needs to read Thomas' files!
-            # artifacts.comm = get.communities(artifact.net)
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
@@ -944,6 +823,15 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             artifacts.net = networks[["artifacts.net"]]
+
+            ## unify vertices with author-artifact relation
+            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
+            authors.from.artifacts = names(authors.to.artifacts)
+            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
+            ## unify vertices with artifacts from bipartite and artifact relation
+            artifacts.all = self$get.artifacts()
+            artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
+            artifacts.net = artifacts.net + igraph::vertices(setdiff(artifacts.all, artifacts.from.net), type = TYPE.ARTIFACT)
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
@@ -998,10 +886,10 @@ CodefaceRangeData = R6::R6Class("CodefaceRangeData",
             super$initialize(project.conf, network.conf)
 
             if (!missing(range) && is.character(range)) {
-                private$range <- range
+                private$range = range
             }
             if (!missing(revision.callgraph) && is.character(revision.callgraph) && revision.callgraph != "") {
-                    private$revision.callgraph <- revision.callgraph
+                private$revision.callgraph = revision.callgraph
             }
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
@@ -1086,8 +974,7 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
 add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
-
-    # construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
+    ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
         a = a.df[["artifact"]]
         new.edges = lapply(a, function(art) {
