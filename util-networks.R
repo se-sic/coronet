@@ -165,8 +165,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
     ## public members ####
     public = list(
         ## constructor
-        initialize = function(project.conf, network.conf) {
-            private$proj.data = ProjectData$new(project.conf = project.conf)
+        initialize = function(project.data, network.conf) {
+            private$proj.data = project.data
 
             if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
                 private$network.conf = network.conf
@@ -195,7 +195,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## set the current network configuration to the given one
         set.network.conf = function(network.conf) {
             private$network.conf = network.conf
-            private$proj.data$set.network.conf(network.conf = network.conf)
             self$reset.environment()
         },
 

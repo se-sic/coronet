@@ -28,6 +28,7 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph
 ## CONFIGURATION
 
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+proj.conf$set.artifact.filter.base(FALSE)
 net.conf = NetworkConf$new()
 #initialize with AUTHOR.RELATION and ARTIFACT.RELATION
 net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
@@ -39,7 +40,8 @@ revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
 
 ## PROJECT-LEVEL DATA
 
-x = NetworkBuilder$new(project.conf = proj.conf, network.conf = net.conf)
+x.data = ProjectData$new(project.conf = proj.conf)
+x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 # x$get.commits.raw()
 # x$get.synchronicity()
@@ -61,7 +63,7 @@ x = NetworkBuilder$new(project.conf = proj.conf, network.conf = net.conf)
 # x$get.artifact.network()
 # x$reset.environment()
 # x$get.networks()
-# x$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE))
+# x$update.network.conf(updated.values = list(author.only.committers = FALSE, author.directed = FALSE))
 # h = x$get.bipartite.network()
 # plot.network(h)
 # g = x$get.multi.network()
@@ -81,8 +83,9 @@ x = NetworkBuilder$new(project.conf = proj.conf, network.conf = net.conf)
 
 ## RANGE-LEVEL DATA
 
-y <- RangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
-# y <- RangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+y.data = RangeData$new(project.conf = proj.conf, range = ranges[[2]])
+y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+
 # y$get.commits.raw()
 # y$get.commits.filtered()
 # y$get.commits.filtered.empty()
@@ -101,7 +104,7 @@ y <- RangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ra
 # y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
 # y$get.artifact.network()
 # y$get.networks()
-# y$update.network.conf(updated.values = list(artifact.filter.base = FALSE, author.only.committers = TRUE, author.directed = TRUE))
+# y$update.network.conf(updated.values = list(author.only.committers = FALSE, author.directed = TRUE))
 # h = y$get.bipartite.network()
 # plot.network(h)
 # g = y$get.multi.network()
