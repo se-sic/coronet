@@ -223,7 +223,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## add all missing authors to the network if wanted
             if (private$network.conf$get.variable("author.all.authors")) {
-                authors.all = self$get.authors()[[ "author.name" ]]
+                authors.all = private$proj.data$get.authors()[[ "author.name" ]]
                 authors.net = igraph::get.vertex.attribute(net, "name")
                 net = net + igraph::vertices(setdiff(authors.all, authors.net))
             }
@@ -232,7 +232,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (private$network.conf$get.variable("author.only.committers")) {
                 ## authors-artifact relation
                 authors.from.net = igraph::get.vertex.attribute(net, "name")
-                authors.from.artifacts = names(self$get.author2artifact())
+                authors.from.artifacts = names(private$proj.data$get.author2artifact())
                 if (!is.null(authors.from.artifacts)) {
                     net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
                 }
