@@ -4,10 +4,8 @@
 
 source("util-init.R")
 
-requireNamespace("logging")
+library("logging")
 logging::basicConfig(level = "DEBUG")
-if (file.exists("test.log")) file.remove("test.log")
-logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 1L)
 
