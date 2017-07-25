@@ -278,6 +278,7 @@ simplify.networks = function(networks){
     nets = parallel::mclapply(networks, simplify.network)
 
     logging::logdebug("simplify.networks: finished.")
+    return(nets)
 }
 
 
