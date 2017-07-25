@@ -1,0 +1,20 @@
+language: r
+r: 3.3
+
+# TravisCI container
+sudo: false
+dist: trusty
+warnings_are_errors: false
+
+# R dependencies and information
+cache: packages
+r_packages: yaml, R6, igraph, plyr, parallel, logging, sqldf, testthat
+repos:
+  CRAN: https://cloud.r-project.org
+
+# installation
+- install:
+    - Rscript install.R
+
+script:
+    - Rscript tests.R
