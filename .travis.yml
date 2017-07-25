@@ -19,7 +19,7 @@ repos:
   CRAN: https://cloud.r-project.org
 
 # installation
-- install:
+install:
     - Rscript install.R
 
 script:
