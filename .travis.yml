@@ -6,6 +6,12 @@ sudo: false
 dist: trusty
 warnings_are_errors: false
 
+# Branches
+branches:
+  only:
+    - travis
+    - claus-updates
+
 # R dependencies and information
 cache: packages
 r_packages: yaml, R6, igraph, plyr, parallel, logging, sqldf, testthat
