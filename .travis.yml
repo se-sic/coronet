@@ -14,7 +14,6 @@ warnings_are_errors: false
 
 # R dependencies and information
 cache: packages
-r_packages: yaml, R6, igraph, plyr, parallel, logging, sqldf, testthat
 repos:
   CRAN: https://cloud.r-project.org
 
