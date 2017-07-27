@@ -257,6 +257,17 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "pasta", sep = "_")))
         },
 
+        #' Construct and return the path to the issues folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #'
+        #' @return the path to the issues folder
+        get.issues.folder = function(data, selection.process, casestudy) {
+            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "issues", sep = "_")))
+        },
+
         #' Construct and return the path to a Codeface configuration.
         #'
         #' @param data the path to the codeface-data folder
@@ -314,6 +325,8 @@ ProjectConf = R6::R6Class("ProjectConf",
             conf$datapath.synchronicity = private$get.synchronicity.folder(data, selection.process, casestudy)
             ## store path to pasta data
             conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
+            ## store path to issue data
+            conf$datapath.issues = private$get.issues.folder(data, selection.process, casestudy)
 
             ## READ REVISIONS META-DATA
 

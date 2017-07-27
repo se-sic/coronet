@@ -8,6 +8,7 @@
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
+requireNamespace("jsonlite")
 
 
 Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
@@ -216,7 +217,7 @@ read.authors = function(data.path) {
     ##
     ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
     colnames(authors.df) = c(
-        "ID", "author.name" # author information
+        "author.id", "author.name" # author information
     )
 
     ## store the ID--author mapping
@@ -271,4 +272,23 @@ read.pasta = function(data.path) {
     result.df = plyr::rbind.fill(result.list)
     logging::logdebug("read.pasta: finished.")
     return(result.df)
+}
+
+read.issues = function(data.path) {
+
+    logging::logdebug("read.issues: starting.")
+
+    filepath = file.path(data.path, "issues.json")
+
+    issue.data = jsonlite::fromJSON(filepath, flatten = TRUE)
+
+    if (is.data.frame(issue.data) && nrow(issue.data) == 0) {
+        logging::logwarn("There are no PaStA data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(issue.data)
+    }
+
+    colnames(issue.data) = c("issue.id", "author.id", "issue.state", "creation.date", "is.pull.request", "comments.list", "events.list", "related.commits", "closing.date")
+
+    return(issue.data)
 }
