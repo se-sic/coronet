@@ -40,6 +40,8 @@ ProjectData = R6::R6Class("ProjectData",
         mails = NULL, # data.frame
         ## authors
         authors = NULL, # list
+        ##issues
+        issues = NULL, #data.frame
 
         ## BASIC DATA ####
 
@@ -226,6 +228,11 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
+        get.data.path.issues = function() {
+            data.path = private$project.conf$get.entry("datapath.issues")
+            return(data.path)
+        },
+
 
         ## RAW DATA ####
 
@@ -373,6 +380,17 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             return(private$artifacts)
+        },
+
+        ## get the list of issues
+        get.issues = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if(is.null(private$issues)) {
+                private$issues = read.issues(self$get.data.path.issues())
+            }
+            return(private$issues)
         },
 
 
