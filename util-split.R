@@ -179,17 +179,18 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
+#' @param number.windows the number of consecutive data objects to get from this function
+#'                       (implying an equally distributed amount of data in each range)
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
-                                     activity.amount, sliding.window = FALSE) {
+                                     activity.amount = 5000, number.windows = NULL,
+                                     sliding.window = FALSE) {
 
     ## get basis for splitting process
     activity.type = match.arg(activity.type)
-    logging::loginfo("Splitting data '%s' into activity ranges of %s %s.",
-                     project.data$get.class.name(), activity.amount, activity.type)
 
     ## get actual raw data
     data = list(
@@ -202,6 +203,33 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         commits = "hash",
         mails = "message.id"
     )
+
+    ## get amount of available activity
+    activity = length(unique(data[[activity.type]][[ id.column[[activity.type]] ]]))
+
+    ## activity amount given (number of windows NOT given)
+    if (is.null(number.windows)) {
+        if (activity < 1) {
+            logging::logerror("The given amount of activity has to be strictly positive (given: %s).", activity)
+            stop("Stopping due to missing data.")
+        }
+        # compute the number of time windows according to the number of edges per network
+        number.windows = ceiling(activity / activity.amount)
+    }
+    ## number of windows given (ignoring amount of activity)
+    else {
+        ## check the breaking case
+        if (number.windows < 1 || number.windows > activity) {
+            logging::logerror("The given number of windows is not suitable for this
+                              data object (given: %s).", number.windows)
+            stop("Stopping due to illegally specified amount of windows to create.")
+        }
+        # compute the number of time windows according to the number of edges per network
+        activity.amount = ceiling(activity / number.windows)
+    }
+
+    logging::loginfo("Splitting data '%s' into activity ranges of %s %s (%s windows).",
+                     project.data$get.class.name(), activity.amount, activity.type, number.windows)
 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
