@@ -189,7 +189,7 @@ read.network.from.file = function(file, format = "pajek") {
 ##
 ## Feature and file networks can have unique naming structures existent
 ## (especially in the call-graph networks), so the names need to be processed
-## to have the same look as the ones from Codeface.
+## to match those coming from other analyses (e.g., Codeface).
 postprocess.artifact.names.callgraph = function(net, artifact) {
     names = igraph::get.vertex.attribute(net, "name")
 

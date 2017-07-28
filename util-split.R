@@ -23,7 +23,7 @@ requireNamespace("parallel")
 #' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
 #' than the specified time period.
 #'
-#' @param project.data the Codeface*Data object from which the data is retrieved
+#' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
@@ -175,7 +175,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' Important: For a given amount of activity, the last set of data may be a lot smaller
 #' than the specified amount.
 #'
-#' @param project.data the Codeface*Data object from which the data is retrieved
+#' @param project.data the *Data object from which the data is retrieved
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
