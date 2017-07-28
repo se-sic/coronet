@@ -11,7 +11,7 @@ context("Splitting functionality.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
-ARTIFACT = "feature" # function, feature, file, featureexpression
+ARTIFACT = "feature"
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
@@ -864,7 +864,7 @@ test_that("Check consistency of data and network time-based splitting.", {
     results.network = split.network.time.based(project.net, time.period = time.period)
 
     ## check ranges
-    expect_equal(names(results.network), names(results.data.network))
+    expect_equal(names(results.network), names(results.data.network), info = "Range equality.")
 
     ## the chosen time-window size results in the following condition:
     ## 1) Thomas and Karl only appear in the second time window, both working on the base feature.
@@ -877,5 +877,6 @@ test_that("Check consistency of data and network time-based splitting.", {
     check.identical = mapply(results.data.network, results.network, FUN = function(d, n) {
         igraph::identical_graphs(d, n)
     })
+    expect_true(all(check.identical), info = "Network equality.")
 
 })
