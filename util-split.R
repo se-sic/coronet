@@ -478,6 +478,15 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     ## set ranges as names
     names(networks) = construct.ranges(bins.date, sliding.window = sliding.window)
 
+    ## issue warning if ranges are not unique
+    if (any(duplicated(names(networks)))) {
+        logging::logwarn(
+            paste("Due to the splitting, there are duplicated range names.",
+                  "You can correct these by calling the function 'split.unify.range.names()'",
+                  "and providing the range names.")
+        )
+    }
+
     return(networks)
 }
 
@@ -514,6 +523,40 @@ split.network.by.bins = function(network, bins, bins.vector) {
     })
     logging::logdebug("split.data.time.based: finished.")
     return(nets)
+}
+
+#' Unify range names, i.e., add numbering suffixes to duplicate range names.
+#'
+#' To avoid duplicate ranges, any duplicate range in the given list of ranges are suffixed
+#' with the pattern ' (#)', where '#' is a number. Also the first duplicate is renamed,
+#' which results in the existence of the suffix ' (1)'.
+#'
+#' Note: The ranges need to be sorted properly, unsorted ranges will not work with this
+#' function as expected. For example, consider the following example:
+#' c("A-B", "A-B", "B-C", "A-B", "B-C") --> c("A-B (1)", "A-B (2)", "B-C (1)", "A-B (1)", "B-C (1)")
+#'
+#' @param ranges the range names to unify
+#'
+#' @return the unified ranges, suffixed by ' (#)' if duplicated
+split.unify.range.names = function(ranges) {
+
+    ## identify duplicated ranges
+    ranges.dup = duplicated(ranges) | duplicated(ranges, fromLast = TRUE)
+    ranges.numbers.raw = rle(ranges)
+    ranges.numbers = unlist(lapply(ranges.numbers.raw$lengths, seq_len))
+
+    ## transform ranges
+    ranges.corrected = mapply(ranges, ranges.dup, ranges.numbers, USE.NAMES = FALSE,
+           FUN = function(range, dup, number) {
+               ifelse(
+                   dup,
+                   sprintf("%s (%s)", range, number),
+                   range
+               )
+           }
+    )
+
+    return(ranges.corrected)
 }
 
 

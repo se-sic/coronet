@@ -880,3 +880,111 @@ test_that("Check consistency of data and network time-based splitting.", {
     expect_true(all(check.identical), info = "Network equality.")
 
 })
+
+
+##
+## Tests for duplicate range names
+##
+
+test_that("Check and correct duplicate range names during network activity-based splitting.", {
+
+    ## define dates for edges and the resulting changes
+    dates = as.POSIXct(c(
+        "2000-01-01 01:00:00", "2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00", "2003-01-01 12:00:00"
+    ))
+    expected.ranges = c(
+        "2000-01-01 01:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2001-01-01 12:00:00",
+        "2001-01-01 12:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2003-01-01 12:00:01"
+    )
+    expected.ranges.corrected = c(
+        "2000-01-01 01:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2001-01-01 12:00:00 (1)",
+        "2001-01-01 12:00:00-2001-01-01 12:00:00 (2)",
+
+        "2001-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (1)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (2)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (3)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (4)",
+
+        "2002-01-01 12:00:00-2003-01-01 12:00:01"
+    )
+
+    ## construct a small network
+    net = igraph::make_empty_graph(directed = FALSE) +
+        igraph::vertices(c("A", "B")) +
+        igraph::edges(rep(c("A", "B"), times = length(dates)))
+    ## set some date attributes that are appropriate for the test case
+    net = igraph::set.edge.attribute(net, "date", value = dates)
+
+    ## define split arguments
+    split.function = split.network.activity.based
+    split.arguments = list(network = net, number.edges = 2, sliding.window = FALSE)
+
+    ## check for issued warning
+    expect_output(
+        do.call(split.function, split.arguments),
+        "WARNING::Due to the splitting, there are duplicated range names.",
+        fixed = TRUE,
+        info = "Generate warning."
+    )
+
+    ## check range names
+    net.split = do.call(split.function, split.arguments)
+    ranges = names(net.split)
+    expect_equal(ranges, expected.ranges, info = "Ranges (original).")
+
+    ## correct ranges
+    ranges.corrected = split.unify.range.names(ranges)
+    expect_equal(ranges.corrected, expected.ranges.corrected, info = "Ranges (unified).")
+
+
+    ## Arbitrary range names (1)
+    ranges = c("A-B", "B-C", "C-D")
+    expected = c("A-B", "B-C", "C-D")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (1).")
+
+    ## Arbitrary range names (2)
+    ranges = c("A-B", "A-B", "B-C", "B-C", "C-D")
+    expected = c("A-B (1)", "A-B (2)", "B-C (1)", "B-C (2)", "C-D")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (2).")
+
+    ## Arbitrary range names (3)
+    ranges = c("A-B", "A-B", "B-C", "A-B", "B-C")
+    expected = c("A-B (1)", "A-B (2)", "B-C (1)", "A-B (1)", "B-C (1)")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (3).")
+
+    ## Arbitrary range names (4)
+    ranges = c("A-B", "A-B", "B-C", "C-D", "C-D")
+    expected = c("A-B (1)", "A-B (2)", "B-C", "C-D (1)", "C-D (2)")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (4).")
+
+})
