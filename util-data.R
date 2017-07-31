@@ -511,6 +511,14 @@ ProjectData = R6::R6Class("ProjectData",
             mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "hash", "file")
 
             return(mylist)
+        },
+
+        get.author2issue = function() {
+            logging::loginfo("Getting author--issue data")
+
+            mylist = get.key.to.value.from.df(self$get.issues(), "event.author", "issue.id")
+
+            return(mylist)
         }
 
         ## EntNotUsed ####
