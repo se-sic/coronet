@@ -213,7 +213,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
             logging::logerror("The given amount of activity has to be strictly positive (given: %s).", activity)
             stop("Stopping due to missing data.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the number of time windows according to the activity amount
         number.windows = ceiling(activity / activity.amount)
     }
     ## number of windows given (ignoring amount of activity)
@@ -224,7 +224,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
                               data object (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the amount of activity according to the number of specified windows
         activity.amount = ceiling(activity / number.windows)
     }
 
@@ -427,7 +427,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                               strictly positive (given: %s).", edge.count)
             stop("Stopping due to missing edges in given network.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the number of time windows according to the number of edges per network
         number.windows = ceiling(edge.count / number.edges)
     }
     ## number of windows given (ignoring number of edges)
@@ -438,7 +438,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                               network (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the amount of activity according to the number of specified windows
         number.edges = ceiling(edge.count / number.windows)
     }
 
