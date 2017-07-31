@@ -340,7 +340,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
                 logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
                 contraction.mode = ifelse(
-                    private$network.conf$get.variable("contract.edges"),
+                    private$network.conf$get.variable("simplify"),
                     "collapse",
                     "each"
                 )
