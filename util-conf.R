@@ -69,8 +69,6 @@ NetworkConf = R6::R6Class("NetworkConf",
                                type = "character"),
         simplify = list(value = FALSE,
                         type = "logical"),
-        contract.edges = list(value = FALSE,
-                              type = "logical"),
         skip.threshold = list(value = Inf,
                               type = "numeric"),
 
