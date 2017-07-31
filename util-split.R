@@ -23,7 +23,7 @@ requireNamespace("parallel")
 #' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
 #' than the specified time period.
 #'
-#' @param project.data the Codeface*Data object from which the data is retrieved
+#' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
@@ -175,21 +175,22 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' Important: For a given amount of activity, the last set of data may be a lot smaller
 #' than the specified amount.
 #'
-#' @param project.data the Codeface*Data object from which the data is retrieved
+#' @param project.data the *Data object from which the data is retrieved
 #' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
+#' @param number.windows the number of consecutive data objects to get from this function
+#'                       (implying an equally distributed amount of data in each range)
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
-                                     activity.amount, sliding.window = FALSE) {
+                                     activity.amount = 5000, number.windows = NULL,
+                                     sliding.window = FALSE) {
 
     ## get basis for splitting process
     activity.type = match.arg(activity.type)
-    logging::loginfo("Splitting data '%s' into activity ranges of %s %s.",
-                     project.data$get.class.name(), activity.amount, activity.type)
 
     ## get actual raw data
     data = list(
@@ -202,6 +203,33 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         commits = "hash",
         mails = "message.id"
     )
+
+    ## get amount of available activity
+    activity = length(unique(data[[activity.type]][[ id.column[[activity.type]] ]]))
+
+    ## activity amount given (number of windows NOT given)
+    if (is.null(number.windows)) {
+        if (activity < 1) {
+            logging::logerror("The given amount of activity has to be strictly positive (given: %s).", activity)
+            stop("Stopping due to missing data.")
+        }
+        ## compute the number of time windows according to the activity amount
+        number.windows = ceiling(activity / activity.amount)
+    }
+    ## number of windows given (ignoring amount of activity)
+    else {
+        ## check the breaking case
+        if (number.windows < 1 || number.windows > activity) {
+            logging::logerror("The given number of windows is not suitable for this
+                              data object (given: %s).", number.windows)
+            stop("Stopping due to illegally specified amount of windows to create.")
+        }
+        ## compute the amount of activity according to the number of specified windows
+        activity.amount = ceiling(activity / number.windows)
+    }
+
+    logging::loginfo("Splitting data '%s' into activity ranges of %s %s (%s windows).",
+                     project.data$get.class.name(), activity.amount, activity.type, number.windows)
 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
@@ -399,7 +427,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                               strictly positive (given: %s).", edge.count)
             stop("Stopping due to missing edges in given network.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the number of time windows according to the number of edges per network
         number.windows = ceiling(edge.count / number.edges)
     }
     ## number of windows given (ignoring number of edges)
@@ -410,7 +438,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                               network (given: %s).", number.windows)
             stop("Stopping due to illegally specified amount of windows to create.")
         }
-        # compute the number of time windows according to the number of edges per network
+        ## compute the amount of activity according to the number of specified windows
         number.edges = ceiling(edge.count / number.windows)
     }
 
@@ -478,6 +506,15 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     ## set ranges as names
     names(networks) = construct.ranges(bins.date, sliding.window = sliding.window)
 
+    ## issue warning if ranges are not unique
+    if (any(duplicated(names(networks)))) {
+        logging::logwarn(
+            paste("Due to the splitting, there are duplicated range names.",
+                  "You can correct these by calling the function 'split.unify.range.names()'",
+                  "and providing the range names.")
+        )
+    }
+
     return(networks)
 }
 
@@ -514,6 +551,40 @@ split.network.by.bins = function(network, bins, bins.vector) {
     })
     logging::logdebug("split.data.time.based: finished.")
     return(nets)
+}
+
+#' Unify range names, i.e., add numbering suffixes to duplicate range names.
+#'
+#' To avoid duplicate ranges, any duplicate range in the given list of ranges are suffixed
+#' with the pattern ' (#)', where '#' is a number. Also the first duplicate is renamed,
+#' which results in the existence of the suffix ' (1)'.
+#'
+#' Note: The ranges need to be sorted properly, unsorted ranges will not work with this
+#' function as expected. For example, consider the following example:
+#' c("A-B", "A-B", "B-C", "A-B", "B-C") --> c("A-B (1)", "A-B (2)", "B-C (1)", "A-B (1)", "B-C (1)")
+#'
+#' @param ranges the range names to unify
+#'
+#' @return the unified ranges, suffixed by ' (#)' if duplicated
+split.unify.range.names = function(ranges) {
+
+    ## identify duplicated ranges
+    ranges.dup = duplicated(ranges) | duplicated(ranges, fromLast = TRUE)
+    ranges.numbers.raw = rle(ranges)
+    ranges.numbers = unlist(lapply(ranges.numbers.raw$lengths, seq_len))
+
+    ## transform ranges
+    ranges.corrected = mapply(ranges, ranges.dup, ranges.numbers, USE.NAMES = FALSE,
+           FUN = function(range, dup, number) {
+               ifelse(
+                   dup,
+                   sprintf("%s (%s)", range, number),
+                   range
+               )
+           }
+    )
+
+    return(ranges.corrected)
 }
 
 

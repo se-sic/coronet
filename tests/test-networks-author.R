@@ -16,10 +16,6 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
-## configurations
-proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-net.conf = NetworkConf$new()
-
 
 ##
 ## Tests for author.all.authors and author.only.committers
@@ -93,12 +89,20 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
         for (author.all.authors in c(TRUE, FALSE)) {
             for (author.only.committers in c(TRUE, FALSE)) {
 
+                ## configurations
+                proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+                proj.conf$set.artifact.filter.base(FALSE)
+                net.conf = NetworkConf$new()
+
                 ## update network configuration
                 net.conf$update.values(updated.values = list(
-                    author.relation = author.relation, artifact.relation = "cochange", artifact.filter.base = FALSE,
+                    author.relation = author.relation, artifact.relation = "cochange",
                     author.all.authors = author.all.authors, author.only.committers = author.only.committers)
                 )
-                x = CodefaceProjectData$new(proj.conf, net.conf)
+
+                ## construct objects
+                x.data = ProjectData$new(proj.conf)
+                x = NetworkBuilder$new(x.data, net.conf)
 
                 ## author network
                 x$reset.environment()
