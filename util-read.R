@@ -8,7 +8,7 @@
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
-requireNamespace("jsonlite")
+
 
 
 Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
@@ -278,9 +278,12 @@ read.issues = function(data.path) {
 
     logging::logdebug("read.issues: starting.")
 
-    filepath = file.path(data.path, "issues.json")
+    filepath = file.path(data.path, "issues.list")
 
-    issue.data = jsonlite::fromJSON(filepath, flatten = TRUE)
+    print(filepath)
+
+    issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
+                                  fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
     if (is.data.frame(issue.data) && nrow(issue.data) == 0) {
         logging::logwarn("There are no PaStA data available for the current environment.")
@@ -288,7 +291,7 @@ read.issues = function(data.path) {
         return(issue.data)
     }
 
-    colnames(issue.data) = c("issue.id", "author.id", "issue.state", "creation.date", "is.pull.request", "comments.list", "events.list", "related.commits", "closing.date")
+    colnames(issue.data) = c("issue.id", "author.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "related.commits", "event.author", "event.date", "event.name")
 
     return(issue.data)
 }
