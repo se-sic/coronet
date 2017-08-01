@@ -70,8 +70,8 @@ bpn = cf.data$get.bipartite.network()
 plot.bipartite.network(bpn)
 ```
 
-There are two different classes of configuration objects in this library.
-- The `ProjectConf` class, which determines all configuration parameters needed for the configured project (mainly data paths) and
+There are two different classes of configuration objects in this library:
+- the `ProjectConf` class, which determines all configuration parameters needed for the configured project (mainly data paths) and
 - the `NetworkConf` class, which is used for all configuration parameters concerning data retrieval and network construction.
 
 You can find an overview on all the parameters in these classes below in this file.
@@ -95,8 +95,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The (time-based) directedness of edges in an author network
   * [`TRUE`, *`FALSE`*]
 - `author.all.authors`
-  * Denotes whether all available authors (from all analyses and data sources) shall be added to the
-network as a basis
+  * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
   * **Note**: Depending on the chosen author relation, there may be isolates then
   * [`TRUE`, *`FALSE`*]
 - `author.only.committers`
@@ -118,10 +117,11 @@ network as a basis
        - timestamp information: *`"date"`*
        - author information: `"author.name"`, `"author.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
-       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`
-       - PaStA information: `"pasta"` (see parameter `pasta` below)
+       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
+       - PaStA information: `"pasta"`
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
+  * **Note**: For the edge attributes `"pasta"` and `"synchronicty"`, the network configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
@@ -137,14 +137,15 @@ network as a basis
 - `synchronicity`
   * Read and add synchronicity data to commits and co-change-based networks
   * [`TRUE`, *`FALSE`*]
+  * **Note**: To include synchronicity-data-based edge attributes, you need to give the `"synchronicity"` edge attribute for `edge.attributes`.
 - `synchronicity.time.window`:
   * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
   * [1, *5*, 10]
   * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
-- `pasta
+- `pasta`
   * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
   * [`TRUE`, *`FALSE`*]
-  * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`
+  * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 
 The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
 You can also update the object at any time, but as soon as you do so, all
