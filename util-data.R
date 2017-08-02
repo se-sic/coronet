@@ -217,6 +217,41 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        ## get value from project configuration
+        get.project.conf.entry = function(entry) {
+            if(entry == "synchronicity") {
+                return(project.conf$get.synchronicity())
+            } else if (entry == "synchronicity.time.window") {
+                return(project.conf$get.synchronicity.time.window())
+            } else if (entry == "artifact.filter.base") {
+                return(project.conf$get.artifact.filter.base())
+            } else if (entry == "pasta") {
+                return(project.conf$get.pasta())
+            } else {
+                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
+                return(NULL)
+            }
+        },
+
+        ## set a value of the project configuration and reset the environment
+        set.project.conf.entry = function(entry, value) {
+            if(entry == "synchronicity" && class(value) == "logical") {
+                reset.environment()
+                project.conf$set.synchronicity(value)
+            } else if (entry == "synchronicity.time.window" && class(value) == "numeric") {
+                reset.environment()
+                project.conf$set.synchronicity.time.window(value)
+            } else if (entry == "artifact.filter.base" && class(value) == "logical") {
+                reset.environment()
+                project.conf$set.artifact.filter.base(value)
+            } else if (entry == "pasta" && class(value) == "logical") {
+                reset.environment()
+                project.conf$set.pasta(value)
+            } else {
+                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
+            }
+        },
+
 
         ## BACKUP ####
 
@@ -598,13 +633,15 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        get.author2issue = function() {
+        get.issue2author = function() {
             logging::loginfo("Getting author--issue data")
 
             mylist = get.key.to.value.from.df(self$get.issues(), "event.author", "issue.id")
 
             return(mylist)
         }
+
+
 
         ## EntNotUsed ####
 
