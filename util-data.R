@@ -594,6 +594,16 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
 
+        get.issue2author = function() {
+            logging::loginfo("Getting author--issue data")
+
+            mylist = get.key.to.value.from.df(self$get.issues(), "issue.id", "author.name")
+
+            return(mylist)
+        },
+
+
+
         ## NotUsed  ####
 
         #' Map the corresponding commits to each author and return the list.
@@ -629,14 +639,6 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## store the authors per artifact
             mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "hash", "file")
-
-            return(mylist)
-        },
-
-        get.issue2author = function() {
-            logging::loginfo("Getting author--issue data")
-
-            mylist = get.key.to.value.from.df(self$get.issues(), "event.author", "issue.id")
 
             return(mylist)
         }
