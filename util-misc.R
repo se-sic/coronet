@@ -25,12 +25,16 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
     nodes.processed = c()
     edge.list = data.frame()
 
+    keys = names(list)
+    keys.number = length(list)
+
     if (directed) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
             number.edges = sum(0:(nrow(set) - 1))
-            logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
+            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                              match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
@@ -81,7 +85,8 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, function(set) {
             number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
-            logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
+            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                              match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
