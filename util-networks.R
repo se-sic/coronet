@@ -37,6 +37,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## networks
         authors.network.mail = NULL, # igraph
         authors.network.cochange = NULL, # igraph
+        authors.network.issue = NULL, #igraph
         artifacts.network.cochange = NULL, # igraph
         artifacts.network.callgraph = NULL, # igraph
 
@@ -95,6 +96,26 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(author.relation)
         },
 
+        ##get the issue based author relation as network
+        get.author.network.issue = function() {
+            logging::logdebug("get.author.network.issue: starting.")
+
+            if(!is.null(private$authors.network.issue)) {
+                logging::logdebug("get.author.network.issue: finished. (already existing)")
+                return(private$authors.network.issue)
+            }
+
+            author.relation = construct.dependency.network.from.list(
+                private$proj.data$get.issue2author(),
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.variable("author.directed")
+            )
+
+            private$authors.network.issue = author.relation
+            logging::logdebug("get.author.network.issue: finished.")
+
+            return(author.relation)
+        },
 
         ## ARTIFACT NETWORKS ####
 

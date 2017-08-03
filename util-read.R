@@ -239,12 +239,14 @@ read.issues = function(data.path) {
                                   fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
     if (is.data.frame(issue.data) && nrow(issue.data) == 0) {
-        logging::logwarn("There are no PaStA data available for the current environment.")
+        logging::logwarn("There is no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(issue.data)
     }
 
-    colnames(issue.data) = c("issue.id", "author.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "related.commits", "event.author", "event.date", "event.name")
+    colnames(issue.data) = c("issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "author.id",
+                             "author.name", "author.mail", "event.date", "event.name")
 
+    logging::logdebug("read.issues: finished")
     return(issue.data)
 }
