@@ -109,7 +109,8 @@ ProjectData = R6::R6Class("ProjectData",
             ## append synchronicity data if wanted
             if (private$project.conf$get.synchronicity()) {
                 synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
+                commit.data = merge(commit.data, synchronicity.data,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
 
             ## add PaStA data if wanted
