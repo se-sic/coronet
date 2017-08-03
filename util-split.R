@@ -52,6 +52,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## get bins based on split.basis
         bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period)$bins
         bins.labels = head(bins, -1)
+        split.by.bins = FALSE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
                          project.data$get.class.name(), time.period, split.basis)
@@ -62,6 +63,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         split.basis = NULL
         bins = strftime(bins)
         bins.labels = head(bins, -1)
+        split.by.bins = TRUE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
@@ -99,7 +101,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
         cf.range.data = CodefaceRangeData$new(project.data$get.project.conf(), project.data$get.network.conf(), range)
-        ## FIXME add revision.callgraph parameter
+        ## TODO add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
 
@@ -112,12 +114,17 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.range.data$set.synchronicity(project.data$get.synchronicity())
         ## 4) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
+        ## 5) PaStA data
+        cf.range.data$set.pasta(project.data$get.pasta())
 
         return(cf.range.data)
     })
 
     ## perform additional steps for sliding-window approach
-    if (sliding.window) {
+    ## (only if there is more than one range until here)
+    if (sliding.window && length(bins.ranges) <= 1) {
+        logging::logwarn("Sliding-window approach does not apply for one range or less.")
+    } else if (sliding.window) {
         ## compute bins for sliding windows: pairwise middle between dates
         bins.date.middle = mapply(
             bins.date[1:(length(bins.date) - 1)],
@@ -139,14 +146,25 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
+        bins = strftime(bins.date)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
             cf.conf = cf$set.project.conf(project.data$get.project.conf())
         }
     }
+
+    ## add splitting information to project configuration
+    project.data$get.project.conf()$set.splitting.info(
+        type = "time-based",
+        length = if (split.by.bins) bins else time.period,
+        basis = split.basis,
+        sliding.window = sliding.window,
+        revisions = bins,
+        revisions.dates = bins.date
+    )
 
     ## return list of CodefaceRangeData objects
     return(cf.data)
@@ -198,7 +216,10 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## perform additional steps for sliding-window approach:
     ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
     ## then, compute bins on the cropped data
-    if (sliding.window) {
+    ## (only if there is more than one range until here)
+    if (sliding.window && length(bins.date) <= 2) {
+        logging::logwarn("Sliding-window approach does not apply for one range or less.")
+    } else if (sliding.window) {
         ## get the list of unique items that are used for the bin computation and, thus, also the
         ## cropping of data
         items.unique = unique(data[[ activity.type ]][[ id.column[[activity.type]] ]])
@@ -215,7 +236,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## store the data again
         data.to.cut = data[[ activity.type ]][[ id.column[[activity.type]] ]] %in% items.cut
-        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut ]
+        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut, ]
 
         ## clone the project data and update raw data to split it again
         project.data.clone = project.data$clone()
@@ -238,14 +259,25 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
+        bins = strftime(bins.date)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(strftime(bins.date), bins.date, sliding.window = TRUE)
+        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
             cf.conf = cf$set.project.conf(project.data$get.project.conf(), reset.environment = FALSE)
         }
     }
+
+    ## add splitting information to project configuration
+    project.data$get.project.conf()$set.splitting.info(
+        type = "activity-based",
+        length = activity.amount,
+        basis = activity.type,
+        sliding.window = sliding.window,
+        revisions = bins,
+        revisions.dates = bins.date
+    )
 
     ## set bin attribute for sliding-window functionality
     attr(cf.data, "bins") = bins.date
@@ -508,37 +540,36 @@ split.get.bins.time.based = function(dates, time.period) {
         ## add last bin
         max(dates) + 1
     )
+    dates.breaks.chr = strftime(head(dates.breaks, -1))
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
-    levels(dates.bins) = head(dates.breaks, -1)
-    ## get bins for returning
-    bins = levels(dates.bins)
-    ## add end date for last bin
-    bins = c(
-        bins,
-        strftime(seq(
-            as.POSIXct(tail(bins, 1)),
-            by = time.period,
-            length = 2)[2]
-        )
+    ## set factor's levels appropriately
+    levels(dates.bins) = dates.breaks.chr[ as.integer(levels(dates.bins)) ] # get the dates
+    levels(dates.bins) = c( # append all missing dates
+        levels(dates.bins),
+        dates.breaks.chr[ !(dates.breaks.chr %in% levels(dates.bins)) ]
     )
+
     logging::logdebug("split.get.bins.time.based: finished.")
+
+    ## return properly
     return(list(
         vector = dates.bins,
         bins = strftime(dates.breaks)
     ))
 }
 
-#' Compute bin information for a activity-based splitting based on the given amount of activity.
+#' Compute bin information for a activity-based splitting based on the given amount of activity
+#' based on the actual order of the rows in the given data.frame 'df'.
 #'
-#' @param df the data.frame representing the data
+#' @param df the sorted data.frame representing the data
 #' @param id a character string denoting the ID column of the data.frame 'df'
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
 #'
 #' @return a list,
-#'         the item 'vector': the bins each row in 'df' belongs to,
+#'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),
 #'         the item 'bins': the bin labels,  described by dates, each bin containing
 #'         'acitivity.amount' many unique items; each item in the vector indicates
 #'         the start of a bin, although the last item indicates the end of the last bin

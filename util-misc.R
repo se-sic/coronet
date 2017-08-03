@@ -106,7 +106,7 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(1:nrow(set)) - 1
+            number.edges = sum(0:(nrow(set) - 1))
             logging::logdebug("Constructing edges for %s '%s': starting (%s edges to construct).",
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
@@ -127,8 +127,10 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
                 ## get vertex data
                 item.node = item[, 1]
+
+                ## get edge attributes
                 cols.which = network.conf$get.variable("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[1, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+                item.edge.attrs = item[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -190,8 +192,12 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                 edge = data.frame(comb[1], comb[2])
 
                 ## get edge attibutes
-                edge.attrs = set[ set[,1] %in% comb, -c(1) ] # everything without first column (i.e., the nodes)
-                edgelist = cbind(edge, edge.attrs) # add edge attributes to edge list
+                edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
+                cols.which = network.conf$get.variable("edge.attributes") %in% colnames(edge.attrs)
+                edge.attrs = edge.attrs[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+
+                # add edge attributes to edge list
+                edgelist = cbind(edge, edge.attrs)
 
                 return(edgelist)
             })
@@ -253,28 +259,6 @@ read.network.from.file = function(file, format = "pajek") {
     g = igraph::set.vertex.attribute(g, "name", index = igraph::V(g), igraph::get.vertex.attribute(g, "id"))
 
     return(g)
-}
-
-
-## Unify the set of vertices in artifacts and author2artifact mapping
-##
-## As there may be artifacts existing that have not been touched by a developer,
-## the two sets need to be unified to avoid null-pointer exceptions
-## FIXME this function should be inlined in 'CodefaceProjectData$get.networks'!
-unify.artifact.vertices = function(artifacts.net, author.to.artifact) {
-    # get vertex names and set of all related artifacts
-    artifacts.net.vertices = igraph::get.vertex.attribute(artifacts.net, "name")
-    artifacts = unique(plyr::rbind.fill(author.to.artifact)[["artifact"]] )
-
-    # get only the missing ones
-    diff = setdiff(artifacts, artifacts.net.vertices)
-
-    # add missing vertices to existing network
-    net = artifacts.net + igraph::vertices(diff, type = TYPE.ARTIFACT)
-    net = igraph::set.vertex.attribute(net, "id", index = igraph::V(net),
-                                       igraph::get.vertex.attribute(net, "name"))
-
-    return(net)
 }
 
 
@@ -350,15 +334,28 @@ EDGE.ATTR.HANDLING = list(
 
 ## Simplify a network
 simplify.network = function(network) {
+    logging::logdebug("simplify.network: starting.")
+    logging::loginfo("Simplifying network.")
+
     ## simplify networks (contract edges and remove loops)
     network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
 
+    logging::logdebug("simplify.network: finished.")
     return(network)
 }
 
 ## Simplify a list of networks
 simplify.networks = function(networks){
+    logging::logdebug("simplify.networks: starting.")
+    logging::loginfo(
+        "Simplifying networks (names = [%s]).",
+        paste(names(networks), collapse = ", ")
+    )
+
     nets = parallel::mclapply(networks, simplify.network)
+
+    logging::logdebug("simplify.networks: finished.")
+    return(nets)
 }
 
 
@@ -386,12 +383,12 @@ create.empty.network = function(directed = TRUE) {
 get.sample.network = function(network.conf = NetworkConf$new()) {
     ## INDEPENDENT NETWORKS
     authors = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6") +
-        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5")
+        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6", type = TYPE.AUTHOR) +
+        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5", type = TYPE.EDGES.INTRA)
 
     artifacts = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6") +
-        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6")
+        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6", type = TYPE.ARTIFACT) +
+        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6", type = TYPE.EDGES.INTRA)
     # artifacts = igraph::as.directed(artifacts, mode = "mutual")
 
     authors.to.artifacts.df = data.frame(
