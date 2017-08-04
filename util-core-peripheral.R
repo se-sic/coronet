@@ -33,6 +33,20 @@ LONGTERM.CORE.THRESHOLD <- 0.5
 
 ### FUNCTIONS
 
+get.developer.class.by.type = function(graph = NULL, data = NULL, type){
+
+    if(is.null(graph) && is.null(data)){
+        stop("Either graph or raw data needs to be given.")
+    }
+
+    return(switch(type,
+                  "networkDegree" = get.developer.class.network.degree(graph = graph, codefaceRangeData = data),
+                  "networkEigen" = get.developer.class.network.eigen(graph = graph, codefaceRangeData = data),
+                  "commitCount" = get.developer.class.commit.count(codefaceRangeData = data),
+                  "locCount"= get.developer.class.loc.count(codefaceRangeData = data),
+                  stop("Invalid classification type given.")))
+}
+
 ### network-metric-based classification
 
 ## Classify the developers of the specified version range into core and peripheral
