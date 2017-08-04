@@ -193,8 +193,8 @@ get.commit.data <- function(codefaceRangeData, columns=c("author.name", "author.
   commits.df <- commits.df[order(commits.df$date),]
 
   ## Fetch the date range info
-  date.first <- as.Date(commits.df$date[1]) - 1 # -1 because the first date in split ranges is exclusive
-  date.last <- as.Date(commits.df$date[nrow(commits.df)])
+  date.first <- commits.df$date[1] - 1 # -1 because the first date in split ranges is exclusive
+  date.last <- commits.df$date[nrow(commits.df)]
 
   ## Calc the split dates depending on the specified intervals
   date.split <- c(date.last)
@@ -222,10 +222,10 @@ get.commit.data <- function(codefaceRangeData, columns=c("author.name", "author.
   ## Calc group numbers for the commits by the split dates
   split.groups <- c()
   for(i in 1:nrow(commits.df)){
-    commits.df.row.date <- as.Date(commits.df[i,]$date)
+    commits.df.row.date <- commits.df[i,]$date
     for(j in 2:length(date.split)){
       if (commits.df.row.date <= date.split[j]) {
-        split.groups <- c(split.groups, paste(as.Date(date.split[j - 1]) + 1, date.split[j], sep=" - "))
+        split.groups <- c(split.groups, paste(date.split[j - 1] + 1, date.split[j], sep=" - "))
         break
       }
     }
