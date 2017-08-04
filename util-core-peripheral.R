@@ -381,17 +381,40 @@ get.recurring.authors <- function(developerClassOverview, class = 'both') {
 
 ## Classify the developers of all specified version ranges into core and peripheral
 ## based on the specified classification function.
-get.developer.class.overview <- function(codefaceRangeDataList, FUN) {
+##
+## The data can either be given as list of raw range data or as list of networks (only
+## for the network-based metrics). In case both are given, the raw data is used.
+get.developer.class.overview <- function(graphList = NULL, codefaceRangeDataList = NULL, type =
+                                             c("networkDegree", "networkEigen", "commitCount", "locCount")) {
+
+    type <- match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
+
+    if(is.null(graphList) && is.null(codefaceRangeDataList)){
+        stop("Either graph or raw data has to be given.")
+
+    }else if(is.null(graphList) && (type == "commitCount" || type == "locCount")){
+        stop("For the count-based metrics, the raw data has to be given.")
+    }
+
+    if(!is.null(codefaceRangeDataList)){## raw data is preferred
   res <- list()
   for (i in 1:length(codefaceRangeDataList)) {
     range.data <- codefaceRangeDataList[[i]]
 
-    ## Get data of the current range
-    range.class <- FUN(range.data)
-    range.version <- get.version(range.data)
-
-    res[[range.version]] <- range.class
+    ## Get classification data of the current range
+    range.class <- get.developer.class.by.type(data = range.data, type = type)
+    res <- c(res, list(range.class))
   }
+    }else{## use graph list as data
+        res <- list()
+        for (i in 1:length(graphList)) {
+            range.graph <- graphList[[i]]
+
+            ## Get classification data of the current range
+            range.class <- get.developer.class.by.type(graph = range.graph, type = type)
+            res <- c(res, list(range.class))
+        }
+    }
 
   return(res)
 }
