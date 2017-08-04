@@ -37,10 +37,16 @@ LONGTERM.CORE.THRESHOLD <- 0.5
 
 ## Classify the developers of the specified version range into core and peripheral
 ## based on the degree centrality.
-get.developer.class.network.degree <- function(codefaceRangeData, resultLimit=NULL) {
+##
+## This function takes either a network OR the raw range data. In case both are given, the network is used.
+get.developer.class.network.degree <- function(graph=NULL, codefaceRangeData=NULL, resultLimit=NULL) {
 
+if(is.null(graph) && is.null(codefaceRangeData)){
+    stop("Either the raw data or a network has to be given.")
+}else if(is.null(graph)){
   ## Get co-change developer network
   graph <- codefaceRangeData$get.author.network(relation="cochange", directed=FALSE, simple.network=FALSE)
+}
 
   ## Get node degrees for all developers
   centrality.vec <- sort(igraph::degree(graph), decreasing=T)
@@ -55,10 +61,16 @@ get.developer.class.network.degree <- function(codefaceRangeData, resultLimit=NU
 
 ## Classify the developers of the specified version range into core and peripheral
 ## based on the eigenvector centrality.
-get.developer.class.network.eigen <- function(codefaceRangeData, resultLimit=NULL) {
+##
+## This function takes either a network OR the raw range data. In case both are given, the network is used.
+get.developer.class.network.eigen <- function(graph=NULL, codefaceRangeData=NULL, resultLimit=NULL) {
 
-  ## Get co-change developer network
-  graph <- codefaceRangeData$get.author.network(relation="cochange", directed=FALSE, simple.network=FALSE)
+    if(is.null(graph) && is.null(codefaceRangeData)){
+        stop("Either the raw data or a network has to be given.")
+    }else if(is.null(graph)){
+        ## Get co-change developer network
+        graph <- codefaceRangeData$get.author.network(relation="cochange", directed=FALSE, simple.network=FALSE)
+    }
 
   ## Get eigenvectors for all developers
   centrality.vec <- sort(igraph::eigen_centrality(graph)$vector, decreasing=T)
