@@ -447,15 +447,30 @@ get.developer.class.overview <- function(graphList = NULL, codefaceRangeDataList
 }
 
 ## Retrieves all developers which will be classified as core by the specified
-## classification function in more than a specific number of version ranges
+## classification function "type" in more than a certain number of version ranges
 ## -> see: 'LONGTERM.CORE.THRESHOLD'.
-get.longterm.core.developers <- function(codefaceRangeDataList, FUN) {
+##
+## The data can either be given as list of raw range data or as list of networks (only
+## for the network-based metrics). In case both are given, the raw data is used.
+get.longterm.core.developers <- function(graphList = NULL, codefaceRangeDataList = NULL, type =
+                                             c("networkDegree", "networkEigen", "commitCount", "locCount")) {
+
+    type <- match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
+
+    if(is.null(graphList) && is.null(codefaceRangeDataList)){
+        stop("Either graph or raw data has to be given.")
+
+    }else if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")){
+        stop("For the count-based metrics, the raw data has to be given.")
+    }
 
   ## Get the classifications for all ranges
-  developer.class <- get.developer.class.overview(codefaceRangeDataList, FUN)
+  developer.class <- get.developer.class.overview(graphList = graphList,
+                                                  codefaceRangeDataList = codefaceRangeDataList,
+                                                  type = type)
 
   ## Get a list with the occurence freq for each core developer
-  recurring.developers <- get.recurring.authors(developer.class)
+  recurring.developers <- get.recurring.authors(developer.class, class = "core")
 
   ## Calculate the num of occurences at which a dev gets stated as longterm core
   longterm.threshold <- length(codefaceRangeDataList) * LONGTERM.CORE.THRESHOLD
