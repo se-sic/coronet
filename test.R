@@ -111,7 +111,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # plot.network(g)
 
 
-## BULK METHODS
+## BULK METHODS to construct Codeface ranges
 # net.conf = NetworkConf$new()
 
 # ## author networks
@@ -151,7 +151,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # run.lapply(data, "get.data.path.callgraph")
 
 
-## SPLITTING DATA
+## SPLITTING DATA AND NETWORKS
 
 # cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
@@ -200,18 +200,6 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #     plot.network(net)
 # }
 
-## SAMPLE PLOTS (e.g., for papers)
-
-# pdf(file = "sample-network.pdf", width = 9, height = 5)
-# g = get.sample.network()
-# plot.network(g, grayscale = FALSE)
-# dev.off()
-
-# pdf(file = "sample-network-bw.pdf", width = 9, height = 5)
-# g = get.sample.network()
-# plot.network(g, grayscale = TRUE)
-# dev.off()
-
 
 ## MOTIF IDENTIFICATION
 
@@ -223,3 +211,35 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #                         motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
 #                         motif.communicating = MOTIFS.LINE,
 #                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
+
+
+## PLOTS
+
+# ## construct sample network for plotting
+# g = get.sample.network()
+# g = igraph::as.directed(g, mode = "arbitrary")
+# g = g + igraph::edges("A6", "A5", type = TYPE.EDGES.INTRA, weight = 2)
+# g = simplify.network(g)
+
+# ## print directly
+# plot.print.network(g, labels = TRUE, grayscale = FALSE)
+
+# ## set a layout and print directly
+# lay = matrix(c(  20, 179, 552, 693, 956, 1091, 124, 317, 516, 615, 803, 1038,
+#                 245, 175, 185, 255, 253, 225,   73,   8,  75,   0,  96,   86),
+#              nrow = 12, byrow = FALSE) # for sample graph
+# g = igraph::set.graph.attribute(g, "layout", lay)
+# plot.print.network(g, labels = TRUE, grayscale = FALSE)
+
+# ## get the plot object and modify it before plotting
+# p = plot.get.plot.for.network(g, labels = FALSE, grayscale = TRUE)
+# p = p +
+#     ggplot2::theme(
+#         panel.border = ggplot2::element_blank(),
+#         legend.position = "none"
+#     ) +
+#     ggraph::facet_edges( ~ edge.type.char)
+# # ggraph::facet_edges( ~ weight)
+# # ggraph::facet_nodes( ~ vertex.type.char)
+# # ggraph::facet_graph(edge.type.char ~ vertex.type.char)
+# print(p)
