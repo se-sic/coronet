@@ -92,13 +92,13 @@ get.developer.class.network.eigen <- function(graph=NULL, codefaceRangeData=NULL
         graph <- codefaceRangeData$get.author.network()
     }
 
-    ## In case no collaboration occured, classification cannot be performed
-    if(igraph::ecount(graph) == 0){
-        return(NA)
-    }
-
   ## Get eigenvectors for all developers
   centrality.vec <- sort(igraph::eigen_centrality(graph)$vector, decreasing=T)
+
+  ## In case no collaboration occured, all centrality values are set to 0
+  if(igraph::ecount(graph) == 0){
+      centrality.vec[1:length(centrality.vec)] <- rep(0, length(centrality.vec))
+  }
   centrality.df <- data.frame(author.name=names(centrality.vec),
                               centrality=as.vector(centrality.vec))
 
@@ -288,13 +288,8 @@ get.developer.class <- function(authorDataFrame, calcBaseName, resultLimit=NULL,
   ## Get the threshold depending on all calculation base values
   developer.class.threshold <- get.threshold(author.data[[calcBaseName]])
 
-  ## in case no activity/collaboration occured, the classification is impossible
-  if(developer.class.threshold==0){
-      return(NA)
-  }
-
   ## Only include authors with the specified minimum of the calculation base value
-  author.data <- author.data[author.data[[calcBaseName]] > minValue, ]
+  author.data <- author.data[author.data[[calcBaseName]] >= minValue, ]
 
   ## Check if the result shall be limited
   if (!is.null(resultLimit)) {
@@ -305,8 +300,11 @@ get.developer.class <- function(authorDataFrame, calcBaseName, resultLimit=NULL,
   core.test <- cumsum(author.data[[calcBaseName]]) < developer.class.threshold
 
   ## If we have not found a core developer, the author with the highest calculation base value
-  ## will be treated as core, to return at least one core developer
-  if (!any(core.test)) {
+  ## will be treated as core, to return at least one core developer. The only exception is the
+  ## case that no activity/collaboration occured. Then, all developers are classified as peripheral.
+  if(developer.class.threshold==0){
+      core.test <- rep(FALSE, length(core.test))
+  } else if (!any(core.test)) {
     core.test <- c(TRUE, rep(FALSE, length(core.test) - 1))
   }
 
