@@ -618,13 +618,29 @@ get.developer.class.activity.overview <- function(codefaceRangeDataList, FUN,
 ## for each split range of the specified version development range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector.
 ## A vector of addition core developers can be specified which will always be set as core in each range.
-get.developer.class.activity <- function(codefaceRangeData, FUN,
-                                         activityMeasure="commit.count", split=c(),
+get.developer.class.activity <- function(codefaceRangeData = NULL,
+                                         developer.class = NULL,
+                                         activityMeasure = c("commit.count", "loc.count"),
+                                         split=c(),
                                          additionalCores=NULL) {
 
-  ## Get core developers
-  developer.class <- FUN(codefaceRangeData)
-  developer.core <- unique(c(developer.class$core$author.name, additionalCores))
+    activityMeasure <- match.arg(activityMeasure, c("commit.count", "loc.count"))
+
+    if(is.null(codefaceRangeData)){
+        stop("Raw data is needed for the activity analysis.")
+    }
+    if(is.null(developer.class)){
+        stop("Developer classification has to be given by the user")
+    }
+
+
+  ## Return NA in case no classification information is available
+  if(all(is.na(developer.class))
+     || (nrow(developer.class$core) + nrow(developer.class$peripheral) == 0)) {
+      return(NA)
+  }
+
+  developer.core <- unique(c(developer.class$core$author.name, additionalCores))# TODO works with 0 rows?
 
   ## Get the splitted commit data with all necessary columns
   commits.data <- get.commit.data(codefaceRangeData,
@@ -632,7 +648,6 @@ get.developer.class.activity <- function(codefaceRangeData, FUN,
                                   split=split)
 
   ## Build the query string to group commits by the author name
-  commits.df <- commits.data
   commits.query <- "select `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc.count`,
   COUNT(*) as `commit.count` from `commits.df` group by `author.name`"
 
