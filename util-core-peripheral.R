@@ -340,49 +340,68 @@ get.threshold <- function(dataList) {
 
 ## Get a data frame with the authors and their occurence count in the specified class for
 ## the specified developer classification list.
-get.recurring.authors <- function(developerClassOverview, class = 'both') {
-  authors <- c()
-  freq <- c()
+get.recurring.authors <- function(developerClassOverview, class = c("both", "core", "peripheral")) {
+    class <- match.arg(class, c("both", "core", "peripheral"))
 
-  ## Iterate over each version development range
-  for(i in 1:length(developerClassOverview)){
+    authors <- c()
+    freq <- c()
 
-    if (class == 'both') {
-      developer.class.authors <- c(developerClassOverview[[i]]$core$author.name,
-                                   developerClassOverview[[i]]$peripheral$author.name)
-    } else {
-      developer.class.authors <- developerClassOverview[[i]][[class]]$author.name
+    ## Iterate over each version development range
+    for(i in 1:length(developerClassOverview)){
+
+        ## skip range in case no classification is available
+        if(all(is.na(developerClassOverview[[i]]))){
+            next
+        }
+
+        if (class == "both") {
+
+            ## skip range in case no classification is available
+            if(nrow(developerClassOverview[[i]]$core) == 0
+               && nrow(developerClassOverview[[i]]$peripheral) == 0){
+                next
+            }
+
+            developer.class.authors <- c(developerClassOverview[[i]]$core$author.name,
+                                         developerClassOverview[[i]]$peripheral$author.name)
+        } else {
+
+            ## skip range in case no classification for the given class is available
+            if(nrow(developerClassOverview[[i]][[class]])==0){
+                next
+            }
+
+            developer.class.authors <- developerClassOverview[[i]][[class]]$author.name
+        }
+
+        ## Iterate over each author in the specified class and increase his occurence count
+        for(j in 1:length(developer.class.authors)){
+            developer.class.author.name <- developer.class.authors[j]
+
+            ## Check if the author already exists in previous ranges
+            developer.class.author.index <- which(authors == developer.class.author.name)
+            if (length(developer.class.author.index) > 0) {
+
+                ## Increase the occurence count as the author already exists in previous ranges
+                freq[developer.class.author.index] <- freq[developer.class.author.index] + 1
+            } else {
+
+                ## Save the author and its first occurence
+                authors <- c(authors, developer.class.author.name)
+                freq <- c(freq, 1)
+            }
+        }
     }
 
+    data <- data.frame(
+        author.name = authors,
+        freq = freq
+    )
 
-    ## Iterate over each author in the specified class and increase his occurence count
-    for(j in 1:length(developer.class.authors)){
-      developer.class.author.name <- developer.class.authors[j]
+    ## Sort the authors by occurence count
+    data <- data[order(data$freq, decreasing = TRUE),]
 
-      ## Check if the author already exists in previous ranges
-      developer.class.author.index <- which(authors == developer.class.author.name)
-      if (length(developer.class.author.index) > 0) {
-
-        ## Increase the occurence count as the author already exists in previous ranges
-        freq[developer.class.author.index] <- freq[developer.class.author.index] + 1
-      } else {
-
-        ## Save the author and its first occurence
-        authors <- c(authors, developer.class.author.name)
-        freq <- c(freq, 1)
-      }
-    }
-  }
-
-  data <- data.frame(
-    author.name = authors,
-    freq = freq
-  )
-
-  ## Sort the authors by occurence count
-  data <- data[order(data$freq, decreasing = TRUE),]
-
-  return(data)
+    return(data)
 }
 
 
