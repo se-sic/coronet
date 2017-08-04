@@ -92,6 +92,11 @@ get.developer.class.network.eigen <- function(graph=NULL, codefaceRangeData=NULL
         graph <- codefaceRangeData$get.author.network()
     }
 
+    ## In case no collaboration occured, classification cannot be performed
+    if(igraph::ecount(graph) == 0){
+        return(NA)
+    }
+
   ## Get eigenvectors for all developers
   centrality.vec <- sort(igraph::eigen_centrality(graph)$vector, decreasing=T)
   centrality.df <- data.frame(author.name=names(centrality.vec),
@@ -275,13 +280,18 @@ get.commit.data <- function(codefaceRangeData, columns=c("author.name", "author.
 get.developer.class <- function(authorDataFrame, calcBaseName, resultLimit=NULL, minValue=0) {
 
   ## Make sure the provided data is ordered correctly by the calculation base
-  author.data <- authorDataFrame[order(-authorDataFrame[[calcBaseName]]),]
+  author.data <- authorDataFrame[rev(order(authorDataFrame[[calcBaseName]])),]
 
   ## Remove rows with invalid calculation base values
   author.data <- author.data[!is.na(author.data[calcBaseName]),]
 
   ## Get the threshold depending on all calculation base values
   developer.class.threshold <- get.threshold(author.data[[calcBaseName]])
+
+  ## in case no activity/collaboration occured, the classification is impossible
+  if(developer.class.threshold==0){
+      return(NA)
+  }
 
   ## Only include authors with the specified minimum of the calculation base value
   author.data <- author.data[author.data[[calcBaseName]] > minValue, ]
