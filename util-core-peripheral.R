@@ -562,24 +562,23 @@ get.role.stability <- function(developerClassOverview) {
 ## An individual split range can be set for each version as a list of vectors with the version name as the key.
 ## An integer value can be set as 'slidingWindowCore' to specify, that the core developers of the last
 ## version ranges (according to the value) shall be included in the core developer set of the current range.
-get.developer.class.activity.overview <- function(codefaceRangeDataList, FUN,
-                                                  activityMeasure="commit.count",
+get.developer.class.activity.overview <- function(codefaceRangeDataList = NULL,
+                                                  developer.class.overview = NULL,
                                                   split=c(),
                                                   slidingWindowCore=NULL,
-                                                  withLongtermCore=FALSE) {
+                                                  longterm.cores = c()) {
 
-  ## Check if long-term core developers shall be considered
-  longterm.cores <- c()
-  if (withLongtermCore) {
-    longterm.cores <- get.longterm.core.developers(codefaceRangeDataList, FUN)
-  }
+if(is.null(codefaceRangeDataList)) {
+    stop("Raw data is needed for the activity analysis.")
+}
 
-  ## If a sliding window for additional core developers is defined, get a list of
-  ## all core developers for each version range to later extract the additional
-  ## core developers according to the sliding window
-  if (!is.null(slidingWindowCore)) {
-    developer.class.overview <- get.developer.class.overview(codefaceRangeDataList, FUN)
-  }
+if(is.null(developer.class.overview)) {
+    stop("Developer classification has to be given.")
+}
+
+if(length(codefaceRangeDataList) != length(developer.class.overview)) {
+    stop("Raw data and developer classification have to match.")
+}
 
   res <- list()
   for (i in 1:length(codefaceRangeDataList)){
