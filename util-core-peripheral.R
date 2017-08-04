@@ -402,7 +402,7 @@ get.developer.class.overview <- function(graphList = NULL, codefaceRangeDataList
     if(is.null(graphList) && is.null(codefaceRangeDataList)){
         stop("Either graph or raw data has to be given.")
 
-    }else if(is.null(graphList) && (type == "commitCount" || type == "locCount")){
+    }else if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")){
         stop("For the count-based metrics, the raw data has to be given.")
     }
 
