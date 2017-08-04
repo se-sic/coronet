@@ -59,7 +59,7 @@ if(is.null(graph) && is.null(codefaceRangeData)){
     stop("Either the raw data or a network has to be given.")
 }else if(is.null(graph)){
   ## Get co-change developer network
-  graph <- codefaceRangeData$get.author.network(relation="cochange", directed=FALSE, simple.network=FALSE)
+  graph <- codefaceRangeData$get.author.network()
 }
 
   ## Get node degrees for all developers
@@ -83,7 +83,7 @@ get.developer.class.network.eigen <- function(graph=NULL, codefaceRangeData=NULL
         stop("Either the raw data or a network has to be given.")
     }else if(is.null(graph)){
         ## Get co-change developer network
-        graph <- codefaceRangeData$get.author.network(relation="cochange", directed=FALSE, simple.network=FALSE)
+        graph <- codefaceRangeData$get.author.network()
     }
 
   ## Get eigenvectors for all developers
