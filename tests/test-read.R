@@ -53,28 +53,24 @@ test_that("Read the raw commit data.", {
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
 })
 
- ##TODO ####
-# test_that("Read the synchronicity data.", {
-#
-#     ## configuration object
-#     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-#
-#     ## read the actual data
-#     synchronicity.data.read = read.synchronicity(proj.conf$get.entry("datapath.synchronicity"), project.conf$get.entry("artifact"),
-#                                                  proj.conf$get.synchronicity.time.window())
-#
-#     ## build the expected data.frame
-#     col.names = c()
-#
-#     ## init the data.frame with the expected colnames
-#     synchronicity.data.expected = read.table(text = "", col.names = col.names)
-#
-#     ## fill the df
-#     #TODO
-#
-#     ## check the results
-#     expect_identical(commit.data.read, commit.data.expected, info = "Synchronicity data.")
-# })
+
+test_that("Read the synchronicity data.", {
+
+    ## configuration object
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    synchronicity.data.read = read.synchronicity(proj.conf$get.entry("datapath.synchronicity"), proj.conf$get.entry("artifact"),
+                                                 proj.conf$get.synchronicity.time.window())
+
+    ## build the expected data.frame
+    synchronicity.data.expected = data.frame(hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                                    "3a0ed78458b3976243db6829f63eba3eead26774","0a1a5c523d835459c42f33e863623138555e2526"),
+                                             synchronous = c(TRUE, TRUE, FALSE, FALSE))
+
+    ## check the results
+    expect_identical(synchronicity.data.read, synchronicity.data.expected, info = "Synchronicity data.")
+})
 
 test_that("Read the mail data.", {
 
