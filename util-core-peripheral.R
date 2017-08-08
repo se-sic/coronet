@@ -855,9 +855,15 @@ get.class.turnover.overview = function(developerClassOverview, saturation = 1){
 ## relation to all developers of the current and the previous ranges.
 get.unstable.developers.overview = function(developerClassOverview, saturation = 1){
 
+    if(!is.null(names(developerClassOverview))){
+        versions <- names(developerClassOverview)
+    }else{
+        versions <- 1:length(developerClassOverview)
+    }
+
   ## Set up the data.frame for the analysis results
   turnover.overview <- data.frame(
-    versions = names(developerClassOverview),
+    versions = versions,
     row.names = 1,
     unstable = 0,
     unstable.core = 0,

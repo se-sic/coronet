@@ -272,4 +272,5 @@ calculate.cohens.kappa(developerClassificationList = developerClassOverview,
                        comparingDeveloperClassificationList = developerClassOverviewLOC)
 
 get.class.turnover.overview(developerClassOverview = developerClassOverview)
+get.unstable.developers.overview(developerClassOverview = developerClassOverview, saturation = 2)
 
