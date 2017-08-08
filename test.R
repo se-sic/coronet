@@ -246,7 +246,7 @@ get.developer.class.by.type(data = emptyRangeData, type = "locCount")
 developerClassOverview <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkDegree")
 get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkEigen")
 get.developer.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
-get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
+developerClassOverviewLOC <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
 
 recurringAuthors <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
 longtermCore <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
@@ -261,4 +261,15 @@ developerClassActivityEmpty <- get.developer.class.activity(codefaceRangeData = 
 developerClassActivityOverview <- get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
                                                                         developer.class.overview = developerClassOverview,
                                                                         activityMeasure = "commit.count")
+get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
+                                      developer.class.overview = developerClassOverview,
+                                      activityMeasure = "commit.count", longterm.cores = "Erik Andersen")
+##get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
+##                                      developer.class.overview = developerClassOverview,
+##                                      activityMeasure = "loc.count", split = c(1))
+
+calculate.cohens.kappa(developerClassificationList = developerClassOverview,
+                       comparingDeveloperClassificationList = developerClassOverviewLOC)
+
+get.class.turnover.overview(developerClassOverview = developerClassOverview)
 

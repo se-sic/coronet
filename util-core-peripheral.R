@@ -778,9 +778,16 @@ calculate.cohens.kappa <- function(developerClassificationList, comparingDevelop
 ## in the previous version range classes (saturation).
 get.class.turnover.overview = function(developerClassOverview, saturation = 1){
 
+
+    if(!is.null(names(developerClassOverview))){
+        versions <- names(developerClassOverview)
+    }else{
+        versions <- 1:length(developerClassOverview)
+    }
+
   ## Set up the data.frame for the analysis results
   turnover.overview <- data.frame(
-    versions = names(developerClassOverview),
+    versions = versions,
     row.names = 1,
     turnover = 0,
     turnover.core = 0,
