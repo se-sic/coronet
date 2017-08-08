@@ -317,6 +317,26 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         get.bipartite.issue.network = function() {
             authors.to.issues = private$proj.data$get.author2issue()
+
+            ## extract vertices for author network
+            if (private$network.conf$get.variable("author.all.authors") &&
+                !private$network.conf$get.variable("author.only.committers")) {
+                authors = private$proj.data$get.authors()[[ "author.name" ]]
+            } else {
+                authors = names(authors.to.issues)
+            }
+
+            issues = private$proj.data$get.issues()
+
+            ##construct networks from vertices
+            authors.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
+
+            issues.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(issues, name = issues, type = TYPE.ARTIFACT)
+
+            u = combine.networks.generic(authors.net, issues.net, authors.to.issues,
+                                         network.conf = private$network.conf, "issue")
         },
 
         ## get all networks (build unification to avoid null-pointers)
