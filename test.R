@@ -220,3 +220,45 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 #                         motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
 #                         motif.communicating = MOTIFS.LINE,
 #                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
+
+
+## CORE/PERIPHERAL CLASSIFICATION
+
+rangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[10]])
+rangeData2 <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
+emptyRangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
+
+rangeList <- list(emptyRangeData, rangeData, rangeData2)
+
+# test functions for single range
+developerClass <- get.developer.class.by.type(data = rangeData, type = "networkDegree")
+get.developer.class.by.type(data = rangeData, type = "networkEigen")
+get.developer.class.by.type(data = rangeData, type = "commitCount")
+get.developer.class.by.type(data = rangeData, type = "locCount")
+
+# test functions for single range with "empty" range data (graph without edges)
+developerClassEmptyRange <- get.developer.class.by.type(data = emptyRangeData, type = "networkDegree")
+get.developer.class.by.type(data = emptyRangeData, type = "networkEigen")
+get.developer.class.by.type(data = emptyRangeData, type = "commitCount")
+get.developer.class.by.type(data = emptyRangeData, type = "locCount")
+
+# test function for mutliple ranges (evolution)
+developerClassOverview <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkDegree")
+get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkEigen")
+get.developer.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
+get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
+
+recurringAuthors <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
+longtermCore <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
+
+## TODO roleStability <- get.role.stability(developerClassOverview = developerClassOverview)
+
+developerClassActivity <- get.developer.class.activity(codefaceRangeData = rangeData, developer.class = developerClass,
+                                                       activityMeasure = "commit.count")
+developerClassActivityEmpty <- get.developer.class.activity(codefaceRangeData = emptyRangeData,
+                                                       developer.class = developerClassEmptyRange, activityMeasure = "loc.count")
+
+developerClassActivityOverview <- get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
+                                                                        developer.class.overview = developerClassOverview,
+                                                                        activityMeasure = "commit.count")
+
