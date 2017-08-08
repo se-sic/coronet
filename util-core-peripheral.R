@@ -566,7 +566,10 @@ get.developer.class.activity.overview <- function(codefaceRangeDataList = NULL,
                                                   developer.class.overview = NULL,
                                                   split=c(),
                                                   slidingWindowCore=NULL,
-                                                  longterm.cores = c()) {
+                                                  longterm.cores = c(),
+                                                  activityMeasure = c("commit.count", "loc.count")) {
+
+activityMeasure <- match.arg(activityMeasure, c("commit.count", "loc.count"))
 
 if(is.null(codefaceRangeDataList)) {
     stop("Raw data is needed for the activity analysis.")
@@ -582,11 +585,10 @@ if(length(codefaceRangeDataList) != length(developer.class.overview)) {
 
   res <- list()
   for (i in 1:length(codefaceRangeDataList)){
-    range.version <- get.version(codefaceRangeDataList[[i]])
 
     ## Check if an individual split for each version range is set
     if (class(split) == 'list') {
-      range.split <- split[[range.version]]
+      range.split <- split[[i]]
     } else {
       range.split <- split
     }
@@ -603,8 +605,8 @@ if(length(codefaceRangeDataList) != length(developer.class.overview)) {
       }
     }
 
-    res[[range.version]] <- get.developer.class.activity(codefaceRangeDataList[[i]],
-                                                         FUN,
+    res[[i]] <- get.developer.class.activity(codefaceRangeDataList[[i]],
+                                                         developer.class = developer.class.overview[[i]],
                                                          activityMeasure=activityMeasure,
                                                          split=range.split,
                                                          additionalCores=additional.core)
