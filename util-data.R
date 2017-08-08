@@ -517,9 +517,17 @@ ProjectData = R6::R6Class("ProjectData",
 
 
         get.issue2author = function() {
+            logging::loginfo("Getting issue--author data")
+
+            mylist = get.key.to.value.from.df(self$get.issues(), "id", "author.name")
+
+            return(mylist)
+        },
+
+        get.author2issue = function() {
             logging::loginfo("Getting author--issue data")
 
-            mylist = get.key.to.value.from.df(self$get.issues(), "issue.id", "author.name")
+            mylist = get.key.to.value.from.df(self$get.issues(), "author.name", "id")
 
             return(mylist)
         },

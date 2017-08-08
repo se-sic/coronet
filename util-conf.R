@@ -50,7 +50,7 @@ NetworkConf = R6::R6Class("NetworkConf",
         #Variables with default values
         #Values can be changed using update.values method
         author.relation = list(value = "mail",
-                               type = "character"),
+                               type = "character"), # mail, cochange, issue
         author.directed = list(value = FALSE,
                                type = "logical"),
         author.all.authors = list(value = FALSE,
