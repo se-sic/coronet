@@ -265,6 +265,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 relation,
                 cochange = private$get.author.network.cochange(),
                 mail = private$get.author.network.mail(),
+                issue = private$get.author.network.issue(),
                 stop(sprintf("The author relation '%s' does not exist.", relation))
             )
 
@@ -344,6 +345,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(u)
         },
 
+        get.bipartite.issue.network = function() {
+            authors.to.issues = private$proj.data$get.author2issue()
+        },
+
         #' Get all networks as list.
         #' Build unification to avoid null-pointers.
         #'
@@ -418,6 +423,58 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Union of networks ####
 ##
+
+combin.networks.generic = function(net1, net2, net1.to.net2, network.conf, temp) {
+    vertices.net1 = igraph::get.vertex.attribute(net1, "name")
+    vertices.net2 = igraph::get.vertex.attribute(net2, "name")
+
+    ## check emptiness of networks
+    if (length(vertices.net1) == 0) {
+        logging::logwarn("net1 is empty.")
+    }
+    if (length(vertices.net2) == 0) {
+        logging::logwarn("net2 is empty.")
+    }
+
+    ## combine networks
+    u = igraph::disjoint_union(net1, net2)
+
+    u = add.edges.for.bip.relation(u, net1.to.net2, network.conf = network.conf, temp.vertex = temp)
+}
+
+## helper function to add dependencies from dev--art mapping to the bipartite network
+## TODO change name of temp.vertex
+add.edges.for.bip.relation = function(net, net1.to.net2, network.conf, temp.vertex) {
+
+    ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
+    vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
+        a = a.df[[temp.vertex]]
+        new.edges = lapply(a, function(vert) {
+            igraph::V(net)[d, vert] # get two vertices from source network:  c(developer, artifact)
+        })
+        return(new.edges)
+    }, names(net1.to.net2), net1.to.net2)
+
+    ## get extra edge attributes
+    extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
+        cols.which = network.conf$get.variable("edge.attributes") %in% colnames(a.df)
+        return(a.df[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE])
+    })
+    extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
+    extra.edge.attributes.df["weight"] = 1 # add weight
+
+    extra.edge.attributes = as.list(extra.edge.attributes.df)
+
+    ## set edge type
+    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
+
+    ## add the vertex sequences as edges to the network
+    new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+
+    return(new.net)
+
+}
+
 
 #' Combine networks to a bipartite network.
 #'
