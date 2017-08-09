@@ -13,9 +13,9 @@
 
 ### LIBRARIES
 
-library(sqldf)
-library(igraph)
-library(markovchain)
+requireNamespace("sqldf")
+requireNamespace("igraph")
+requireNamespace("markovchain")
 
 
 ### THRESHOLDS
@@ -139,7 +139,7 @@ get.author.loc.count = function(codeface.range.data) {
                                 columns=c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
 
   ## Execute a query to get the changed lines per author
-  res = sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
+  res = sqldf::sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
                from `commits.df` group by `author.name` order by `loc` desc")
 
   return(res)
@@ -153,7 +153,7 @@ get.author.commit.count = function(codeface.range.data) {
   commits.df = get.commit.data(codeface.range.data)[[1]]
 
   ## Execute a query to get the commit count per author
-  res = sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
+  res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
 
   return(res)
 }
@@ -201,7 +201,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
   commits.df = commits.df[cut.columns]
 
   ## Group by hash to get a line per commit
-  commits.df = sqldf("select * from `commits.df` group by `hash`")
+  commits.df = sqldf::sqldf("select * from `commits.df` group by `hash`")
 
   ## Remove hash column if not wanted as it now contains nonsensical data
   if (!("hash" %in% columns)) {
@@ -653,7 +653,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
   commits.dev.list = list()
   for (i in 1:length(commits.data)){
     commits.df = commits.data[[i]]
-    commits.dev.list[[names(commits.data)[i]]] = sqldf(commits.query)
+    commits.dev.list[[names(commits.data)[i]]] = sqldf::sqldf(commits.query)
 
     ## Classify authors in splitted range according to the overall classification
     core.test = commits.dev.list[[names(commits.data)[i]]]$author.name %in% author.core
@@ -821,9 +821,9 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
     j = 1
     while (j <= saturation) {
       if ((i-j) > 0) {
-        devs.old = devs.old %u% devs[[i-j]]
-        devs.core.old = devs.core.old %u% devs.core[[i-j]]
-        devs.peripheral.old = devs.peripheral.old %u% devs.peripheral[[i-j]]
+        devs.old = igraph::union(devs.old, devs[[i-j]])
+        devs.core.old = igraph::union(devs.core.old, devs.core[[i-j]])
+        devs.peripheral.old = igraph::union(devs.peripheral.old, devs.peripheral[[i-j]])
       }
       j = j + 1
     }
@@ -889,9 +889,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
     j = 1
     while (j <= saturation) {
       if ((i-j) > 0) {
-        devs.prev = devs.prev %u% devs[[i-j]]
-        devs.core.prev = devs.core.prev %u% devs.core[[i-j]]
-        devs.peripheral.prev = devs.peripheral.prev %u% devs.peripheral[[i-j]]
+        devs.prev = igraph::union(devs.prev, devs[[i-j]])
+        devs.core.prev = igraph::union(devs.core.prev, devs.core[[i-j]])
+        devs.peripheral.prev = igraph::union(devs.peripheral.prev, devs.peripheral[[i-j]])
       }
       j = j + 1
     }
@@ -902,9 +902,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
     devs.peripheral.current = devs.peripheral[[i]]
 
     ## Find the union of the devs which are active in the current period and in the prev periods
-    devs.union = devs.current %u% devs.prev
-    devs.core.union = devs.core.current %u% devs.core.prev
-    devs.peripheral.union = devs.peripheral.current %u% devs.peripheral.prev
+    devs.union = igraph::union(devs.current, devs.prev)
+    devs.core.union = igraph::union(devs.core.current, devs.core.prev)
+    devs.peripheral.union = igraph::union(devs.peripheral.current, devs.peripheral.prev)
 
     ## Find the devs which are only active in the current range but not in the previous ones
     devs.new = sum(!(devs.current %in% devs.prev))
@@ -925,7 +925,3 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
 
   return(turnover.overview)
 }
-
-## TODO where/how to deal with edge-less networks
-
-## TODO logging
