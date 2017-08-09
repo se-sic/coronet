@@ -36,8 +36,8 @@ LONGTERM.CORE.THRESHOLD <- 0.5
 ## Classify the developers of the specified version range into core and peripheral
 ## based on the classification metric indicated by "type".
 ##
-## For count-based network metrics, the raw data has to be given. For network-based metrics
-## the graph is preferred to the raw data in case both are given.
+## For count-based network metrics, the raw data has to be given. For network-based metrics,
+## the graph has to be given.
 get.developer.class.by.type = function(graph = NULL, data = NULL,
                                        type = c("networkDegree", "networkEigen", "commitCount", "locCount")){
     type = match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
@@ -47,8 +47,8 @@ get.developer.class.by.type = function(graph = NULL, data = NULL,
     }
 
     return(switch(type,
-                  "networkDegree" = get.developer.class.network.degree(graph = graph, codefaceRangeData = data),
-                  "networkEigen" = get.developer.class.network.eigen(graph = graph, codefaceRangeData = data),
+                  "networkDegree" = get.developer.class.network.degree(graph = graph),
+                  "networkEigen" = get.developer.class.network.eigen(graph = graph),
                   "commitCount" = get.developer.class.commit.count(codefaceRangeData = data),
                   "locCount"= get.developer.class.loc.count(codefaceRangeData = data)))
 }
@@ -58,14 +58,11 @@ get.developer.class.by.type = function(graph = NULL, data = NULL,
 ## Classify the developers of the specified version range into core and peripheral
 ## based on the degree centrality.
 ##
-## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.developer.class.network.degree <- function(graph=NULL, codefaceRangeData=NULL, resultLimit=NULL) {
+## This function takes an igraph object.
+get.developer.class.network.degree <- function(graph=NULL, resultLimit=NULL) {
 
-if(is.null(graph) && is.null(codefaceRangeData)){
-    stop("Either the raw data or a network has to be given.")
-}else if(is.null(graph)){
-  ## Get co-change developer network
-  graph <- codefaceRangeData$get.author.network()
+if(is.null(graph)){
+    stop("The graph has to be given for this analysis.")
 }
 
   ## Get node degrees for all developers
@@ -85,11 +82,8 @@ if(is.null(graph) && is.null(codefaceRangeData)){
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
 get.developer.class.network.eigen <- function(graph=NULL, codefaceRangeData=NULL, resultLimit=NULL) {
 
-    if(is.null(graph) && is.null(codefaceRangeData)){
-        stop("Either the raw data or a network has to be given.")
-    }else if(is.null(graph)){
-        ## Get co-change developer network
-        graph <- codefaceRangeData$get.author.network()
+    if(is.null(graph)) {
+        stop("The graph has to be given for this analysis.")
     }
 
   ## Get eigenvectors for all developers
@@ -409,36 +403,36 @@ get.recurring.authors <- function(developerClassOverview, class = c("both", "cor
 ## Classify the developers of all specified version ranges into core and peripheral
 ## based on the specified classification function.
 ##
-## The data can either be given as list of raw range data or as list of networks (only
-## for the network-based metrics). In case both are given, the raw data is used.
+## The data can either be given as list of raw range data (for the count-based metrics)
+## or as list of networks for the network-based metrics).
 get.developer.class.overview <- function(graphList = NULL, codefaceRangeDataList = NULL, type =
                                              c("networkDegree", "networkEigen", "commitCount", "locCount")) {
 
     type <- match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
 
-    if(is.null(graphList) && is.null(codefaceRangeDataList)){
-        stop("Either graph or raw data has to be given.")
-
-    }else if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")){
+    if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")) {
         stop("For the count-based metrics, the raw data has to be given.")
+    }else if(is.null(graphList) && (type == "networkDegree" || type == "networkEigen")) {
+        stop("For the network-based metrics, the network list has to be given.")
     }
 
-    if(!is.null(codefaceRangeDataList)){## raw data is preferred
-  res <- list()
-  for (i in 1:length(codefaceRangeDataList)) {
-    range.data <- codefaceRangeDataList[[i]]
+    res <- list()
+    if(!is.null(codefaceRangeDataList)) {
+        for (i in 1:length(codefaceRangeDataList)) {
+            range.data <- codefaceRangeDataList[[i]]
 
-    ## Get classification data of the current range
-    range.class <- get.developer.class.by.type(data = range.data, type = type)
-    res <- c(res, list(range.class))
-  }
+            ## Get classification data of the current range
+            range.class <-
+                get.developer.class.by.type(data = range.data, type = type)
+            res <- c(res, list(range.class))
+        }
     }else{## use graph list as data
-        res <- list()
         for (i in 1:length(graphList)) {
             range.graph <- graphList[[i]]
 
             ## Get classification data of the current range
-            range.class <- get.developer.class.by.type(graph = range.graph, type = type)
+            range.class <-
+                get.developer.class.by.type(graph = range.graph, type = type)
             res <- c(res, list(range.class))
         }
     }
