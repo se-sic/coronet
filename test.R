@@ -235,42 +235,42 @@ graphList = list(emptyGraph, graph, rangeData2$get.author.network())
 rangeList = list(emptyRangeData, rangeData, rangeData2)
 
 # test functions for single range
-developerClass = get.developer.class.by.type(graph = graph, type = "networkDegree")
-get.developer.class.by.type(graph = graph, type = "networkEigen")
-get.developer.class.by.type(data = rangeData, type = "commitCount")
-get.developer.class.by.type(data = rangeData, type = "locCount")
+authorClass = get.author.class.by.type(graph = graph, type = "networkDegree")
+get.author.class.by.type(graph = graph, type = "networkEigen")
+get.author.class.by.type(data = rangeData, type = "commitCount")
+get.author.class.by.type(data = rangeData, type = "locCount")
 
 # test functions for single range with "empty" range data (graph without edges)
-developerClassEmptyRange = get.developer.class.by.type(graph = emptyGraph, type = "networkDegree")
-get.developer.class.by.type(graph = emptyGraph, type = "networkEigen")
-get.developer.class.by.type(data = emptyRangeData, type = "commitCount")
-get.developer.class.by.type(data = emptyRangeData, type = "locCount")
+authorClassEmptyRange = get.author.class.by.type(graph = emptyGraph, type = "networkDegree")
+get.author.class.by.type(graph = emptyGraph, type = "networkEigen")
+get.author.class.by.type(data = emptyRangeData, type = "commitCount")
+get.author.class.by.type(data = emptyRangeData, type = "locCount")
 
 # test function for mutliple ranges (evolution)
-developerClassOverview = get.developer.class.overview(graphList = graphList, type = "networkDegree")
-get.developer.class.overview(graphList = graphList, type = "networkEigen")
-get.developer.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
-developerClassOverviewLOC = get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
+authorClassOverview = get.author.class.overview(graphList = graphList, type = "networkDegree")
+get.author.class.overview(graphList = graphList, type = "networkEigen")
+get.author.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
+authorClassOverviewLOC = get.author.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
 
-recurringAuthors = get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
-longtermCore = get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
+recurringAuthors = get.recurring.authors(authorClassOverview = authorClassOverview, class = "both")
+longtermCore = get.recurring.authors(authorClassOverview = authorClassOverview, class = "core")
 
-roleStability = get.role.stability(developerClassOverview = developerClassOverview)
+roleStability = get.role.stability(authorClassOverview = authorClassOverview)
 
-developerClassActivity = get.developer.class.activity(codefaceRangeData = rangeData, developer.class = developerClass,
+authorClassActivity = get.author.class.activity(codefaceRangeData = rangeData, author.class = authorClass,
                                                        activityMeasure = "commit.count")
-developerClassActivityEmpty = get.developer.class.activity(codefaceRangeData = emptyRangeData,
-                                                       developer.class = developerClassEmptyRange, activityMeasure = "loc.count")
+authorClassActivityEmpty = get.author.class.activity(codefaceRangeData = emptyRangeData,
+                                                       author.class = authorClassEmptyRange, activityMeasure = "loc.count")
 
-developerClassActivityOverview = get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
-                                                                        developer.class.overview = developerClassOverview,
+authorClassActivityOverview = get.author.class.activity.overview(codefaceRangeDataList = rangeList,
+                                                                        author.class.overview = authorClassOverview,
                                                                         activityMeasure = "commit.count")
-get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
-                                      developer.class.overview = developerClassOverview,
+get.author.class.activity.overview(codefaceRangeDataList = rangeList,
+                                      author.class.overview = authorClassOverview,
                                       activityMeasure = "commit.count", longterm.cores = "Erik Andersen")
 
-calculate.cohens.kappa(developerClassificationList = developerClassOverview,
-                       comparingDeveloperClassificationList = developerClassOverviewLOC)
+calculate.cohens.kappa(authorClassificationList = authorClassOverview,
+                       comparingAuthorClassificationList = authorClassOverviewLOC)
 
-get.class.turnover.overview(developerClassOverview = developerClassOverview)
-get.unstable.developers.overview(developerClassOverview = developerClassOverview, saturation = 2)
+get.class.turnover.overview(authorClassOverview = authorClassOverview)
+get.unstable.authors.overview(authorClassOverview = authorClassOverview, saturation = 2)
