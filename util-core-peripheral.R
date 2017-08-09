@@ -455,6 +455,7 @@ get.longterm.core.authors = function(author.class = NULL) {
     if(is.null(author.class)){
         logging::logerror("For the analysis of longterm-core authors, the author classification has to be given.")
         stop("The author classification has to be given.")
+    }
 
   ## Get a list with the occurence freq for each core author
   recurring.authors = get.recurring.authors(author.class, class = "core")
