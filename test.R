@@ -228,23 +228,27 @@ rangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.
 rangeData2 <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
 emptyRangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
 
+graph <- rangeData$get.author.network()
+emptyGraph <- emptyRangeData$get.author.network()
+
+graphList <- list(emptyGraph, graph, rangeData2$get.author.network())
 rangeList <- list(emptyRangeData, rangeData, rangeData2)
 
 # test functions for single range
-developerClass <- get.developer.class.by.type(data = rangeData, type = "networkDegree")
-get.developer.class.by.type(data = rangeData, type = "networkEigen")
+developerClass <- get.developer.class.by.type(graph = graph, type = "networkDegree")
+get.developer.class.by.type(graph = graph, type = "networkEigen")
 get.developer.class.by.type(data = rangeData, type = "commitCount")
 get.developer.class.by.type(data = rangeData, type = "locCount")
 
 # test functions for single range with "empty" range data (graph without edges)
-developerClassEmptyRange <- get.developer.class.by.type(data = emptyRangeData, type = "networkDegree")
-get.developer.class.by.type(data = emptyRangeData, type = "networkEigen")
+developerClassEmptyRange <- get.developer.class.by.type(graph = emptyGraph, type = "networkDegree")
+get.developer.class.by.type(graph = emptyGraph, type = "networkEigen")
 get.developer.class.by.type(data = emptyRangeData, type = "commitCount")
 get.developer.class.by.type(data = emptyRangeData, type = "locCount")
 
 # test function for mutliple ranges (evolution)
-developerClassOverview <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkDegree")
-get.developer.class.overview(codefaceRangeDataList = rangeList, type = "networkEigen")
+developerClassOverview <- get.developer.class.overview(graphList = graphList, type = "networkDegree")
+get.developer.class.overview(graphList = graphList, type = "networkEigen")
 get.developer.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
 developerClassOverviewLOC <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
 
