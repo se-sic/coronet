@@ -14,7 +14,7 @@ logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
 
-CF.DATA = "../networks/codeface-data" # path to codeface data
+CF.DATA = "path/to/codeface-data" # path to codeface data
 
 CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
