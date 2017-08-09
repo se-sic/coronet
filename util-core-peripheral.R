@@ -39,18 +39,18 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## For count-based network metrics, the raw data has to be given. For network-based metrics,
 ## the graph has to be given.
 get.author.class.by.type = function(graph = NULL, data = NULL,
-                                       type = c("networkDegree", "networkEigen", "commitCount", "locCount")){
-    type = match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
+                                       type = c("network.degree", "network.eigen", "commit.count", "loc.count")){
+    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
     if(is.null(graph) && is.null(data)){
         stop("Either graph or raw data needs to be given.")
     }
 
     return(switch(type,
-                  "networkDegree" = get.author.class.network.degree(graph = graph),
-                  "networkEigen" = get.author.class.network.eigen(graph = graph),
-                  "commitCount" = get.author.class.commit.count(codefaceRangeData = data),
-                  "locCount"= get.author.class.loc.count(codefaceRangeData = data)))
+                  "network.degree" = get.author.class.network.degree(graph = graph),
+                  "network.eigen" = get.author.class.network.eigen(graph = graph),
+                  "commit.count" = get.author.class.commit.count(codeface.range.data = data),
+                  "loc.count"= get.author.class.loc.count(codeface.range.data = data)))
 }
 
 ### network-metric-based classification
@@ -59,7 +59,7 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
 ## based on the degree centrality.
 ##
 ## This function takes an igraph object.
-get.author.class.network.degree = function(graph=NULL, resultLimit=NULL) {
+get.author.class.network.degree = function(graph=NULL, result.limit=NULL) {
 
 if(is.null(graph)){
     stop("The graph has to be given for this analysis.")
@@ -71,7 +71,7 @@ if(is.null(graph)){
                               centrality=as.vector(centrality.vec))
 
   ## Get the author classification based on the centrality
-  res = get.author.class(centrality.df, 'centrality', resultLimit=resultLimit)
+  res = get.author.class(centrality.df, 'centrality', result.limit=result.limit)
 
   return(res)
 }
@@ -80,7 +80,7 @@ if(is.null(graph)){
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(graph=NULL, codefaceRangeData=NULL, resultLimit=NULL) {
+get.author.class.network.eigen = function(graph=NULL, codeface.range.data=NULL, result.limit=NULL) {
 
     if(is.null(graph)) {
         stop("The graph has to be given for this analysis.")
@@ -97,7 +97,7 @@ get.author.class.network.eigen = function(graph=NULL, codefaceRangeData=NULL, re
                               centrality=as.vector(centrality.vec))
 
   ## Get the author classification based on the centrality
-  res = get.author.class(centrality.df, 'centrality', resultLimit=resultLimit)
+  res = get.author.class(centrality.df, 'centrality', result.limit=result.limit)
 
   return(res)
 }
@@ -106,36 +106,36 @@ get.author.class.network.eigen = function(graph=NULL, codefaceRangeData=NULL, re
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the number of commits made withing a version range.
-get.author.class.commit.count = function(codefaceRangeData, resultLimit=NULL, minValue=0) {
+get.author.class.commit.count = function(codeface.range.data, result.limit=NULL, min.value=0) {
 
   ## Get the commit counts per author
-  author.commit.count = get.author.commit.count(codefaceRangeData)
+  author.commit.count = get.author.commit.count(codeface.range.data)
 
   ## Get the author classification based on the commit counts
-  res = get.author.class(author.commit.count, 'freq', resultLimit=resultLimit, minValue=minValue)
+  res = get.author.class(author.commit.count, 'freq', result.limit=result.limit, min.value=min.value)
 
   return(res)
 }
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(codefaceRangeData, resultLimit=NULL, minValue=0) {
+get.author.class.loc.count = function(codeface.range.data, result.limit=NULL, min.value=0) {
 
   ## Get the changed lines (loc counts) per author
-  author.loc.count = get.author.loc.count(codefaceRangeData)
+  author.loc.count = get.author.loc.count(codeface.range.data)
 
   ## Get the author classification based on the loc counts
-  res = get.author.class(author.loc.count, 'loc', resultLimit=resultLimit, minValue=minValue)
+  res = get.author.class(author.loc.count, 'loc', result.limit=result.limit, min.value=min.value)
 
   return(res)
 }
 
 ## Get the changed lines per author of the specified version range
 ## as a data frame ordered by the changed lines.
-get.author.loc.count = function(codefaceRangeData) {
+get.author.loc.count = function(codeface.range.data) {
 
   ## Get commit data
-  commits.df = get.commit.data(codefaceRangeData,
+  commits.df = get.commit.data(codeface.range.data,
                                 columns=c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
 
   ## Execute a query to get the changed lines per author
@@ -147,10 +147,10 @@ get.author.loc.count = function(codefaceRangeData) {
 
 ## Get the commit count per author of the specified version range
 ## as a data frame ordered by the commit count.
-get.author.commit.count = function(codefaceRangeData) {
+get.author.commit.count = function(codeface.range.data) {
 
   ## Get commit data
-  commits.df = get.commit.data(codefaceRangeData)[[1]]
+  commits.df = get.commit.data(codeface.range.data)[[1]]
 
   ## Execute a query to get the commit count per author
   res = sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
@@ -160,20 +160,20 @@ get.author.commit.count = function(codefaceRangeData) {
 
 ## Get the loc count threshold of the specified version range
 ## on which a author can be classified as core.
-get.loc.count.threshold = function(codefaceRangeData) {
+get.loc.count.threshold = function(codeface.range.data) {
 
   ## Get the loc per author
-  author.loc.count = get.author.loc.count(codefaceRangeData)
+  author.loc.count = get.author.loc.count(codeface.range.data)
 
   return(get.threshold(author.loc.count$loc))
 }
 
 ## Get the commit count threshold  of the specified version range
 ## on which a author can be classified as core.
-get.commit.count.threshold = function(codefaceRangeData) {
+get.commit.count.threshold = function(codeface.range.data) {
 
   ## Get the commit counts per author
-  author.commit.count = get.author.commit.count(codefaceRangeData)
+  author.commit.count = get.author.commit.count(codeface.range.data)
 
   return(get.threshold(author.commit.count$freq))
 }
@@ -181,10 +181,10 @@ get.commit.count.threshold = function(codefaceRangeData) {
 ## Get the commit data with the specified columns for the specified version range as a data frame
 ## for each specified split range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector.
-get.commit.data = function(codefaceRangeData, columns=c("author.name", "author.email"), split=c()) {
+get.commit.data = function(codeface.range.data, columns=c("author.name", "author.email"), split=c()) {
 
   ## Get commit data
-  commits.df = codefaceRangeData$get.commits.raw()
+  commits.df = codeface.range.data$get.commits.raw()
 
   ## Make sure the hash is included in the cut columns vector for grouping
   cut.columns = columns
@@ -264,34 +264,34 @@ get.commit.data = function(codefaceRangeData, columns=c("author.name", "author.e
 ### utility functions
 
 ## Classify the specified set of authors into core and peripheral based on the data
-## of the specified data frame column name (calcBaseName). Only authors which have a higher
-## value than specified (minValue) are included in the result.
+## of the specified data frame column name (calc.base.name). Only authors which have a higher
+## value than specified (min.value) are included in the result.
 ## Core authors are those which are responsible for a given
 ## percentage of the work load with a default threshold set at 80% according
 ## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
 ##         the structural complexity introduced by core and peripheral
 ##         developers in free software projects.
-get.author.class = function(authorDataFrame, calcBaseName, resultLimit=NULL, minValue=0) {
+get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL, min.value=0) {
 
   ## Make sure the provided data is ordered correctly by the calculation base
-  author.data = authorDataFrame[rev(order(authorDataFrame[[calcBaseName]])),]
+  author.data = author.data.frame[rev(order(author.data.frame[[calc.base.name]])),]
 
   ## Remove rows with invalid calculation base values
-  author.data = author.data[!is.na(author.data[calcBaseName]),]
+  author.data = author.data[!is.na(author.data[calc.base.name]),]
 
   ## Get the threshold depending on all calculation base values
-  author.class.threshold = get.threshold(author.data[[calcBaseName]])
+  author.class.threshold = get.threshold(author.data[[calc.base.name]])
 
   ## Only include authors with the specified minimum of the calculation base value
-  author.data = author.data[author.data[[calcBaseName]] >= minValue, ]
+  author.data = author.data[author.data[[calc.base.name]] >= min.value, ]
 
   ## Check if the result shall be limited
-  if (!is.null(resultLimit)) {
-    author.data = head(author.data, resultLimit)
+  if (!is.null(result.limit)) {
+    author.data = head(author.data, result.limit)
   }
 
   ## Check which authors can be treated as core based on the calculation base values
-  core.test = cumsum(author.data[[calcBaseName]]) < author.class.threshold
+  core.test = cumsum(author.data[[calc.base.name]]) < author.class.threshold
 
   ## If we have not found a core author, the author with the highest calculation base value
   ## will be treated as core, to return at least one core author. The only exception is the
@@ -312,19 +312,19 @@ get.author.class = function(authorDataFrame, calcBaseName, resultLimit=NULL, min
 
 ## Get the threshold based on the specified integer data list
 ## on which a author can be classified as core.
-get.threshold = function(dataList) {
+get.threshold = function(data.list) {
 
   ## Calculate the sum of the provided data as base for the threshold calculation
-  data.threshold.base = sum(dataList)
+  data.threshold.base = sum(data.list)
 
   ## Check which authors can be treated as core based on the data
   data.threshold = round(CORE.THRESHOLD * data.threshold.base)
-  core.test = cumsum(dataList) < data.threshold
+  core.test = cumsum(data.list) < data.threshold
 
   # If we have not found a core dev, the author with the highest data value
   # marks the threshold
   if (!any(core.test)) {
-    data.threshold = max(dataList)
+    data.threshold = max(data.list)
   }
 
   return(data.threshold)
@@ -332,38 +332,38 @@ get.threshold = function(dataList) {
 
 ## Get a data frame with the authors and their occurence count in the specified class for
 ## the specified author classification list.
-get.recurring.authors = function(authorClassOverview, class = c("both", "core", "peripheral")) {
+get.recurring.authors = function(author.class.overview, class = c("both", "core", "peripheral")) {
     class = match.arg(class, c("both", "core", "peripheral"))
 
     authors = c()
     freq = c()
 
     ## Iterate over each version development range
-    for(i in 1:length(authorClassOverview)){
+    for(i in 1:length(author.class.overview)){
 
         ## skip range in case no classification is available
-        if(all(is.na(authorClassOverview[[i]]))){
+        if(all(is.na(author.class.overview[[i]]))){
             next
         }
 
         if (class == "both") {
 
             ## skip range in case no classification is available
-            if(nrow(authorClassOverview[[i]]$core) == 0
-               && nrow(authorClassOverview[[i]]$peripheral) == 0){
+            if(nrow(author.class.overview[[i]]$core) == 0
+               && nrow(author.class.overview[[i]]$peripheral) == 0){
                 next
             }
 
-            author.class.authors = c(authorClassOverview[[i]]$core$author.name,
-                                         authorClassOverview[[i]]$peripheral$author.name)
+            author.class.authors = c(author.class.overview[[i]]$core$author.name,
+                                         author.class.overview[[i]]$peripheral$author.name)
         } else {
 
             ## skip range in case no classification for the given class is available
-            if(nrow(authorClassOverview[[i]][[class]])==0){
+            if(nrow(author.class.overview[[i]][[class]])==0){
                 next
             }
 
-            author.class.authors = authorClassOverview[[i]][[class]]$author.name
+            author.class.authors = author.class.overview[[i]][[class]]$author.name
         }
 
         ## Iterate over each author in the specified class and increase his occurence count
@@ -405,21 +405,21 @@ get.recurring.authors = function(authorClassOverview, class = c("both", "core", 
 ##
 ## The data can either be given as list of raw range data (for the count-based metrics)
 ## or as list of networks for the network-based metrics).
-get.author.class.overview = function(graphList = NULL, codefaceRangeDataList = NULL, type =
-                                             c("networkDegree", "networkEigen", "commitCount", "locCount")) {
+get.author.class.overview = function(graph.list = NULL, codeface.range.data.list = NULL, type =
+                                             c("network.degree", "network.eigen", "commit.count", "loc.count")) {
 
-    type = match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
+    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
-    if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")) {
+    if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")) {
         stop("For the count-based metrics, the raw data has to be given.")
-    }else if(is.null(graphList) && (type == "networkDegree" || type == "networkEigen")) {
+    }else if(is.null(graph.list) && (type == "network.degree" || type == "network.eigen")) {
         stop("For the network-based metrics, the network list has to be given.")
     }
 
     res = list()
-    if(!is.null(codefaceRangeDataList)) {
-        for (i in 1:length(codefaceRangeDataList)) {
-            range.data = codefaceRangeDataList[[i]]
+    if(!is.null(codeface.range.data.list)) {
+        for (i in 1:length(codeface.range.data.list)) {
+            range.data = codeface.range.data.list[[i]]
 
             ## Get classification data of the current range
             range.class =
@@ -427,8 +427,8 @@ get.author.class.overview = function(graphList = NULL, codefaceRangeDataList = N
             res = c(res, list(range.class))
         }
     }else{## use graph list as data
-        for (i in 1:length(graphList)) {
-            range.graph = graphList[[i]]
+        for (i in 1:length(graph.list)) {
+            range.graph = graph.list[[i]]
 
             ## Get classification data of the current range
             range.class =
@@ -446,28 +446,28 @@ get.author.class.overview = function(graphList = NULL, codefaceRangeDataList = N
 ##
 ## The data can either be given as list of raw range data or as list of networks (only
 ## for the network-based metrics). In case both are given, the raw data is used.
-get.longterm.core.authors = function(graphList = NULL, codefaceRangeDataList = NULL, type =
-                                             c("networkDegree", "networkEigen", "commitCount", "locCount")) {
+get.longterm.core.authors = function(graph.list = NULL, codeface.range.data.list = NULL, type =
+                                             c("network.degree", "network.eigen", "commit.count", "loc.count")) {
 
-    type = match.arg(type, c("networkDegree", "networkEigen", "commitCount", "locCount"))
+    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
-    if(is.null(graphList) && is.null(codefaceRangeDataList)){
+    if(is.null(graph.list) && is.null(codeface.range.data.list)){
         stop("Either graph or raw data has to be given.")
 
-    }else if(is.null(codefaceRangeDataList) && (type == "commitCount" || type == "locCount")){
+    }else if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")){
         stop("For the count-based metrics, the raw data has to be given.")
     }
 
   ## Get the classifications for all ranges
-  author.class = get.author.class.overview(graphList = graphList,
-                                                  codefaceRangeDataList = codefaceRangeDataList,
+  author.class = get.author.class.overview(graph.list = graph.list,
+                                                  codeface.range.data.list = codeface.range.data.list,
                                                   type = type)
 
   ## Get a list with the occurence freq for each core author
   recurring.authors = get.recurring.authors(author.class, class = "core")
 
   ## Calculate the num of occurences at which a dev gets stated as longterm core
-  longterm.threshold = length(codefaceRangeDataList) * LONGTERM.CORE.THRESHOLD
+  longterm.threshold = length(codeface.range.data.list) * LONGTERM.CORE.THRESHOLD
 
   ## Get the longterm core authors
   return(recurring.authors[recurring.authors$freq >= longterm.threshold,]$author.name)
@@ -475,7 +475,7 @@ get.longterm.core.authors = function(graphList = NULL, codefaceRangeDataList = N
 
 ## Get a markov chain object representing the role stability of the
 ## specified classification overview.
-get.role.stability = function(authorClassOverview) {
+get.role.stability = function(author.class.overview) {
   core.core = 0 # core in prev version and core in current version
   core.peripheral = 0 # core in prev version and peripheral in current version
   core.absent = 0 # core in prev version and absent in current version
@@ -489,17 +489,17 @@ get.role.stability = function(authorClassOverview) {
   dev.current.absent = c()
 
   ## Run through each version range author classification
-  for (i in 2:length(authorClassOverview)) {
+  for (i in 2:length(author.class.overview)) {
 
     ## Get core and peripheral devs from previous version
-    class.prev = authorClassOverview[[i-1]]
+    class.prev = author.class.overview[[i-1]]
     dev.prev.core = class.prev$core$author.name
     dev.prev.peripheral = class.prev$peripheral$author.name
     dev.prev = c(dev.prev.core, dev.prev.peripheral)
     dev.prev.absent = dev.current.absent
 
     ## Get core and peripheral devs from current version
-    class.current = authorClassOverview[[i]]
+    class.current = author.class.overview[[i]]
     dev.current.core = class.current$core$author.name
     dev.current.peripheral = class.current$peripheral$author.name
     dev.current = c(dev.current.core, dev.current.peripheral)
@@ -557,18 +557,18 @@ get.role.stability = function(authorClassOverview) {
 ## for each specified split range and for each version development range.
 ##
 ## An individual split range can be set for each version as a list of vectors with the version name as the key.
-## An integer value can be set as 'slidingWindowCore' to specify, that the core authors of the last
+## An integer value can be set as 'sliding.window.core' to specify, that the core authors of the last
 ## version ranges (according to the value) shall be included in the core author set of the current range.
-get.author.class.activity.overview = function(codefaceRangeDataList = NULL,
+get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                                   author.class.overview = NULL,
                                                   split=c(),
-                                                  slidingWindowCore=NULL,
+                                                  sliding.window.core=NULL,
                                                   longterm.cores = c(),
-                                                  activityMeasure = c("commit.count", "loc.count")) {
+                                                  activity.measure = c("commit.count", "loc.count")) {
 
-activityMeasure = match.arg(activityMeasure, c("commit.count", "loc.count"))
+activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
-if(is.null(codefaceRangeDataList)) {
+if(is.null(codeface.range.data.list)) {
     stop("Raw data is needed for the activity analysis.")
 }
 
@@ -576,12 +576,12 @@ if(is.null(author.class.overview)) {
     stop("Author classification has to be given.")
 }
 
-if(length(codefaceRangeDataList) != length(author.class.overview)) {
+if(length(codeface.range.data.list) != length(author.class.overview)) {
     stop("Raw data and author classification have to match.")
 }
 
   res = list()
-  for (i in 1:length(codefaceRangeDataList)){
+  for (i in 1:length(codeface.range.data.list)){
 
     ## Check if an individual split for each version range is set
     if (class(split) == 'list') {
@@ -594,19 +594,19 @@ if(length(codefaceRangeDataList) != length(author.class.overview)) {
 
     ## Add the additional core authors according to the specified sliding window length,
     ## if one is specified
-    if (!is.null(slidingWindowCore) && i > 1) {
-      sliding.window.start = ifelse(i - slidingWindowCore > 1, i - slidingWindowCore, 1)
+    if (!is.null(sliding.window.core) && i > 1) {
+      sliding.window.start = ifelse(i - sliding.window.core > 1, i - sliding.window.core, 1)
 
       for (j in sliding.window.start:(i-1)) {
         additional.core = c(additional.core, author.class.overview[[j]]$core$author.name)
       }
     }
 
-    res[[i]] = get.author.class.activity(codefaceRangeDataList[[i]],
+    res[[i]] = get.author.class.activity(codeface.range.data.list[[i]],
                                                          author.class = author.class.overview[[i]],
-                                                         activityMeasure=activityMeasure,
+                                                         activity.measure=activity.measure,
                                                          split=range.split,
-                                                         additionalCores=additional.core)
+                                                         additional.cores=additional.core)
   }
 
   return(res)
@@ -617,15 +617,15 @@ if(length(codefaceRangeDataList) != length(author.class.overview)) {
 ## A split interval can be set by defining the number of weeks for each requested range as a vector,
 ## e.g., c(1,1,1) for a three-week range that shall be treated as three one-week ranges.
 ## A vector of addition core authors can be specified which will always be set as core in each range.
-get.author.class.activity = function(codefaceRangeData = NULL,
+get.author.class.activity = function(codeface.range.data = NULL,
                                          author.class = NULL,
-                                         activityMeasure = c("commit.count", "loc.count"),
+                                         activity.measure = c("commit.count", "loc.count"),
                                          split=c(),
-                                         additionalCores=NULL) {
+                                         additional.cores=NULL) {
 
-    activityMeasure = match.arg(activityMeasure, c("commit.count", "loc.count"))
+    activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
-    if(is.null(codefaceRangeData)){
+    if(is.null(codeface.range.data)){
         stop("Raw data is needed for the activity analysis.")
     }
     if(is.null(author.class)){
@@ -638,10 +638,10 @@ get.author.class.activity = function(codefaceRangeData = NULL,
       return(NA)
   }
 
-  author.core = unique(c(author.class$core$author.name, additionalCores))# TODO works with 0 rows?
+  author.core = unique(c(author.class$core$author.name, additional.cores))
 
   ## Get the splitted commit data with all necessary columns
-  commits.data = get.commit.data(codefaceRangeData,
+  commits.data = get.commit.data(codeface.range.data,
                                   columns=c("author.name", "added.lines", "deleted.lines"),
                                   split=split)
 
@@ -687,8 +687,8 @@ get.author.class.activity = function(codefaceRangeData = NULL,
     res.peripheral[i] = nrow(commits.dev$peripheral)
     res.devs[i] = res.core[i] + res.peripheral[i]
 
-    res.activity.count.core[i] = sum(commits.dev$core[[activityMeasure]])
-    res.activity.count.peripheral[i] = sum(commits.dev$peripheral[[activityMeasure]])
+    res.activity.count.core[i] = sum(commits.dev$core[[activity.measure]])
+    res.activity.count.peripheral[i] = sum(commits.dev$peripheral[[activity.measure]])
     res.activity.count[i] = res.activity.count.core[i] + res.activity.count.peripheral[i]
 
     ## Get average activity count
@@ -698,8 +698,8 @@ get.author.class.activity = function(codefaceRangeData = NULL,
     res.activity.count.avg.peripheral[i] = res.activity.count.peripheral[i] / num.peripheral.dev
 
     ## Get median activity count
-    activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activityMeasure]]),][[activityMeasure]]
-    activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activityMeasure]]),][[activityMeasure]]
+    activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activity.measure]]),][[activity.measure]]
+    activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activity.measure]]),][[activity.measure]]
     res.activity.count.med.core[i] = ifelse(length(activity.count.core.ordered) > 0, median(activity.count.core.ordered), 0)
     res.activity.count.med.peripheral[i] = ifelse(length(activity.count.peripheral.ordered) > 0, median(activity.count.peripheral.ordered), 0)
 
@@ -735,16 +735,16 @@ get.author.class.activity = function(codefaceRangeData = NULL,
 }
 
 ## Calculates the cohen's kappa to measure the agreement of the specified author classifications.
-calculate.cohens.kappa = function(authorClassificationList, comparingAuthorClassificationList) {
+calculate.cohens.kappa = function(author.classification.list, other.author.classification.list) {
   num.core.core = 0 # core in first, core in second
   num.core.peripheral = 0 # core in first, peripheral in second
   num.peripheral.core = 0 # peripheral in first, core in second
   num.peripheral.peripheral = 0 # peripheral in first, peripheral in second
 
   ## Calculate the sums of equal classifications
-  for(i in 1:length(authorClassificationList)){
-    author.class = authorClassificationList[[i]]
-    author.class.compare = comparingAuthorClassificationList[[i]]
+  for(i in 1:length(author.classification.list)){
+    author.class = author.classification.list[[i]]
+    author.class.compare = other.author.classification.list[[i]]
 
     num.core.core = num.core.core +
       sum(author.class$core$author.name %in% author.class.compare$core$author.name == TRUE)
@@ -773,13 +773,13 @@ calculate.cohens.kappa = function(authorClassificationList, comparingAuthorClass
 ## Get the author turnover values measured as the proportion of authors in the
 ## specified version range classes which were not active, i.e. do not exist,
 ## in the previous version range classes (saturation).
-get.class.turnover.overview = function(authorClassOverview, saturation = 1){
+get.class.turnover.overview = function(author.class.overview, saturation = 1){
 
 
-    if(!is.null(names(authorClassOverview))){
-        versions = names(authorClassOverview)
+    if(!is.null(names(author.class.overview))){
+        versions = names(author.class.overview)
     }else{
-        versions = 1:length(authorClassOverview)
+        versions = 1:length(author.class.overview)
     }
 
   ## Set up the data.frame for the analysis results
@@ -795,13 +795,13 @@ get.class.turnover.overview = function(authorClassOverview, saturation = 1){
   )
 
   ## Get all active authors for each version range in the different classes (and both)
-  devs = sapply(authorClassOverview, function(author.class) {
+  devs = sapply(author.class.overview, function(author.class) {
     return(c(author.class$core$author.name, author.class$peripheral$author.name))
   })
-  devs.core = sapply(authorClassOverview, function(author.class) {
+  devs.core = sapply(author.class.overview, function(author.class) {
     return(author.class$core$author.name)
   })
-  devs.peripheral = sapply(authorClassOverview, function(author.class) {
+  devs.peripheral = sapply(author.class.overview, function(author.class) {
     return(author.class$peripheral$author.name)
   })
 
@@ -813,7 +813,7 @@ get.class.turnover.overview = function(authorClassOverview, saturation = 1){
   turnover.overview$dev.count[1] = length(devs.new)
   turnover.overview$dev.count.core[1] = length(devs.core.new)
   turnover.overview$dev.count.peripheral[1] = length(devs.peripheral.new)
-  for (i in 2:length(authorClassOverview)){
+  for (i in 2:length(author.class.overview)){
     devs.old = devs.new
     devs.core.old = devs.core.new
     devs.peripheral.old = devs.peripheral.new
@@ -850,12 +850,12 @@ get.class.turnover.overview = function(authorClassOverview, saturation = 1){
 ## the authors which are either only active in the current version range but not in the previous ones (new) or
 ## which are only active in the previous ranges (as specified in saturation) but not in the current one (gone) in
 ## relation to all authors of the current and the previous ranges.
-get.unstable.authors.overview = function(authorClassOverview, saturation = 1){
+get.unstable.authors.overview = function(author.class.overview, saturation = 1){
 
-    if(!is.null(names(authorClassOverview))){
-        versions = names(authorClassOverview)
+    if(!is.null(names(author.class.overview))){
+        versions = names(author.class.overview)
     }else{
-        versions = 1:length(authorClassOverview)
+        versions = 1:length(author.class.overview)
     }
 
   ## Set up the data.frame for the analysis results
@@ -868,20 +868,20 @@ get.unstable.authors.overview = function(authorClassOverview, saturation = 1){
   )
 
   ## Get all active authors for each version range in the different classes (and both)
-  devs = sapply(authorClassOverview, function(author.class) {
+  devs = sapply(author.class.overview, function(author.class) {
     return(c(author.class$core$author.name, author.class$peripheral$author.name))
   })
-  devs.core = sapply(authorClassOverview, function(author.class) {
+  devs.core = sapply(author.class.overview, function(author.class) {
     return(author.class$core$author.name)
   })
-  devs.peripheral = sapply(authorClassOverview, function(author.class) {
+  devs.peripheral = sapply(author.class.overview, function(author.class) {
     return(author.class$peripheral$author.name)
   })
 
   devs.current = devs[[1]]
   devs.core.current = devs.core[[1]]
   devs.peripheral.current = devs.peripheral[[1]]
-  for (i in 2:length(authorClassOverview)){
+  for (i in 2:length(author.class.overview)){
     devs.prev = devs.current
     devs.core.prev = devs.core.current
     devs.peripheral.prev = devs.peripheral.current
