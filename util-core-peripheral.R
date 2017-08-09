@@ -13,10 +13,10 @@
 
 ### LIBRARIES
 
-requireNamespace("sqldf")
-requireNamespace("igraph")
-requireNamespace("markovchain")
-
+requireNamespace("sqldf")# for SQL-selections on data.frames
+requireNamespace("igraph")# for calculation of graph metrics (degree, eigen-centrality)
+requireNamespace("markovchain")# for role stability analysis
+requireNamespace("logging")# for logging
 
 ### THRESHOLDS
 
@@ -39,10 +39,11 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## For count-based network metrics, the raw data has to be given. For network-based metrics,
 ## the graph has to be given.
 get.author.class.by.type = function(graph = NULL, data = NULL,
-                                       type = c("network.degree", "network.eigen", "commit.count", "loc.count")){
+                                       type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
     if(is.null(graph) && is.null(data)){
+        logging::logerror("Neither graph nor raw data were given for get.author.class.by.type.")
         stop("Either graph or raw data needs to be given.")
     }
 
@@ -62,6 +63,7 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
 get.author.class.network.degree = function(graph=NULL, result.limit=NULL) {
 
 if(is.null(graph)){
+    logging::logerror("For the network-based analysis, the graph is needed.")
     stop("The graph has to be given for this analysis.")
 }
 
@@ -83,6 +85,7 @@ if(is.null(graph)){
 get.author.class.network.eigen = function(graph=NULL, codeface.range.data=NULL, result.limit=NULL) {
 
     if(is.null(graph)) {
+        logging::logerror("For the network-based eigen-centrality analysis, the graph has to be given.")
         stop("The graph has to be given for this analysis.")
     }
 
@@ -297,6 +300,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
   ## will be treated as core, to return at least one core author. The only exception is the
   ## case that no activity/collaboration occured. Then, all authors are classified as peripheral.
   if(author.class.threshold==0){
+      logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
       core.test = rep(FALSE, length(core.test))
   } else if (!any(core.test)) {
     core.test = c(TRUE, rep(FALSE, length(core.test) - 1))
@@ -411,8 +415,11 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
     if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")) {
+        logging::logerror("For count-based metric evolution, a list of codeface range-data objects is needed.")
         stop("For the count-based metrics, the raw data has to be given.")
+
     }else if(is.null(graph.list) && (type == "network.degree" || type == "network.eigen")) {
+        logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
         stop("For the network-based metrics, the network list has to be given.")
     }
 
@@ -441,27 +448,13 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
 }
 
 ## Retrieves all authors which will be classified as core by the specified
-## classification function "type" in more than a certain number of version ranges
+## classification in more than a certain number of version ranges
 ## -> see: 'LONGTERM.CORE.THRESHOLD'.
-##
-## The data can either be given as list of raw range data or as list of networks (only
-## for the network-based metrics). In case both are given, the raw data is used.
-get.longterm.core.authors = function(graph.list = NULL, codeface.range.data.list = NULL, type =
-                                             c("network.degree", "network.eigen", "commit.count", "loc.count")) {
+get.longterm.core.authors = function(author.class = NULL) {
 
-    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
-
-    if(is.null(graph.list) && is.null(codeface.range.data.list)){
-        stop("Either graph or raw data has to be given.")
-
-    }else if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")){
-        stop("For the count-based metrics, the raw data has to be given.")
-    }
-
-  ## Get the classifications for all ranges
-  author.class = get.author.class.overview(graph.list = graph.list,
-                                                  codeface.range.data.list = codeface.range.data.list,
-                                                  type = type)
+    if(is.null(author.class)){
+        logging::logerror("For the analysis of longterm-core authors, the author classification has to be given.")
+        stop("The author classification has to be given.")
 
   ## Get a list with the occurence freq for each core author
   recurring.authors = get.recurring.authors(author.class, class = "core")
@@ -569,14 +562,17 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
 activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
 if(is.null(codeface.range.data.list)) {
+    logging::logerror("A list of codeface range-data objects is needed for the activity analysis.")
     stop("Raw data is needed for the activity analysis.")
 }
 
 if(is.null(author.class.overview)) {
+    logging::logerror("An author.class.overview has to be given for the activity overview analysis.")
     stop("Author classification has to be given.")
 }
 
 if(length(codeface.range.data.list) != length(author.class.overview)) {
+    logging::logerror("The raw data and the author classification use a different number of ranges.")
     stop("Raw data and author classification have to match.")
 }
 
@@ -626,9 +622,11 @@ get.author.class.activity = function(codeface.range.data = NULL,
     activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
     if(is.null(codeface.range.data)){
+        logging::logerror("A codeface range-data object is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
     if(is.null(author.class)){
+        logging::logerror("An author classification is needed for the activity analysis.")
         stop("Author classification has to be given by the user")
     }
 
