@@ -541,9 +541,10 @@ get.role.stability <- function(developerClassOverview) {
 
   ## Calculate the percentage of the absent developer transitions
   absent.transition.sum <- sum(absent.core, absent.peripheral, absent.absent)
-  absent.core.rel <- absent.core / absent.transition.sum
-  absent.peripheral.rel <- absent.peripheral / absent.transition.sum
-  absent.absent.rel <- absent.absent / absent.transition.sum
+  absent.core.rel <- ifelse(absent.transition.sum > 0, absent.core / absent.transition.sum, 0)
+  absent.peripheral.rel <- ifelse(absent.transition.sum > 0, absent.peripheral / absent.transition.sum, 0)
+  ## set to 1 because if all absent authors remain absent if there are never transition from absent-state
+  absent.absent.rel <- ifelse(absent.transition.sum > 0, absent.absent / absent.transition.sum, 1)
 
   ## Build the markov chain
   roles <- c("Core", "Peripheral", "Absent")
@@ -551,6 +552,7 @@ get.role.stability <- function(developerClassOverview) {
                                   peripheral.core.rel, peripheral.peripheral.rel, peripheral.absent.rel,
                                   absent.core.rel, absent.peripheral.rel, absent.absent.rel),
                          byrow = TRUE, nrow = 3, dimnames = list(roles, roles))
+
   roles.stability <- new("markovchain", states = roles, byrow = TRUE,
                          transitionMatrix = roles.matrix, name = "Role Stability")
 

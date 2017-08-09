@@ -251,7 +251,7 @@ developerClassOverviewLOC <- get.developer.class.overview(codefaceRangeDataList 
 recurringAuthors <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
 longtermCore <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
 
-## TODO roleStability <- get.role.stability(developerClassOverview = developerClassOverview)
+roleStability <- get.role.stability(developerClassOverview = developerClassOverview)
 
 developerClassActivity <- get.developer.class.activity(codefaceRangeData = rangeData, developer.class = developerClass,
                                                        activityMeasure = "commit.count")
