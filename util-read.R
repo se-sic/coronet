@@ -255,7 +255,7 @@ read.issues = function(data.path) {
         return(issue.data)
     }
 
-    colnames(issue.data) = c("id", "issue.state", "creation.date", "closing.date", "is.pull.request", "author.id",
+    colnames(issue.data) = c("issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "author.id",
                              "author.name", "author.mail", "event.date", "event.name")
 
     logging::logdebug("read.issues: finished")

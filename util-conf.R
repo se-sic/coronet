@@ -64,7 +64,8 @@ NetworkConf = R6::R6Class("NetworkConf",
         edge.attributes = list(value = c(
                                    "date", # general
                                    "message.id", "thread", # mail data
-                                   "hash", "file", "artifact.type", "artifact" # commit data
+                                   "hash", "file", "artifact.type", "artifact", # commit data
+                                   "issue.id", "event.name"
                                ),
                                type = "character"),
         simplify = list(value = FALSE,

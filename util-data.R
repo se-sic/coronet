@@ -418,6 +418,20 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$artifacts)
         },
 
+        get.issue.ids = function() {
+            logging::loginfo("Getting event data.")
+            ## if artifacts are not read already, do this
+            if (is.null(private$issues)) {
+                self$get.issues()
+
+                ## get artifacts (empty list if no commits exist)
+            }
+            ids = unique(private$issues[["issue.id"]])
+
+            return(ids)
+
+        },
+
         ## get the list of issues
         get.issues = function() {
             logging::loginfo("Getting issue data")
@@ -519,7 +533,7 @@ ProjectData = R6::R6Class("ProjectData",
         get.issue2author = function() {
             logging::loginfo("Getting issue--author data")
 
-            mylist = get.key.to.value.from.df(self$get.issues(), "id", "author.name")
+            mylist = get.key.to.value.from.df(self$get.issues(), "issue.id", "author.name")
 
             return(mylist)
         },
@@ -527,7 +541,7 @@ ProjectData = R6::R6Class("ProjectData",
         get.author2issue = function() {
             logging::loginfo("Getting author--issue data")
 
-            mylist = get.key.to.value.from.df(self$get.issues(), "author.name", "id")
+            mylist = get.key.to.value.from.df(self$get.issues(), "author.name", "issue.id")
 
             return(mylist)
         },
