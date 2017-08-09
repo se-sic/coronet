@@ -268,13 +268,9 @@ developerClassActivityOverview <- get.developer.class.activity.overview(codeface
 get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
                                       developer.class.overview = developerClassOverview,
                                       activityMeasure = "commit.count", longterm.cores = "Erik Andersen")
-##get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
-##                                      developer.class.overview = developerClassOverview,
-##                                      activityMeasure = "loc.count", split = c(1))
 
 calculate.cohens.kappa(developerClassificationList = developerClassOverview,
                        comparingDeveloperClassificationList = developerClassOverviewLOC)
 
 get.class.turnover.overview(developerClassOverview = developerClassOverview)
 get.unstable.developers.overview(developerClassOverview = developerClassOverview, saturation = 2)
-

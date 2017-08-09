@@ -555,6 +555,7 @@ get.role.stability <- function(developerClassOverview) {
 
 ## Get the number/activity of core and peripheral developers based on the specified classification function
 ## for each specified split range and for each version development range.
+##
 ## An individual split range can be set for each version as a list of vectors with the version name as the key.
 ## An integer value can be set as 'slidingWindowCore' to specify, that the core developers of the last
 ## version ranges (according to the value) shall be included in the core developer set of the current range.
@@ -613,7 +614,8 @@ if(length(codefaceRangeDataList) != length(developer.class.overview)) {
 
 ## Get the number/activity of core and peripheral developers based on the specified classification function
 ## for each split range of the specified version development range.
-## A split interval can be set by defining the number of weeks for each requested range as a vector.
+## A split interval can be set by defining the number of weeks for each requested range as a vector,
+## e.g., c(1,1,1) for a three-week range that shall be treated as three one-week ranges.
 ## A vector of addition core developers can be specified which will always be set as core in each range.
 get.developer.class.activity <- function(codefaceRangeData = NULL,
                                          developer.class = NULL,
@@ -629,7 +631,6 @@ get.developer.class.activity <- function(codefaceRangeData = NULL,
     if(is.null(developer.class)){
         stop("Developer classification has to be given by the user")
     }
-
 
   ## Return NA in case no classification information is available
   if(all(is.na(developer.class))
