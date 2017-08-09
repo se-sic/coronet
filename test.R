@@ -81,8 +81,8 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
-# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+y = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+# y = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
 # y$get.commits.filtered.empty()
@@ -224,45 +224,45 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 
 ## CORE/PERIPHERAL CLASSIFICATION
 
-rangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[10]])
-rangeData2 <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
-emptyRangeData <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
+rangeData = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[10]])
+rangeData2 = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
+emptyRangeData = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
 
-graph <- rangeData$get.author.network()
-emptyGraph <- emptyRangeData$get.author.network()
+graph = rangeData$get.author.network()
+emptyGraph = emptyRangeData$get.author.network()
 
-graphList <- list(emptyGraph, graph, rangeData2$get.author.network())
-rangeList <- list(emptyRangeData, rangeData, rangeData2)
+graphList = list(emptyGraph, graph, rangeData2$get.author.network())
+rangeList = list(emptyRangeData, rangeData, rangeData2)
 
 # test functions for single range
-developerClass <- get.developer.class.by.type(graph = graph, type = "networkDegree")
+developerClass = get.developer.class.by.type(graph = graph, type = "networkDegree")
 get.developer.class.by.type(graph = graph, type = "networkEigen")
 get.developer.class.by.type(data = rangeData, type = "commitCount")
 get.developer.class.by.type(data = rangeData, type = "locCount")
 
 # test functions for single range with "empty" range data (graph without edges)
-developerClassEmptyRange <- get.developer.class.by.type(graph = emptyGraph, type = "networkDegree")
+developerClassEmptyRange = get.developer.class.by.type(graph = emptyGraph, type = "networkDegree")
 get.developer.class.by.type(graph = emptyGraph, type = "networkEigen")
 get.developer.class.by.type(data = emptyRangeData, type = "commitCount")
 get.developer.class.by.type(data = emptyRangeData, type = "locCount")
 
 # test function for mutliple ranges (evolution)
-developerClassOverview <- get.developer.class.overview(graphList = graphList, type = "networkDegree")
+developerClassOverview = get.developer.class.overview(graphList = graphList, type = "networkDegree")
 get.developer.class.overview(graphList = graphList, type = "networkEigen")
 get.developer.class.overview(codefaceRangeDataList = rangeList, type = "commitCount")
-developerClassOverviewLOC <- get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
+developerClassOverviewLOC = get.developer.class.overview(codefaceRangeDataList = rangeList, type = "locCount")
 
-recurringAuthors <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
-longtermCore <- get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
+recurringAuthors = get.recurring.authors(developerClassOverview = developerClassOverview, class = "both")
+longtermCore = get.recurring.authors(developerClassOverview = developerClassOverview, class = "core")
 
-roleStability <- get.role.stability(developerClassOverview = developerClassOverview)
+roleStability = get.role.stability(developerClassOverview = developerClassOverview)
 
-developerClassActivity <- get.developer.class.activity(codefaceRangeData = rangeData, developer.class = developerClass,
+developerClassActivity = get.developer.class.activity(codefaceRangeData = rangeData, developer.class = developerClass,
                                                        activityMeasure = "commit.count")
-developerClassActivityEmpty <- get.developer.class.activity(codefaceRangeData = emptyRangeData,
+developerClassActivityEmpty = get.developer.class.activity(codefaceRangeData = emptyRangeData,
                                                        developer.class = developerClassEmptyRange, activityMeasure = "loc.count")
 
-developerClassActivityOverview <- get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
+developerClassActivityOverview = get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
                                                                         developer.class.overview = developerClassOverview,
                                                                         activityMeasure = "commit.count")
 get.developer.class.activity.overview(codefaceRangeDataList = rangeList,
