@@ -20,10 +20,11 @@ requireNamespace("igraph") # networks
 ## node types
 TYPE.AUTHOR = 1
 TYPE.ARTIFACT = 2
+TYPE.ISSUE = 3
 
 # edge types
-TYPE.EDGES.INTRA = 3
-TYPE.EDGES.INTER = 4
+TYPE.EDGES.INTRA = 4
+TYPE.EDGES.INTER = 5
 
 
 ## NetworkBuilder ####
@@ -341,7 +342,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = private$network.conf)
+                                 network.conf = private$network.conf, "artifact")
             return(u)
         },
 
@@ -356,17 +357,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 authors = names(authors.to.issues)
             }
 
-            issues = private$proj.data$get.issues()
+            issues = private$proj.data$get.issue.ids()
 
             ##construct networks from vertices
             authors.net = create.empty.network(directed = FALSE) +
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
 
             issues.net = create.empty.network(directed = FALSE) +
-                igraph::vertices(issues, name = issues, type = TYPE.ARTIFACT)
+                igraph::vertices(issues, name = issues, type = TYPE.ISSUE)
 
-            u = combine.networks.generic(authors.net, issues.net, authors.to.issues,
-                                         network.conf = private$network.conf, "issue")
+            u = combine.networks(authors.net, issues.net, authors.to.issues,
+                                         network.conf = private$network.conf, "issue.id")
+
+            return(u)
         },
 
         #' Get all networks as list.
@@ -431,7 +434,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = private$network.conf)
+                                 network.conf = private$network.conf, "artifact")
 
             return(u)
         }
@@ -444,7 +447,16 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 ## Union of networks ####
 ##
 
-combin.networks.generic = function(net1, net2, net1.to.net2, network.conf, temp) {
+#' Combine networks to a bipartite network.
+#'
+#' @param net1 the first network to merge
+#' @param net2 the second network to merge
+#' @param net1.to.net2 the relation between both given networks
+#' @param network.conf the network.conf
+#' @param temp the vertex names and types
+#'
+#' @return the combined bipartite network
+combine.networks = function(net1, net2, net1.to.net2, network.conf, temp) {
     vertices.net1 = igraph::get.vertex.attribute(net1, "name")
     vertices.net2 = igraph::get.vertex.attribute(net2, "name")
 
@@ -460,14 +472,27 @@ combin.networks.generic = function(net1, net2, net1.to.net2, network.conf, temp)
     u = igraph::disjoint_union(net1, net2)
 
     u = add.edges.for.bip.relation(u, net1.to.net2, network.conf = network.conf, temp.vertex = temp)
+
+    ## simplify network
+    if (network.conf$get.variable("simplify"))
+        u = simplify.network(u)
+
+    return(u)
 }
 
-## helper function to add dependencies from dev--art mapping to the bipartite network
-## TODO change name of temp.vertex
+
+#' Add vertex relations to the given network.
+#'
+#' @param net the network
+#' @param net1.to.net2 the vertex relations to add to the given network
+#' @param network.conf the network configuration
+#' @param temp.vertex the temporary vertex to add
+#'
+#' @return the adjusted network
 add.edges.for.bip.relation = function(net, net1.to.net2, network.conf, temp.vertex) {
 
     ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
-    vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
+    vertex.sequence.for.edges = mapply(function(d, a.df) {
         a = a.df[[temp.vertex]]
         new.edges = lapply(a, function(vert) {
             igraph::V(net)[d, vert] # get two vertices from source network:  c(developer, artifact)
@@ -496,79 +521,6 @@ add.edges.for.bip.relation = function(net, net1.to.net2, network.conf, temp.vert
 }
 
 
-#' Combine networks to a bipartite network.
-#'
-#' @param authors.net the given author network
-#' @param artifacts.net the given artifact network
-#' @param authors.to.artifacts the raltion between both
-#' @param network.conf the network.conf
-#'
-#' @return the combined bipartite network
-combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, network.conf) {
-
-    authors = igraph::get.vertex.attribute(authors.net, "name")
-    artifacts = igraph::get.vertex.attribute(artifacts.net, "name")
-
-    ## check emptiness of networks
-    if (length(authors) == 0) {
-        logging::logwarn("Author network is empty.")
-    }
-    if (length(artifacts) == 0) {
-        logging::logwarn("Artifact network is empty.")
-    }
-
-    ## combine networks
-    u = igraph::disjoint_union(authors.net, artifacts.net)
-
-    ## add edges for devs.to.arts relation
-    u = add.edges.for.devart.relation(u, authors.to.artifacts, network.conf = network.conf)
-
-    ## simplify network
-    if (network.conf$get.variable("simplify"))
-        u = simplify.network(u)
-
-    return(u)
-}
-
-
-#' Add dependencies from dev--art mapping to the bipartite network.
-#'
-#' @param net the bipartite network
-#' @param auth.to.arts the dev--art mapping
-#' @param network.conf the network configuration
-#'
-#' @return the adjusted network
-add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
-
-    ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
-    vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
-        a = a.df[["artifact"]]
-        new.edges = lapply(a, function(art) {
-            igraph::V(net)[d, art] # get two vertices from source network:  c(developer, artifact)
-        })
-        return(new.edges)
-    }, names(auth.to.arts), auth.to.arts)
-
-    ## get extra edge attributes
-    extra.edge.attributes.df = parallel::mclapply(auth.to.arts, function(a.df) {
-        cols.which = network.conf$get.variable("edge.attributes") %in% colnames(a.df)
-        return(a.df[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE])
-    })
-    extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
-    extra.edge.attributes.df["weight"] = 1 # add weight
-
-    extra.edge.attributes = as.list(extra.edge.attributes.df)
-
-    ## set edge type
-    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
-
-    ## add the vertex sequences as edges to the network
-    new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
-
-    return(new.net)
-
-}
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Exemplary network for illustration purposes
 ##
@@ -596,7 +548,7 @@ get.sample.network = function(network.conf = NetworkConf$new()) {
     authors.to.artifacts = get.key.to.value.from.df(authors.to.artifacts.df, "author.name", "artifact")
 
     ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
+    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf, "artifact")
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
     return(network)
