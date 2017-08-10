@@ -43,7 +43,7 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
     logging::logdebug("Starting: get.author.class.by.type")
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
-    if(is.null(graph) && is.null(data)){
+    if(is.null(graph) && is.null(data)) {
         logging::logerror("Neither graph nor raw data were given for get.author.class.by.type.")
         stop("Either graph or raw data needs to be given.")
     }
@@ -53,6 +53,7 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
                     "network.eigen" = get.author.class.network.eigen(graph = graph),
                     "commit.count" = get.author.class.commit.count(codeface.range.data = data),
                     "loc.count"= get.author.class.loc.count(codeface.range.data = data))
+
     logging::logdebug("Finished: get.author.class.by.type")
     return(result)
 }
@@ -66,7 +67,7 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
 get.author.class.network.degree = function(graph=NULL, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class.network.degree")
 
-    if(is.null(graph)){
+    if(is.null(graph)) {
         logging::logerror("For the network-based analysis, the graph is needed.")
         stop("The graph has to be given for this analysis.")
     }
@@ -99,7 +100,7 @@ get.author.class.network.eigen = function(graph=NULL, codeface.range.data=NULL, 
     centrality.vec = sort(igraph::eigen_centrality(graph)$vector, decreasing=T)
 
     ## In case no collaboration occured, all centrality values are set to 0
-    if(igraph::ecount(graph) == 0){
+    if(igraph::ecount(graph) == 0) {
         centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
     }
     centrality.df = data.frame(author.name=names(centrality.vec),
@@ -251,12 +252,12 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
             ## Check if calculated date is still after the first commit date of the range
             if (date.calc > date.first) {
                 date.split = c(date.split, date.calc)
-            } else {
+            }else{
                 date.split = c(date.split, date.first)
                 break
             }
         }
-    } else {
+    }else{
         date.split = c(date.split, date.first)
     }
 
@@ -325,7 +326,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     ## If we have not found a core author, the author with the highest calculation base value
     ## will be treated as core, to return at least one core author. The only exception is the
     ## case that no activity/collaboration occured. Then, all authors are classified as peripheral.
-    if(author.class.threshold==0){
+    if(author.class.threshold == 0) {
         logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
         core.test = rep(FALSE, length(core.test))
     } else if (!any(core.test)) {
@@ -374,10 +375,10 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     freq = c()
 
     ## Iterate over each version development range
-    for(i in 1:length(author.class.overview)){
+    for(i in 1:length(author.class.overview)) {
 
         ## skip range in case no classification is available
-        if(all(is.na(author.class.overview[[i]]))){
+        if(all(is.na(author.class.overview[[i]]))) {
             next
         }
 
@@ -385,16 +386,16 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 
             ## skip range in case no classification is available
             if(nrow(author.class.overview[[i]]$core) == 0
-               && nrow(author.class.overview[[i]]$peripheral) == 0){
+               && nrow(author.class.overview[[i]]$peripheral) == 0) {
                 next
             }
 
             author.class.authors = c(author.class.overview[[i]]$core$author.name,
                                      author.class.overview[[i]]$peripheral$author.name)
-        } else {
+        }else{
 
             ## skip range in case no classification for the given class is available
-            if(nrow(author.class.overview[[i]][[class]])==0){
+            if(nrow(author.class.overview[[i]][[class]])==0) {
                 next
             }
 
@@ -402,7 +403,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         }
 
         ## Iterate over each author in the specified class and increase his occurence count
-        for(j in 1:length(author.class.authors)){
+        for(j in 1:length(author.class.authors)) {
             author.class.author.name = author.class.authors[j]
 
             ## Check if the author already exists in previous ranges
@@ -411,7 +412,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 
                 ## Increase the occurence count as the author already exists in previous ranges
                 freq[author.class.author.index] = freq[author.class.author.index] + 1
-            } else {
+            }else{
 
                 ## Save the author and its first occurence
                 authors = c(authors, author.class.author.name)
@@ -487,7 +488,7 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
 get.longterm.core.authors = function(author.class = NULL) {
     logging::logdebug("Starting: get.longterm.core.authors")
 
-    if(is.null(author.class)){
+    if(is.null(author.class)) {
         logging::logerror("For the analysis of longterm-core authors, the author classification has to be given.")
         stop("The author classification has to be given.")
     }
@@ -620,12 +621,12 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
     }
 
     res = list()
-    for (i in 1:length(codeface.range.data.list)){
+    for (i in 1:length(codeface.range.data.list)) {
 
         ## Check if an individual split for each version range is set
         if (class(split) == 'list') {
             range.split = split[[i]]
-        } else {
+        }else{
             range.split = split
         }
 
@@ -666,11 +667,11 @@ get.author.class.activity = function(codeface.range.data = NULL,
 
     activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
-    if(is.null(codeface.range.data)){
+    if(is.null(codeface.range.data)) {
         logging::logerror("A codeface range-data object is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
-    if(is.null(author.class)){
+    if(is.null(author.class)) {
         logging::logerror("An author classification is needed for the activity analysis.")
         stop("Author classification has to be given by the user")
     }
@@ -694,7 +695,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
 
     ## Get the authors with their commit count and corresponding class for each splitted range
     commits.dev.list = list()
-    for (i in 1:length(commits.data)){
+    for (i in 1:length(commits.data)) {
         commits.df = commits.data[[i]]
         commits.dev.list[[names(commits.data)[i]]] = sqldf::sqldf(commits.query)
 
@@ -722,7 +723,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
     res.activity.count.norm.weeks.peripheral = c()
 
     ## Count the number of core and peripheral authors for each splitted range
-    for (i in 1:length(commits.dev.list)){
+    for (i in 1:length(commits.dev.list)) {
         commits.dev = commits.dev.list[[i]]
         res.range[i] = names(commits.dev.list)[i]
 
@@ -788,7 +789,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
     num.peripheral.peripheral = 0 # peripheral in first, peripheral in second
 
     ## Calculate the sums of equal classifications
-    for(i in 1:length(author.classification.list)){
+    for(i in 1:length(author.classification.list)) {
         author.class = author.classification.list[[i]]
         author.class.compare = other.author.classification.list[[i]]
 
@@ -824,7 +825,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 get.class.turnover.overview = function(author.class.overview, saturation = 1){
     logging::logdebug("Starting: get.class.turnover.overview")
 
-    if(!is.null(names(author.class.overview))){
+    if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     }else{
         versions = 1:length(author.class.overview)
@@ -902,7 +903,7 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
 get.unstable.authors.overview = function(author.class.overview, saturation = 1){
     logging::logdebug("Starting: get.unstable.authors.overview")
 
-    if(!is.null(names(author.class.overview))){
+    if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     }else{
         versions = 1:length(author.class.overview)
@@ -931,7 +932,7 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
     devs.current = devs[[1]]
     devs.core.current = devs.core[[1]]
     devs.peripheral.current = devs.peripheral[[1]]
-    for (i in 2:length(author.class.overview)){
+    for (i in 2:length(author.class.overview)) {
         devs.prev = devs.current
         devs.core.prev = devs.core.current
         devs.peripheral.prev = devs.peripheral.current
