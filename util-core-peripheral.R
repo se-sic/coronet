@@ -117,15 +117,14 @@ get.author.class.network.eigen = function(graph=NULL, codeface.range.data=NULL, 
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the number of commits made withing a version range.
-get.author.class.commit.count = function(codeface.range.data, result.limit = NULL, min.value = 0) {
+get.author.class.commit.count = function(codeface.range.data, result.limit = NULL) {
     logging::logdebug("Starting: get.author.class.commit.count")
 
     ## Get the commit counts per author
     author.commit.count = get.author.commit.count(codeface.range.data)
 
     ## Get the author classification based on the commit counts
-    res = get.author.class(author.commit.count, 'freq', result.limit = result.limit, min.value =
-                               min.value)
+    res = get.author.class(author.commit.count, 'freq', result.limit = result.limit)
 
     logging::logdebug("Finished: get.author.class.commit.count")
     return(res)
@@ -133,14 +132,14 @@ get.author.class.commit.count = function(codeface.range.data, result.limit = NUL
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(codeface.range.data, result.limit=NULL, min.value=0) {
+get.author.class.loc.count = function(codeface.range.data, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class.loc.count")
 
     ## Get the changed lines (loc counts) per author
     author.loc.count = get.author.loc.count(codeface.range.data)
 
     ## Get the author classification based on the loc counts
-    res = get.author.class(author.loc.count, 'loc', result.limit=result.limit, min.value=min.value)
+    res = get.author.class(author.loc.count, 'loc', result.limit=result.limit)
 
     logging::logdebug("Finished: get.author.class.loc.count")
     return(res)
@@ -293,8 +292,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 ### utility functions
 
 ## Classify the specified set of authors into core and peripheral based on the data
-## of the specified data frame column name (calc.base.name). Only authors which have a higher
-## value than specified (min.value) are included in the result.
+## of the specified data frame column name (calc.base.name).
 ## Core authors are those which are responsible for a given
 ## percentage of the work load with a default threshold set at 80% according
 ## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
