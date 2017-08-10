@@ -164,6 +164,8 @@ read.mails = function(data.path) {
         "thread" # thread ID
     )
 
+    mail.data[["thread"]] = paste("<", "thread", mail.data[["thread"]], ">", sep = "")
+
     ## remove mails without a proper date as they mess up directed mail-based networks
     ## this basically only applies for project-level analysis
     empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
@@ -291,9 +293,11 @@ read.issues = function(data.path) {
         return(issue.data)
     }
 
+
     colnames(issue.data) = c("issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "author.id",
                              "author.name", "author.mail", "event.date", "event.name")
 
+    issue.data[["issue.id"]] = paste("<", "issue", issue.data[["issue.id"]], ">", sep = "")
     logging::logdebug("read.issues: finished")
     return(issue.data)
 }

@@ -477,20 +477,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$artifacts)
         },
 
-        get.issue.ids = function() {
-            logging::loginfo("Getting event data.")
-            ## if artifacts are not read already, do this
-            if (is.null(private$issues)) {
-                self$get.issues()
-
-                ## get artifacts (empty list if no commits exist)
-            }
-            ids = unique(private$issues[["issue.id"]])
-
-            return(ids)
-
-        },
-
         ## get the list of issues
         get.issues = function() {
             logging::loginfo("Getting issue data")
