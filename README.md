@@ -31,6 +31,7 @@ source("path/to/util-init.R", chdir = TRUE)
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `testthat`: For the test suite
+- `markovchain`: For core/peripheral transition probabilities
 
 
 ## How-To
@@ -250,6 +251,8 @@ There is no way to update the entries, except for the revision-based parameters.
   * Functionality for the identifaction of network motifs (subgraph patterns)
 - `util-bulk.R`
   * Collection functionality for the different network types (using Codeface revision ranges)
+- `util-core-peripheral.R`
+  * Author classification (core and peripheral) and related functions
 - `util-init.R`
   * Initialization file that can be used by other analysis projects (see Section *Submodule*)
 - `test.R`
