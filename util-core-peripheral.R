@@ -299,7 +299,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 ## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
 ##         the structural complexity introduced by core and peripheral
 ##         developers in free software projects.
-get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL, min.value=0) {
+get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class")
 
     ## Make sure the provided data is ordered correctly by the calculation base
@@ -310,9 +310,6 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
 
     ## Get the threshold depending on all calculation base values
     author.class.threshold = get.threshold(author.data[[calc.base.name]])
-
-    ## Only include authors with the specified minimum of the calculation base value
-    author.data = author.data[author.data[[calc.base.name]] >= min.value, ]
 
     ## Check if the result shall be limited
     if (!is.null(result.limit)) {
