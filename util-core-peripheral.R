@@ -306,7 +306,10 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     author.data = author.data.frame[rev(order(author.data.frame[[calc.base.name]])),]
 
     ## Remove rows with invalid calculation base values
-    author.data = author.data[!is.na(author.data[calc.base.name]),]
+    if(sum(is.na(author.data[[calc.base.name]])) > 0) {
+        logging::logwarn("Some authors' activity indicator (%s) is NA.", calc.base.name)
+        author.data[is.na(author.data[[calc.base.name]]),][[calc.base.name]] <- 0
+    }
 
     ## Get the threshold depending on all calculation base values
     author.class.threshold = get.threshold(author.data[[calc.base.name]])
