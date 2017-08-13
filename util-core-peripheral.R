@@ -459,20 +459,34 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
     if(!is.null(codeface.range.data.list)) {
         for (i in 1:length(codeface.range.data.list)) {
             range.data = codeface.range.data.list[[i]]
+            range.name = names(codeface.range.data.list)[[i]]
 
             ## Get classification data of the current range
             range.class =
                 get.author.class.by.type(data = range.data, type = type)
-            res = c(res, list(range.class))
+
+            ## Save in list of classifications
+            if(!is.null(range.name)){
+                res[[range.name]] = range.class
+            }else{
+                res <- c(res, list(range.class))
+            }
         }
     }else{## use graph list as data
         for (i in 1:length(graph.list)) {
             range.graph = graph.list[[i]]
+            range.name = names(graph.list)[[i]]
 
             ## Get classification data of the current range
             range.class =
                 get.author.class.by.type(graph = range.graph, type = type)
-            res = c(res, list(range.class))
+
+            ## save in list of clasifications
+            if(!is.null(range.name)){
+                res[[range.name]] = range.class
+            }else{
+                res <- c(res, list(range.class))
+            }
         }
     }
 
