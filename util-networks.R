@@ -20,12 +20,10 @@ requireNamespace("igraph") # networks
 ## node types
 TYPE.AUTHOR = 1
 TYPE.ARTIFACT = 2
-TYPE.ISSUE = 3
-TYPE.MAIL = 4
 
 # edge types
-TYPE.EDGES.INTRA = 5
-TYPE.EDGES.INTER = 6
+TYPE.EDGES.INTRA = 3
+TYPE.EDGES.INTER = 4
 
 
 ## NetworkBuilder ####
@@ -298,20 +296,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 relation,
                 cochange = {
                     net.to.net = private$proj.data$get.author2artifact()
-                    data = private$proj.data$get.artifacts()
-                    type = 2
                     artifact.type = "artifact"
                 },
                 mail = {
                     net.to.net = private$proj.data$get.author2thread()
-                    data = unique(private$proj.data$get.mails()$thread)
-                    type = 4
                     artifact.type = "thread"
                 },
                 issue = {
                     net.to.net = private$proj.data$get.author2issue()
-                    data = unique(private$proj.data$get.issues()$issue.id)
-                    type = 3
                     artifact.type = "issue.id"
                 }
             )
@@ -328,13 +320,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             authors.net = create.empty.network(directed = FALSE) +
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
 
-            data.net = create.empty.network(directed = FALSE) +
-                igraph::vertices(data, name = relation, type = TYPE.ISSUE)
+            data.vertices = unique(unlist(lapply(net.to.net, function(df) {
+                return(df$data.vertices)
+                })))
 
+            data.net = create.empty.network(directed = FALSE) +
+                igraph::vertices(data.vertices, name = relation, type = TYPE.ARTIFACT, artifact.type = artifact.type)
 
             u = combine.networks(authors.net, data.net, net.to.net,
-                                         network.conf = private$network.conf, artifact.type)
-
+                                         network.conf = private$network.conf)
             return(u)
         },
 
@@ -411,7 +405,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 ## Union of networks ####
 ##
 
-combine.networks = function(net1, net2, net1.to.net2, network.conf, artifact.type) {
+combine.networks = function(net1, net2, net1.to.net2, network.conf) {
     vertices.net1 = igraph::get.vertex.attribute(net1, "name")
     vertices.net2 = igraph::get.vertex.attribute(net2, "name")
 
@@ -426,7 +420,7 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf, artifact.typ
     ## combine networks
     u = igraph::disjoint_union(net1, net2)
 
-    u = add.edges.for.bip.relation(u, net1.to.net2, network.conf = network.conf, artifact.type = artifact.type)
+    u = add.edges.for.bip.relation(u, net1.to.net2, network.conf = network.conf)
 
     ## simplify network
     if (network.conf$get.variable("simplify"))
@@ -437,11 +431,11 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf, artifact.typ
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
 ## TODO change name of temp.vertex
-add.edges.for.bip.relation = function(net, net1.to.net2, network.conf, artifact.type) {
+add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
 
     ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
-        a = a.df[[artifact.type]]
+        a = a.df[["data.vertices"]]
         new.edges = lapply(a, function(vert) {
             igraph::V(net)[d, vert] # get two vertices from source network:  c(developer, artifact)
         })
