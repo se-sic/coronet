@@ -228,27 +228,27 @@ range.data = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.
 range.data2 = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
 empty.range.data = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
 
-graph = range.data$get.author.network()
-empty.graph = empty.range.data$get.author.network()
+network = range.data$get.author.network()
+empty.network = empty.range.data$get.author.network()
 
-graph.list = list(empty.graph, graph, range.data2$get.author.network())
+network.list = list(empty.network, network, range.data2$get.author.network())
 range.list = list(empty.range.data, range.data, range.data2)
 
 # test functions for single range
-author.class = get.author.class.by.type(graph = graph, type = "network.degree")
-get.author.class.by.type(graph = graph, type = "network.eigen")
+author.class = get.author.class.by.type(network = network, type = "network.degree")
+get.author.class.by.type(network = network, type = "network.eigen")
 get.author.class.by.type(data = range.data, type = "commit.count")
 get.author.class.by.type(data = range.data, type = "loc.count")
 
-# test functions for single range with "empty" range data (graph without edges)
-author.class.empty.range = get.author.class.by.type(graph = empty.graph, type = "network.degree")
-get.author.class.by.type(graph = empty.graph, type = "network.eigen")
+# test functions for single range with "empty" range data (network without edges)
+author.class.empty.range = get.author.class.by.type(network = empty.network, type = "network.degree")
+get.author.class.by.type(network = empty.network, type = "network.eigen")
 get.author.class.by.type(data = empty.range.data, type = "commit.count")
 get.author.class.by.type(data = empty.range.data, type = "loc.count")
 
 # test function for mutliple ranges (evolution)
-author.class.overview = get.author.class.overview(graph.list = graph.list, type = "network.degree")
-get.author.class.overview(graph.list = graph.list, type = "network.eigen")
+author.class.overview = get.author.class.overview(network.list = network.list, type = "network.degree")
+get.author.class.overview(network.list = network.list, type = "network.eigen")
 get.author.class.overview(codeface.range.data.list = range.list, type = "commit.count")
 author.class.overview.loc = get.author.class.overview(codeface.range.data.list = range.list, type = "loc.count")
 

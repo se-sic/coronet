@@ -14,7 +14,7 @@
 ### LIBRARIES
 
 requireNamespace("sqldf")# for SQL-selections on data.frames
-requireNamespace("igraph")# for calculation of graph metrics (degree, eigen-centrality)
+requireNamespace("inetwork")# for calculation of network metrics (degree, eigen-centrality)
 requireNamespace("markovchain")# for role stability analysis
 requireNamespace("logging")# for logging
 
@@ -37,20 +37,20 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## based on the classification metric indicated by "type".
 ##
 ## For count-based network metrics, the raw data has to be given. For network-based metrics,
-## the graph has to be given.
-get.author.class.by.type = function(graph = NULL, data = NULL,
+## the network has to be given.
+get.author.class.by.type = function(network = NULL, data = NULL,
                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     logging::logdebug("Starting: get.author.class.by.type")
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
-    if(is.null(graph) && is.null(data)) {
-        logging::logerror("Neither graph nor raw data were given for get.author.class.by.type.")
-        stop("Either graph or raw data needs to be given.")
+    if(is.null(network) && is.null(data)) {
+        logging::logerror("Neither network nor raw data were given for get.author.class.by.type.")
+        stop("Either network or raw data needs to be given.")
     }
 
     result = switch(type,
-                    "network.degree" = get.author.class.network.degree(graph = graph),
-                    "network.eigen" = get.author.class.network.eigen(graph = graph),
+                    "network.degree" = get.author.class.network.degree(network = network),
+                    "network.eigen" = get.author.class.network.eigen(network = network),
                     "commit.count" = get.author.class.commit.count(codeface.range.data = data),
                     "loc.count"= get.author.class.loc.count(codeface.range.data = data))
 
@@ -63,22 +63,22 @@ get.author.class.by.type = function(graph = NULL, data = NULL,
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the degree centrality.
 ##
-## This function takes an igraph object.
-get.author.class.network.degree = function(graph=NULL, result.limit=NULL) {
+## This function takes an inetwork object.
+get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class.network.degree")
 
-    if(is.null(graph)) {
-        logging::logerror("For the network-based analysis, the graph is needed.")
-        stop("The graph has to be given for this analysis.")
+    if(is.null(network)) {
+        logging::logerror("For the network-based analysis, the network is needed.")
+        stop("The network has to be given for this analysis.")
     }
 
     ## Get node degrees for all authors
-    centrality.vec = sort(igraph::degree(graph), decreasing=T)
+    centrality.vec = sort(inetwork::degree(network), decreasing = TRUE)
     centrality.df = data.frame(author.name=names(centrality.vec),
                                centrality=as.vector(centrality.vec))
 
     ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, 'centrality', result.limit=result.limit)
+    res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
 
     logging::logdebug("Finished: get.author.class.network.degree")
     return(res)
@@ -88,26 +88,26 @@ get.author.class.network.degree = function(graph=NULL, result.limit=NULL) {
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(graph=NULL, codeface.range.data=NULL, result.limit=NULL) {
+get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL, result.limit=NULL) {
 
     logging::logdebug("Starting: get.author.class.network.eigen")
-    if(is.null(graph)) {
-        logging::logerror("For the network-based eigen-centrality analysis, the graph has to be given.")
-        stop("The graph has to be given for this analysis.")
+    if(is.null(network)) {
+        logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
+        stop("The network has to be given for this analysis.")
     }
 
     ## Get eigenvectors for all authors
-    centrality.vec = sort(igraph::eigen_centrality(graph)$vector, decreasing=T)
+    centrality.vec = sort(inetwork::eigen_centrality(network)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
-    if(igraph::ecount(graph) == 0) {
+    if(inetwork::ecount(network) == 0) {
         centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
     }
     centrality.df = data.frame(author.name=names(centrality.vec),
                                centrality=as.vector(centrality.vec))
 
     ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, 'centrality', result.limit=result.limit)
+    res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
 
     logging::logdebug("Finished: get.autho.class.network.eigen")
     return(res)
@@ -124,7 +124,7 @@ get.author.class.commit.count = function(codeface.range.data, result.limit = NUL
     author.commit.count = get.author.commit.count(codeface.range.data)
 
     ## Get the author classification based on the commit counts
-    res = get.author.class(author.commit.count, 'freq', result.limit = result.limit)
+    res = get.author.class(author.commit.count, "freq", result.limit = result.limit)
 
     logging::logdebug("Finished: get.author.class.commit.count")
     return(res)
@@ -139,7 +139,7 @@ get.author.class.loc.count = function(codeface.range.data, result.limit=NULL) {
     author.loc.count = get.author.loc.count(codeface.range.data)
 
     ## Get the author classification based on the loc counts
-    res = get.author.class(author.loc.count, 'loc', result.limit=result.limit)
+    res = get.author.class(author.loc.count, "loc", result.limit=result.limit)
 
     logging::logdebug("Finished: get.author.class.loc.count")
     return(res)
@@ -440,7 +440,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 ##
 ## The data can either be given as list of raw range data (for the count-based metrics)
 ## or as list of networks for the network-based metrics).
-get.author.class.overview = function(graph.list = NULL, codeface.range.data.list = NULL, type =
+get.author.class.overview = function(network.list = NULL, codeface.range.data.list = NULL, type =
                                          c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     logging::logdebug("Starting: get.author.class.overview")
 
@@ -450,8 +450,8 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
         logging::logerror("For count-based metric evolution, a list of codeface range-data objects is needed.")
         stop("For the count-based metrics, the raw data has to be given.")
 
-    }else if(is.null(graph.list) && (type == "network.degree" || type == "network.eigen")) {
-        logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
+    }else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
+        logging::logerror("For the network-based metric evolution, a list of networks as inetwork-objects is needed.")
         stop("For the network-based metrics, the network list has to be given.")
     }
 
@@ -472,14 +472,14 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
                 res <- c(res, list(range.class))
             }
         }
-    }else{## use graph list as data
-        for (i in 1:length(graph.list)) {
-            range.graph = graph.list[[i]]
-            range.name = names(graph.list)[[i]]
+    }else{## use network list as data
+        for (i in 1:length(network.list)) {
+            range.network = network.list[[i]]
+            range.name = names(network.list)[[i]]
 
             ## Get classification data of the current range
             range.class =
-                get.author.class.by.type(graph = range.graph, type = type)
+                get.author.class.by.type(network = range.network, type = type)
 
             ## save in list of clasifications
             if(!is.null(range.name)){
@@ -496,7 +496,7 @@ get.author.class.overview = function(graph.list = NULL, codeface.range.data.list
 
 ## Retrieves all authors which will be classified as core by the specified
 ## classification in more than a certain number of version ranges
-## -> see: 'LONGTERM.CORE.THRESHOLD'.
+## -> see: "LONGTERM.CORE.THRESHOLD".
 get.longterm.core.authors = function(author.class = NULL) {
     logging::logdebug("Starting: get.longterm.core.authors")
 
@@ -605,7 +605,7 @@ get.role.stability = function(author.class.overview) {
 ## for each specified split range and for each version development range.
 ##
 ## An individual split range can be set for each version as a list of vectors with the version name as the key.
-## An integer value can be set as 'sliding.window.core' to specify, that the core authors of the last
+## An integer value can be set as "sliding.window.core" to specify, that the core authors of the last
 ## version ranges (according to the value) shall be included in the core author set of the current range.
 get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                               author.class.overview = NULL,
@@ -636,7 +636,7 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
     for (i in 1:length(codeface.range.data.list)) {
 
         ## Check if an individual split for each version range is set
-        if (class(split) == 'list') {
+        if (class(split) == "list") {
             range.split = split[[i]]
         }else{
             range.split = split
@@ -882,9 +882,9 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
         j = 1
         while (j <= saturation) {
             if ((i-j) > 0) {
-                devs.old = igraph::union(devs.old, devs[[i-j]])
-                devs.core.old = igraph::union(devs.core.old, devs.core[[i-j]])
-                devs.peripheral.old = igraph::union(devs.peripheral.old, devs.peripheral[[i-j]])
+                devs.old = inetwork::union(devs.old, devs[[i-j]])
+                devs.core.old = inetwork::union(devs.core.old, devs.core[[i-j]])
+                devs.peripheral.old = inetwork::union(devs.peripheral.old, devs.peripheral[[i-j]])
             }
             j = j + 1
         }
@@ -952,9 +952,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
         j = 1
         while (j <= saturation) {
             if ((i-j) > 0) {
-                devs.prev = igraph::union(devs.prev, devs[[i-j]])
-                devs.core.prev = igraph::union(devs.core.prev, devs.core[[i-j]])
-                devs.peripheral.prev = igraph::union(devs.peripheral.prev, devs.peripheral[[i-j]])
+                devs.prev = inetwork::union(devs.prev, devs[[i-j]])
+                devs.core.prev = inetwork::union(devs.core.prev, devs.core[[i-j]])
+                devs.peripheral.prev = inetwork::union(devs.peripheral.prev, devs.peripheral[[i-j]])
             }
             j = j + 1
         }
@@ -965,9 +965,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
         devs.peripheral.current = devs.peripheral[[i]]
 
         ## Find the union of the devs which are active in the current period and in the prev periods
-        devs.union = igraph::union(devs.current, devs.prev)
-        devs.core.union = igraph::union(devs.core.current, devs.core.prev)
-        devs.peripheral.union = igraph::union(devs.peripheral.current, devs.peripheral.prev)
+        devs.union = inetwork::union(devs.current, devs.prev)
+        devs.core.union = inetwork::union(devs.core.current, devs.core.prev)
+        devs.peripheral.union = inetwork::union(devs.peripheral.current, devs.peripheral.prev)
 
         ## Find the devs which are only active in the current range but not in the previous ones
         devs.new = sum(!(devs.current %in% devs.prev))
