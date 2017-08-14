@@ -14,7 +14,7 @@
 ### LIBRARIES
 
 requireNamespace("sqldf")# for SQL-selections on data.frames
-requireNamespace("inetwork")# for calculation of network metrics (degree, eigen-centrality)
+requireNamespace("igraph")# for calculation of network metrics (degree, eigen-centrality)
 requireNamespace("markovchain")# for role stability analysis
 requireNamespace("logging")# for logging
 
