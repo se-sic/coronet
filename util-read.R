@@ -150,6 +150,17 @@ read.mails = function(data.path) {
     mail.data[["date"]] = as.POSIXct(mail.data[["date"]], tz = "UTC")
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
+    ## remove all mails with dates before 1990-01-01 00:00:00
+    break.date = as.POSIXct("1970-01-01 00:00:00")
+    break.to.cut = mail.data[["date"]] < break.date
+    mail.data = mail.data[!break.to.cut, ]
+    if (sum(break.to.cut) > 0) {
+        logging::logwarn(
+            "Removed %s e-mail(s) after reading data file due to obiously wrong dates (before %s).",
+            sum(break.to.cut), break.date
+        )
+    }
+
     ## store the mail data
     logging::logdebug("read.mails: finished.")
     return(mail.data)

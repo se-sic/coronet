@@ -166,6 +166,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         revisions.dates = bins.date
     )
 
+    ## set bin attribute
+    attr(cf.data, "bins") = bins.date
+
     ## return list of CodefaceRangeData objects
     return(cf.data)
 }
@@ -279,7 +282,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         revisions.dates = bins.date
     )
 
-    ## set bin attribute for sliding-window functionality
+    ## set bin attribute
     attr(cf.data, "bins") = bins.date
 
     return(cf.data)
@@ -362,6 +365,9 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
     }
+
+    ## set bin attribute
+    attr(nets, "bins") = bins.date
 
     ## set ranges as names
     names(nets) = construct.ranges(bins.date, sliding.window = sliding.window)
@@ -472,7 +478,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         bins.date = sort(c(bins.date, bins.date.middle))
     }
 
-    ## set bin attribute for sliding-window functionality
+    ## set bin attribute
     attr(networks, "bins") = bins.date
 
     ## set ranges as names
