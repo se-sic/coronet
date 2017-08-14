@@ -145,8 +145,9 @@ read.mails = function(data.path) {
     if (length(empty.dates) > 0)
         mail.data = mail.data[-empty.dates, ]
 
+    ## TODO check timezone conversion for any date handling (e.g., splitting)
     ## convert dates and sort by them
-    mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
+    mail.data[["date"]] = as.POSIXct(mail.data[["date"]], tz = "UTC")
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## store the mail data
