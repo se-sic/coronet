@@ -15,9 +15,6 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
 
-options(stringsAsFactors = FALSE)
-
-
 ## / / / / / / / / / / / / / /
 ## NETWORk META-CONFIGURATION
 ##
