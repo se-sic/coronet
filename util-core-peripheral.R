@@ -70,6 +70,12 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
     if(is.null(network)) {
         logging::logerror("For the network-based analysis, the network is needed.")
         stop("The network has to be given for this analysis.")
+    }else if(igraph::vcount(network) == 0) {
+        logging::logwarn("The given network is empty.")
+
+        ## return an empty classification
+        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
+                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
     }
 
     ## Get node degrees for all authors
@@ -94,6 +100,13 @@ get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL
     if(is.null(network)) {
         logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
         stop("The network has to be given for this analysis.")
+
+    }else if(igraph::vcount(network) == 0) {
+        logging::logwarn("The given network is empty.")
+
+        ## return an empty classification
+        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
+                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
     }
 
     ## Get eigenvectors for all authors
