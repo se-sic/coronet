@@ -63,7 +63,7 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the degree centrality.
 ##
-## This function takes an inetwork object.
+## This function takes an igraph object.
 get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class.network.degree")
 
@@ -73,7 +73,7 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
     }
 
     ## Get node degrees for all authors
-    centrality.vec = sort(inetwork::degree(network), decreasing = TRUE)
+    centrality.vec = sort(igraph::degree(network), decreasing = TRUE)
     centrality.df = data.frame(author.name=names(centrality.vec),
                                centrality=as.vector(centrality.vec))
 
@@ -97,10 +97,10 @@ get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL
     }
 
     ## Get eigenvectors for all authors
-    centrality.vec = sort(inetwork::eigen_centrality(network)$vector, decreasing= TRUE)
+    centrality.vec = sort(igraph::eigen_centrality(network)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
-    if(inetwork::ecount(network) == 0) {
+    if(igraph::ecount(network) == 0) {
         centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
     }
     centrality.df = data.frame(author.name=names(centrality.vec),
@@ -451,7 +451,7 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
         stop("For the count-based metrics, the raw data has to be given.")
 
     }else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
-        logging::logerror("For the network-based metric evolution, a list of networks as inetwork-objects is needed.")
+        logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
         stop("For the network-based metrics, the network list has to be given.")
     }
 
@@ -882,9 +882,9 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
         j = 1
         while (j <= saturation) {
             if ((i-j) > 0) {
-                devs.old = inetwork::union(devs.old, devs[[i-j]])
-                devs.core.old = inetwork::union(devs.core.old, devs.core[[i-j]])
-                devs.peripheral.old = inetwork::union(devs.peripheral.old, devs.peripheral[[i-j]])
+                devs.old = igraph::union(devs.old, devs[[i-j]])
+                devs.core.old = igraph::union(devs.core.old, devs.core[[i-j]])
+                devs.peripheral.old = igraph::union(devs.peripheral.old, devs.peripheral[[i-j]])
             }
             j = j + 1
         }
@@ -952,9 +952,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
         j = 1
         while (j <= saturation) {
             if ((i-j) > 0) {
-                devs.prev = inetwork::union(devs.prev, devs[[i-j]])
-                devs.core.prev = inetwork::union(devs.core.prev, devs.core[[i-j]])
-                devs.peripheral.prev = inetwork::union(devs.peripheral.prev, devs.peripheral[[i-j]])
+                devs.prev = igraph::union(devs.prev, devs[[i-j]])
+                devs.core.prev = igraph::union(devs.core.prev, devs.core[[i-j]])
+                devs.peripheral.prev = igraph::union(devs.peripheral.prev, devs.peripheral[[i-j]])
             }
             j = j + 1
         }
@@ -965,9 +965,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
         devs.peripheral.current = devs.peripheral[[i]]
 
         ## Find the union of the devs which are active in the current period and in the prev periods
-        devs.union = inetwork::union(devs.current, devs.prev)
-        devs.core.union = inetwork::union(devs.core.current, devs.core.prev)
-        devs.peripheral.union = inetwork::union(devs.peripheral.current, devs.peripheral.prev)
+        devs.union = igraph::union(devs.current, devs.prev)
+        devs.core.union = igraph::union(devs.core.current, devs.core.prev)
+        devs.peripheral.union = igraph::union(devs.peripheral.current, devs.peripheral.prev)
 
         ## Find the devs which are only active in the current range but not in the previous ones
         devs.new = sum(!(devs.current %in% devs.prev))
