@@ -14,6 +14,9 @@ requireNamespace("logging")
 requireNamespace("parallel")
 
 
+Sys.setenv(TZ = "UTC")
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## High-level functionality
 ##
