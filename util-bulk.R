@@ -16,6 +16,13 @@ requireNamespace("igraph") # networks
 ##
 
 
+#' Collect the multi networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -50,6 +57,13 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 ##
 
 
+#' Collect the bipartite networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -84,6 +98,13 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 ##
 
 
+#' Collect the author networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -118,6 +139,13 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 ##
 
 
+#' Collect the artifact networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -151,6 +179,14 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 ## Construct data
 ##
 
+#' Construct the range data for the Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param callgraphs whether or not callgraph data is existing
+#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the constructed data
 construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.entry("ranges")
@@ -182,6 +218,12 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
 ## Run function on list of RangeData
 ##
 
+#' Run a given function on the list of RangeData.
+#'
+#' @param data the given list of RangeData
+#' @param fun the function to be run
+#'
+#' @return the result of the function
 run.lapply = function(data, fun) {
     res = parallel::mclapply(data, function(dat) dat[[fun]]())
     return(res)
