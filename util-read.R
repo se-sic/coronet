@@ -9,6 +9,12 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 
+
+Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
+Sys.setenv(TZ = "UTC")
+options(stringsAsFactors = FALSE)
+
+
 read.commits.raw = function(data.path, artifact) {
 
     logging::logdebug("read.commits.raw: starting.")
