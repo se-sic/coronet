@@ -167,6 +167,11 @@ get.author.loc.count = function(codeface.range.data) {
     commits.df = get.commit.data(codeface.range.data,
                                  columns=c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
 
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
+
     ## Execute a query to get the changed lines per author
     res = sqldf::sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
                from `commits.df` group by `author.name` order by `loc` desc")
@@ -182,6 +187,11 @@ get.author.commit.count = function(codeface.range.data) {
 
     ## Get commit data
     commits.df = get.commit.data(codeface.range.data)[[1]]
+
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
@@ -225,6 +235,11 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 
     ## Get commit data
     commits.df = codeface.range.data$get.commits.raw()
+
+    ## In case no commit data is available, return NA
+    if(nrow(commits.df) == 0) {
+        return(NA)
+    }
 
     ## Make sure the hash is included in the cut columns vector for grouping
     cut.columns = columns
@@ -296,6 +311,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     }
 
     ## Split the commits by the calculated groups
+    split.groups = unique(split.groups)
     res = split(commits.df, split.groups)
 
     logging::logdebug("Finished: get.commit.data")
@@ -313,6 +329,16 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 ##         developers in free software projects.
 get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL) {
     logging::logdebug("Starting: get.author.class")
+
+    ## Return empty classification in case no data is available
+    if(all(is.na(author.data.frame))) {
+        logging::logwarn("There is no data to use for the classification. Returning empty classification instead.")
+
+        empty.df <- data.frame(character(0), numeric(0))
+        names(empty.df) <- c("author.name", calc.base.name)
+        return(list("core" = empty.df,
+                    "peripheral" = empty.df))
+    }
 
     ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[rev(order(author.data.frame[[calc.base.name]])),]
