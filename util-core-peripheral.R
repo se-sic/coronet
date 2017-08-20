@@ -402,13 +402,6 @@ get.threshold = function(data.list) {
 
     ## Check which authors can be treated as core based on the data
     data.threshold = round(CORE.THRESHOLD * data.threshold.base)
-    core.test = cumsum(data.list) < data.threshold
-
-    # If we have not found a core dev, the author with the highest data value
-    # marks the threshold
-    if (!any(core.test)) {
-        data.threshold = max(data.list)
-    }
 
     logging::logdebug("Finished: get.threshold")
     return(data.threshold)
