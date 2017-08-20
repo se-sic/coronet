@@ -349,6 +349,15 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
         author.data[is.na(author.data[[calc.base.name]]),][[calc.base.name]] <- 0
     }
 
+    ## Make sure the provided data is ordered correctly by the calculation base
+    author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
+
+    ## Remove rows with invalid calculation base values
+    if(sum(is.na(author.data[[calc.base.name]])) > 0) {
+        logging::logwarn("Some authors' activity indicator (%s) is NA.", calc.base.name)
+        author.data[is.na(author.data[[calc.base.name]]), calc.base.name, drop = FALSE] = 0
+    }
+
     ## Get the threshold depending on all calculation base values
     author.class.threshold = get.threshold(author.data[[calc.base.name]])
 
@@ -358,21 +367,25 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     }
 
     ## Check which authors can be treated as core based on the calculation base values
-    core.test = cumsum(author.data[[calc.base.name]]) < author.class.threshold
+    author.class.threshold.idx = min(which(cumsum(author.data[[calc.base.name]]) >= author.class.threshold))
+
+    ## classify developers according to threshold
+    core.classification = rep(FALSE, nrow(author.data))
+    core.classification[1:author.class.threshold.idx] = TRUE
 
     ## If we have not found a core author, the author with the highest calculation base value
     ## will be treated as core, to return at least one core author. The only exception is the
     ## case that no activity/collaboration occured. Then, all authors are classified as peripheral.
     if(author.class.threshold == 0) {
         logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
-        core.test = rep(FALSE, length(core.test))
-    } else if (!any(core.test)) {
-        core.test = c(TRUE, rep(FALSE, length(core.test) - 1))
+        core.classification = rep(FALSE, length(core.classification))
+        # } else if (!any(core.classification)) {
+        #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
     }
 
     ## Cut core and peripheral authors from base data and construct return value
-    core.authors = author.data[core.test,]
-    peripheral.authors = author.data[!core.test,]
+    core.authors = author.data[core.classification, , drop = FALSE]
+    peripheral.authors = author.data[!core.classification, , drop = FALSE]
     res = list(core=core.authors, peripheral=peripheral.authors)
 
     logging::logdebug("Finished: get.author.class")
