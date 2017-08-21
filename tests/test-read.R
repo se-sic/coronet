@@ -112,7 +112,8 @@ test_that("Read the mail data.", {
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= 2","Re: busybox 1",
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= tab","Re: Fw: busybox 2 tab",
                                               "Re: Fw: busybox 10"),
-                                    thread=as.integer(c(1,2,3,4,5,6,6,6,6,6,6,7,8,8,8,9,9)))
+                                    thread=sprintf("<thread%s>", c(1,2,3,4,5,6,6,6,6,6,6,7,8,8,8,9,9))
+                                    )
     ## delete the line with the empty date
     mail.data.expected = mail.data.expected[-13,]
 
@@ -129,7 +130,7 @@ test_that("Read the author data.", {
     author.data.read = read.authors(proj.conf$get.entry("datapath"))
 
     ## build the expected data.frame
-    author.data.expected = data.frame(ID=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943)),
+    author.data.expected = data.frame(author.id=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943)),
                                       author.name=c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl"))
 
     ## check the results
