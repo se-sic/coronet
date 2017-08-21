@@ -320,7 +320,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the bipartite network
         get.bipartite.network = function() {
-            authors.to.issues = private$proj.data$get.author2issue()
             relation = private$network.conf$get.variable("author.relation")
 
             switch(
@@ -348,15 +347,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ##construct networks from vertices
-            authors.net = create.empty.network(directed = FALSE) +
+            authors.net = create.empty.network(directed = private$network.conf$get.variable("author.directed")) +
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
 
             data.vertices = unique(unlist(lapply(net.to.net, function(df) {
                 return(df$data.vertices)
-                })))
+            })))
 
-            data.net = create.empty.network(directed = FALSE) +
-                igraph::vertices(data.vertices, name = relation, type = TYPE.ARTIFACT, artifact.type = artifact.type)
+            data.net = create.empty.network(directed = private$network.conf$get.variable("artifact.directed")) +
+                igraph::vertices(data.vertices, name = data.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
 
             u = combine.networks(authors.net, data.net, net.to.net,
                                          network.conf = private$network.conf)
@@ -469,7 +468,6 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf) {
 
     return(u)
 }
-
 
 #' Add vertex relations to the given network.
 #'
