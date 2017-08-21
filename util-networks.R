@@ -430,7 +430,6 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf) {
 }
 
 ## helper function to add dependencies from dev--art mapping to the bipartite network
-## TODO change name of temp.vertex
 add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
 
     ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
