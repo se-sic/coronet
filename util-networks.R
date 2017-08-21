@@ -356,9 +356,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             data.net = create.empty.network(directed = private$network.conf$get.variable("artifact.directed")) +
                 igraph::vertices(data.vertices, name = data.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
+            u = combine.networks(authors.net, artifact.net, net.to.net, network.conf = private$network.conf)
 
-            u = combine.networks(authors.net, data.net, net.to.net,
-                                         network.conf = private$network.conf)
             return(u)
         },
 
@@ -424,7 +423,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = private$network.conf, "artifact")
+                                 network.conf = private$network.conf)
 
             return(u)
         }
@@ -534,7 +533,7 @@ get.sample.network = function(network.conf = NetworkConf$new()) {
     authors.to.artifacts = get.key.to.value.from.df(authors.to.artifacts.df, "author.name", "artifact")
 
     ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf, "artifact")
+    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
 
     return(network)
