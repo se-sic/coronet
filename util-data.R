@@ -40,7 +40,8 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## BASIC DATA ####
 
-        #read the commits without empty artifacts
+        #' Filter commits with empty artifacts from the commit list and save the new list
+        #' to 'commits.filtered.empty'.
         filter.commits.empty = function() {
 
             logging::logdebug("filter.commits.empty: starting.")
@@ -71,7 +72,9 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits.empty: finished.")
         },
 
-        ## read the base filtered commit data for the range
+        #' Filter the commits from the commit list that touch the base artifact and save the new list
+        #' to 'commits.filtered'.
+        #' Add synchronicity and pasta data if configured in 'project.conf'.
         filter.commits = function() {
 
             logging::logdebug("filter.commits: starting.")
@@ -110,7 +113,7 @@ ProjectData = R6::R6Class("ProjectData",
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
 
-            ## add PaStA data if wanted
+            ## add pasta data if wanted
             if (private$project.conf$get.pasta()) {
                 self$get.pasta()
                 commit.data = private$add.pasta.data(commit.data)
@@ -121,7 +124,11 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
-        ## add the pasta data to the given data.frame for further analysis
+        #' Add the pasta data to the given data.frame for further analysis.
+        #'
+        #' @param data the base data as data.frame to append the PaStA data to.
+        #'
+        #' @return the augmented data.frame
         add.pasta.data = function(data) {
             logging::loginfo("Adding pasta data.")
             data[, "pasta"] = NA
@@ -147,7 +154,9 @@ ProjectData = R6::R6Class("ProjectData",
 
     ## public members ####
     public = list(
-        ## constructor
+        #' The constructor of the class.
+        #'
+        #' @param project.conf the given 'project.conf' for this instance of the class
         initialize = function(project.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
                 private$project.conf = project.conf
@@ -159,6 +168,7 @@ ProjectData = R6::R6Class("ProjectData",
 
 
         ## TO STRING ;) ####
+        #' The to String method of the class.
         get.class.name = function() {
             return(
                 sprintf("ProjectData<%s>", private$project.conf$get.entry("repo"))
@@ -168,7 +178,9 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## RESET ENVIRONMENT ##
 
-        ## reset cached data
+        #' Reset the current environment in order to rebuild it.
+        #' Has to be called whenever the project configuration or data gets
+        #' changed.
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits.filtered.empty = NULL
@@ -183,12 +195,18 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## CONFIGURATION ####
 
-        ## get the current project configuration
+        #' Get the current project configuration.
+        #'
+        #' @return the 'project.conf' of the current instance of the class
         get.project.conf = function() {
             return(private$project.conf)
         },
 
-        ## set the current project configuration to the given one
+        #' Set the current project configuration to the given one.
+        #'
+        #' @param project.conf the new project configuration.
+        #' @param reset.environment parameter to determine whether the environment
+        #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = project.conf
 
@@ -200,6 +218,9 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## BACKUP ####
 
+        #' Backup the current environment to a file on the disk.
+        #'
+        #' @param file the path to the backup file
         save.to.disk = function(file) {
             save(self, file = file)
         },
@@ -207,18 +228,25 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## PATHS ####
 
-        ## construct the absolute path to the project's result folder
+        #' Get the absolute path to the project's result folder.
+        #'
+        #' @return the path to the result folder
         get.data.path = function() {
             data.path = private$project.conf$get.entry("datapath")
             return(data.path)
         },
 
-        ## construct the absolute path to the range's result folder for synchronicity data
+        #' Get the absolute path to the range's result folder for synchronicity data.
+        #'
+        #' @return the path to the synchronicity files
         get.data.path.synchronicity = function() {
             data.path = private$project.conf$get.entry("datapath.synchronicity")
             return(data.path)
         },
 
+        #' Get the absolute path to the result folder for pasta data.
+        #'
+        #' @return the path to the pasta data
         get.data.path.pasta = function() {
             data.path = private$project.conf$get.entry("datapath.pasta")
             return(data.path)
@@ -227,7 +255,10 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## RAW DATA ####
 
-        #get the list of commits without empty artifacts
+        #' Get the list of commits without empty artifacts.
+        #' If it doesn´t already exist call the filter method.
+        #'
+        #' @return the commit list without empty artifacts
         get.commits.filtered.empty = function() {
             logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
 
@@ -239,7 +270,10 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered.empty)
         },
 
-        ## get the complete filtered list of commits
+        #' Get the list of commits without the base artifact.
+        #' If it doesn´t already exist call the filter method.
+        #'
+        #' @return the commit list without the base artifact
         get.commits.filtered = function() {
             logging::loginfo("Getting commit data filtered by artifact.base.")
 
@@ -251,7 +285,10 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered)
         },
 
-        ## get the complete raw list of commits
+        #' Get the complete list of commits.
+        #' If it doesn´t already exist call the read method first.
+        #'
+        #' @return the list of commits
         get.commits.raw = function() {
             logging::loginfo("Getting raw commit data.")
 
@@ -266,14 +303,19 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.raw)
         },
 
-        ## set the complete raw list of commits
+        #' Set the commit list of the project to a new one.
+        #'
+        #' @param data the new list of commits
         set.commits.raw = function(data) {
             logging::loginfo("Setting raw commit data.")
             if (is.null(data)) data = data.frame()
             private$commits.raw = data
         },
 
-        ## get the complete synchronicity data
+        #' Get the synchronicity data.
+        #' If it doesn´t already exist call the read method.
+        #'
+        #' @return the synchronicity data
         get.synchronicity = function() {
             logging::loginfo("Getting synchronicity data.")
 
@@ -289,13 +331,18 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$synchronicity)
         },
 
-        ## set the complete synchronicity data
+        #' Set the synchronicity data to the given data.
+        #'
+        #' @param data the new synchronicity data
         set.synchronicity = function(data) {
             logging::loginfo("Setting synchronicity data.")
             private$synchronicity = data
         },
 
-        ## get the complete PaStA data
+        #' Get the pasta data.
+        #' If it doesn´t already exist call the read method.
+        #'
+        #' @return the pasta data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
@@ -307,13 +354,19 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$pasta)
         },
 
-        ## set the complete PaStA data
+        #' Set the pasta data to the given new data.
+        #'
+        #' @param data the new pasta data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
             private$pasta = data
         },
 
-        ## get the complete list of mails
+        #' Get the mail data.
+        #' If it doesn´t already exist call the read method.
+        #' Add pasta data if it is configured.
+        #'
+        #' @return the mail data
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
@@ -321,7 +374,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$mails)) {
                 private$mails = read.mails(self$get.data.path())
 
-                ## add PaStA data if wanted
+                ## add pasta data if wanted
                 if(private$project.conf$get.pasta()) {
                     private$mails = private$add.pasta.data(private$mails)
                 }
@@ -330,14 +383,19 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$mails)
         },
 
-        ## set the complete list of mails
+        #' Set the mail data to the given new data.
+        #'
+        #' @param data the new mail data
         set.mails = function(data) {
             logging::loginfo("Setting e-mail data.")
             if (is.null(data)) data = data.frame()
             private$mails = data
         },
 
-        ## get the ID--author mapping
+        #' Get the author data.
+        #' If it doesn´t already exist call the read method.
+        #'
+        #' @return the author data
         get.authors = function() {
             logging::loginfo("Getting author data.")
 
@@ -349,13 +407,17 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$authors)
         },
 
-        ## set the ID--author mapping
+        #' Set the atuhor data to the given new data.
+        #'
+        #' @param data the new author data
         set.authors = function(data) {
             logging::loginfo("Setting author data.")
             private$authors = data
         },
 
-        ## get the list of artifacts
+        #' Get the list of artifacts of the project.
+        #'
+        #' @return the list of artifacts
         get.artifacts = function() {
             logging::loginfo("Getting artifact data.")
 
@@ -376,7 +438,14 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## DATA ####
 
-        ## get single pasta items
+        #' Get single pasta items.
+        #' For a given 'message.id', the associated 'commit.hash' is returned.
+        #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
+        #'
+        #' @param message.id the message ID to get the corresponding commit hash
+        #' @param commit.hash the commit hash to get the corresponding message ID
+        #'
+        #' @return the selected pasta data
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
             logging::loginfo("Getting pasta items started.")
             #if neither message.id nor commit.hash are specified break the code
@@ -399,7 +468,9 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## get the authors for each artifact
+        #' Map the corresponding authors to each artifact and return the list.
+        #'
+        #' @return the list of authors for each artifact
         get.artifact2author = function() {
             logging::loginfo("Getting artifact--author data.")
 
@@ -409,7 +480,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        ## get the artifacts for each author
+        #' Map the corresponding artifacts to each author and return the list.
+        #'
+        #' @return the list of artifacts for every author
         get.author2artifact = function() {
             logging::loginfo("Getting author--artifact data.")
 
@@ -419,7 +492,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        ## get the artifacts for each commits
+        #' Map the corresponding artifacts to each commit and return the list.
+        #'
+        #' @return the list of artifacts for each commit
         get.commit2artifact = function() {
           logging::loginfo("Getting commit--artifact data.")
 
@@ -429,7 +504,9 @@ ProjectData = R6::R6Class("ProjectData",
           return(mylist)
         },
 
-        ## get the authors for each mail thread
+        #' Map the corresponding authors to each mail thread and return the list.
+        #'
+        #' @return the list of authors for each mail thread
         get.thread2author = function() {
           logging::loginfo("Getting thread--author data.")
 
@@ -439,7 +516,9 @@ ProjectData = R6::R6Class("ProjectData",
           return(mylist)
         },
 
-        ## get the mails for each author
+        #' Map the corresponding mails to each author and return the list.
+        #'
+        #' @return the list of mails for each author
         get.author2mail = function() {
             logging::loginfo("Getting author--mail data.")
 
@@ -449,7 +528,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        ## get the threads for each author
+        #' Map the corresponding threads to each author and return the list.
+        #'
+        #' @return the list of threads for each author
         get.author2thread = function() {
             logging::loginfo("Getting author--thread data.")
 
@@ -462,7 +543,9 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## NotUsed  ####
 
-        ## get the commits for each author
+        #' Map the corresponding commits to each author and return the list.
+        #'
+        #' @return the list of commits for each author
         get.author2commit = function() {
           logging::loginfo("Getting author--commit data.")
 
@@ -473,7 +556,9 @@ ProjectData = R6::R6Class("ProjectData",
           return(mylist)
         },
 
-        ## get the files for each author
+        #' Map the corresponding files to each author and return the list.
+        #'
+        #' @return the list of files for each author
         get.author2file = function() {
             logging::loginfo("Getting author--file data.")
 
@@ -483,7 +568,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        ## get the files for each commits
+        #' Map the corresponding files to each commit and return the list.
+        #'
+        #' @return the list of files for each commit
         get.commit2file = function() {
             logging::loginfo("Getting commit--file data.")
 
@@ -517,7 +604,14 @@ RangeData = R6::R6Class("RangeData",
     ## public members ####
     public = list(
 
-        ## constructor
+        #' Constructor of the class. Constructs a new instance by calling the
+        #' constructor of 'ProjectData' with the given 'project.conf' and then
+        #' setting the 'range' and the 'revision.callgraph' to the given ones
+        #' if they exist.
+        #'
+        #' @param project.conf the project configuration for the new instance
+                  #' @param range the range for the new instance
+                  #' @param revision.callgraph the revision callgraph for the new instance
         initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
             super$initialize(project.conf)
@@ -534,6 +628,7 @@ RangeData = R6::R6Class("RangeData",
 
         ## TO STRING ;) ####
 
+        #' The to string method of the class.
         get.class.name = function() {
             return(
                 sprintf("RangeData<%s, %s, %s>",
@@ -547,14 +642,18 @@ RangeData = R6::R6Class("RangeData",
 
         ## PATHS ####
 
-        ## construct the absolute path to the range's result folder
+        #' Construct and return the absolute path to the range's result folder.
+        #'
+        #' @return the path to the range's result folder
         get.data.path = function() {
             data.path = private$project.conf$get.entry("datapath")
             range = private$range
             return(file.path(data.path, range))
         },
 
-        ## construct the absolute path to the range's result folder for callgraphs
+        #' Construct and return the absolute path to the range's result folder for callgraphs
+        #'
+        #' @return the path to the range's result folder for callgraphs
         get.data.path.callgraph = function() {
             data.path = file.path(private$project.conf$get.entry("datapath.callgraph"), private$revision.callgraph)
             return(data.path)
@@ -563,12 +662,16 @@ RangeData = R6::R6Class("RangeData",
 
         ## DATA ####
 
-        ## get range
+        #' Get the 'range' of the current instance.
+        #'
+        #' @return the range
         get.range = function() {
             return(private$range)
         },
 
-        ## get call-graph revision
+        #' Get the 'revision.callgraph' of the current instance
+        #'
+        #' @return the revision callgraph
         get.revision.callgraph = function() {
             return(private$revision.callgraph)
         }
@@ -576,15 +679,22 @@ RangeData = R6::R6Class("RangeData",
     )
 )
 
-
-## Transform data.frame 'base.data' to a list
-## - split by column given by thing1 (key)
-## - use thing2 as first column in sublist items (value)
-## - append all other existing columns (including thing1 and thing2)
-## - each item in the results list gets attributes
-##   - group.type (=thing1) and
-##   - group.name (=unique(item[[thing1]]))
 ## TODO rename arguments 'thing1' and 'thing2' to 'key' and 'value', resp.
+#' Transform the 'base data' data.frame to a list in order to execute
+#' the following tasks:
+#'  - split by column given by key
+#'  - use value as first column in sublist items
+#'  - append all other existing columns (including key and value)
+#'  - each item in the results list gets attributes:
+#'   - group.type (=value) and
+#'   - group.name (=unique(item[[key]]))
+#'
+#' @param base.data the base data for the method
+#' @param thing1 the key for the result
+#' @param thing2 the value for the result
+#' @param ... a possibility for further attributes to be passed
+#'
+#' @return the resulting list
 get.key.to.value.from.df = function(base.data, thing1, thing2, ...) {
     logging::logdebug("get.key.to.value.from.df: starting.")
 

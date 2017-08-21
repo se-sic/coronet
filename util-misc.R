@@ -13,10 +13,18 @@ requireNamespace("igraph") # networks
 requireNamespace("logging")
 
 
-## Construct a dependency network from the given list of lists
-## - e.g., for a list of authors per thread, all authors are connected if they are in the same thread (sublist)
-## - if directed, the order of things in the sublists is respected
-## - if directed, edge.attrs hold the vector of possible edge attributes in the given list
+#' Construct a dependency network from the given list of lists.
+#' For example for a list of authors per thread, where all authors are connected if they are
+#' in the same thread (sublist).
+#'
+#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' vector of possible edge attributes in the given list.
+#'
+#' @param list the list of lists with data
+#' @param network.conf the network configuration
+#' @param directed whether or not the network should be directed
+#'
+#' @return the built network
 construct.dependency.network.from.list = function(list, network.conf, directed = FALSE) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.dependency.network.from.list: starting.")
@@ -176,9 +184,13 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 }
 
 
-## Read a basic igraph network from disk
-##
-## In this environment, we only use the 'pajek' format.
+#' Read a basic igraph network from disk.
+#' The format for this environment is 'pajek'.
+#'
+#' @param file the path to the network file
+#' @param format the format
+#'
+#' @return the read network
 read.network.from.file = function(file, format = "pajek") {
     # read the basic graph
     g = igraph::read.graph(file, format = "pajek")
@@ -190,11 +202,16 @@ read.network.from.file = function(file, format = "pajek") {
 }
 
 
-## Process vertex names in artifact networks for consistent names
-##
-## Feature and file networks can have unique naming structures existent
-## (especially in the call-graph networks), so the names need to be processed
-## to match those coming from other analyses (e.g., Codeface).
+#' Process vertex names in artifact networks for consistent names.
+#'
+#' Since feature and file networks may have unique naming structures, the names
+#' need to be processed in order to match the ones coming from different analyses
+#' (e.g. Codeface)
+#'
+#' @param net the network to be processed
+#' @param artifact the artifact of the network
+#'
+#' @return the processed network
 postprocess.artifact.names.callgraph = function(net, artifact) {
     names = igraph::get.vertex.attribute(net, "name")
 
@@ -222,10 +239,14 @@ postprocess.artifact.names.callgraph = function(net, artifact) {
 }
 
 
-## Construct an edge list for the given network, with timestamps as an extra attribute column
-##
-## If there are problems accessing the 'date' attribute of a network, this attribute needs to
-## be added to it during network construction (defined as a default edge attribute).
+#' Construct an edge list for the given network, with timestamps as an extra attribute column.
+#'
+#' The 'date' attribute has to be added during network construction as default edge attribute
+#' in order to avoid problems accessing it.
+#'
+#' @param net the given network
+#'
+#' @return the new edgelist
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
   edges = as.data.frame(igraph::get.edgelist(net))
@@ -260,7 +281,11 @@ EDGE.ATTR.HANDLING = list(
     "concat"
 )
 
-## Simplify a network
+#' Simplify a given network.
+#'
+#' @param network the given network
+#'
+#' @return the simplified network
 simplify.network = function(network) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
@@ -272,7 +297,11 @@ simplify.network = function(network) {
     return(network)
 }
 
-## Simplify a list of networks
+#' Simplify a list of networks.
+#'
+#' @param networks the list of networks
+#'
+#' @return the simplified networks
 simplify.networks = function(networks){
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
@@ -291,6 +320,11 @@ simplify.networks = function(networks){
 ## Utility function to create empty networks that do not break the algorithms
 ##
 
+#' Create an empty network that doesn´t break the algorithms.
+#'
+#' @param directed whether or not the network should be directed
+#'
+#' @return the new empty network
 create.empty.network = function(directed = TRUE) {
     ## create empty network
     net = igraph::graph.empty(0, directed = directed)
@@ -308,6 +342,11 @@ create.empty.network = function(directed = TRUE) {
 ## Stacktrace
 ##
 
+#' Get the stacktrace.
+#'
+#' @param calls the calls of the stacktrace
+#'
+#' @return the built stacktrace
 get.stacktrace = function(calls) {
     lapply(calls, deparse)
 }

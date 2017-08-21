@@ -15,6 +15,12 @@ Sys.setenv(TZ = "UTC")
 options(stringsAsFactors = FALSE)
 
 
+#' Read the commits from the 'commits.list' file.
+#'
+#' @param data.path the path to the commit list
+#' @param artifact the artifact whichs commits are read
+#'
+#' @return the read commits
 read.commits.raw = function(data.path, artifact) {
 
     logging::logdebug("read.commits.raw: starting.")
@@ -84,7 +90,15 @@ read.commits.raw = function(data.path, artifact) {
     return(commit.data)
 }
 
-## read the synchronicity data of commits
+#' Read the synchronicity data from file. The name of the file follows
+#' the following pattern: 'commit_sync_analysis_artifact_time.window.dat',
+#' where artifact and time.window are the given variables.
+#'
+#' @param data.path the path to the synchronicity data
+#' @param artifact the artifact whichs synchronicity data get read
+#' @param time.window the time window of the data to be read
+#'
+#' @return the read synchronicity data
 read.synchronicity = function(data.path, artifact, time.window) {
     logging::logdebug("read.synchronicity: starting.")
 
@@ -117,7 +131,11 @@ read.synchronicity = function(data.path, artifact, time.window) {
     return(synchronicity)
 }
 
-## read the mail data for the range
+#' Read the mail data from the 'emails.list' file.
+#'
+#' @param data.path the path to the mail data
+#'
+#' @return the read mail data
 read.mails = function(data.path) {
 
     logging::logdebug("read.mails: starting.")
@@ -171,6 +189,11 @@ read.mails = function(data.path) {
     return(mail.data)
 }
 
+#' Read the author data from the 'authors.list' file.
+#'
+#' @param data.path the path to the author data
+#'
+#' @return the read author data
 read.authors = function(data.path) {
 
     logging::logdebug("read.authors: starting.")
@@ -201,6 +224,13 @@ read.authors = function(data.path) {
     return(authors.df)
 }
 
+#' Read and parse the pasta data from the 'similar-mailbox' file.
+#' The form in the file is : <message-id> <possibly another message.id> => commit.hash.
+#' The parsed form is a data frame with message IDs as keys and commit hashes as values.
+#'
+#' @param data.path the path to the pasta data
+#'
+#' @return the read and parsed pasta data
 read.pasta = function(data.path) {
     # constant for seperating keys and value
     SEPERATOR = " => "

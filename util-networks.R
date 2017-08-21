@@ -42,7 +42,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## AUTHOR NETWORKS ####
 
-        ## get the co-change-based author relation as network
+        #' Get the co-change-based author relation as network.
+        #' If it doesn´t already exist build it first.
+        #'
+        #' @return the author network with cochange relation
         get.author.network.cochange = function() {
             logging::logdebug("get.author.network.cochange: starting.")
 
@@ -66,7 +69,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(author.net)
         },
 
-        ## get the thread-based author relation as network
+        #' Get the thread-based author relation as network.
+        #' If it doesn´t already exist build it first.
+        #'
+        #' @return the author network with mail relation
         get.author.network.mail = function() {
 
             logging::logdebug("get.author.network.mail: starting.")
@@ -98,7 +104,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## ARTIFACT NETWORKS ####
 
-        ## co-change-based artifact network
+        #' Get the co-change-based artifact network,
+        #' If it doesn´t already exist build it first.
+        #'
+        #' @return the artifact network with cochange realtion
         get.artifact.network.cochange = function() {
 
             logging::logdebug("get.artifact.network.cochange: starting.")
@@ -122,8 +131,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
-        ## call-graph-based artifact network
-        ## IMPORTANT: This only works for range-level analyses! (errors otherwise)
+        #' Get the call-graph-based artifact network.
+        #' If it doesn´t already exist build it first.
+        #' IMPORTANT: This only works for range-level analyses!
+        #'
+        #' @return the artifact network with callgraph relation
         get.artifact.network.callgraph = function() {
 
             logging::logdebug("get.artifact.network.callgraph: starting.")
@@ -164,7 +176,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
     ## public members ####
     public = list(
-        ## constructor
+        #' Constructor of the class. Constructs a new instance based on the
+        #' given data object and the network configuration
+        #'
+        #' @param project.data the given data object
+                  #' @param network.conf the network configuration
         initialize = function(project.data, network.conf) {
             private$proj.data = project.data
 
@@ -177,7 +193,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
         ## RESET ENVIRONMENT ##
 
-        ## reset cached data
+        #' Reset the current environment in order to rebuild it.
+        #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
             private$authors.network.mail = NULL
             private$authors.network.cochange = NULL
@@ -187,12 +204,16 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## CONFIGURATION ####
 
-        ## get the current network configuration
+        #' Get the current network configuration.
+        #'
+        #' @return the current network configuration
         get.network.conf = function() {
             return(private$network.conf)
         },
 
-        ## set the current network configuration to the given one
+        #' Set the network configuration to the given new one.
+        #'
+        #' @param network.conf the new network configuration
         set.network.conf = function(network.conf) {
             private$network.conf = network.conf
             self$reset.environment()
@@ -201,14 +222,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## UPDATE CONFIGURATION ####
 
-        ## update network-configuration parameters
+        #' Update the network configuration based on the given list
+        #' of values and reset the environment afterwards
+        #'
+        #' @param updated.values the new values for the network configuration
         update.network.conf = function(updated.values = list()) {
             private$network.conf$update.values(updated.values = updated.values)
             self$reset.environment()
         },
 
 
-        ## get the author relation as network (generic)
+        #' Get the generic author network.
+        #'
+        #' @return the generic author network
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
 
@@ -245,7 +271,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(net)
         },
 
-        ## get artifact relation as network (generic)
+        #' Get the generic artifact network.
+        #'
+        #' @return the generic artifact network
         get.artifact.network = function() {
             logging::loginfo("Constructing artifact network.")
 
@@ -266,7 +294,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(net)
         },
 
-        ## get the (real) bipartite network
+        #' Get the (real) bipartite network.
+        #'
+        #' @return the bipartite network
         get.bipartite.network = function() {
             ## authors-artifact relation
             authors.to.artifacts = private$proj.data$get.author2artifact()
@@ -293,7 +323,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(u)
         },
 
-        ## get all networks (build unification to avoid null-pointers)
+        #' Get all networks as list.
+        #' Build unification to avoid null-pointers.
+        #'
+        #' @return all networks in a list
         get.networks = function() {
             logging::loginfo("Constructing all networks.")
 
@@ -314,7 +347,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ))
         },
 
-        ## get the multi networks (get.networks combined in one network)
+        #' Get the multi network.
+        #' The multi network is basically the result of 'get.networks' combined
+        #' in one network.
+        #'
+        #' @return the multi network
         get.multi.network = function() {
             logging::loginfo("Constructing multi network.")
 
@@ -361,7 +398,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 ## Union of networks ####
 ##
 
-## combine networks to a bipartite network
+#' Combine networks to a bipartite network.
+#'
+#' @param authors.net the given author network
+#' @param artifacts.net the given artifact network
+#' @param authors.to.artifacts the raltion between both
+#' @param network.conf the network.conf
+#'
+#' @return the combined bipartite network
 combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, network.conf) {
 
     authors = igraph::get.vertex.attribute(authors.net, "name")
@@ -389,7 +433,13 @@ combine.networks = function(authors.net, artifacts.net, authors.to.artifacts, ne
 }
 
 
-## helper function to add dependencies from dev--art mapping to the bipartite network
+#' Add dependencies from dev--art mapping to the bipartite network.
+#'
+#' @param net the bipartite network
+#' @param auth.to.arts the dev--art mapping
+#' @param network.conf the network configuration
+#'
+#' @return the adjusted network
 add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 
     ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
@@ -425,6 +475,11 @@ add.edges.for.devart.relation = function(net, auth.to.arts, network.conf) {
 ## Exemplary network for illustration purposes
 ##
 
+#' Get a example network for illustration purposes.
+#'
+#' @param network.conf the network configuration
+#'
+#' @return the sample network
 get.sample.network = function(network.conf = NetworkConf$new()) {
     ## INDEPENDENT NETWORKS
     authors = igraph::graph.empty(directed = FALSE) +

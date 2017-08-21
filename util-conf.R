@@ -72,7 +72,14 @@ NetworkConf = R6::R6Class("NetworkConf",
         skip.threshold = list(value = Inf,
                               type = "numeric"),
 
-        # Checks if the given value is of the correct type
+        #' Check whether the given 'value' is the correct datatype
+        #' for the attribute 'name'.
+        #'
+        #' @param value the new value for the attribute
+        #' @param name the name of the attribute
+        #'
+        #' @return 'TRUE' if the datatype is correct and
+        #'         'FALSE' otherwise
         check.value = function(value, name) {
             return(exists(name, where = private) &&
                     (class(value) == (private[[name]][["type"]]))
@@ -83,7 +90,7 @@ NetworkConf = R6::R6Class("NetworkConf",
     ## public members ####
     public = list(
 
-        # Prints the private variables in the class
+        #' Print the private variables of the class.
         print = function() {
             logging::loginfo("Printing state of network configuration.")
             for (name in names(private)) {
@@ -93,7 +100,10 @@ NetworkConf = R6::R6Class("NetworkConf",
             }
         },
 
-        # Update the values in NetworkConf by giving a list containing the new values
+        #' Update the attributes of the class with the new values given in the
+        #' 'updated.values' list.
+        #'
+        #' @param updated.values the new values for the attributes to be updated
         update.values = function(updated.values = list()) {
             for (name in names(updated.values)) {
                 if (private$check.value(value = updated.values[[name]], name = name)) {
@@ -111,7 +121,11 @@ NetworkConf = R6::R6Class("NetworkConf",
             }
         },
 
-        # Returns the variable with the given name
+        #' Get the variable whichs name is given by 'var.name'.
+        #'
+        #' @param var.name the name of the variable to be returned
+        #'
+        #' @return the variable
         get.variable = function(var.name) {
             return(private[[var.name]][["value"]])
         }
@@ -143,6 +157,11 @@ ProjectConf = R6::R6Class("ProjectConf",
         ## Revisions and ranges
         ##
 
+        #' Change the revision names to a equal name standard.
+        #'
+        #' @param ranges the list of ranges to be postprocessed
+        #'
+        #' @return the postprocessed ranges
         postprocess.revision.list = function(ranges) {
             # remove names ,e.g. "version", from release cycle names
             casestudy = private$casestudy
@@ -163,6 +182,11 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(ranges)
         },
 
+        #' Change the revision names of callgraph data to a equal name standard.
+        #'
+        #' @param r list of revisions to be postprocessed
+        #'
+        #' @return list of postprocessed revisions
         postprocess.revision.list.for.callgraph.data = function(r) {
             r = gsub("version-", "", r) # remove version prefix (SQLite)
             r = gsub("OpenSSL_", "", r) # remove name prefix (OpenSSL)
@@ -178,35 +202,69 @@ ProjectConf = R6::R6Class("ProjectConf",
         subfolder.configurations = "configurations",
         subfolder.results = "results",
 
-        ## Construct the path to the configuration folder of Codeface
+        #' Construct and return the path to the configuration folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #'
+        #' @return the path to the configuration folder
         get.configurations.folder = function(data, selection.process) {
             return(file.path(data, private$subfolder.configurations, selection.process))
         },
 
-        ## Construct the path to the results folder of Codeface
+        #' Construct and return the path to the results folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param project the current project
+        #' @param tagging the current tagging ('feature', 'proximity')
+        #'
+        #' @return the path to the results folder
         get.results.folder = function(data, selection.process, project, tagging) {
             return(file.path(data, private$subfolder.results, selection.process, project, tagging))
         },
 
-        ## Construct the path to the callgraph folder of Codeface
+        #' Construct and return the path to the callgraph folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #'
+        #' @return the path to the callgraph folder
         get.callgraph.folder = function(data, selection.process, casestudy) {
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "callgraphs", sep = "_")))
         },
 
-        ## Construct the path to the synchronicity folder of Codeface
+        #' Construct and return the path to the synchronicity folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #'
+        #' @return the path to the synchronicity folder
         get.synchronicity.folder = function(data, selection.process, casestudy) {
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "synchronicity", sep = "_")))
         },
 
+        #' Construct and return the path to the pasta folder of Codeface.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #'
+        #' @return the path to the pasta folder
         get.pasta.folder = function(data, selection.process, casestudy) {
             return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "pasta", sep = "_")))
         },
 
-        ## construct path to a Codeface configuration
-        ## - data: path to codeface-data folder
-        ## - selection.process: one of: threemonth, releases
-        ## - casestudy: the name of the casestudy (same name as repo folder, e.g., "busybox")
-        ## - tagging: the tagging parameter used by Codeface, one of: feature, proximity
+        #' Construct and return the path to a Codeface configuration.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #' @param tagging the current tagging ('feature', 'proximity')
+        #'
+        #' @return the path to the configuration
         construct.conf.path = function(data, selection.process, casestudy, tagging) {
             ## construct the base name of the configuration
             conf.basename = paste(casestudy, "_", tagging, ".conf", sep = "")
@@ -220,13 +278,13 @@ ProjectConf = R6::R6Class("ProjectConf",
         ## Configuration loading
         ##
 
-        ## function to load a Codeface configuration
-        ## - data: path to codeface-data folder
-        ## - selection.process: one of: threemonth, releases
-        ## - casestudy: the name of the casestudy (same name as repo folder, e.g., "busybox")
-        ## - artifact: the kind of artifact to study, one of: feature, function, file
-        ##
-        ## The artifact parameter is automatically mapped to the tagging parameter used by Codeface.
+        #' Load a Codeface configuration.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #' @param artifact the artifact to study ('feature','function','file'), is mapped to the
+        #'                 tagging parameter, used by codeface, automatically
         load.configuration = function(data, selection.process, casestudy, artifact = "feature") {
 
             ## convert artifact to tagging
@@ -290,7 +348,11 @@ ProjectConf = R6::R6Class("ProjectConf",
             logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
         },
 
-        ## access data in configuration list
+        #' Get an entry of the configuration list by its key
+        #'
+        #' @param key the key of the entry to be returned
+        #'
+        #' @return the specified entry of the configuration list
         get.conf.entry = function(key) {
             return(private$conf[[key]])
         }
@@ -300,7 +362,12 @@ ProjectConf = R6::R6Class("ProjectConf",
     ## public members ####
     public = list(
 
-        ## constructor
+        #' Constructor of the class.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #' @param artifact the artifact to study ('feature','function','file')
         initialize = function(data, selection.process, casestudy, artifact = "feature") {
             if (!missing(data) && is.character(data)) {
                 private$data <- data
@@ -321,32 +388,52 @@ ProjectConf = R6::R6Class("ProjectConf",
         },
 
 
-        ## get configuration list
+        #' Get configuration list.
+        #'
+        #' @return the configuration list
         get.conf = function() {
             return(private$conf)
         },
 
+        #' Get configuration list as string.
+        #'
+        #' @return the configuration list as string
         get.conf.as.string = function() {
             return(yaml::as.yaml(private$conf))
         },
 
         ## CONFIGURATION ENTRIES
 
+        #' Get an entry of the configuration list. Calls 'get.conf.entry'.
+        #'
+        #' @param entry.name name of the entry to be returned
+        #'
+        #' @return the entry specified
         get.entry = function(entry.name) {
             return(private$get.conf.entry(entry.name))
         },
 
-        ## get the corresponding call-graph revision for the given range
+        #' Get the corresponding callgraph revision for the given range.
+        #'
+        #' @param range the range for the callgraph revisions
+        #'
+        #' @return the callgraph revisions
         get.callgraph.revision.from.range = function(range) {
             idx = which(self$get.entry("ranges") == range)
             rev = self$get.entry("revisions.callgraph")[idx + 1]
             return(rev)
         },
 
+        #' Get the 'synchronicity' variable.
+        #'
+        #' @return the 'synchronicity' variable
         get.synchronicity = function() {
             return(private$synchronicity)
         },
 
+        #' Set the 'synchronicity' variable to the given new value.
+        #'
+        #' @param synchronicity the new value for the variable
         set.synchronicity = function(synchronicity) {
             if(class(synchronicity) == "logical")
                 private$synchronicity = synchronicity
@@ -354,10 +441,16 @@ ProjectConf = R6::R6Class("ProjectConf",
                 logging::logwarn("Wrong data type given in set.synchronicity.")
         },
 
+        #' Get the 'synchronicity.time.window' variable.
+        #'
+        #' @return the 'synchronicity.time.window' variable
         get.synchronicity.time.window = function() {
           return(private$synchronicity.time.window)
         },
 
+        #' Set the 'synchronicity.time.window' variable to the given new value.
+        #'
+        #' @param synchronicity.time.window the new value for the variable
         set.synchronicity.time.window = function(synchronicity.time.window) {
           if(class(synchronicity.time.window) == "numeric")
             private$synchronicity.time.window = synchronicity.time.window
@@ -365,10 +458,16 @@ ProjectConf = R6::R6Class("ProjectConf",
             logging::logwarn("Wrong data type given in set.synchronicity.time.window.")
         },
 
+        #' Get the 'artifact.filter.base' variable.
+        #'
+        #' @return the 'artifact.filter.base' variable
         get.artifact.filter.base = function() {
           return(private$artifact.filter.base)
         },
 
+        #' Set the 'artifact.filter.base' variable to the given new value.
+        #'
+        #' @param artifact.filter.base the new value for the variable
         set.artifact.filter.base = function(artifact.filter.base) {
           if(class(artifact.filter.base) == "logical")
             private$artifact.filter.base = artifact.filter.base
@@ -376,10 +475,16 @@ ProjectConf = R6::R6Class("ProjectConf",
             logging::logwarn("Wrong data type given in set.artifact.filter.base")
         },
 
+        #' Get the 'pasta' variable.
+        #'
+        #' @return the 'pasta' variable
         get.pasta = function() {
           return(private$pasta)
         },
 
+        #' Set the 'pasta' variable to the given new value.
+        #'
+        #' @param pasta the new value for the variable
         set.pasta = function(pasta) {
           if(class(pasta) == "logical")
             private$pasta = pasta
@@ -389,7 +494,12 @@ ProjectConf = R6::R6Class("ProjectConf",
 
         ## UPDATING CONFIGURATION ENTRIES
 
-        ## set the revisions and ranges
+        #' Set the revisions and ranges for the study.
+        #'
+        #' @param revisions the revisions of the study
+        #' @param revisions.dates the revision dates of the study
+        #' @param sliding.window whether sliding window splitting is enabled or not
+        #'                       default: 'FALSE'
         set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
             ## store revision data
             private$conf$revisions = revisions
@@ -425,6 +535,13 @@ ProjectConf = R6::R6Class("ProjectConf",
 ## Construction of range strings
 ##
 
+#' Construct the range strings.
+#'
+#' @param revs the revisions
+#' @param sliding.window whether sliding window splitting is enabled or not
+#'                       default: 'FALSE'
+#'
+#' @return the ranges as strings
 construct.ranges = function(revs, sliding.window = FALSE) {
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
