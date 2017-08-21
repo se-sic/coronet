@@ -9,7 +9,7 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 
-#' Read the commits from file.
+#' Read the commits from the 'commits.list' file.
 #'
 #' @param data.path the path to the commit list
 #' @param artifact the artifact whichs commits are read
@@ -84,7 +84,9 @@ read.commits.raw = function(data.path, artifact) {
     return(commit.data)
 }
 
-#' Read the synchronicity data from file
+#' Read the synchronicity data from file. The name of the file follows
+#' the following pattern: 'commit_sync_analysis_artifact_time.window.dat',
+#' where artifact and time.window are the given variables.
 #'
 #' @param data.path the path to the synchronicity data
 #' @param artifact the artifact whichs synchronicity data get read
@@ -123,7 +125,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     return(synchronicity)
 }
 
-#' Read the mail data from file.
+#' Read the mail data from the 'emails.list' file.
 #'
 #' @param data.path the path to the mail data
 #'
@@ -181,7 +183,7 @@ read.mails = function(data.path) {
     return(mail.data)
 }
 
-#' Read the author data from file.
+#' Read the author data from the 'authors.list' file.
 #'
 #' @param data.path the path to the author data
 #'
@@ -216,16 +218,13 @@ read.authors = function(data.path) {
     return(authors.df)
 }
 
-#' Read and parse the PaStA data from file.
+#' Read and parse the pasta data from the 'similar-mailbox' file.
 #' The form in the file is : <message-id> <possibly another message.id> => commit.hash.
-#' The parsed form is a data frame with message.ids as keys and commit hashes as values.
+#' The parsed form is a data frame with message IDs as keys and commit hashes as values.
 #'
 #' @param data.path the path to the pasta data
 #'
 #' @return the read and parsed pasta data
-#' @export
-#'
-#' @examples
 read.pasta = function(data.path) {
     # constant for seperating keys and value
     SEPERATOR = " => "

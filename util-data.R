@@ -45,8 +45,6 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Filter commits with empty artifacts from the commit list and save the new list
         #' to 'commits.filtered.empty'.
-        #'
-        #' @return
         filter.commits.empty = function() {
 
             logging::logdebug("filter.commits.empty: starting.")
@@ -77,11 +75,9 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits.empty: finished.")
         },
 
-        #' Filter the commits which touch the base artifact from the commit list and save the new list
+        #' Filter the commits from the commit list that touch the base artifact and save the new list
         #' to 'commits.filtered'.
-        #' Add Synchronicity and PaStA data if configured in 'project.conf'.
-        #'
-        #' @return
+        #' Add synchronicity and pasta data if configured in 'project.conf'.
         filter.commits = function() {
 
             logging::logdebug("filter.commits: starting.")
@@ -120,7 +116,7 @@ ProjectData = R6::R6Class("ProjectData",
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
 
-            ## add PaStA data if wanted
+            ## add pasta data if wanted
             if (private$project.conf$get.pasta()) {
                 self$get.pasta()
                 commit.data = private$add.pasta.data(commit.data)
@@ -135,7 +131,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param data the base data as data.frame to append the PaStA data to.
         #'
-        #' @return the appended data.frame
+        #' @return the augmented data.frame
         add.pasta.data = function(data) {
             logging::loginfo("Adding pasta data.")
             data[, "pasta"] = NA
@@ -163,7 +159,7 @@ ProjectData = R6::R6Class("ProjectData",
     public = list(
         #' The constructor of the class.
         #'
-        #' @param project.conf the given 'project.conf' for this instance of the class.
+        #' @param project.conf the given 'project.conf' for this instance of the class
         initialize = function(project.conf) {
             if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
                 private$project.conf = project.conf
@@ -204,7 +200,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the current project configuration.
         #'
-        #' @return the 'project.conf' of the current instance of the class.
+        #' @return the 'project.conf' of the current instance of the class
         get.project.conf = function() {
             return(private$project.conf)
         },
@@ -251,9 +247,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
-        #' Get the absolute path to the result folder for PaStA data.
+        #' Get the absolute path to the result folder for pasta data.
         #'
-        #' @return the path to the PaStA data
+        #' @return the path to the pasta data
         get.data.path.pasta = function() {
             data.path = private$project.conf$get.entry("datapath.pasta")
             return(data.path)
@@ -346,10 +342,10 @@ ProjectData = R6::R6Class("ProjectData",
             private$synchronicity = data
         },
 
-        #' Get the PaStA data.
+        #' Get the pasta data.
         #' If it doesn´t already exist call the read method.
         #'
-        #' @return the PaStA data
+        #' @return the pasta data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
@@ -361,9 +357,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$pasta)
         },
 
-        #' Set the PaStA data to the given new data.
+        #' Set the pasta data to the given new data.
         #'
-        #' @param data the new PaStA data
+        #' @param data the new pasta data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
             private$pasta = data
@@ -371,7 +367,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the mail data.
         #' If it doesn´t already exist call the read method.
-        #' Add PaStA data if it is configured.
+        #' Add pasta data if it is configured.
         #'
         #' @return the mail data
         get.mails = function() {
@@ -381,7 +377,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$mails)) {
                 private$mails = read.mails(self$get.data.path())
 
-                ## add PaStA data if wanted
+                ## add pasta data if wanted
                 if(private$project.conf$get.pasta()) {
                     private$mails = private$add.pasta.data(private$mails)
                 }
@@ -445,14 +441,14 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## DATA ####
 
-        #' Get single PaStA items.
-        #' For a given 'message.id' the associated 'commit.hash' is returned.
-        #' For a given 'commit.hash' the associated 'message.id' or ids are returned.
+        #' Get single pasta items.
+        #' For a given 'message.id', the associated 'commit.hash' is returned.
+        #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
         #'
-        #' @param message.id the message id to get the corresponding commit hash
-        #' @param commit.hash the commit hash to get the corresponding message id
+        #' @param message.id the message ID to get the corresponding commit hash
+        #' @param commit.hash the commit hash to get the corresponding message ID
         #'
-        #' @return the selected PaStA data
+        #' @return the selected pasta data
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
             logging::loginfo("Getting pasta items started.")
             #if neither message.id nor commit.hash are specified break the code
@@ -699,7 +695,7 @@ RangeData = R6::R6Class("RangeData",
 #' @param base.data the base data for the method
 #' @param thing1 the key for the result
 #' @param thing2 the value for the result
-#' @param ... a possibility for further atributes to be passed
+#' @param ... a possibility for further attributes to be passed
 #'
 #' @return the resulting list
 get.key.to.value.from.df = function(base.data, thing1, thing2, ...) {

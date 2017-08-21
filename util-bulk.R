@@ -20,7 +20,7 @@ requireNamespace("igraph") # networks
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
 #'
 #' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
@@ -61,7 +61,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
 #'
 #' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
@@ -102,7 +102,7 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
 #'
 #' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
@@ -143,7 +143,7 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
 #'
 #' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
@@ -184,7 +184,7 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
 #' @param callgraphs whether or not callgraph data is existing
-#' @param step the step of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
 #'
 #' @return the constructed data
 construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
