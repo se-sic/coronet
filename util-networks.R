@@ -320,8 +320,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the bipartite network
         get.bipartite.network = function() {
+            ## get data by the chosen relation
             relation = private$network.conf$get.variable("author.relation")
-
             switch(
                 relation,
                 cochange = {
@@ -339,24 +339,33 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             )
 
             ## extract vertices for author network
-            if (private$network.conf$get.variable("author.all.authors") &&
-                !private$network.conf$get.variable("author.only.committers")) {
+            if (private$network.conf$get.variable("author.all.authors")) {
                 authors = private$proj.data$get.authors()[[ "author.name" ]]
             } else {
                 authors = names(net.to.net)
             }
 
-            ##construct networks from vertices
-            authors.net = create.empty.network(directed = private$network.conf$get.variable("author.directed")) +
+            ## construct networks from vertices:
+            directed = private$network.conf$get.variable("author.directed")
+            ## 1) author network
+            authors.net = create.empty.network(directed = directed) +
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
-
-            data.vertices = unique(unlist(lapply(net.to.net, function(df) {
+            ## 2) artifact network
+            artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
                 return(df$data.vertices)
             })))
-
-            data.net = create.empty.network(directed = private$network.conf$get.variable("artifact.directed")) +
-                igraph::vertices(data.vertices, name = data.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
+            artifact.net = create.empty.network(directed = directed) +
+                igraph::vertices(artifact.vertices, name = artifact.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
+            ## 3) combine both networks and bipartite relation
             u = combine.networks(authors.net, artifact.net, net.to.net, network.conf = private$network.conf)
+
+            ## remove vertices that are not committers if wanted
+            if (private$network.conf$get.variable("author.only.committers")) {
+                committers = unique(private$proj.data$get.commits.raw()[["author.name"]])
+                authors = igraph::get.vertex.attribute(u, "name", igraph::V(u)[ type == TYPE.AUTHOR ])
+                authors.to.remove = setdiff(authors, committers)
+                u = igraph::delete.vertices(u, authors.to.remove)
+            }
 
             return(u)
         },
@@ -369,6 +378,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing all networks.")
 
             ## author-artifact relation
+            ## FIXME we need the proper relation here!
             authors.to.artifacts = private$proj.data$get.author2artifact()
             ## bipartite network
             bipartite.net = self$get.bipartite.network()
