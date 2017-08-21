@@ -65,7 +65,7 @@ NetworkConf = R6::R6Class("NetworkConf",
                                    "date", # general
                                    "message.id", "thread", # mail data
                                    "hash", "file", "artifact.type", "artifact", # commit data
-                                   "issue.id", "event.name"
+                                   "issue.id", "event.name" # issue data
                                ),
                                type = "character"),
         simplify = list(value = FALSE,
@@ -327,7 +327,7 @@ ProjectConf = R6::R6Class("ProjectConf",
             ## store path to pasta data
             conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
             ## store path to issue data
-            conf$datapath.issues = private$get.issues.folder(data, selection.process, conf[["project"]])
+            conf$datapath.issues = private$get.issues.folder(data, selection.process, casestudy)
 
             ## READ REVISIONS META-DATA
 
