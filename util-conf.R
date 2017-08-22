@@ -47,6 +47,7 @@ ARTIFACT.CODEFACE = list(
 NetworkConf = R6::R6Class("NetworkConf",
     ## private members ####
     private = list(
+        attributes = list(
         #Variables with default values
         #Values can be changed using update.values method
         author.relation = list(value = "mail",
@@ -71,7 +72,8 @@ NetworkConf = R6::R6Class("NetworkConf",
         simplify = list(value = FALSE,
                         type = "logical"),
         skip.threshold = list(value = Inf,
-                              type = "numeric"),
+                              type = "numeric")
+        ),
 
         #' Check whether the given 'value' is the correct datatype
         #' for the attribute 'name'.
@@ -83,7 +85,7 @@ NetworkConf = R6::R6Class("NetworkConf",
         #'         'FALSE' otherwise
         check.value = function(value, name) {
             return(exists(name, where = private) &&
-                    (class(value) == (private[[name]][["type"]]))
+                    (class(value) == (private[["attributes"]][[name]][["type"]]))
             )
         }
     ),
@@ -92,13 +94,14 @@ NetworkConf = R6::R6Class("NetworkConf",
     public = list(
 
         #' Print the private variables of the class.
-        print = function() {
+        #'
+        #' @param allowed Indicator whether to print information on allowed values
+        print = function(allowed = FALSE) {
             logging::loginfo("Printing state of network configuration.")
-            for (name in names(private)) {
-                if ((class(private[[name]]) != "function")) {
-                   logging::loginfo("%s: %s", name, private[[name]])
-                }
-            }
+            logging::loginfo(
+                "Network configuration:\n%s",
+                get.configuration.string(private$attributes, title = NULL)
+            )
         },
 
         #' Update the attributes of the class with the new values given in the
@@ -128,7 +131,7 @@ NetworkConf = R6::R6Class("NetworkConf",
         #'
         #' @return the variable
         get.variable = function(var.name) {
-            return(private[[var.name]][["value"]])
+            return(private[["attributes"]][[var.name]][["value"]])
         }
     )
 )
@@ -413,7 +416,7 @@ ProjectConf = R6::R6Class("ProjectConf",
         #'
         #' @return the configuration list as string
         get.conf.as.string = function() {
-            return(yaml::as.yaml(private$conf))
+            return(get.configuration.string(private$conf, title = NULL))
         },
 
         ## CONFIGURATION ENTRIES
@@ -573,4 +576,88 @@ construct.ranges = function(revs, sliding.window = FALSE) {
     ranges = paste(seq1, seq2, sep = "-")
 
     return(ranges)
+}
+
+
+
+#' Constructs a string representing a configuration (i.e., a potentially nested list).
+#'
+#' @param conf the configuration list to represent as string
+#' @param title the title line right before the constructed string
+#'
+#' @return a string representing the status of \code{conf}, including newline characters and
+#'         pretty-printed list style
+get.configuration.string = function(conf, title = deparse(substitute(conf))) {
+    fill="↳ "
+    front = "- "
+    indentation.item = "  "
+
+    construct.configuration.string = function(struct, title, depth = 0) {
+        ## construct the indentation
+        indentation = if (depth > 0) rep(indentation.item, depth - 1) else ""
+
+        output = c()
+
+        len = length(struct)
+
+        ## add current title
+        if (!is.null(title)) {
+            if (depth > 0) output = c(output, indentation)
+            output = c(output, paste0(front, title))
+
+            if (mode(struct) == "list") {
+                output = c(output, "\n")
+            }
+        }
+
+        if(is.atomic(struct) && len > 0) {
+            if (len == 1) {
+                field = paste0(" = ", paste(struct, collapse = ", "), "\n")
+            } else if (len > 7) {
+                # browser()
+                entries = paste0(indentation, indentation.item, indentation.item, struct)
+                field = paste0(
+                    " = [\n",
+                    paste(entries, collapse = ",\n"),
+                    "\n",
+                    if (depth > 0) indentation,
+                    if (depth > 0) indentation.item,
+                    "]\n"
+                )
+            } else {
+                field = paste0(" = [", paste(struct, collapse = ", "), "]\n")
+            }
+            output = c(output, field)
+        }
+
+        if (mode(struct) == "list" && len > 0) {
+            structnames = names(struct)
+            if(is.null(structnames)) structnames = rep("", len)
+
+            noname = structnames == ""
+            structnames[noname] = sprintf("[[%s]]", seq_len(len)[noname])
+
+            for (i in seq_len(len)) {
+                item = struct[[i]]
+                label = structnames[i]
+                if (mode(item) == "argument" || mode(item) == "unknown") {
+                    browser()
+                    entry = paste(indentation, indentation.item, label, "=", as.character(item)[1], "\n")
+                } else {
+                    entry = construct.configuration.string(
+                        struct = item,
+                        title = label,
+                        depth = depth + 1
+                    )
+                }
+                output = c(output, entry)
+            }
+        }
+
+        output = paste(output, collapse = "")
+        return(output)
+    }
+
+    return(construct.configuration.string(conf, title))
+
 }
