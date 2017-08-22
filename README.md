@@ -90,7 +90,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 
 - `author.relation`
   * The relation among authors, encoded as edges in an author network
-  * possible values: [*`"mail"`*, `"cochange"`]
+  * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
   * The (time-based) directedness of edges in an author network
   * [`TRUE`, *`FALSE`*]
@@ -118,7 +118,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
        - author information: `"author.name"`, `"author.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
        - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
-       - PaStA information: `"pasta"`
+       - PaStA information: `"pasta"`,
+       - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
   * **Note**: For the edge attributes `"pasta"` and `"synchronicty"`, the network configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).

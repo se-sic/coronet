@@ -47,33 +47,95 @@ ARTIFACT.CODEFACE = list(
 NetworkConf = R6::R6Class("NetworkConf",
     ## private members ####
     private = list(
+        ## Variables with default values
+        ## Values can be changed using update.values method
         attributes = list(
-        #Variables with default values
-        #Values can be changed using update.values method
-        author.relation = list(value = "mail",
-                               type = "character"), # mail, cochange, issue
-        author.directed = list(value = FALSE,
-                               type = "logical"),
-        author.all.authors = list(value = FALSE,
-                                  type = "logical"),
-        author.only.committers = list(value = FALSE,
-                                      type = "logical"),
-        artifact.relation = list(value = "cochange",
-                                 type = "character"),
-        artifact.directed = list(value = FALSE,
-                                 type = "logical"),
-        edge.attributes = list(value = c(
-                                   "date", # general
-                                   "message.id", "thread", # mail data
-                                   "hash", "file", "artifact.type", "artifact", # commit data
-                                   "issue.id", "event.name" # issue data
-                               ),
-                               type = "character"),
-        simplify = list(value = FALSE,
-                        type = "logical"),
-        skip.threshold = list(value = Inf,
-                              type = "numeric")
+            author.relation = list(
+                default = "mail",
+                type = "character",
+                allowed = c("mail", "cochange", "issue"),
+                allowed.number = 1
+            ),
+            author.directed = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            author.all.authors = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            author.only.committers = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            artifact.relation = list(
+                default = "cochange",
+                type = "character",
+                allowed = c("cochange", "callgraph"),
+                allowed.number = 1
+            ),
+            artifact.directed = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            edge.attributes = list(
+                default = c(
+                    "date", # general
+                    "message.id", "thread", # mail data
+                    "hash", "file", "artifact.type", "artifact", # commit data
+                    "issue.id", "event.name" # issue data
+                ),
+                type = "character",
+                allowed = c(
+                    # the date
+                    "date",
+                    # author information
+                    "author.name", "author.email",
+                    # e-mail information
+                    "message.id", "thread", "subject",
+                    ## commit information
+                    "hash", "file", "artifact.type", "artifact", "changed.files", "added.lines",
+                    "deleted.lines", "diff.size", "artifact.diff.size", "synchronicity",
+                    # pasta information
+                    "pasta",
+                    # issue information
+                    "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request",
+                    "author.name", "author.mail", "event.date", "event.name"
+                ),
+                allowed.number = Inf
+            ),
+            simplify = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            skip.threshold = list(
+                default = Inf,
+                type = "numeric",
+                allowed = Inf,
+                allowed.number = 1
+            )
         ),
+
+        #' Check all attributes for their consistency.
+        #'
+        #' @return a logical indicating if the checks have been successful
+        check.values = function(value, name) {
+            current.values = lapply(names(private$attributes), function(att) {
+                return(self$get.variable(att))
+            })
+            names(current.values) = names(private$attributes)
+            self$update.values(current.values, stop.on.error = TRUE)
+        },
 
         #' Check whether the given 'value' is the correct datatype
         #' for the attribute 'name'.
@@ -81,26 +143,60 @@ NetworkConf = R6::R6Class("NetworkConf",
         #' @param value the new value for the attribute
         #' @param name the name of the attribute
         #'
-        #' @return 'TRUE' if the datatype is correct and
-        #'         'FALSE' otherwise
+        #' @return a named list of logical values, named:
+        #'         - existing,
+        #'         - type,
+        #'         - allowed, and
+        #'         - allowed.number.
         check.value = function(value, name) {
-            return(exists(name, where = private) &&
-                    (class(value) == (private[["attributes"]][[name]][["type"]]))
+            ## check all properties
+            attribute = private[["attributes"]][[name]]
+            result = c(
+                existing = exists(name, where = private[["attributes"]]),
+                type = class(value) == attribute[["type"]],
+                allowed =
+                    if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
+                        value <= attribute[["allowed"]]
+                    } else {
+                        value %in% attribute[["allowed"]]
+                    },
+                allowed.number = length(value) <= attribute[["allowed.number"]]
             )
+            return(result)
         }
     ),
 
     ## public members ####
     public = list(
 
+        #' The constructor, automatically checking the default values.
+        initialize = function() {
+            private$check.values()
+        },
+
         #' Print the private variables of the class.
         #'
         #' @param allowed Indicator whether to print information on allowed values
         print = function(allowed = FALSE) {
             logging::loginfo("Printing state of network configuration.")
+
+            ## get the complete list of attributes
+            attributes = private$attributes
+
+            ## remove information on allowed values if not wanted
+            if (!allowed) {
+                attributes = lapply(attributes, function(att) {
+                    att[["allowed"]] = NULL
+                    att[["allowed.number"]] = NULL
+                    att[["type"]] = NULL
+                    return(att)
+                })
+            }
+
+            ## log the information
             logging::loginfo(
                 "Network configuration:\n%s",
-                get.configuration.string(private$attributes, title = NULL)
+                get.configuration.string(attributes, title = NULL)
             )
         },
 
@@ -108,30 +204,93 @@ NetworkConf = R6::R6Class("NetworkConf",
         #' 'updated.values' list.
         #'
         #' @param updated.values the new values for the attributes to be updated
-        update.values = function(updated.values = list()) {
+        #' @param error call stop() on an error?
+        update.values = function(updated.values = list(), stop.on.error = FALSE) {
+            ## determine the function executed on an error
+            error.function = ifelse(stop.on.error, stop, logging::logwarn)
+
+            ## check values to update
             for (name in names(updated.values)) {
-                if (private$check.value(value = updated.values[[name]], name = name)) {
-                    if(name == "edge.attributes" && !("date" %in% updated.values[[name]])) {
-                      private[[name]][["value"]] = c(updated.values[[name]], "date")
+                ## get value to update
+                value = updated.values[[name]]
+                ## check the value
+                check = private$check.value(value = value, name = name)
+
+                ## if all checks are passed
+                if (all(check)) {
+                    private[["attributes"]][[name]][["value"]] = value
+                }
+                ## if some check failed
+                else {
+                    ## get current environment for logging
+                    attribute = private[["attributes"]][[name]]
+
+                    if (!check[["existing"]]) {
+                        message = paste0(
+                            "Updating network-configuration attribute '%s' failed.\n",
+                            "A network-configuraton attribute with this name does not exist."
+                        )
+                        error.function(sprintf(message, name))
                     } else {
-                      private[[name]][["value"]] = updated.values[[name]]
-                    }
-                } else {
-                  logging::logwarn("Name or type of '%s' is incorrect. Type given is: '%s'.", name, class(updated.values[[name]]))
-                    if(exists(name, where = private)) {
-                        logging::logwarn("Expected type is: '%s'.", private[[name]][["type"]])
+                        message = paste0(
+                            "Updating network-configuration attribute '%s' failed.\n",
+                            if (!stop.on.error) "The failure is ignored!\n",
+                            "Current value: %s\n",
+                            "Allowed values (%s of type '%s'): %s\n",
+                            "Given value (of type '%s'): %s"
+                        )
+                        error.function(sprintf(
+                            message,
+                            name,
+                            self$get.variable(name), ## to be sure for unset variables
+                            attribute[["allowed.number"]],
+                            attribute[["type"]],
+                            if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
+                                paste("<=", attribute[["allowed"]])
+                            } else {
+                                paste(attribute[["allowed"]], collapse = ", ")
+                            },
+                            class(value),
+                            value
+                        ))
                     }
                 }
             }
+
+            ## check for special things
+            ## 1) "date" always as edge attribute
+            name = "edge.attributes"
+            private[["attributes"]][[name]][["value"]] = unique(private[["attributes"]][[name]][["value"]], "date")
+
+            ## return invisible
+            invisible()
         },
 
-        #' Get the variable whichs name is given by 'var.name'.
+        #' Get the variable whose name is given by 'var.name'.
         #'
         #' @param var.name the name of the variable to be returned
         #'
         #' @return the variable
         get.variable = function(var.name) {
-            return(private[["attributes"]][[var.name]][["value"]])
+            value = private[["attributes"]][[var.name]][["value"]]
+
+            ## if there is no value set, retrieve the default
+            if (is.null(value)) {
+                value = self$get.variable.default(var.name)
+            }
+
+            return(value)
+        },
+
+        #' Get the default value for the variable whose name is given by 'var.name'.
+        #'
+        #' @param var.name the name of the variable to be returned
+        #'
+        #' @return the default variable value
+        get.variable.default = function(var.name) {
+            value = private[["attributes"]][[var.name]][["default"]]
+
+            return(value)
         }
     )
 )
