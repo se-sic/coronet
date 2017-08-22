@@ -25,7 +25,7 @@ test_that("Read the raw commit data.", {
     commit.data.read = read.commits.raw(proj.conf$get.entry("datapath"), proj.conf$get.entry("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(id=as.integer(c(32712,32712,32713,32713,32710,32710,32714,32711,32711)),
+    commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713,32710,32710,32714,32711,32711)),
                                       date=as.POSIXct(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45","2016-07-12 16:05:41","2016-07-12 16:05:41",
                                                         "2016-07-12 16:06:10","2016-07-12 16:06:32","2016-07-12 16:06:32")),
@@ -112,7 +112,7 @@ test_that("Read the mail data.", {
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= 2","Re: busybox 1",
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= tab","Re: Fw: busybox 2 tab",
                                               "Re: Fw: busybox 10"),
-                                    thread=sprintf("<thread%s>", c(1,2,3,4,5,6,6,6,6,6,6,7,8,8,8,9,9))
+                                    thread=sprintf("<thread-%s>", c(1,2,3,4,5,6,6,6,6,6,6,7,8,8,8,9,9))
                                     )
     ## delete the line with the empty date
     mail.data.expected = mail.data.expected[-13,]
@@ -158,3 +158,5 @@ test_that("Read and parse the pasta data.", {
     expect_identical(pasta.data.read, pasta.data.expected, info = "PaStA data.")
 })
 
+
+## FIXME add test for reading issue data

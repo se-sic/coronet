@@ -23,7 +23,6 @@ options(stringsAsFactors = FALSE)
 #'
 #' @return the read commits
 read.commits.raw = function(data.path, artifact) {
-
     logging::logdebug("read.commits.raw: starting.")
 
     file = file.path(data.path, "commits.list")
@@ -32,7 +31,7 @@ read.commits.raw = function(data.path, artifact) {
     commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                   fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
-    ## break if the list of commits is empty
+    ## handle the case that the list of commits is empty
     if (inherits(commit.data, 'try-error')) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
@@ -45,7 +44,7 @@ read.commits.raw = function(data.path, artifact) {
     ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
     ## cd.file, cd.entityId, cd.entityType, cd.size
     colnames(commit.data) = c(
-        "id", # id
+        "commit.id", # id
         "date", "author.name", "author.email", # author information
         "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
         "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
@@ -86,6 +85,9 @@ read.commits.raw = function(data.path, artifact) {
     commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
+    ## set pattern for thread ID for better recognition
+    commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
+
     ## store the commit data
     logging::logdebug("read.commits.raw: finished.")
     return(commit.data)
@@ -103,7 +105,6 @@ read.commits.raw = function(data.path, artifact) {
 read.synchronicity = function(data.path, artifact, time.window) {
     logging::logdebug("read.synchronicity: starting.")
 
-
     ## check time.window
     allowed.time.windows = c(1, 5, 10)
     stopifnot((time.window) %in% allowed.time.windows)
@@ -112,7 +113,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     file.name = sprintf("commit_sync_analysis_%ss_%s.dat", artifact, time.window)
     file = file.path(data.path, file.name)
 
-    ## break if file does not exist
+    ## handle the case that the synchronicity data is empty
     if(!file.exists(file)) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
@@ -138,7 +139,6 @@ read.synchronicity = function(data.path, artifact, time.window) {
 #'
 #' @return the read mail data
 read.mails = function(data.path) {
-
     logging::logdebug("read.mails: starting.")
 
     ## get file name of commit data
@@ -148,7 +148,7 @@ read.mails = function(data.path) {
     mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
-    ## break if the list of mails is empty
+    ## handle the case that the list of mails is empty
     if (inherits(mail.data, 'try-error')) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
@@ -164,7 +164,8 @@ read.mails = function(data.path) {
         "thread" # thread ID
     )
 
-    mail.data[["thread"]] = paste("<", "thread", mail.data[["thread"]], ">", sep = "")
+    ## set pattern for thread ID for better recognition
+    mail.data[["thread"]] = sprintf("<thread-%s>", mail.data[["thread"]])
 
     ## remove mails without a proper date as they mess up directed mail-based networks
     ## this basically only applies for project-level analysis
@@ -198,7 +199,6 @@ read.mails = function(data.path) {
 #'
 #' @return the read author data
 read.authors = function(data.path) {
-
     logging::logdebug("read.authors: starting.")
 
     ## get file name of commit data
@@ -239,9 +239,13 @@ read.pasta = function(data.path) {
     SEPERATOR = " => "
     KEY.SEPERATOR = " "
 
+    ## get file name of pasta data
     filepath = file.path(data.path, "similar-mailbox")
+
+    ## read data from disk [can be empty]
     lines = try(readLines(filepath), silent = TRUE)
 
+    ## handle the case if the list of pasta items is empty
     if (inherits(lines, 'try-error')) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
@@ -276,28 +280,44 @@ read.pasta = function(data.path) {
     return(result.df)
 }
 
-read.issues = function(data.path) {
 
+#' Read and parse the issue data from the 'issues.list' file.
+#' The parsed format is a data frame with message IDs as keys and commit hashes as values.
+#'
+#' @param data.path the path to the pasta data
+#'
+#' @return the read and parsed pasta data
+read.issues = function(data.path) {
     logging::logdebug("read.issues: starting.")
 
+    ## get file name of issue data
     filepath = file.path(data.path, "issues.list")
 
-    print(filepath)
-
+    ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
                                   fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
+    ## handle the case that the list of issues is empty
     if (is.data.frame(issue.data) && nrow(issue.data) == 0) {
         logging::logwarn("There is no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(issue.data)
     }
 
+    ## set proper column names
+    colnames(issue.data) = c(
+        "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
+        "author.id", "author.name", "author.email", # author information
+        "date", # the date
+        "event.name" # the event describing the row's entry
+    )
 
-    colnames(issue.data) = c("issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", "author.id",
-                             "author.name", "author.mail", "event.date", "event.name")
+    ## remove unneeded columns from data
+    issue.data["author.id"] = NULL
 
-    issue.data[["issue.id"]] = paste("<", "issue", issue.data[["issue.id"]], ">", sep = "")
+    ## set pattern for issue ID for better recognition
+    issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
+
     logging::logdebug("read.issues: finished")
     return(issue.data)
 }
