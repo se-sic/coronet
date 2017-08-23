@@ -297,11 +297,11 @@ read.issues = function(data.path) {
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
                                   fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
 
-    ## handle the case that the list of issues is empty
-    if (is.data.frame(issue.data) && nrow(issue.data) == 0) {
-        logging::logwarn("There is no Github issue data available for the current environment.")
+    ## handle the case that the list of commits is empty
+    if (inherits(issue.data, 'try-error')) {
+        logging::logwarn("There are no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(issue.data)
+        return(data.frame())
     }
 
     ## set proper column names
