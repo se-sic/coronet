@@ -318,6 +318,16 @@ read.issues = function(data.path) {
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
 
+    ## convert 'is.pull.request' column to logicals
+    issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
+
+    ## convert dates and sort by 'date' column
+    issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
+    issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
+    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "null" ] = NA
+    issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
+    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+
     logging::logdebug("read.issues: finished")
     return(issue.data)
 }
