@@ -3,6 +3,7 @@
 
 
 context("Splitting functionality.")
+## FIXME broken right now due to addition of issue splitting
 
 ##
 ## Context

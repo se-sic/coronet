@@ -433,6 +433,25 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
+        ## get the list of issues
+        get.issues = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if(is.null(private$issues)) {
+                private$issues = read.issues(self$get.data.path.issues())
+            }
+            return(private$issues)
+        },
+
+        #' Set the issue data to the given new data.
+        #'
+        #' @param data the new issue data
+        set.issues = function(data) {
+            logging::loginfo("Setting issue data.")
+            private$issues = data
+        },
+
         #' Get the list of artifacts of the project.
         #'
         #' @return the list of artifacts
@@ -451,17 +470,6 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             return(private$artifacts)
-        },
-
-        ## get the list of issues
-        get.issues = function() {
-            logging::loginfo("Getting issue data")
-
-            ## if issues have not been read yet do this
-            if(is.null(private$issues)) {
-                private$issues = read.issues(self$get.data.path.issues())
-            }
-            return(private$issues)
         },
 
 

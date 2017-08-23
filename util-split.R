@@ -31,18 +31,19 @@ Sys.setenv(TZ = "UTC")
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
 #'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
-#' @param split.basis the data name to use as the basis for split bins, either 'commits' or 'mails'
+#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
-                                 split.basis = c("commits", "mails"), sliding.window = FALSE) {
+                                 split.basis = c("commits", "mails", "issues"), sliding.window = FALSE) {
     ## get actual raw data
     data = list(
         commits = project.data$get.commits.raw(),
-        mails = project.data$get.mails()
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues()
     )
     split.data = names(data)
     names(split.data) = split.data
@@ -113,11 +114,13 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.range.data$set.commits.raw(df.list[["commits"]])
         ## 2) mails
         cf.range.data$set.mails(df.list[["mails"]])
-        ## 3) synchronicity data
+        ## 3) issues
+        cf.range.data$set.issues(df.list[["issues"]])
+        ## 4) synchronicity data
         cf.range.data$set.synchronicity(project.data$get.synchronicity())
-        ## 4) ID--author mapping
+        ## 5) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
-        ## 5) pasta data
+        ## 6) pasta data
         cf.range.data$set.pasta(project.data$get.pasta())
 
         return(cf.range.data)
@@ -182,7 +185,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' than the specified amount.
 #'
 #' @param project.data the *Data object from which the data is retrieved
-#' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
+#' @param activity.type the type of activity used for splitting, either 'commits', 'mails', or 'issues'
+#'                      [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
 #' @param number.windows the number of consecutive data objects to get from this function
@@ -191,7 +195,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
-split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
+split.data.activity.based = function(project.data, activity.type = c("commits", "mails", "issues"),
                                      activity.amount = 5000, number.windows = NULL,
                                      sliding.window = FALSE) {
 
@@ -201,13 +205,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## get actual raw data
     data = list(
         commits = project.data$get.commits.raw(),
-        mails = project.data$get.mails()
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues()
     )
 
     ## define ID columns for mails and commits
     id.column = list(
         commits = "hash",
-        mails = "message.id"
+        mails = "message.id",
+        issues = "date"
     )
 
     ## get amount of available activity
