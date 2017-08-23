@@ -62,7 +62,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
         "2016-07-12 16:01:59-2016-07-12 16:04:59",
         "2016-07-12 16:04:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
@@ -129,7 +129,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
         "2010-10-09 18:38:13-2013-10-09 18:38:13",
         "2013-10-09 18:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
@@ -197,7 +197,7 @@ test_that("Split a data object time-based (bins == ... ).", {
     expected = c(
         "2016-01-01 00:00:01-2016-12-31 23:59:59"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
@@ -255,7 +255,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         "2016-07-12 16:05:41-2016-07-12 16:06:32",
         "2016-07-12 16:06:32-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (activity.amount).")
 
     ## check data for all ranges
@@ -301,7 +301,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     expected = c(
         "2016-07-12 15:58:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
 
     ## check data for all ranges
@@ -340,7 +340,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         "2016-07-12 15:58:59-2016-07-12 16:06:10",
         "2016-07-12 16:06:10-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (number.windows).")
 
     ## check data for all ranges
@@ -417,7 +417,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         "2016-07-12 15:58:40-2016-07-12 16:05:37",
         "2016-07-12 16:05:37-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
@@ -475,7 +475,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     expected = c(
         "2004-10-09 18:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
 
     ## check data for all ranges
@@ -514,7 +514,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         "2004-10-09 18:38:13-2010-07-12 12:05:43",
         "2010-07-12 12:05:43-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (number.windows).")
 
     ## check data for all ranges
@@ -569,7 +569,7 @@ test_that("Split a network time-based (time.period = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$set.artifact.filter.base(FALSE)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -627,7 +627,7 @@ test_that("Split a network time-based (bins = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$set.artifact.filter.base(FALSE)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -682,7 +682,7 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$set.artifact.filter.base(FALSE)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -952,7 +952,7 @@ test_that("Check consistency of data and network time-based splitting.", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$set.artifact.filter.base(FALSE)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 

@@ -91,7 +91,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
                 ## configurations
                 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-                proj.conf$set.artifact.filter.base(FALSE)
+                proj.conf$update.value("artifact.filter.base", FALSE)
                 net.conf = NetworkConf$new()
 
                 ## update network configuration

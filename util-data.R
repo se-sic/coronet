@@ -101,22 +101,22 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only process commits with the artifact listed in the configuration or missing
             commit.data = subset(commit.data, artifact.type %in%
-                                     c(private$project.conf$get.entry("artifact.codeface"), ""))
+                                     c(private$project.conf$get.value("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$project.conf$get.artifact.filter.base()) {
+            if (private$project.conf$get.value("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
             ## append synchronicity data if wanted
-            if (private$project.conf$get.synchronicity()) {
+            if (private$project.conf$get.value("synchronicity")) {
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data,
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
 
             ## add pasta data if wanted
-            if (private$project.conf$get.pasta()) {
+            if (private$project.conf$get.value("pasta")) {
                 self$get.pasta()
                 commit.data = private$add.pasta.data(commit.data)
             }
@@ -173,7 +173,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' The to String method of the class.
         get.class.name = function() {
             return(
-                sprintf("ProjectData<%s>", private$project.conf$get.entry("repo"))
+                sprintf("ProjectData<%s>", private$project.conf$get.value("repo"))
             )
         },
 
@@ -219,37 +219,13 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## get value from project configuration
         get.project.conf.entry = function(entry) {
-            if(entry == "synchronicity") {
-                return(project.conf$get.synchronicity())
-            } else if (entry == "synchronicity.time.window") {
-                return(project.conf$get.synchronicity.time.window())
-            } else if (entry == "artifact.filter.base") {
-                return(project.conf$get.artifact.filter.base())
-            } else if (entry == "pasta") {
-                return(project.conf$get.pasta())
-            } else {
-                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
-                return(NULL)
-            }
+            return(private$project.conf$get.value(entry))
         },
 
         ## set a value of the project configuration and reset the environment
+        ## FIXME streamline signature with the net-conf analog in net-builder
         set.project.conf.entry = function(entry, value) {
-            if(entry == "synchronicity" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.synchronicity(value)
-            } else if (entry == "synchronicity.time.window" && class(value) == "numeric") {
-                reset.environment()
-                project.conf$set.synchronicity.time.window(value)
-            } else if (entry == "artifact.filter.base" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.artifact.filter.base(value)
-            } else if (entry == "pasta" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.pasta(value)
-            } else {
-                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
-            }
+            private$project.conf$update.value(entry, value)
         },
 
 
@@ -269,7 +245,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the path to the result folder
         get.data.path = function() {
-            data.path = private$project.conf$get.entry("datapath")
+            data.path = private$project.conf$get.value("datapath")
             return(data.path)
         },
 
@@ -277,7 +253,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the path to the synchronicity files
         get.data.path.synchronicity = function() {
-            data.path = private$project.conf$get.entry("datapath.synchronicity")
+            data.path = private$project.conf$get.value("datapath.synchronicity")
             return(data.path)
         },
 
@@ -285,12 +261,12 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the path to the pasta data
         get.data.path.pasta = function() {
-            data.path = private$project.conf$get.entry("datapath.pasta")
+            data.path = private$project.conf$get.value("datapath.pasta")
             return(data.path)
         },
 
         get.data.path.issues = function() {
-            data.path = private$project.conf$get.entry("datapath.issues")
+            data.path = private$project.conf$get.value("datapath.issues")
             return(data.path)
         },
 
@@ -338,7 +314,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$commits.raw)) {
                 private$commits.raw = read.commits.raw(
                     self$get.data.path(),
-                    private$project.conf$get.entry("artifact")
+                    private$project.conf$get.value("artifact")
                 )
             }
 
@@ -365,8 +341,8 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$synchronicity)) {
                 private$synchronicity = read.synchronicity(
                     self$get.data.path.synchronicity(),
-                    private$project.conf$get.entry("artifact"),
-                    private$project.conf$get.synchronicity.time.window()
+                    private$project.conf$get.value("artifact"),
+                    private$project.conf$get.value("synchronicity.time.window")
                 )
             }
 
@@ -417,7 +393,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails = read.mails(self$get.data.path())
 
                 ## add pasta data if wanted
-                if(private$project.conf$get.pasta()) {
+                if(private$project.conf$get.value("pasta")) {
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
@@ -705,7 +681,7 @@ RangeData = R6::R6Class("RangeData",
         get.class.name = function() {
             return(
                 sprintf("RangeData<%s, %s, %s>",
-                        private$project.conf$get.entry("repo"),
+                        private$project.conf$get.value("repo"),
                         private$range,
                         private$revision.callgraph
                 )
@@ -719,7 +695,7 @@ RangeData = R6::R6Class("RangeData",
         #'
         #' @return the path to the range's result folder
         get.data.path = function() {
-            data.path = private$project.conf$get.entry("datapath")
+            data.path = private$project.conf$get.value("datapath")
             range = private$range
             return(file.path(data.path, range))
         },
@@ -728,7 +704,7 @@ RangeData = R6::R6Class("RangeData",
         #'
         #' @return the path to the range's result folder for callgraphs
         get.data.path.callgraph = function() {
-            data.path = file.path(private$project.conf$get.entry("datapath.callgraph"), private$revision.callgraph)
+            data.path = file.path(private$project.conf$get.value("datapath.callgraph"), private$revision.callgraph)
             return(data.path)
         },
 

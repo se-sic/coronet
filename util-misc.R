@@ -46,9 +46,9 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.variable("skip.threshold")) {
+            if (number.edges > network.conf$get.value("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.variable("skip.threshold"))
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
                 return(NULL)
             }
 
@@ -64,8 +64,8 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                 item.node = item[, 1]
 
                 ## get edge attributes
-                cols.which = network.conf$get.variable("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+                cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
+                item.edge.attrs = item[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -98,9 +98,9 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
 
             ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.variable("skip.threshold")) {
+            if (number.edges > network.conf$get.value("skip.threshold")) {
                 logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.variable("skip.threshold"))
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
                 return(NULL)
             }
 
@@ -129,8 +129,8 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
                 ## get edge attibutes
                 edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
-                cols.which = network.conf$get.variable("edge.attributes") %in% colnames(edge.attrs)
-                edge.attrs = edge.attrs[, network.conf$get.variable("edge.attributes")[cols.which], drop = FALSE]
+                cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
+                edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 # add edge attributes to edge list
                 edgelist = cbind(edge, edge.attrs)
@@ -175,7 +175,7 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
-    if (network.conf$get.variable("simplify"))
+    if (network.conf$get.value("simplify"))
         net = simplify.network(net)
 
     logging::logdebug("construct.dependency.network.from.list: finished.")

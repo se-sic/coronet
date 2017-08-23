@@ -22,7 +22,7 @@ test_that("Read the raw commit data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    commit.data.read = read.commits.raw(proj.conf$get.entry("datapath"), proj.conf$get.entry("artifact"))
+    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
     commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713,32710,32710,32714,32711,32711)),
@@ -60,8 +60,8 @@ test_that("Read the synchronicity data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    synchronicity.data.read = read.synchronicity(proj.conf$get.entry("datapath.synchronicity"), proj.conf$get.entry("artifact"),
-                                                 proj.conf$get.synchronicity.time.window())
+    synchronicity.data.read = read.synchronicity(proj.conf$get.value("datapath.synchronicity"), proj.conf$get.value("artifact"),
+                                                 proj.conf$get.value("synchronicity.time.window"))
 
     ## build the expected data.frame
     synchronicity.data.expected = data.frame(hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
@@ -78,7 +78,7 @@ test_that("Read the mail data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    mail.data.read = read.mails(proj.conf$get.entry("datapath"))
+    mail.data.read = read.mails(proj.conf$get.value("datapath"))
 
     ## build the expected data.frame
     ## NOTE: the empty date is set to a real date here in order to build the data.frame without problems
@@ -127,7 +127,7 @@ test_that("Read the author data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    author.data.read = read.authors(proj.conf$get.entry("datapath"))
+    author.data.read = read.authors(proj.conf$get.value("datapath"))
 
     ## build the expected data.frame
     author.data.expected = data.frame(author.id=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943)),
@@ -143,7 +143,7 @@ test_that("Read and parse the pasta data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    pasta.data.read = read.pasta(proj.conf$get.entry("datapath.pasta"))
+    pasta.data.read = read.pasta(proj.conf$get.value("datapath.pasta"))
 
     ## build the expected data.frame
     pasta.data.expected = data.frame(message.id=c("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>","<asddghdswqeasdasd@mail.gmail.com>",

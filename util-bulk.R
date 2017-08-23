@@ -25,7 +25,7 @@ requireNamespace("igraph") # networks
 #' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
@@ -66,7 +66,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 #' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
@@ -107,7 +107,7 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 #' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
@@ -148,7 +148,7 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 #' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
@@ -189,7 +189,7 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 #' @return the constructed data
 construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 

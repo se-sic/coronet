@@ -27,15 +27,19 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 ## CONFIGURATION
 
+## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-proj.conf$set.artifact.filter.base(FALSE)
+proj.conf$update.value("artifact.filter.base", FALSE)
+# proj.conf$print()
+
+## initialize network configuration
 net.conf = NetworkConf$new()
-#initialize with AUTHOR.RELATION and ARTIFACT.RELATION
 net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
+# net.conf$print()
 
 ## get ranges
-ranges = proj.conf$get.entry(entry.name = "ranges")
-revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
+ranges = proj.conf$get.value("ranges")
+revisions.callgraph = proj.conf$get.value("revisions.callgraph")
 
 
 ## PROJECT-LEVEL DATA

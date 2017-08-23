@@ -6,15 +6,16 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("R6") # for R6 classes
 requireNamespace("yaml") # for Codeface configuration files
 requireNamespace("logging")
 
 
-## / / / / / / / / / / / / / /
-## Constants
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
 
 ## mapping of tagging to artifact
 ARTIFACT.TO.TAGGING = list(
@@ -39,16 +40,282 @@ ARTIFACT.CODEFACE = list(
 )
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## NetworkConf ####
-##
-## Represents the network configurations
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Conf --------------------------------------------------------------------
 
-NetworkConf = R6::R6Class("NetworkConf",
-    ## private members ####
+Conf = R6::R6Class("Conf",
+
+    ## * private -----------------------------------------------------------
+
     private = list(
-        ## Variables with default values
-        ## Values can be changed using update.values method
+        ## * * attributes --------------------------------------------------
+        attributes = list(),
+
+        ## * * value checking ----------------------------------------------
+
+        #' Check all attributes for their consistency.
+        #'
+        #' @return a logical indicating if the checks have been successful
+        check.values = function() {
+            current.values = lapply(names(private$attributes), function(att) {
+                return(self$get.value(att))
+            })
+            names(current.values) = names(private$attributes)
+            self$update.values(current.values, stop.on.error = TRUE)
+        },
+
+        #' Check whether the given 'value' is the correct datatype
+        #' for the attribute 'name'.
+        #'
+        #' @param value the new value for the attribute
+        #' @param name the name of the attribute
+        #'
+        #' @return a named list of logical values, named:
+        #'         - existing,
+        #'         - type,
+        #'         - allowed, and
+        #'         - allowed.number.
+        check.value = function(value, name) {
+            browser(expr = name == "revisions")
+            if (!exists(name, where = private[["attributes"]])) {
+                result = c(existing = FALSE)
+            } else {
+                ## check all other properties
+                attribute = private[["attributes"]][[name]]
+                ## if non-updatable field, return early
+                if (!is.null(attribute[["updatable"]]) && !attribute[["updatable"]]) {
+                    result = c(existing = TRUE, updatable = FALSE)
+                } else {
+                    result = c(
+                        existing = TRUE,
+                        updatable = TRUE,
+                        type = class(value) %in% attribute[["type"]],
+                        allowed =
+                            if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
+                                value <= attribute[["allowed"]]
+                            } else {
+                                all(value %in% attribute[["allowed"]])
+                            },
+                        allowed.number = length(value) <= attribute[["allowed.number"]]
+                    )
+                }
+            }
+            return(result)
+        }
+
+    ),
+
+    ## * public ------------------------------------------------------------
+
+    public = list(
+
+        #' The constructor, automatically checking the default values.
+        initialize = function() {
+            private$check.values()
+        },
+
+        ## * * printing ----------------------------------------------------
+
+        #' Get configuration list as string.
+        #'
+        #' @param allowed Indicator whether to return also information on allowed values
+        #'
+        #' @return the configuration list as string
+        get.conf.as.string = function(allowed = FALSE) {
+            ## get the complete list of attributes
+            attributes = private$attributes
+
+            ## remove information on allowed values if not wanted
+            if (!allowed) {
+                attributes = lapply(attributes, function(att) {
+                    att[["allowed"]] = NULL
+                    att[["allowed.number"]] = NULL
+                    att[["type"]] = NULL
+                    return(att)
+                })
+            }
+
+            return(get.configuration.string(attributes, title = NULL))
+        },
+
+        #' Print the private variables of the class.
+        #'
+        #' @param allowed Indicator whether to print information on allowed values
+        print = function(allowed = FALSE) {
+            logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
+        },
+
+        ## * * updating ----------------------------------------------------
+
+        #' Update the attributes of the class with the new value for the given entry.
+        #'
+        #' @param entry the entry name for the value
+        #' @param value the new value
+        #' @param error call stop() on an error? [default: FALSE]
+        update.value = function(entry, value, stop.on.error = FALSE) {
+            ## construct list for updating
+            updating = list(value)
+            names(updating) = entry
+            ## update value
+            self$update.values(updating)
+        },
+
+        #' Update the attributes of the class with the new values given in the
+        #' 'updated.values' list.
+        #'
+        #' @param updated.values the new values for the attributes to be updated
+        #' @param error call stop() on an error? [default: FALSE]
+        update.values = function(updated.values = list(), stop.on.error = FALSE) {
+            ## determine the function executed on an error
+            error.function = ifelse(stop.on.error, stop, logging::logwarn)
+
+            ## check values to update
+            names.to.update = c()
+            for (name in names(updated.values)) {
+                ## get value to update
+                value = updated.values[[name]]
+                ## check the value
+                check = private$check.value(value = value, name = name)
+
+                ## if all checks are passed
+                if (all(check)) {
+                    names.to.update = c(names.to.update, name)
+                }
+                ## if some check failed
+                else {
+                    ## get current environment for logging
+                    attribute = private[["attributes"]][[name]]
+
+                    if (!check[["existing"]]) {
+
+                        message = paste(
+                            "Updating network-configuration attribute '%s' failed:",
+                            "A network-configuraton attribute with this name does not exist."
+                        )
+                        error.function(sprintf(message, name))
+
+                    } else if (!check[["updatable"]]) {
+
+                        message = paste(
+                            "Updating network-configuration attribute '%s' failed:",
+                            "The value is not updatable!"
+                        )
+                        error.function(message, name)
+
+                    } else {
+                        message = paste0(
+                            "Updating network-configuration attribute '%s' failed.",
+                            if (!stop.on.error) " The failure is ignored!\n",
+                            # "Current value: %s\n",
+                            "Allowed values (%s of type '%s'): %s\n",
+                            "Given value (of type '%s'): %s"
+                        )
+                        error.function(sprintf(
+                            message,
+                            name,
+                            # paste(self$get.value(name), collapse = ", "),
+                            attribute[["allowed.number"]],
+                            attribute[["type"]],
+                            if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
+                                paste("<=", attribute[["allowed"]])
+                            } else {
+                                paste(attribute[["allowed"]], collapse = ", ")
+                            },
+                            class(value),
+                            paste(value, collapse = ", ")
+                        ))
+
+                    }
+                }
+            }
+
+            ## Updating values if needed
+            if (length(names.to.update) > 0) {
+                logging::loginfo(
+                    "Updating following configuration parameters: %s",
+                    paste(names.to.update, collapse = ", ")
+                )
+                for (name in names.to.update) {
+                    private[["attributes"]][[name]][["default"]] = updated.values[[name]]
+                }
+            } else {
+                logging::logwarn(
+                    "Not updating any configuration parameters!"
+                )
+            }
+
+            ## FIXME move the additional checks to a method refinement
+            ## check for special things
+            ## 1) "date" always as edge attribute
+            name = "edge.attributes"
+            private[["attributes"]][[name]][["value"]] = unique(private[["attributes"]][[name]][["value"]], "date")
+
+            ## return invisible
+            invisible()
+        },
+
+        ## * * value retrieval ---------------------------------------------
+
+        #' Get the value whose name is given by 'name'.
+        #'
+        #' @param name the name of the value to be returned
+        #'
+        #' @return the value
+        get.value = function(name) {
+            value = private[["attributes"]][[name]][["value"]]
+
+            ## if there is no value set, retrieve the default
+            if (is.null(value)) {
+                value = self$get.value.default(name)
+            }
+
+            return(value)
+        },
+
+        #' Get the value whose name is given by 'name'.
+        #'
+        #' @param name the name of the value to be returned
+        #'
+        #' @return the value
+        get.entry = function(name) {
+            return(self$get.value(name))
+        },
+
+        #' Get the value whose name is given by 'name'.
+        #'
+        #' @param name the name of the value to be returned
+        #'
+        #' @return the value
+        get.variable = function(name) {
+            return(self$get.value(name))
+        },
+
+        #' Get the default value for the entry whose name is given by 'var.name'.
+        #'
+        #' @param name the name of the entry to be returned
+        #'
+        #' @return the default entry value
+        get.value.default = function(name) {
+            value = private[["attributes"]][[name]][["default"]]
+
+            return(value)
+        }
+
+    )
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## NetworkConf -------------------------------------------------------------
+
+NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
+
+    ## * private -----------------------------------------------------------
+
+    private = list(
+
+        ## * * attributes -----------------------------------------------------
+
         attributes = list(
             author.relation = list(
                 default = "mail",
@@ -124,201 +391,69 @@ NetworkConf = R6::R6Class("NetworkConf",
                 allowed = Inf,
                 allowed.number = 1
             )
-        ),
+        )
 
-        #' Check all attributes for their consistency.
-        #'
-        #' @return a logical indicating if the checks have been successful
-        check.values = function(value, name) {
-            current.values = lapply(names(private$attributes), function(att) {
-                return(self$get.variable(att))
-            })
-            names(current.values) = names(private$attributes)
-            self$update.values(current.values, stop.on.error = TRUE)
-        },
-
-        #' Check whether the given 'value' is the correct datatype
-        #' for the attribute 'name'.
-        #'
-        #' @param value the new value for the attribute
-        #' @param name the name of the attribute
-        #'
-        #' @return a named list of logical values, named:
-        #'         - existing,
-        #'         - type,
-        #'         - allowed, and
-        #'         - allowed.number.
-        check.value = function(value, name) {
-            ## check all properties
-            attribute = private[["attributes"]][[name]]
-            result = c(
-                existing = exists(name, where = private[["attributes"]]),
-                type = class(value) == attribute[["type"]],
-                allowed =
-                    if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
-                        value <= attribute[["allowed"]]
-                    } else {
-                        value %in% attribute[["allowed"]]
-                    },
-                allowed.number = length(value) <= attribute[["allowed.number"]]
-            )
-            return(result)
-        }
     ),
 
-    ## public members ####
+    ## * public ------------------------------------------------------------
+
     public = list(
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
             private$check.values()
-        },
-
-        #' Print the private variables of the class.
-        #'
-        #' @param allowed Indicator whether to print information on allowed values
-        print = function(allowed = FALSE) {
-            logging::loginfo("Printing state of network configuration.")
-
-            ## get the complete list of attributes
-            attributes = private$attributes
-
-            ## remove information on allowed values if not wanted
-            if (!allowed) {
-                attributes = lapply(attributes, function(att) {
-                    att[["allowed"]] = NULL
-                    att[["allowed.number"]] = NULL
-                    att[["type"]] = NULL
-                    return(att)
-                })
-            }
-
-            ## log the information
-            logging::loginfo(
-                "Network configuration:\n%s",
-                get.configuration.string(attributes, title = NULL)
-            )
-        },
-
-        #' Update the attributes of the class with the new values given in the
-        #' 'updated.values' list.
-        #'
-        #' @param updated.values the new values for the attributes to be updated
-        #' @param error call stop() on an error?
-        update.values = function(updated.values = list(), stop.on.error = FALSE) {
-            ## determine the function executed on an error
-            error.function = ifelse(stop.on.error, stop, logging::logwarn)
-
-            ## check values to update
-            for (name in names(updated.values)) {
-                ## get value to update
-                value = updated.values[[name]]
-                ## check the value
-                check = private$check.value(value = value, name = name)
-
-                ## if all checks are passed
-                if (all(check)) {
-                    private[["attributes"]][[name]][["value"]] = value
-                }
-                ## if some check failed
-                else {
-                    ## get current environment for logging
-                    attribute = private[["attributes"]][[name]]
-
-                    if (!check[["existing"]]) {
-                        message = paste0(
-                            "Updating network-configuration attribute '%s' failed.\n",
-                            "A network-configuraton attribute with this name does not exist."
-                        )
-                        error.function(sprintf(message, name))
-                    } else {
-                        message = paste0(
-                            "Updating network-configuration attribute '%s' failed.\n",
-                            if (!stop.on.error) "The failure is ignored!\n",
-                            "Current value: %s\n",
-                            "Allowed values (%s of type '%s'): %s\n",
-                            "Given value (of type '%s'): %s"
-                        )
-                        error.function(sprintf(
-                            message,
-                            name,
-                            self$get.variable(name), ## to be sure for unset variables
-                            attribute[["allowed.number"]],
-                            attribute[["type"]],
-                            if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
-                                paste("<=", attribute[["allowed"]])
-                            } else {
-                                paste(attribute[["allowed"]], collapse = ", ")
-                            },
-                            class(value),
-                            value
-                        ))
-                    }
-                }
-            }
-
-            ## check for special things
-            ## 1) "date" always as edge attribute
-            name = "edge.attributes"
-            private[["attributes"]][[name]][["value"]] = unique(private[["attributes"]][[name]][["value"]], "date")
-
-            ## return invisible
-            invisible()
-        },
-
-        #' Get the variable whose name is given by 'var.name'.
-        #'
-        #' @param var.name the name of the variable to be returned
-        #'
-        #' @return the variable
-        get.variable = function(var.name) {
-            value = private[["attributes"]][[var.name]][["value"]]
-
-            ## if there is no value set, retrieve the default
-            if (is.null(value)) {
-                value = self$get.variable.default(var.name)
-            }
-
-            return(value)
-        },
-
-        #' Get the default value for the variable whose name is given by 'var.name'.
-        #'
-        #' @param var.name the name of the variable to be returned
-        #'
-        #' @return the default variable value
-        get.variable.default = function(var.name) {
-            value = private[["attributes"]][[var.name]][["default"]]
-
-            return(value)
         }
+
     )
 )
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## ProjectConf ####
-##
-## Represents the Project configuration
 
-ProjectConf = R6::R6Class("ProjectConf",
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## ProjectConf -------------------------------------------------------------
 
-    ## private members ####
+ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
+
+    ## * private -----------------------------------------------------------
+
     private = list(
+
+        ## * * project info ------------------------------------------------
 
         data = NULL, # character
         selection.process = NULL, # character
         casestudy = NULL, # character
         artifact = NULL, # character
-        conf = NULL, # list
 
-        synchronicity = FALSE,
-        synchronicity.time.window = 5,
-        artifact.filter.base = TRUE,
-        pasta = FALSE,
+        ## * * attributes ---------------------------------------------------
 
-        ## / / / / / / / / / / / / / /
-        ## Revisions and ranges
-        ##
+        attributes = list(
+            artifact.filter.base = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            synchronicity = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            synchronicity.time.window = list(
+                default = 5,
+                type = "numeric",
+                allowed = c(1, 5, 10),
+                allowed.number = 1
+            ),
+            pasta = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            )
+        ),
+
+        ## * * revisions and ranges ----------------------------------------
 
         #' Change the revision names to a equal name standard.
         #'
@@ -357,10 +492,7 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(r)
         },
 
-
-        ## / / / / / / / / / / / / / /
-        ## Path construction
-        ##
+        ## * * path construction -------------------------------------------
 
         subfolder.configurations = "configurations",
         subfolder.results = "results",
@@ -373,62 +505,6 @@ ProjectConf = R6::R6Class("ProjectConf",
         #' @return the path to the configuration folder
         get.configurations.folder = function(data, selection.process) {
             return(file.path(data, private$subfolder.configurations, selection.process))
-        },
-
-        #' Construct and return the path to the results folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param project the current project
-        #' @param tagging the current tagging ('feature', 'proximity')
-        #'
-        #' @return the path to the results folder
-        get.results.folder = function(data, selection.process, project, tagging) {
-            return(file.path(data, private$subfolder.results, selection.process, project, tagging))
-        },
-
-        #' Construct and return the path to the callgraph folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #'
-        #' @return the path to the callgraph folder
-        get.callgraph.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "callgraphs", sep = "_")))
-        },
-
-        #' Construct and return the path to the synchronicity folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #'
-        #' @return the path to the synchronicity folder
-        get.synchronicity.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "synchronicity", sep = "_")))
-        },
-
-        #' Construct and return the path to the pasta folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #'
-        #' @return the path to the pasta folder
-        get.pasta.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "pasta", sep = "_")))
-        },
-
-        #' Construct and return the path to the issues folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #'
-        #' @return the path to the issues folder
-        get.issues.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "issues", sep = "_")))
         },
 
         #' Construct and return the path to a Codeface configuration.
@@ -448,18 +524,53 @@ ProjectConf = R6::R6Class("ProjectConf",
             return(conf.file)
         },
 
-        ## / / / / / / / / / / / / / /
-        ## Configuration loading
-        ##
-
-        #' Load a Codeface configuration.
+        #' Construct and return the path to the results folder of Codeface.
         #'
         #' @param data the path to the codeface-data folder
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
-        #' @param artifact the artifact to study ('feature','function','file'), is mapped to the
-        #'                 tagging parameter, used by codeface, automatically
-        load.configuration = function(data, selection.process, casestudy, artifact = "feature") {
+        #' @param suffix the suffix of the casestudy's results folder
+        #' @param subfolder an optional subfolder
+        #'
+        #' @return the path to the results folder
+        #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
+        get.results.folder = function(data, selection.process, casestudy, suffix, subfolder = NULL) {
+            path = file.path(data, private$subfolder.results, selection.process, paste(casestudy, suffix, sep = "_"))
+            if (!is.null(subfolder)) {
+                path = file.path(path, subfolder)
+            }
+            return(path)
+        }
+
+    ),
+
+    ## * public ------------------------------------------------------------
+
+    public = list(
+
+        #' Constructor of the class.
+        #'
+        #' @param data the path to the codeface-data folder
+        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+        #' @param casestudy the current casestudy
+        #' @param artifact the artifact to study ('feature','function','file')
+        initialize = function(data, selection.process, casestudy, artifact = "feature") {
+            super$initialize()
+
+            if (!missing(data) && is.character(data)) {
+                private$data <- data
+            }
+            if (!missing(selection.process) && is.character(selection.process)) {
+                private$selection.process <- selection.process
+            }
+            if (!missing(casestudy) && is.character(casestudy)) {
+                private$casestudy <- casestudy
+            }
+            if (!missing(artifact) && is.character(artifact)) {
+                private$artifact <- artifact
+            }
+
+            logging::loginfo("Construct configuration: starting.")
 
             ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
@@ -475,21 +586,25 @@ ProjectConf = R6::R6Class("ProjectConf",
             logging::loginfo("Attempting to load configuration file: %s", conf.file)
             conf = yaml::yaml.load_file(conf.file)
 
+            ## store basic information
+            conf$selection.process = selection.process
+            conf$casestudy = casestudy
+
             ## store artifact in configuration
             conf$artifact = artifact
             conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
             conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
 
             ## store path to actual Codeface data
-            conf$datapath = private$get.results.folder(data, selection.process, conf[["project"]], tagging)
+            conf$datapath = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
             ## store path to call graphs
-            conf$datapath.callgraph = private$get.callgraph.folder(data, selection.process, casestudy)
+            conf$datapath.callgraph = private$get.results.folder(data, selection.process, casestudy, "callgraphs")
             ## store path to synchronicity data
-            conf$datapath.synchronicity = private$get.synchronicity.folder(data, selection.process, casestudy)
+            conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
             ## store path to pasta data
-            conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
+            conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
             ## store path to issue data
-            conf$datapath.issues = private$get.issues.folder(data, selection.process, casestudy)
+            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, "issues")
 
             ## READ REVISIONS META-DATA
 
@@ -512,82 +627,27 @@ ProjectConf = R6::R6Class("ProjectConf",
             revisions = revisions.df[["revision"]]
             revisions.dates = revisions.df[["date"]]
             if (!is.null(revisions.dates)) names(revisions.dates) = revisions
+            conf[["revisions"]] = NULL
+
+            ## change structure of values (i.e., insert 'default' sublists)
+            conf = lapply(conf, function(entry) {
+                return(list(value = entry, updatable = FALSE))
+            })
 
             ## SAVE FULL CONFIGURATION OBJECT
-            private$conf = conf
+            private$attributes = c(conf, private$attributes)
 
             ## construct and save revisions and ranges
             ## (this has to be done after storing conf due to the needed access to the conf object)
             self$set.revisions(revisions, revisions.dates)
 
-            ## logging
-            logging::logdebug("Configuration:\n%s", self$get.conf.as.string())
-        },
+            # ## logging
+            # self$print(allowed = TRUE)
 
-        #' Get an entry of the configuration list by its key
-        #'
-        #' @param key the key of the entry to be returned
-        #'
-        #' @return the specified entry of the configuration list
-        get.conf.entry = function(key) {
-            return(private$conf[[key]])
-        }
-
-    ),
-
-    ## public members ####
-    public = list(
-
-        #' Constructor of the class.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #' @param artifact the artifact to study ('feature','function','file')
-        initialize = function(data, selection.process, casestudy, artifact = "feature") {
-            if (!missing(data) && is.character(data)) {
-                private$data <- data
-            }
-            if (!missing(selection.process) && is.character(selection.process)) {
-                private$selection.process <- selection.process
-            }
-            if (!missing(casestudy) && is.character(casestudy)) {
-                private$casestudy <- casestudy
-            }
-            if (!missing(artifact) && is.character(artifact)) {
-                private$artifact <- artifact
-            }
-
-            logging::loginfo("Construct configuration: starting.")
-            private$load.configuration(data, selection.process, casestudy, artifact)
             logging::loginfo("Construct configuration: finished.")
         },
 
-
-        #' Get configuration list.
-        #'
-        #' @return the configuration list
-        get.conf = function() {
-            return(private$conf)
-        },
-
-        #' Get configuration list as string.
-        #'
-        #' @return the configuration list as string
-        get.conf.as.string = function() {
-            return(get.configuration.string(private$conf, title = NULL))
-        },
-
-        ## CONFIGURATION ENTRIES
-
-        #' Get an entry of the configuration list. Calls 'get.conf.entry'.
-        #'
-        #' @param entry.name name of the entry to be returned
-        #'
-        #' @return the entry specified
-        get.entry = function(entry.name) {
-            return(private$get.conf.entry(entry.name))
-        },
+        ## * * helper methods ----------------------------------------------
 
         #' Get the corresponding callgraph revision for the given range.
         #'
@@ -595,80 +655,12 @@ ProjectConf = R6::R6Class("ProjectConf",
         #'
         #' @return the callgraph revisions
         get.callgraph.revision.from.range = function(range) {
-            idx = which(self$get.entry("ranges") == range)
-            rev = self$get.entry("revisions.callgraph")[idx + 1]
+            idx = which(self$get.value("ranges") == range)
+            rev = self$get.value("revisions.callgraph")[idx + 1]
             return(rev)
         },
 
-        #' Get the 'synchronicity' variable.
-        #'
-        #' @return the 'synchronicity' variable
-        get.synchronicity = function() {
-            return(private$synchronicity)
-        },
-
-        #' Set the 'synchronicity' variable to the given new value.
-        #'
-        #' @param synchronicity the new value for the variable
-        set.synchronicity = function(synchronicity) {
-            if(class(synchronicity) == "logical")
-                private$synchronicity = synchronicity
-            else
-                logging::logwarn("Wrong data type given in set.synchronicity.")
-        },
-
-        #' Get the 'synchronicity.time.window' variable.
-        #'
-        #' @return the 'synchronicity.time.window' variable
-        get.synchronicity.time.window = function() {
-          return(private$synchronicity.time.window)
-        },
-
-        #' Set the 'synchronicity.time.window' variable to the given new value.
-        #'
-        #' @param synchronicity.time.window the new value for the variable
-        set.synchronicity.time.window = function(synchronicity.time.window) {
-          if(class(synchronicity.time.window) == "numeric")
-            private$synchronicity.time.window = synchronicity.time.window
-          else
-            logging::logwarn("Wrong data type given in set.synchronicity.time.window.")
-        },
-
-        #' Get the 'artifact.filter.base' variable.
-        #'
-        #' @return the 'artifact.filter.base' variable
-        get.artifact.filter.base = function() {
-          return(private$artifact.filter.base)
-        },
-
-        #' Set the 'artifact.filter.base' variable to the given new value.
-        #'
-        #' @param artifact.filter.base the new value for the variable
-        set.artifact.filter.base = function(artifact.filter.base) {
-          if(class(artifact.filter.base) == "logical")
-            private$artifact.filter.base = artifact.filter.base
-          else
-            logging::logwarn("Wrong data type given in set.artifact.filter.base")
-        },
-
-        #' Get the 'pasta' variable.
-        #'
-        #' @return the 'pasta' variable
-        get.pasta = function() {
-          return(private$pasta)
-        },
-
-        #' Set the 'pasta' variable to the given new value.
-        #'
-        #' @param pasta the new value for the variable
-        set.pasta = function(pasta) {
-          if(class(pasta) == "logical")
-            private$pasta = pasta
-          else
-            logging::logwarn("Wrong data type given in set.pasta.")
-        },
-
-        ## UPDATING CONFIGURATION ENTRIES
+        ## * * updating revisions and splitting information ----------------
 
         #' Set the revisions and ranges for the study.
         #'
@@ -677,39 +669,68 @@ ProjectConf = R6::R6Class("ProjectConf",
         #' @param sliding.window whether sliding window splitting is enabled or not
         #'                       default: 'FALSE'
         set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
-            ## store revision data
-            private$conf$revisions = revisions
-            private$conf$revisions.dates = revisions.dates
+            ## construct revisions for call-graph data
+            revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
 
-            ## call-graph revisions (do a postprocessing for list of revisions)
-            private$conf$revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(private$conf$revisions)
+            ## assemble revision data
+            rev.data = list(
+                revisions = revisions,
+                revisions.dates = revisions.dates,
+                revisions.callgraph = revisions.callgraph,
+                ranges = construct.ranges(revisions, sliding.window = sliding.window),
+                ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
+            )
+            ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
+            rev.data = lapply(rev.data, function(entry) {
+                return(list(value = entry, updatable = FALSE))
+            })
 
-            ## compute revision ranges
-            private$conf$ranges = construct.ranges(private$conf$revisions, sliding.window = sliding.window)
-            private$conf$ranges.callgraph = construct.ranges(private$conf$revisions.callgraph, sliding.window = sliding.window)
+            ## insert new values (update if needed)
+            for (name in names(rev.data)) {
+                private[["attributes"]][[name]] = rev.data[[name]]
+            }
         },
 
-        ## set splitting information revisions and ranges
+        #' Update the information on revisions and ranges regarding splitting.
+        #'
+        #' @param type either "time-based" or "activity-based", depending on splitting function
+        #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
+        #'               amount given to acitivity-based splitting
+        #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
+        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
+        #' @param revisions the revisions of the study
+        #' @param revisions.dates the revision dates of the study
         set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
-            ## set basic slpitting information
-            private$conf$split.type = type
-            private$conf$split.length = length
-            private$conf$split.basis = basis
-            private$conf$split.sliding.window = sliding.window
+            ## assemble splitting information
+            split.info = list(
+                ## basic slpitting information
+                split.type = type,
+                split.length = length,
+                split.basis = basis,
+                split.sliding.window = sliding.window,
+                ## splitting information on ranges
+                split.revisions = revisions,
+                split.revisions.dates = revisions.dates,
+                split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
 
-            ## set splitting information on ranges
-            private$conf$split.revisions = revisions
-            private$conf$split.revisions.dates = revisions.dates
-            private$conf$split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
+            )
+            ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
+            split.info = lapply(split.info, function(entry) {
+                return(list(value = entry, updatable = FALSE))
+            })
+
+            ## insert new values (update if needed)
+            for (name in names(split.info)) {
+                private[["attributes"]][[name]] = split.info[[name]]
+            }
         }
 
     )
 )
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Construction of range strings
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions --------------------------------------------------------
 
 #' Construct the range strings.
 #'
@@ -737,8 +758,6 @@ construct.ranges = function(revs, sliding.window = FALSE) {
     return(ranges)
 }
 
-
-
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string
@@ -765,6 +784,14 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
             output = c(output, paste0(front, title))
 
             if (mode(struct) == "list") {
+                updatable = struct[["updatable"]]
+                if (!is.null(updatable)) {
+                    struct[["updatable"]] = NULL
+                    if (!updatable) {
+                        output = c(output, " [final]")
+                        len = len - 1
+                    }
+                }
                 output = c(output, "\n")
             }
         }
@@ -799,16 +826,11 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
             for (i in seq_len(len)) {
                 item = struct[[i]]
                 label = structnames[i]
-                if (mode(item) == "argument" || mode(item) == "unknown") {
-                    browser()
-                    entry = paste(indentation, indentation.item, label, "=", as.character(item)[1], "\n")
-                } else {
-                    entry = construct.configuration.string(
-                        struct = item,
-                        title = label,
-                        depth = depth + 1
-                    )
-                }
+                entry = construct.configuration.string(
+                    struct = item,
+                    title = label,
+                    depth = depth + 1
+                )
                 output = c(output, entry)
             }
         }
@@ -818,5 +840,4 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
     }
 
     return(construct.configuration.string(conf, title))
-
 }
