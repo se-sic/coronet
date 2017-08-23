@@ -265,8 +265,8 @@ ProjectConf = R6::R6Class("ProjectConf",
         #' @param casestudy the current casestudy
         #'
         #' @return the path to the issues folder
-        get.issues.folder = function(data, selection.process, casestudy) {
-            return(file.path(data, private$subfolder.results, selection.process, paste(casestudy, "issues", sep = "_")))
+        get.issues.folder = function(data, selection.process, project) {
+            return(file.path(data, private$subfolder.results, selection.process, project))
         },
 
         #' Construct and return the path to a Codeface configuration.
@@ -317,7 +317,6 @@ ProjectConf = R6::R6Class("ProjectConf",
             conf$artifact = artifact
             conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
             conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
-
             ## store path to actual Codeface data
             conf$datapath = private$get.results.folder(data, selection.process, conf[["project"]], tagging)
             ## store path to call graphs
@@ -327,7 +326,7 @@ ProjectConf = R6::R6Class("ProjectConf",
             ## store path to pasta data
             conf$datapath.pasta = private$get.pasta.folder(data, selection.process, casestudy)
             ## store path to issue data
-            conf$datapath.issues = private$get.issues.folder(data, selection.process, casestudy)
+            conf$datapath.issues = private$get.issues.folder(data, selection.process, conf[["project"]])
 
             ## READ REVISIONS META-DATA
 
