@@ -51,11 +51,15 @@ test_that("Read the raw commit data.", {
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
+
+    ## check order of commits (ordered by date?)
+    dates = order(commit.data.read[["date"]])
+    dates.expected = seq_len(nrow(commit.data.expected))
+    expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
 
 test_that("Read the synchronicity data.", {
-
     ## configuration object
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
@@ -73,7 +77,6 @@ test_that("Read the synchronicity data.", {
 })
 
 test_that("Read the mail data.", {
-
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
@@ -119,6 +122,11 @@ test_that("Read the mail data.", {
 
     ## check the results
     expect_identical(mail.data.read, mail.data.expected, info = "Mail data.")
+
+    ## check order of commits (ordered by date?)
+    dates = order(mail.data.read[["date"]])
+    dates.expected = seq_len(nrow(mail.data.expected))
+    expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
 test_that("Read the author data.", {
@@ -138,7 +146,6 @@ test_that("Read the author data.", {
 })
 
 test_that("Read and parse the pasta data.", {
-
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
