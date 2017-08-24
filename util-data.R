@@ -449,6 +449,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new issue data
         set.issues = function(data) {
             logging::loginfo("Setting issue data.")
+            if (is.null(data)) data = data.frame()
             private$issues = data
         },
 
