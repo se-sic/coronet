@@ -40,22 +40,23 @@ modularity = function(network) {
 }
 
 smallworldness = function(network) {
-
+    smallworldness <- determine.smallworldness(network) # smallworldness(nw.data$nw) #
+    return(smallworldness)
 }
 
 
 determine.smallworldness = function(g) {
 
     # construct Erdös-Renyi network with same number of nodes and edges as g
-    h = erdos.renyi.game(n=vcount(g), p.or.m=ecount(g), type="gnm", directed=TRUE)
+    h = igraph::erdos.renyi.game(n=igraph::vcount(g), p.or.m=igraph::gsize(g), type="gnm", directed=TRUE)
 
     ## compute clustering coefficients
-    g.cc = transitivity(g)
-    h.cc = transitivity(h)
+    g.cc = igraph::transitivity(g)
+    h.cc = igraph::transitivity(h)
 
     ## compute average shortest-path length
-    g.l = average.path.length(g)
-    h.l = average.path.length(h)
+    g.l = igraph::average.path.length(g)
+    h.l = igraph::average.path.length(h)
 
     ## binary decision
     # intermediate variables
