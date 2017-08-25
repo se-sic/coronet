@@ -245,7 +245,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
-    bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)
+    bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
+                                              activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
     bins.date = as.POSIXct(bins)
 
@@ -471,7 +472,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## identify bins
     logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
-    bins.data = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)
+    bins.data = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges,
+                                              remove.duplicate.bins = FALSE)
     bins.date = bins.data[["bins"]]
     bins.vector = bins.data[["vector"]]
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
@@ -653,13 +655,14 @@ split.get.bins.time.based = function(dates, time.period) {
 #' @param id a character string denoting the ID column of the data.frame 'df'
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
+#' @param remove.duplicate.bins remove duplicate bin borders? [default: FALSE]
 #'
 #' @return a list,
 #'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),
 #'         the item 'bins': the bin labels,  described by dates, each bin containing
 #'         'acitivity.amount' many unique items; each item in the vector indicates
 #'         the start of a bin, although the last item indicates the end of the last bin
-split.get.bins.activity.based = function(df, id, activity.amount) {
+split.get.bins.activity.based = function(df, id, activity.amount, remove.duplicate.bins = FALSE) {
     logging::logdebug("split.get.bins.activity.based: starting")
     ## get the unique integer IDs for each item in 'id' column
     ids = df[[id]]
@@ -706,7 +709,7 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     bins.date.char = strftime(bins.date)
 
     ## if we have a duplicate bin border, merge the two things
-    if (any(duplicated(bins.date))) {
+    if (remove.duplicate.bins && any(duplicated(bins.date))) {
         ## find all duplicate bins (decreasing order)
         duplicated.idx = sort(which(duplicated(bins.date)), decreasing = TRUE)
         ## for each duplicate, we modify the current results appropriately
