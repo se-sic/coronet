@@ -213,7 +213,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     id.column = list(
         commits = "hash",
         mails = "message.id",
-        issues = "date"
+        issues = "event.id"
     )
 
     ## get amount of available activity
@@ -704,6 +704,23 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     bins.date = do.call(c, bins.date)
     ## convert to character strings
     bins.date.char = strftime(bins.date)
+
+    ## if we have a duplicate bin border, merge the two things
+    if (any(duplicated(bins.date))) {
+        ## find all duplicate bins (decreasing order)
+        duplicated.idx = sort(which(duplicated(bins.date)), decreasing = TRUE)
+        ## for each duplicate, we modify the current results appropriately
+        for (idx in duplicated.idx) {
+            ## 1) remove the date from the bins
+            bins.date = bins.date[-idx]
+            ## 2) remove the corresponding string
+            bins.date.char = bins.date.char[-idx]
+            ## 3) decrease all indices by 1 that are higher than the current
+            bins.activity = sapply(bins.activity, function(b) {
+                if (b >= idx) b - 1 else b
+            })
+        }
+    }
 
     logging::logdebug("split.get.bins.activity.based: finished.")
     return(list(

@@ -8,7 +8,7 @@
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
-
+requireNamespace("digest") # for sha1 hashing of IDs
 
 
 Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
@@ -327,6 +327,12 @@ read.issues = function(data.path) {
     issue.data[["closing.date"]][ issue.data[["closing.date"]] == "null" ] = NA
     issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+
+    ## generate a unique event ID from issue ID, author, and date
+    issue.data[["event.id"]] = sapply(
+        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
+        digest::sha1
+    )
 
     logging::logdebug("read.issues: finished")
     return(issue.data)
