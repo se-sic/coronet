@@ -1361,7 +1361,8 @@ test_that("Check and correct duplicate range names during network activity-based
 
     ## define split arguments
     split.function = split.network.activity.based
-    split.arguments = list(network = net, number.edges = 2, sliding.window = FALSE)
+    split.activity.amount = 2
+    split.arguments = list(network = net, number.edges = split.activity.amount, sliding.window = FALSE)
 
     ## check for issued warning
     expect_output(
@@ -1404,5 +1405,17 @@ test_that("Check and correct duplicate range names during network activity-based
     expected = c("A-B (1)", "A-B (2)", "B-C", "C-D (1)", "C-D (2)")
     result = split.unify.range.names(ranges)
     expect_identical(result, expected, info = "Arbitrary ranges (4).")
+
+    ##
+    ## the removal duplicate ranges
+    ##
+
+    df = data.frame(date = dates, id = 1:length(dates))
+    expected = expected.ranges[c(1, 4, 9)]
+    result = construct.ranges(
+        split.get.bins.activity.based(df, "id", activity.amount = split.activity.amount, remove.duplicate.bins = TRUE)[["bins"]],
+        sliding.window = FALSE
+    )
+    expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
 })
