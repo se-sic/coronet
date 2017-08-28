@@ -236,19 +236,13 @@ Conf = R6::R6Class("Conf",
                     paste(names.to.update, collapse = ", ")
                 )
                 for (name in names.to.update) {
-                    private[["attributes"]][[name]][["default"]] = updated.values[[name]]
+                    private[["attributes"]][[name]][["value"]] = updated.values[[name]]
                 }
             } else {
                 logging::logwarn(
                     "Not updating any configuration parameters!"
                 )
             }
-
-            ## FIXME move the additional checks to a method refinement
-            ## check for special things
-            ## 1) "date" always as edge attribute
-            name = "edge.attributes"
-            private[["attributes"]][[name]][["value"]] = unique(private[["attributes"]][[name]][["value"]], "date")
 
             ## return invisible
             invisible()
@@ -401,7 +395,23 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
-            private$check.values()
+            # private$check.values()
+        },
+
+        #' Update the attributes of the class with the new values given in the
+        #' 'updated.values' list.
+        #'
+        #' @param updated.values the new values for the attributes to be updated
+        #' @param error call stop() on an error? [default: FALSE]
+        update.values = function(updated.values = list(), stop.on.error = FALSE) {
+            super$update.values(updated.values = updated.values, stop.on.error = stop.on.error)
+
+            ## 1) "date" always as edge attribute
+            name = "edge.attributes"
+            private[["attributes"]][[name]][["value"]] = unique(c(self$get.value(name), "date"))
+
+            ## return invisible
+            invisible()
         }
 
     )
