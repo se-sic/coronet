@@ -89,23 +89,40 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         colors.vertex.label = "black"
     }
 
+    ## set size of vertices in legend
+    VERTEX.SIZE.LEGEND = VERTEX.SIZE / 2
+
+    ## check if network is empty
+    if (igraph::vcount(network) == 0) {
+        network = create.empty.network(directed = igraph::is.directed(network)) +
+            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1,2), type = TYPE.EDGES.INTER)
+        VERTEX.SIZE = 0
+    }
+
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network, colors.vertex = colors.vertex, colors.edge = colors.edge)
 
     ## create a ggraph object
-    p = ggraph::ggraph(network, layout = "igraph", algorithm = "nicely") +
+    p = ggraph::ggraph(network, layout = "igraph", algorithm = "nicely")
 
-        ## plot edges and nodes
-        ggraph::geom_edge_fan(
-            mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
-            end_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
-            start_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
-            arrow = if (igraph::is.directed(network)) {
+    ## plot edges if there are any
+    if (igraph::ecount(network) > 0) {
+        p = p +
+            ggraph::geom_edge_fan(
+                mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
+                end_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
+                start_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
+                arrow = if (igraph::is.directed(network)) {
                         ggplot2::arrow(length = ggplot2::unit(VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
                     } else {
                         NULL
                     }
-        ) +
+            )
+    }
+
+    p = p +
+
+        ## plot vertices
         ggraph::geom_node_point(ggplot2::aes(color = vertex.type, shape = vertex.type), size = VERTEX.SIZE) +
         ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = colors.vertex.label) +
 
@@ -121,7 +138,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         ggplot2::theme_light() +
         ggplot2::guides(
             ## reduce size of symbols in legend
-            shape = ggplot2::guide_legend(override.aes = list(size = VERTEX.SIZE / 2))
+            shape = ggplot2::guide_legend(override.aes = list(size = VERTEX.SIZE.LEGEND))
         ) +
         ggplot2::theme(
             legend.position = "bottom",
