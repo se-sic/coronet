@@ -47,19 +47,19 @@ revisions.callgraph = proj.conf$get.value("revisions.callgraph")
 x.data = ProjectData$new(project.conf = proj.conf)
 x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
-# x$get.commits.raw()
-# x$get.synchronicity()
-# x$get.author2artifact()
-# x$get.commits.filtered()
-# x$get.commits.filtered.empty()
-# x$get.mails()
-# x$get.authors()
-# x$get.data.path()
-# x$get.author2artifact()
-# x$get.author2file()
-# x$get.commit2artifact()
-# x$get.commit2file()
-# x$get.thread2author()
+# x.data$get.commits.raw()
+# x.data$get.synchronicity()
+# x.data$get.author2artifact()
+# x.data$get.commits.filtered()
+# x.data$get.commits.filtered.empty()
+# x.data$get.mails()
+# x.data$get.authors()
+# x.data$get.data.path()
+# x.data$get.author2artifact()
+# x.data$get.author2file()
+# x.data$get.commit2artifact()
+# x.data$get.commit2file()
+# x.data$get.thread2author()
 # x$update.network.conf(updated.values = list(author.directed = TRUE))
 # x$get.author.network()
 # x$update.network.conf(updated.values = list(author.directed = FALSE))
@@ -77,33 +77,26 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
-# ## example for extensive configuration
-
-# net = x$get.bipartite.network()
-
-# save(net, file = sprintf("busybox_%s_%s_%s.network",  x$get.network.conf.variable(var.name = "author.relation"),
-#                   ARTIFACT,  x$get.network.conf.variable(var.name = "artifact.relation")))
-
 
 ## RANGE-LEVEL DATA
 
-y.data = RangeData$new(project.conf = proj.conf, range = ranges[[2]])
+y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
 y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
-# y$get.commits.raw()
-# y$get.commits.filtered()
-# y$get.commits.filtered.empty()
-# y$get.mails()
-# y$get.authors()
-# y$get.data.path()
-# y$get.data.path.callgraph()
-# y$get.author2artifact()
-# y$get.author2file()
-# y$update.network.conf(updated.values = list(edge.attributes = list("file")))
-# y$get.commit2artifact()
-# y$get.commit2file()
+# y.data$get.commits.raw()
+# y.data$get.synchronicity()
+# y.data$get.author2artifact()
+# y.data$get.commits.filtered()
+# y.data$get.commits.filtered.empty()
+# y.data$get.mails()
+# y.data$get.authors()
+# y.data$get.data.path()
+# y.data$get.author2artifact()
+# y.data$get.author2file()
+# y.data$get.commit2artifact()
+# y.data$get.commit2file()
+# y.data$get.thread2author()
 # y$update.network.conf(updated.values = list(edge.attributes = list("date")))
-# y$get.thread2author()
 # y$get.author.network()
 # y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
 # y$get.artifact.network()
@@ -157,7 +150,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 ## SPLITTING DATA AND NETWORKS
 
-# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
+# cf.data = split.data.time.based(x.data, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
@@ -165,14 +158,14 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # print(run.lapply(cf.data, "get.class.name"))
 
 # mybins = as.POSIXct(c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30"))
-# cf.data = split.data.time.based(x, bins = mybins)
+# cf.data = split.data.time.based(x.data, bins = mybins)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
-# cf.data = split.data.activity.based(x, activity.amount = 10000, activity.type = "mails")
+# cf.data = split.data.activity.based(x.data, activity.amount = 10000, activity.type = "mails")
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
