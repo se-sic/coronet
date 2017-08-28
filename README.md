@@ -110,6 +110,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `artifact.directed`
   * The (time-based) directedness of edges in an artifact network
   * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
+  * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
   * The list of edge-attribute names and information
   * a subset of the following as a single vector:
@@ -125,10 +126,6 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
-- `contract.edges`
-  * Perform edge contraction on the artifact-related subgraph of a multi network, when the author-related subgraph is directed and the artifact-related subgraph is not
-  * [`TRUE`, *`FALSE`*]
-  * **Note**: This only applies for multi networks.
 - `skip.threshold`
   * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
   * any positive integer
