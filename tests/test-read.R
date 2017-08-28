@@ -138,8 +138,8 @@ test_that("Read the author data.", {
     author.data.read = read.authors(proj.conf$get.value("datapath"))
 
     ## build the expected data.frame
-    author.data.expected = data.frame(author.id=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943)),
-                                      author.name=c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl"))
+    author.data.expected = data.frame(author.id=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943,4944)),
+                                      author.name=c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl","Max"))
 
     ## check the results
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
