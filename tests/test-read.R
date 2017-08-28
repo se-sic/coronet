@@ -165,5 +165,31 @@ test_that("Read and parse the pasta data.", {
     expect_identical(pasta.data.read, pasta.data.expected, info = "PaStA data.")
 })
 
+test_that("Read and parse the issue data.", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
-## FIXME add test for reading issue data
+    ## read the actual data
+    issue.data.read = read.issues(proj.conf$get.value("datapath.issues"))
+
+    ## build the expected data.frame
+    issue.data.expected = data.frame(issue.id=sprintf("<issue-%s>", rep(c(2,48,51,48,2,48,51,57), c(6,2,5,5,1,3,8,6))),
+                                     issue.state=rep(c("CLOSED","OPEN","CLOSED","OPEN","CLOSED","OPEN","CLOSED","CLOSED"), c(6,2,5,5,1,3,8,6)),
+                                     creation.date=as.POSIXct(rep(c("2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-04-17 02:06:38","2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-12-07 15:53:02"), c(6,2,5,5,1,3,8,6))),
+                                     closing.date=as.POSIXct(rep(c("2013-05-25 20:02:08",NA,"2016-12-07 15:37:02",NA,"2014-05-25 20:02:08",NA,"2016-12-07 15:37:02","2017-05-23 12:32:21"), c(6,2,5,5,1,3,8,6))),
+                                     is.pull.request=rep(c(TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE), c(6,2,5,5,1,3,8,6)),
+                                     author.name=c("Karl","Karl","Olaf","Olaf","Olaf","Karl","udo","udo","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Olaf","Claus Hunsen","Olaf","Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Claus Hunsen","Claus Hunsen","Claus Hunsen","Claus Hunsen","Max","Max","Max"),
+                                     author.email=c("karl@example.org","karl@example.org","olaf@example.org","olaf@example.org","olaf@example.org","karl@example.org","udo@example.org","udo@example.org","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","olaf@example.org","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","max@example.org","max@example.org","max@example.org"),
+                                     date=as.POSIXct(c("2013-04-21 23:52:09","2013-05-05 23:28:57","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-06-01 22:37:03","2016-04-17 02:07:37","2016-04-17 02:07:37","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 16:03:23","2016-07-12 16:05:47","2016-07-14 02:03:14","2016-07-14 17:42:52","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-19 10:47:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-08-31 18:21:48","2016-10-05 01:07:46","2016-10-13 15:33:56","2016-12-06 14:03:42","2016-12-07 15:37:02","2016-12-07 15:37:02","2016-12-07 15:37:21","2016-12-07 15:53:02","2016-12-07 15:53:02","2017-02-20 22:25:41","2017-03-02 17:30:10","2017-05-23 12:32:21","2017-05-23 12:32:21","2017-05-23 12:32:39")),
+                                     event.name=c("created","commented","referenced","merged","closed","head_ref_deleted","mentioned","subscribed","mentioned","subscribed","created","renamed","commented","commented","commented","mentioned","subscribed","commented","referenced","mentioned","subscribed","commented","commented","commented","commented","commented","merged","closed","commented","commented","created","commented","commented","merged","closed","commented"))
+    ## calculate event IDs
+    issue.data.expected[["event.id"]] = sapply(
+        paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
+        digest::sha1
+    )
+    ## set row names as integers
+    attr(issue.data.expected, "row.names") = as.integer(c(1,2,3,4,5,6,8,9,18,19,20,21,22,10,11,12,13,14,7,15,16,17,23,24,25,26,27,28,29,30,31,32,33,34,35,36))
+
+    ## check the results
+    expect_identical(issue.data.read, issue.data.expected, info = "Issue data.")
+})

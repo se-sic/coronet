@@ -334,6 +334,6 @@ read.issues = function(data.path) {
         digest::sha1
     )
 
-    logging::logdebug("read.issues: finished")
+    logging::logdebug("read.issues: finished.")
     return(issue.data)
 }
