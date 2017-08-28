@@ -217,13 +217,14 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## get value from project configuration
+        #' Get  a value of the project configuration
+        #'
+        #' @return the value of the given entry name
         get.project.conf.entry = function(entry) {
             return(private$project.conf$get.value(entry))
         },
 
-        ## set a value of the project configuration and reset the environment
-        ## FIXME streamline signature with the net-conf analog in net-builder
+        #' Set  a value of the project configuration and reset the environment
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
         },

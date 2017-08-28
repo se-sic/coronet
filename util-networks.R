@@ -335,19 +335,35 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         #' Get the current network configuration.
         #'
-        #' @return the current network configuration
+        #' @return the 'network.conf' of the current instance of the class
         get.network.conf = function() {
             return(private$network.conf)
         },
 
-        #' Set the network configuration to the given new one.
+        #' Set the current network configuration to the given one.
         #'
-        #' @param network.conf the new network configuration
-        set.network.conf = function(network.conf) {
+        #' @param network.conf the new network configuration.
+        #' @param reset.environment parameter to determine whether the environment
+        #'                          has to be reset or not
+        set.network.conf = function(network.conf, reset.environment = FALSE) {
             private$network.conf = network.conf
-            self$reset.environment()
+
+            if (reset.environment) {
+                self$reset.environment()
+            }
         },
 
+        #' Get  a value of the network configuration
+        #'
+        #' @return the value of the given entry name
+        get.network.conf.entry = function(entry) {
+            return(private$network.conf$get.value(entry))
+        },
+
+        #' Set  a value of the network configuration and reset the environment
+        set.network.conf.entry = function(entry, value) {
+            private$network.conf$update.value(entry, value)
+        },
 
         ## UPDATE CONFIGURATION ####
 
