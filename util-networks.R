@@ -40,6 +40,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         authors.network.issue = NULL, #igraph
         artifacts.network.cochange = NULL, # igraph
         artifacts.network.callgraph = NULL, # igraph
+        artifacts.network.mail = NULL, # igraph
+        artifacts.network.issue = NULL, # igraph
 
         ## AUTHOR NETWORKS ####
 
@@ -190,6 +192,112 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.callgraph: finished.")
 
             return(artifacts.net)
+        },
+
+        #' Get the mail-based artifact network.
+        #' If it doesn´t already exist build it first.
+        #'
+        #' @return the artifact network with mail relation
+        get.artifact.network.mail = function() {
+
+            logging::logdebug("get.artifact.network.mail: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$artifacts.network.mail)) {
+                logging::logdebug("get.artifact.network.mail: finished. (already existing)")
+                return(private$artifacts.network.mail)
+            }
+
+            ## log warning as we do not have relations among threads right now
+            logging::logwarn(paste(
+                "There exist no actual artifact network with the relation 'mail'.",
+                "Return an edge-less network now."
+            ))
+
+            ## construct empty network
+            directed = private$network.conf$get.value("artifact.directed")
+            artifacts = names(private$proj.data$get.thread2author()) # thread IDs
+            artifacts.net = create.empty.network(directed = directed) +
+                igraph::vertices(artifacts, type = TYPE.ARTIFACT)
+
+            ## store network
+            private$artifacts.network.mail = artifacts.net
+            logging::logdebug("get.artifact.network.mail: finished.")
+
+            return(artifacts.net)
+        },
+
+        #' Get the issue-based artifact network.
+        #' If it doesn´t already exist build it first.
+        #'
+        #' @return the artifact network with issue relation
+        get.artifact.network.issue = function() {
+
+            logging::logdebug("get.artifact.network.issue: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$artifacts.network.issue)) {
+                logging::logdebug("get.artifact.network.issue: finished. (already existing)")
+                return(private$artifacts.network.issue)
+            }
+
+            ## log warning as we do not have relations among issues right now
+            logging::logwarn(paste(
+                "There exist no actual artifact network with the relation 'issue'.",
+                "Return an edge-less network now."
+            ))
+
+            ## construct empty network
+            directed = private$network.conf$get.value("artifact.directed")
+            artifacts = names(private$proj.data$get.issue2author()) # thread IDs
+            artifacts.net = create.empty.network(directed = directed) +
+                igraph::vertices(artifacts, type = TYPE.ARTIFACT)
+
+            ## store network
+            private$artifacts.network.issue = artifacts.net
+            logging::logdebug("get.artifact.network.issue: finished.")
+
+            return(artifacts.net)
+        },
+
+        ## BIPARTITE RELATION ####
+
+        #' Get the key-value data for the bipartite relation,
+        #' which is implied by the "artifact.relation" from the network configuration.
+        #'
+        #' @return the data for the bipartite relation, with the attribute
+        #'         'artifact.type' denoting the artifact type for the relation
+        get.bipartite.relation = function() {
+            logging::logdebug("get.bipartite.relation: starting.")
+
+            relation = private$network.conf$get.variable("artifact.relation")
+            logging::logdebug("Using bipartite relation '%s'.", relation)
+
+            switch(
+                relation,
+                cochange = {
+                    bip.relation = private$proj.data$get.author2artifact()
+                    artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                },
+                callgraph = {
+                    bip.relation = private$proj.data$get.author2artifact()
+                    artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                },
+                mail = {
+                    bip.relation = private$proj.data$get.author2thread()
+                    artifact.type = "thread"
+                },
+                issue = {
+                    bip.relation = private$proj.data$get.author2issue()
+                    artifact.type = "issue.id"
+                }
+            )
+
+            ## set artifact.type attribute
+            attr(bip.relation, "artifact.type") = artifact.type
+
+            logging::logdebug("get.bipartite.relation: finished.")
+            return(bip.relation)
         }
 
     ),
@@ -280,7 +388,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (private$network.conf$get.value("author.only.committers")) {
                 ## authors-artifact relation
                 authors.from.net = igraph::get.vertex.attribute(net, "name")
-                authors.from.artifacts = names(private$proj.data$get.author2artifact())
+                authors.from.artifacts = names(private$get.bipartite.relation())
                 if (!is.null(authors.from.artifacts)) {
                     net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
                 }
@@ -306,6 +414,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 relation,
                 cochange = private$get.artifact.network.cochange(),
                 callgraph = private$get.artifact.network.callgraph(),
+                mail = private$get.artifact.network.mail(),
+                issue = private$get.artifact.network.issue(),
                 stop(sprintf("The artifact relation '%s' does not exist.", relation))
             )
 
@@ -321,22 +431,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' @return the bipartite network
         get.bipartite.network = function() {
             ## get data by the chosen relation
-            relation = private$network.conf$get.value("author.relation")
-            switch(
-                relation,
-                cochange = {
-                    net.to.net = private$proj.data$get.author2artifact()
-                    artifact.type = "artifact"
-                },
-                mail = {
-                    net.to.net = private$proj.data$get.author2thread()
-                    artifact.type = "thread"
-                },
-                issue = {
-                    net.to.net = private$proj.data$get.author2issue()
-                    artifact.type = "issue.id"
-                }
-            )
+            net.to.net = private$get.bipartite.relation()
+            artifact.type = attr(net.to.net, "artifact.type")
 
             ## extract vertices for author network
             if (private$network.conf$get.value("author.all.authors")) {
@@ -378,8 +474,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing all networks.")
 
             ## author-artifact relation
-            ## FIXME we need the proper relation here!
-            authors.to.artifacts = private$proj.data$get.author2artifact()
+            authors.to.artifacts = private$get.bipartite.relation()
             ## bipartite network
             bipartite.net = self$get.bipartite.network()
             ## author relation
@@ -409,13 +504,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             authors.net = networks[["authors.net"]]
             artifacts.net = networks[["artifacts.net"]]
 
-            ## unify vertices with author-artifact relation
+            ## remove authors from author-artifact relation, if needed:
+            ## we only add bipartite edges for authors already present in the author network (this can be
+            ## configured by 'author.only.committers', for example), thus, we need to remove any authors
+            ## from the author--artifact relation that are superfluous
             authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
             authors.from.artifacts = names(authors.to.artifacts)
-            authors.net = authors.net + igraph::vertices(setdiff(authors.from.artifacts, authors.from.net), type = TYPE.AUTHOR)
-            ## unify vertices with artifacts from bipartite and artifact relation
-            artifacts.all = private$proj.data$get.artifacts()
+            authors.to.artifacts = authors.to.artifacts[ intersect(authors.from.net, authors.from.artifacts) ]
+            ## unify vertices with artifacts from bipartite and artifact relation:
+            ## when the source for artifacts is different for the bipartite relation and the artifact relation (e.g.,
+            ## "cochange" and "callgraph"), then the vertex names need to be unified so that all vertices are
+            ## represented properly and, more important here, all bipartite relations can be added
+            artifacts.all = unique(plyr::rbind.fill(authors.to.artifacts)[[ "data.vertices" ]])
             artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
+            browser(expr = length(setdiff(artifacts.all, artifacts.from.net)) > 0)
             artifacts.net = artifacts.net + igraph::vertices(setdiff(artifacts.all, artifacts.from.net), type = TYPE.ARTIFACT)
 
             ## check directedness and adapt artifact network if needed

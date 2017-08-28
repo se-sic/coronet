@@ -74,11 +74,11 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
                 ## author.only.committers
                 "TRUE" = list(
                     ## network type
-                    author = authors.both, bipartite = authors.both, multi = authors.committing
+                    author = authors.both, bipartite = authors.committing, multi = authors.both
                 ),
                 "FALSE" = list(
                     ## network type
-                    author = authors.mailing, bipartite = authors.mailing, multi = authors.all
+                    author = authors.mailing, bipartite = authors.committing, multi = authors.mailing
                 )
             )
         )

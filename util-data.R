@@ -457,6 +457,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts
         get.artifacts = function() {
+            ## FIXME the artifacts determination should be dependent on the artifact.relation
             logging::loginfo("Getting artifact data.")
 
             ## if artifacts are not read already, do this

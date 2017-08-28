@@ -330,6 +330,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed.number = 1
             ),
             author.only.committers = list(
+                ## FIXME rename to something like "author.only.authors.also.in.the.data.when.artifact.relation.is.used
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
@@ -338,7 +339,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             artifact.relation = list(
                 default = "cochange",
                 type = "character",
-                allowed = c("cochange", "callgraph"),
+                allowed = c("cochange", "callgraph", "mail", "issue"),
                 allowed.number = 1
             ),
             artifact.directed = list(

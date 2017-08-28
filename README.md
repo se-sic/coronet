@@ -64,7 +64,7 @@ ranges = proj.conf$get.entry(entry.name = "ranges")
 cf.data = ProjectData$new(proj.conf, net.conf)
 
 ## create and get the bipartite network
-## (construction configured by net.conf)
+## (construction configured by net.conf's "artifact.relation")
 bpn = cf.data$get.bipartite.network()
 
 ## plot the retrieved network
@@ -91,6 +91,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 
 - `author.relation`
   * The relation among authors, encoded as edges in an author network
+  * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
   * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
   * The (time-based) directedness of edges in an author network
@@ -100,11 +101,12 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * **Note**: Depending on the chosen author relation, there may be isolates then
   * [`TRUE`, *`FALSE`*]
 - `author.only.committers`
-  * Remove all authors from an author network (including bipartite and multi networks) who have not committed to the repository
+  * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
   * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
   * The relation among artifacts, encoded as edges in an artifact network
-  * possible values: [*`"cochange"`*, `"callgraph"`]
+  * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
+  * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
   * The (time-based) directedness of edges in an artifact network
   * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
