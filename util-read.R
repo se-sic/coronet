@@ -9,6 +9,12 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 
+
+Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
+Sys.setenv(TZ = "UTC")
+options(stringsAsFactors = FALSE)
+
+
 read.commits.raw = function(data.path, artifact) {
 
     logging::logdebug("read.commits.raw: starting.")
@@ -148,6 +154,17 @@ read.mails = function(data.path) {
     ## convert dates and sort by them
     mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
+
+    ## remove all mails with dates before 1990-01-01 00:00:00
+    break.date = as.POSIXct("1970-01-01 00:00:00")
+    break.to.cut = mail.data[["date"]] < break.date
+    mail.data = mail.data[!break.to.cut, ]
+    if (sum(break.to.cut) > 0) {
+        logging::logwarn(
+            "Removed %s e-mail(s) after reading data file due to obiously wrong dates (before %s).",
+            sum(break.to.cut), break.date
+        )
+    }
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")

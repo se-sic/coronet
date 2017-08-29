@@ -15,9 +15,6 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
 
-options(stringsAsFactors = FALSE)
-
-
 ## / / / / / / / / / / / / / /
 ## NETWORk META-CONFIGURATION
 ##
@@ -133,7 +130,8 @@ CodefaceProjectData = R6::R6Class("CodefaceProjectData",
             ## append synchronicity data if wanted
             if (private$network.conf$get.variable("synchronicity")) {
                 synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data, by = "hash", all.x = TRUE)
+                commit.data = merge(commit.data, synchronicity.data,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
 
             ## add PaStA data if wanted
