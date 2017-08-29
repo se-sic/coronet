@@ -86,16 +86,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-            ## TODO do we need the if-else statement here? (is this captured by the called function?)
-            if (length(private$proj.data$get.thread2author()) != 0) {
-                author.relation = construct.dependency.network.from.list(
-                    private$proj.data$get.thread2author(),
-                    network.conf = private$network.conf,
-                    directed = private$network.conf$get.value("author.directed")
-                )
-            } else {
-                author.relation = create.empty.network(private$network.conf$get.value("author.directed"))
-            }
+            author.relation = construct.dependency.network.from.list(
+                private$proj.data$get.thread2author(),
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed")
+            )
 
             ## store network
             private$authors.network.mail = author.relation
