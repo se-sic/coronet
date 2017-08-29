@@ -157,7 +157,7 @@ construct.dependency.network.from.list = function(list, network.conf, directed =
 
     # if we do not have nodes AND the edge.list is empty, return rightaway
     if (length(nodes.processed) == 0) {
-            return(create.empty.network())
+        return(create.empty.network(directed = directed))
     }
 
     ## if we have nodes to create, but no edges
