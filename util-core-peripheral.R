@@ -742,7 +742,7 @@ get.longterm.core.authors = function(author.class = NULL) {
     recurring.authors = get.recurring.authors(author.class, class = "core")
 
     ## Calculate the num of occurences at which a dev gets stated as longterm core
-    longterm.threshold = length(codeface.range.data.list) * LONGTERM.CORE.THRESHOLD
+    longterm.threshold = length(author.class) * LONGTERM.CORE.THRESHOLD
 
     ## Get the longterm core authors
     longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold,]$author.name
