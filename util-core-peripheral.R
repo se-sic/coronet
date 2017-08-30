@@ -40,11 +40,11 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## the network has to be given.
 get.author.class.by.type = function(network = NULL, data = NULL,
                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
-    logging::logdebug("Starting: get.author.class.by.type")
+    logging::logdebug("get.author.class.by.type: starting.")
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
     if(is.null(network) && is.null(data)) {
-        logging::logerror("Neither network nor raw data were given for get.author.class.by.type.")
+        logging::logerror("Neither network nor raw data were given.")
         stop("Either network or raw data needs to be given.")
     }
 
@@ -54,7 +54,7 @@ get.author.class.by.type = function(network = NULL, data = NULL,
                     "commit.count" = get.author.class.commit.count(codeface.range.data = data),
                     "loc.count"= get.author.class.loc.count(codeface.range.data = data))
 
-    logging::logdebug("Finished: get.author.class.by.type")
+    logging::logdebug("get.author.class.by.type: finished.")
     return(result)
 }
 
@@ -65,14 +65,13 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 ##
 ## This function takes an igraph object.
 get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
-    logging::logdebug("Starting: get.author.class.network.degree")
+    logging::logdebug("get.author.class.network.degree: starting.")
 
     if(is.null(network)) {
-        logging::logerror("For the network-based analysis, the network is needed.")
+        logging::logerror("For the network-based degree-centrality analysis, the network is needed.")
         stop("The network has to be given for this analysis.")
     }else if(igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty.")
-
+        logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
                     "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
@@ -86,7 +85,7 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
     ## Get the author classification based on the centrality
     res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
 
-    logging::logdebug("Finished: get.author.class.network.degree")
+    logging::logdebug("get.author.class.network.degree: finished.")
     return(res)
 }
 
@@ -95,15 +94,14 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
 get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL, result.limit=NULL) {
+    logging::logdebug("get.author.class.network.eigen: starting.")
 
-    logging::logdebug("Starting: get.author.class.network.eigen")
     if(is.null(network)) {
         logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
         stop("The network has to be given for this analysis.")
 
     }else if(igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty.")
-
+        logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
                     "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
@@ -122,7 +120,7 @@ get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL
     ## Get the author classification based on the centrality
     res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
 
-    logging::logdebug("Finished: get.autho.class.network.eigen")
+    logging::logdebug("get.author.class.network.eigen: finished.")
     return(res)
 }
 
@@ -131,7 +129,7 @@ get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the number of commits made withing a version range.
 get.author.class.commit.count = function(codeface.range.data, result.limit = NULL) {
-    logging::logdebug("Starting: get.author.class.commit.count")
+    logging::logdebug("get.author.class.commit.count: starting.")
 
     ## Get the commit counts per author
     author.commit.count = get.author.commit.count(codeface.range.data)
@@ -139,14 +137,14 @@ get.author.class.commit.count = function(codeface.range.data, result.limit = NUL
     ## Get the author classification based on the commit counts
     res = get.author.class(author.commit.count, "freq", result.limit = result.limit)
 
-    logging::logdebug("Finished: get.author.class.commit.count")
+    logging::logdebug("get.author.class.commit.count: finished.")
     return(res)
 }
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
 get.author.class.loc.count = function(codeface.range.data, result.limit=NULL) {
-    logging::logdebug("Starting: get.author.class.loc.count")
+    logging::logdebug("get.author.class.loc.count: starting.")
 
     ## Get the changed lines (loc counts) per author
     author.loc.count = get.author.loc.count(codeface.range.data)
@@ -154,14 +152,14 @@ get.author.class.loc.count = function(codeface.range.data, result.limit=NULL) {
     ## Get the author classification based on the loc counts
     res = get.author.class(author.loc.count, "loc", result.limit=result.limit)
 
-    logging::logdebug("Finished: get.author.class.loc.count")
+    logging::logdebug("get.author.class.loc.count: finished.")
     return(res)
 }
 
 ## Get the changed lines per author of the specified version range
 ## as a data frame ordered by the changed lines.
 get.author.loc.count = function(codeface.range.data) {
-    logging::logdebug("Starting: get.author.loc.count")
+    logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(codeface.range.data,
@@ -176,14 +174,14 @@ get.author.loc.count = function(codeface.range.data) {
     res = sqldf::sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
                from `commits.df` group by `author.name` order by `loc` desc")
 
-    logging::logdebug("Finished: get.author.loc.count")
+    logging::logdebug("get.author.loc.count: finished.")
     return(res)
 }
 
 ## Get the commit count per author of the specified version range
 ## as a data frame ordered by the commit count.
 get.author.commit.count = function(codeface.range.data) {
-    logging::logdebug("Starting: get.author.commit.count")
+    logging::logdebug("get.author.commit.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(codeface.range.data)[[1]]
@@ -196,34 +194,34 @@ get.author.commit.count = function(codeface.range.data) {
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
 
-    logging::logdebug("Finished: get.author.commit.count")
+    logging::logdebug("get.author.commit.count: finished.")
     return(res)
 }
 
 ## Get the loc count threshold of the specified version range
 ## on which a author can be classified as core.
 get.loc.count.threshold = function(codeface.range.data) {
-    logging::logdebug("Starting: get.loc.count.threshold")
+    logging::logdebug("get.loc.count.threshold: starting.")
 
     ## Get the loc per author
     author.loc.count = get.author.loc.count(codeface.range.data)
 
     threshold = get.threshold(author.loc.count$loc)
 
-    logging::logdebug("Finished: get.loc.count.threshold")
+    logging::logdebug("get.loc.count.threshold: finished.")
     return(threshold)
 }
 
 ## Get the commit count threshold  of the specified version range
 ## on which a author can be classified as core.
 get.commit.count.threshold = function(codeface.range.data) {
-    logging::logdebug("Starting: get.commit.count.threshold")
+    logging::logdebug("get.commit.count.threshold: starting.")
 
     ## Get the commit counts per author
     author.commit.count = get.author.commit.count(codeface.range.data)
     threshold = get.threshold(author.commit.count$freq)
 
-    logging::logdebug("Finished: get.commit.count.threshold")
+    logging::logdebug("get.commit.count.threshold: finished.")
     return(threshold)
 }
 
@@ -231,7 +229,7 @@ get.commit.count.threshold = function(codeface.range.data) {
 ## for each specified split range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector.
 get.commit.data = function(codeface.range.data, columns=c("author.name", "author.email"), split=c()) {
-    logging::logdebug("Starting: get.commit.data")
+    logging::logdebug("get.commit.data: starting.")
 
     ## Get commit data
     commits.df = codeface.range.data$get.commits.raw()
@@ -314,7 +312,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     split.groups = unique(split.groups)
     res = split(commits.df, split.groups)
 
-    logging::logdebug("Finished: get.commit.data")
+    logging::logdebug("get.commit.data: finished.")
     return(res)
 }
 
@@ -328,11 +326,11 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 ##         the structural complexity introduced by core and peripheral
 ##         developers in free software projects.
 get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL) {
-    logging::logdebug("Starting: get.author.class")
+    logging::logdebug("get.author.class: starting.")
 
     ## Return empty classification in case no data is available
     if(all(is.na(author.data.frame))) {
-        logging::logwarn("There is no data to use for the classification. Returning empty classification instead.")
+        logging::logwarn("There is no data to use for the classification. Returning empty classification...")
 
         empty.df <- data.frame(character(0), numeric(0))
         names(empty.df) <- c("author.name", calc.base.name)
@@ -341,20 +339,11 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     }
 
     ## Make sure the provided data is ordered correctly by the calculation base
-    author.data = author.data.frame[rev(order(author.data.frame[[calc.base.name]])),]
-
-    ## Remove rows with invalid calculation base values
-    if(sum(is.na(author.data[[calc.base.name]])) > 0) {
-        logging::logwarn("Some authors' activity indicator (%s) is NA.", calc.base.name)
-        author.data[is.na(author.data[[calc.base.name]]),][[calc.base.name]] <- 0
-    }
-
-    ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
 
     ## Remove rows with invalid calculation base values
     if(sum(is.na(author.data[[calc.base.name]])) > 0) {
-        logging::logwarn("Some authors' activity indicator (%s) is NA.", calc.base.name)
+        logging::logwarn("Some authors' activity indicator (%s) is NA. Setting the activity to 0...", calc.base.name)
         author.data[is.na(author.data[[calc.base.name]]), calc.base.name, drop = FALSE] = 0
     }
 
@@ -388,14 +377,14 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     peripheral.authors = author.data[!core.classification, , drop = FALSE]
     res = list(core=core.authors, peripheral=peripheral.authors)
 
-    logging::logdebug("Finished: get.author.class")
+    logging::logdebug("get.author.class: finished.")
     return(res)
 }
 
 ## Get the threshold based on the specified integer data list
 ## on which a author can be classified as core.
 get.threshold = function(data.list) {
-    logging::logdebug("Starting: get.threshold")
+    logging::logdebug("get.threshold: starting.")
 
     ## Calculate the sum of the provided data as base for the threshold calculation
     data.threshold.base = sum(data.list)
@@ -403,14 +392,14 @@ get.threshold = function(data.list) {
     ## Check which authors can be treated as core based on the data
     data.threshold = round(CORE.THRESHOLD * data.threshold.base)
 
-    logging::logdebug("Finished: get.threshold")
+    logging::logdebug("get.threshold: finished.")
     return(data.threshold)
 }
 
 ## Get a data frame with the authors and their occurence count in the specified class for
 ## the specified author classification list.
 get.recurring.authors = function(author.class.overview, class = c("both", "core", "peripheral")) {
-    logging::logdebug("Starting: get.recurring.authors")
+    logging::logdebug("get.recurring.authors: starting.")
 
     class = match.arg(class, c("both", "core", "peripheral"))
 
@@ -472,7 +461,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     ## Sort the authors by occurence count
     data = data[order(data$freq, decreasing = TRUE),]
 
-    logging::logdebug("Finished: get.recurring.authors")
+    logging::logdebug("get.recurring.authors: finished.")
     return(data)
 }
 
@@ -487,7 +476,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 ## or as list of networks for the network-based metrics).
 get.author.class.overview = function(network.list = NULL, codeface.range.data.list = NULL, type =
                                          c("network.degree", "network.eigen", "commit.count", "loc.count")) {
-    logging::logdebug("Starting: get.author.class.overview")
+    logging::logdebug("get.author.class.overview: starting.")
 
     type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
 
@@ -535,7 +524,7 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
         }
     }
 
-    logging::logdebug("Finished: get.author.class.overview")
+    logging::logdebug("get.author.class.overview: finished.")
     return(res)
 }
 
@@ -543,7 +532,7 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
 ## classification in more than a certain number of version ranges
 ## -> see: "LONGTERM.CORE.THRESHOLD".
 get.longterm.core.authors = function(author.class = NULL) {
-    logging::logdebug("Starting: get.longterm.core.authors")
+    logging::logdebug("get.longterm.core.authors: starting.")
 
     if(is.null(author.class)) {
         logging::logerror("For the analysis of longterm-core authors, the author classification has to be given.")
@@ -559,14 +548,14 @@ get.longterm.core.authors = function(author.class = NULL) {
     ## Get the longterm core authors
     longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold,]$author.name
 
-    logging::logdebug("Finished: get.longterm.core.authors")
+    logging::logdebug("get.longterm.core.authors: finished.")
     return(longterm.core)
 }
 
 ## Get a markov chain object representing the role stability of the
 ## specified classification overview.
 get.role.stability = function(author.class.overview) {
-    logging::logdebug("Starting: get.role.stability")
+    logging::logdebug("get.role.stability: starting.")
 
     core.core = 0 # core in prev version and core in current version
     core.peripheral = 0 # core in prev version and peripheral in current version
@@ -642,7 +631,7 @@ get.role.stability = function(author.class.overview) {
     roles.stability = new("markovchain", states = roles, byrow = TRUE,
                           transitionMatrix = roles.matrix, name = "Role Stability")
 
-    logging::logdebug("Finished: get.role.stability")
+    logging::logdebug("get.role.stability: finished.")
     return(roles.stability)
 }
 
@@ -658,12 +647,12 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                               sliding.window.core=NULL,
                                               longterm.cores = c(),
                                               activity.measure = c("commit.count", "loc.count")) {
-    logging::logdebug("Starting: get.author.class.activity.overview")
+    logging::logdebug("get.author.class.activity.overview: starting.")
 
     activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
     if(is.null(codeface.range.data.list)) {
-        logging::logerror("A list of codeface range-data objects is needed for the activity analysis.")
+        logging::logerror("A list of Codeface range-data objects is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
 
@@ -706,7 +695,7 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                              additional.cores=additional.core)
     }
 
-    logging::logdebug("Finished: get.author.class.activity.overview")
+    logging::logdebug("get.author.class.activity.overview: finished.")
     return(res)
 }
 
@@ -720,12 +709,12 @@ get.author.class.activity = function(codeface.range.data = NULL,
                                      activity.measure = c("commit.count", "loc.count"),
                                      split=c(),
                                      additional.cores=NULL) {
-    logging::logdebug("Starting: get.author.class.activity")
+    logging::logdebug("get.author.class.activity: starting.")
 
     activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
 
     if(is.null(codeface.range.data)) {
-        logging::logerror("A codeface range-data object is needed for the activity analysis.")
+        logging::logerror("A Codeface range-data object is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
     if(is.null(author.class)) {
@@ -832,13 +821,13 @@ get.author.class.activity = function(codeface.range.data = NULL,
         activity.count.norm.weeks.peripheral = res.activity.count.norm.weeks.peripheral
     )
 
-    logging::logdebug("Finished: get.author.class.activity")
+    logging::logdebug("get.author.class.activity: finished.")
     return(res)
 }
 
 ## Calculates the cohen's kappa to measure the agreement of the specified author classifications.
 calculate.cohens.kappa = function(author.classification.list, other.author.classification.list) {
-    logging::logdebug("Starting: calculate.cohens.kappa")
+    logging::logdebug("calculate.cohens.kappa: starting.")
 
     num.core.core = 0 # core in first, core in second
     num.core.peripheral = 0 # core in first, peripheral in second
@@ -872,7 +861,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 
     kappa = (po - pe) / (1 - pe)
 
-    logging::logdebug("Finished: calculate.choens.kappa")
+    logging::logdebug("calculate.choens.kappa: finished.")
     return(kappa)
 }
 
@@ -880,7 +869,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 ## specified version range classes which were not active, i.e. do not exist,
 ## in the previous version range classes (saturation).
 get.class.turnover.overview = function(author.class.overview, saturation = 1){
-    logging::logdebug("Starting: get.class.turnover.overview")
+    logging::logdebug("get.class.turnover.overview: starting.")
 
     if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
@@ -949,7 +938,7 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
         turnover.overview$dev.count.peripheral[i] = length(devs.peripheral.new)
     }
 
-    logging::logdebug("Finished: get.class.turnover.overview")
+    logging::logdebug("get.class.turnover.overview: finished.")
     return(turnover.overview)
 }
 
@@ -958,7 +947,7 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
 ## which are only active in the previous ranges (as specified in saturation) but not in the current one (gone) in
 ## relation to all authors of the current and the previous ranges.
 get.unstable.authors.overview = function(author.class.overview, saturation = 1){
-    logging::logdebug("Starting: get.unstable.authors.overview")
+    logging::logdebug("get.unstable.authors.overview: starting.")
 
     if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
@@ -1031,6 +1020,6 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1){
 
     }
 
-    logging::logdebug("Finished: get.unstable.authors.overview")
+    logging::logdebug("get.unstable.authors.overview: finished.")
     return(turnover.overview)
 }
