@@ -41,7 +41,8 @@ LONGTERM.CORE.THRESHOLD = 0.5
 get.author.class.by.type = function(network = NULL, data = NULL,
                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.by.type: starting.")
-    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
+
+    type = match.arg(type)
 
     if(is.null(network) && is.null(data)) {
         logging::logerror("Neither network nor raw data were given.")
@@ -401,7 +402,7 @@ get.threshold = function(data.list) {
 get.recurring.authors = function(author.class.overview, class = c("both", "core", "peripheral")) {
     logging::logdebug("get.recurring.authors: starting.")
 
-    class = match.arg(class, c("both", "core", "peripheral"))
+    class = match.arg(class)
 
     authors = c()
     freq = c()
@@ -474,11 +475,11 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 ##
 ## The data can either be given as list of raw range data (for the count-based metrics)
 ## or as list of networks for the network-based metrics).
-get.author.class.overview = function(network.list = NULL, codeface.range.data.list = NULL, type =
-                                         c("network.degree", "network.eigen", "commit.count", "loc.count")) {
+get.author.class.overview = function(network.list = NULL, codeface.range.data.list = NULL,
+                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.overview: starting.")
 
-    type = match.arg(type, c("network.degree", "network.eigen", "commit.count", "loc.count"))
+    type = match.arg(type)
 
     if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")) {
         logging::logerror("For count-based metric evolution, a list of codeface range-data objects is needed.")
@@ -649,7 +650,7 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                               activity.measure = c("commit.count", "loc.count")) {
     logging::logdebug("get.author.class.activity.overview: starting.")
 
-    activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
+    activity.measure = match.arg(activity.measure)
 
     if(is.null(codeface.range.data.list)) {
         logging::logerror("A list of Codeface range-data objects is needed for the activity analysis.")
@@ -711,7 +712,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
                                      additional.cores=NULL) {
     logging::logdebug("get.author.class.activity: starting.")
 
-    activity.measure = match.arg(activity.measure, c("commit.count", "loc.count"))
+    activity.measure = match.arg(activity.measure)
 
     if(is.null(codeface.range.data)) {
         logging::logerror("A Codeface range-data object is needed for the activity analysis.")
