@@ -14,14 +14,14 @@ logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
 
-CF.DATA = "path/to/codeface-data" # path to codeface data
+CF.DATA = "/path/to/codeface-data" # path to codeface data
 
 CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
 CASESTUDY = "busybox"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
-AUTHOR.RELATION = "cochange" # mail, cochange
+AUTHOR.RELATION = "mail" # mail, cochange
 ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 
@@ -57,7 +57,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$update.network.conf(updated.values = list(author.directed = TRUE))
 # x$get.author.network()
 # x$update.network.conf(updated.values = list(author.directed = FALSE))
-# x$get.author.network()
+g = x$get.author.network()
 # x$get.artifact.network()
 # x$reset.environment()
 # x$get.networks()
