@@ -338,7 +338,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
 
     ## Remove rows with invalid calculation base values
-    if(sum(is.na(author.data[[calc.base.name]])) > 0) {
+    if(any(is.na(author.data[[calc.base.name]]))) {
         logging::logwarn("Some authors' activity indicator (%s) is NA. Setting the activity to 0...", calc.base.name)
         author.data[is.na(author.data[[calc.base.name]]), calc.base.name, drop = FALSE] = 0
     }
