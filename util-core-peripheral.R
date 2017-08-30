@@ -266,13 +266,14 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     commits.df = commits.df[order(commits.df$date),]
 
     ## Fetch the date range info
-    date.first = commits.df$date[1] - 1 # -1 because the first date in split ranges is exclusive
-    date.last = commits.df$date[nrow(commits.df)]
+    date.first = as.Date(commits.df$date[1]) - 1 # -1 because the first date in split ranges is exclusive
+    date.last = as.Date(commits.df$date[nrow(commits.df)])
 
     ## Calc the split dates depending on the specified intervals
     date.split = c(date.last)
     if (!is.null(split)) {
         for (i in 1:length(split)){
+            ## substract split[i] number of weeks (i.e., split[i] * 7 days)
             date.calc = date.split[i] - (split[i] * 7)
 
             ## Check if calculated date is still after the first commit date of the range
@@ -290,15 +291,15 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     date.split = rev(date.split)
 
     ## Only keep the commits which were made within the specified split ranges
-    commits.df = commits.df[commits.df$date > date.split[1],]
+    commits.df = commits.df[as.Date(commits.df$date) > date.split[1],]
 
     ## Calc group numbers for the commits by the split dates
     split.groups = c()
     for(i in 1:nrow(commits.df)){
-        commits.df.row.date = commits.df[i,]$date
+        commits.df.row.date = as.Date(commits.df[i,]$date)
         for(j in 2:length(date.split)){
             if (commits.df.row.date <= date.split[j]) {
-                split.groups = c(split.groups, paste(date.split[j - 1] + 1, date.split[j], sep=" - "))
+                split.groups = c(split.groups, paste(as.Date(date.split[j - 1]) + 1, date.split[j], sep=" - "))
                 break
             }
         }
