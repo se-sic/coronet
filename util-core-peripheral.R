@@ -266,14 +266,15 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     commits.df = commits.df[order(commits.df$date),]
 
     ## Fetch the date range info
-    date.first = as.Date(commits.df$date[1]) - 1 # -1 because the first date in split ranges is exclusive
-    date.last = as.Date(commits.df$date[nrow(commits.df)])
+    date.first = as.Date(commits.df$date[1])
+    date.last = as.Date(commits.df$date[nrow(commits.df)]) + 1 # +1 since findInterval is right-exclusive
 
     ## Calc the split dates depending on the specified intervals
     date.split = c(date.last)
     if (!is.null(split)) {
         for (i in 1:length(split)){
             ## substract split[i] number of weeks (i.e., split[i] * 7 days)
+            ## TODO use lubridate package here to substract a week from POSIXct?
             date.calc = date.split[i] - (split[i] * 7)
 
             ## Check if calculated date is still after the first commit date of the range
@@ -291,19 +292,11 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     date.split = rev(date.split)
 
     ## Only keep the commits which were made within the specified split ranges
-    commits.df = commits.df[as.Date(commits.df$date) > date.split[1],]
+    ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
+    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1],]
 
     ## Calc group numbers for the commits by the split dates
-    split.groups = c()
-    for(i in 1:nrow(commits.df)){
-        commits.df.row.date = as.Date(commits.df[i,]$date)
-        for(j in 2:length(date.split)){
-            if (commits.df.row.date <= date.split[j]) {
-                split.groups = c(split.groups, paste(as.Date(date.split[j - 1]) + 1, date.split[j], sep=" - "))
-                break
-            }
-        }
-    }
+    intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
 
     ## Remove date column if not wanted as it now contains nonsensical data
     if (!("date" %in% columns)) {
@@ -311,8 +304,9 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     }
 
     ## Split the commits by the calculated groups
-    split.groups = unique(split.groups)
-    res = split(commits.df, split.groups)
+    res = split.data.by.bins(commits.df, intervals)
+    names(res) = construct.ranges(date.split)
+    attr(res, "bins") = date.split
 
     logging::logdebug("get.commit.data: finished.")
     return(res)
@@ -796,7 +790,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
         res.activity.count.med.peripheral[i] = ifelse(length(activity.count.peripheral.ordered) > 0, median(activity.count.peripheral.ordered), 0)
 
         ## Normalize activity count by weeks
-        res.range.splitted = strsplit(res.range[i], " - ")[[1]]
+        res.range.splitted = attr(commits.data, "bins")[c(i, i + 1)]
         res.range.start = as.Date(res.range.splitted[1])
         res.range.end = as.Date(res.range.splitted[2])
         res.range.length.days = as.numeric(res.range.end - res.range.start)
