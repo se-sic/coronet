@@ -13,10 +13,10 @@
 
 ### LIBRARIES
 
-requireNamespace("sqldf")# for SQL-selections on data.frames
-requireNamespace("igraph")# for calculation of network metrics (degree, eigen-centrality)
-requireNamespace("markovchain")# for role stability analysis
-requireNamespace("logging")# for logging
+requireNamespace("sqldf") # for SQL-selections on data.frames
+requireNamespace("igraph") # for calculation of network metrics (degree, eigen-centrality)
+requireNamespace("markovchain") # for role stability analysis
+requireNamespace("logging") # for logging
 
 ### THRESHOLDS
 
@@ -65,13 +65,13 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 ## based on the degree centrality.
 ##
 ## This function takes an igraph object.
-get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
+get.author.class.network.degree = function(network = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.degree: starting.")
 
     if(is.null(network)) {
         logging::logerror("For the network-based degree-centrality analysis, the network is needed.")
         stop("The network has to be given for this analysis.")
-    }else if(igraph::vcount(network) == 0) {
+    } else if(igraph::vcount(network) == 0) {
         logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
@@ -80,11 +80,11 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
 
     ## Get node degrees for all authors
     centrality.vec = sort(igraph::degree(network), decreasing = TRUE)
-    centrality.df = data.frame(author.name=names(centrality.vec),
-                               centrality=as.vector(centrality.vec))
+    centrality.df = data.frame(author.name = names(centrality.vec),
+                               centrality = as.vector(centrality.vec))
 
     ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
+    res = get.author.class(centrality.df, "centrality", result.limit = result.limit)
 
     logging::logdebug("get.author.class.network.degree: finished.")
     return(res)
@@ -94,14 +94,14 @@ get.author.class.network.degree = function(network=NULL, result.limit=NULL) {
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL, result.limit=NULL) {
+get.author.class.network.eigen = function(network = NULL, codeface.range.data = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
     if(is.null(network)) {
         logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
         stop("The network has to be given for this analysis.")
 
-    }else if(igraph::vcount(network) == 0) {
+    } else if(igraph::vcount(network) == 0) {
         logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
@@ -115,11 +115,11 @@ get.author.class.network.eigen = function(network=NULL, codeface.range.data=NULL
     if(igraph::ecount(network) == 0) {
         centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
     }
-    centrality.df = data.frame(author.name=names(centrality.vec),
-                               centrality=as.vector(centrality.vec))
+    centrality.df = data.frame(author.name = names(centrality.vec),
+                               centrality = as.vector(centrality.vec))
 
     ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, "centrality", result.limit=result.limit)
+    res = get.author.class(centrality.df, "centrality", result.limit = result.limit)
 
     logging::logdebug("get.author.class.network.eigen: finished.")
     return(res)
@@ -144,14 +144,14 @@ get.author.class.commit.count = function(codeface.range.data, result.limit = NUL
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(codeface.range.data, result.limit=NULL) {
+get.author.class.loc.count = function(codeface.range.data, result.limit = NULL) {
     logging::logdebug("get.author.class.loc.count: starting.")
 
     ## Get the changed lines (loc counts) per author
     author.loc.count = get.author.loc.count(codeface.range.data)
 
     ## Get the author classification based on the loc counts
-    res = get.author.class(author.loc.count, "loc", result.limit=result.limit)
+    res = get.author.class(author.loc.count, "loc", result.limit = result.limit)
 
     logging::logdebug("get.author.class.loc.count: finished.")
     return(res)
@@ -164,7 +164,7 @@ get.author.loc.count = function(codeface.range.data) {
 
     ## Get commit data
     commits.df = get.commit.data(codeface.range.data,
-                                 columns=c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
+                                 columns = c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
 
     ## Return NA in case no commit data is available
     if(all(is.na(commits.df))) {
@@ -229,7 +229,7 @@ get.commit.count.threshold = function(codeface.range.data) {
 ## Get the commit data with the specified columns for the specified version range as a data frame
 ## for each specified split range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector.
-get.commit.data = function(codeface.range.data, columns=c("author.name", "author.email"), split=c()) {
+get.commit.data = function(codeface.range.data, columns = c("author.name", "author.email"), split = c()) {
     logging::logdebug("get.commit.data: starting.")
 
     ## Get commit data
@@ -272,7 +272,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     ## Calc the split dates depending on the specified intervals
     date.split = c(date.last)
     if (!is.null(split)) {
-        for (i in 1:length(split)){
+        for (i in 1:length(split)) {
             ## substract split[i] number of weeks (i.e., split[i] * 7 days)
             ## TODO use lubridate package here to substract a week from POSIXct?
             date.calc = date.split[i] - (split[i] * 7)
@@ -280,12 +280,12 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
             ## Check if calculated date is still after the first commit date of the range
             if (date.calc > date.first) {
                 date.split = c(date.split, date.calc)
-            }else{
+            } else {
                 date.split = c(date.split, date.first)
                 break
             }
         }
-    }else{
+    } else {
         date.split = c(date.split, date.first)
     }
 
@@ -298,7 +298,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
     ## Calc group numbers for the commits by the split dates
     intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
 
-    ## Remove date column if not wanted as it now contains nonsensical data
+    ## Remove date column if not wanted
     if (!("date" %in% columns)) {
         commits.df["date"] = NULL
     }
@@ -321,7 +321,7 @@ get.commit.data = function(codeface.range.data, columns=c("author.name", "author
 ## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
 ##         the structural complexity introduced by core and peripheral
 ##         developers in free software projects.
-get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL) {
+get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
 
     ## Return empty classification in case no data is available
@@ -371,7 +371,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit=NULL
     ## Cut core and peripheral authors from base data and construct return value
     core.authors = author.data[core.classification, , drop = FALSE]
     peripheral.authors = author.data[!core.classification, , drop = FALSE]
-    res = list(core=core.authors, peripheral=peripheral.authors)
+    res = list(core = core.authors, peripheral = peripheral.authors)
 
     logging::logdebug("get.author.class: finished.")
     return(res)
@@ -420,7 +420,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 
             author.class.authors = c(author.class.overview[[i]]$core$author.name,
                                      author.class.overview[[i]]$peripheral$author.name)
-        }else{
+        } else {
 
             ## skip range in case no classification for the given class is available
             if(nrow(author.class.overview[[i]][[class]])==0) {
@@ -440,7 +440,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 
                 ## Increase the occurence count as the author already exists in previous ranges
                 freq[author.class.author.index] = freq[author.class.author.index] + 1
-            }else{
+            } else {
 
                 ## Save the author and its first occurence
                 authors = c(authors, author.class.author.name)
@@ -480,7 +480,7 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
         logging::logerror("For count-based metric evolution, a list of codeface range-data objects is needed.")
         stop("For the count-based metrics, the raw data has to be given.")
 
-    }else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
+    } else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
         logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
         stop("For the network-based metrics, the network list has to be given.")
     }
@@ -496,13 +496,13 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
                 get.author.class.by.type(data = range.data, type = type)
 
             ## Save in list of classifications
-            if(!is.null(range.name)){
+            if(!is.null(range.name)) {
                 res[[range.name]] = range.class
-            }else{
+            } else {
                 res <- c(res, list(range.class))
             }
         }
-    }else{## use network list as data
+    } else { # use network list as data
         for (i in 1:length(network.list)) {
             range.network = network.list[[i]]
             range.name = names(network.list)[[i]]
@@ -512,9 +512,9 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
                 get.author.class.by.type(network = range.network, type = type)
 
             ## save in list of clasifications
-            if(!is.null(range.name)){
+            if(!is.null(range.name)) {
                 res[[range.name]] = range.class
-            }else{
+            } else {
                 res <- c(res, list(range.class))
             }
         }
@@ -639,8 +639,8 @@ get.role.stability = function(author.class.overview) {
 ## version ranges (according to the value) shall be included in the core author set of the current range.
 get.author.class.activity.overview = function(codeface.range.data.list = NULL,
                                               author.class.overview = NULL,
-                                              split=c(),
-                                              sliding.window.core=NULL,
+                                              split = c(),
+                                              sliding.window.core = NULL,
                                               longterm.cores = c(),
                                               activity.measure = c("commit.count", "loc.count")) {
     logging::logdebug("get.author.class.activity.overview: starting.")
@@ -668,7 +668,7 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
         ## Check if an individual split for each version range is set
         if (class(split) == "list") {
             range.split = split[[i]]
-        }else{
+        } else {
             range.split = split
         }
 
@@ -686,9 +686,9 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
 
         res[[i]] = get.author.class.activity(codeface.range.data.list[[i]],
                                              author.class = author.class.overview[[i]],
-                                             activity.measure=activity.measure,
-                                             split=range.split,
-                                             additional.cores=additional.core)
+                                             activity.measure = activity.measure,
+                                             split = range.split,
+                                             additional.cores = additional.core)
     }
 
     logging::logdebug("get.author.class.activity.overview: finished.")
@@ -698,13 +698,13 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
 ## Get the number/activity of core and peripheral authors based on the specified classification function
 ## for each split range of the specified version development range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector,
-## e.g., c(1,1,1) for a three-week range that shall be treated as three one-week ranges.
+## e.g., c(1, 1, 1) for a three-week range that shall be treated as three one-week ranges.
 ## A vector of addition core authors can be specified which will always be set as core in each range.
 get.author.class.activity = function(codeface.range.data = NULL,
                                      author.class = NULL,
                                      activity.measure = c("commit.count", "loc.count"),
-                                     split=c(),
-                                     additional.cores=NULL) {
+                                     split = c(),
+                                     additional.cores = NULL) {
     logging::logdebug("get.author.class.activity: starting.")
 
     activity.measure = match.arg(activity.measure)
@@ -728,8 +728,8 @@ get.author.class.activity = function(codeface.range.data = NULL,
 
     ## Get the splitted commit data with all necessary columns
     commits.data = get.commit.data(codeface.range.data,
-                                   columns=c("author.name", "added.lines", "deleted.lines"),
-                                   split=split)
+                                   columns = c("author.name", "added.lines", "deleted.lines"),
+                                   split = split)
 
     ## Build the query string to group commits by the author name
     commits.query = "select `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc.count`,
@@ -746,7 +746,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
         commits.dev.core = commits.dev.list[[names(commits.data)[i]]][core.test,]
         commits.dev.peripheral = commits.dev.list[[names(commits.data)[i]]][!core.test,]
 
-        commits.dev.list[[names(commits.data)[i]]] = list(core=commits.dev.core, peripheral=commits.dev.peripheral)
+        commits.dev.list[[names(commits.data)[i]]] = list(core = commits.dev.core, peripheral = commits.dev.peripheral)
     }
 
     res.range = c()
@@ -864,12 +864,12 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 ## Get the author turnover values measured as the proportion of authors in the
 ## specified version range classes which were not active, i.e. do not exist,
 ## in the previous version range classes (saturation).
-get.class.turnover.overview = function(author.class.overview, saturation = 1){
+get.class.turnover.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.class.turnover.overview: starting.")
 
     if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
-    }else{
+    } else {
         versions = 1:length(author.class.overview)
     }
 
@@ -904,7 +904,7 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
     turnover.overview$dev.count[1] = length(devs.new)
     turnover.overview$dev.count.core[1] = length(devs.core.new)
     turnover.overview$dev.count.peripheral[1] = length(devs.peripheral.new)
-    for (i in 2:length(author.class.overview)){
+    for (i in 2:length(author.class.overview)) {
         devs.old = devs.new
         devs.core.old = devs.core.new
         devs.peripheral.old = devs.peripheral.new
@@ -942,12 +942,12 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1){
 ## the authors which are either only active in the current version range but not in the previous ones (new) or
 ## which are only active in the previous ranges (as specified in saturation) but not in the current one (gone) in
 ## relation to all authors of the current and the previous ranges.
-get.unstable.authors.overview = function(author.class.overview, saturation = 1){
+get.unstable.authors.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.unstable.authors.overview: starting.")
 
     if(!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
-    }else{
+    } else {
         versions = 1:length(author.class.overview)
     }
 
