@@ -2,7 +2,7 @@
 ## frankfer@fim.uni-passau.de
 ## (c) Claus Hunsen, 2017
 ## hunsen@fim.uni-passau.de
-## (c) Mitchell Joblins, 2017
+## (c) Mitchell Joblin, 2017
 ## mitchell.joblin@uni-passau.de
 ## (c) Sofie Kemper, 2017
 ## kemperso@fim.uni-passau.de
