@@ -57,7 +57,7 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 # x$update.network.conf(updated.values = list(author.directed = TRUE))
 # x$get.author.network()
 # x$update.network.conf(updated.values = list(author.directed = FALSE))
-# x$get.author.network()
+g = x$get.author.network()
 # x$get.artifact.network()
 # x$reset.environment()
 # x$get.networks()
@@ -81,8 +81,8 @@ x = CodefaceProjectData$new(proj.conf, net.conf)
 
 ## RANGE-LEVEL DATA
 
-y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
-# y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
+y = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]])
+# y = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[2]], revision.callgraph = revisions.callgraph[[3]])
 # y$get.commits.raw()
 # y$get.commits.filtered()
 # y$get.commits.filtered.empty()
@@ -220,3 +220,57 @@ y <- CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, ra
 #                         motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
 #                         motif.communicating = MOTIFS.LINE,
 #                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
+
+
+## CORE/PERIPHERAL CLASSIFICATION
+
+# range.data = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[10]])
+# range.data2 = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[11]])
+# empty.range.data = CodefaceRangeData$new(project.conf = proj.conf, network.conf = net.conf, range = ranges[[1]])
+#
+# network = range.data$get.author.network()
+# empty.network = empty.range.data$get.author.network()
+#
+# network.list = list(empty.network, network, range.data2$get.author.network())
+# range.list = list(empty.range.data, range.data, range.data2)
+
+# ## test functions for single range
+# author.class = get.author.class.by.type(network = network, type = "network.degree")
+# get.author.class.by.type(network = network, type = "network.eigen")
+# get.author.class.by.type(data = range.data, type = "commit.count")
+# get.author.class.by.type(data = range.data, type = "loc.count")
+
+# ## test functions for single range with "empty" range data (network without edges)
+# author.class.empty.range = get.author.class.by.type(network = empty.network, type = "network.degree")
+# get.author.class.by.type(network = empty.network, type = "network.eigen")
+# get.author.class.by.type(data = empty.range.data, type = "commit.count")
+# get.author.class.by.type(data = empty.range.data, type = "loc.count")
+
+# ## test function for mutliple ranges (evolution)
+# author.class.overview = get.author.class.overview(network.list = network.list, type = "network.degree")
+# get.author.class.overview(network.list = network.list, type = "network.eigen")
+# get.author.class.overview(codeface.range.data.list = range.list, type = "commit.count")
+# author.class.overview.loc = get.author.class.overview(codeface.range.data.list = range.list, type = "loc.count")
+#
+# recurring.authors = get.recurring.authors(author.class.overview = author.class.overview, class = "both")
+# longterm.core = get.recurring.authors(author.class.overview = author.class.overview, class = "core")
+#
+# role.stability = get.role.stability(author.class.overview = author.class.overview)
+#
+# author.class.activity = get.author.class.activity(codeface.range.data = range.data, author.class = author.class,
+#                                                   activity.measure = "commit.count")
+# author.class.activity.empty = get.author.class.activity(codeface.range.data = empty.range.data,
+#                                                        author.class = author.class.empty.range, activity.measure = "loc.count")
+#
+# author.class.activity.overview = get.author.class.activity.overview(codeface.range.data.list = range.list,
+#                                                                     author.class.overview = author.class.overview,
+#                                                                     activity.measure = "commit.count")
+# get.author.class.activity.overview(codeface.range.data.list = range.list,
+#                                       author.class.overview = author.class.overview,
+#                                       activity.measure = "commit.count", longterm.cores = "Erik Andersen")
+#
+# calculate.cohens.kappa(author.classification.list = author.class.overview,
+#                        other.author.classification.list = author.class.overview.loc)
+#
+# get.class.turnover.overview(author.class.overview = author.class.overview)
+# get.unstable.authors.overview(author.class.overview = author.class.overview, saturation = 2)
