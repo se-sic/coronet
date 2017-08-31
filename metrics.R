@@ -39,6 +39,7 @@ modularity = function(network) {
     return(mod)
 }
 
+# requires simplified network
 smallworldness = function(network) {
     smallworldness <- determine.smallworldness(network) # smallworldness(nw.data$nw) #
     return(smallworldness)
@@ -71,3 +72,37 @@ determine.smallworldness = function(g) {
 
     return (s.delta)
 }
+
+
+amount.nodes = function(network) {
+    return(igraph::vcount(network))
+}
+
+power.law.fitting = function(network) {
+    v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
+
+    ## Power-law fiting
+    ## (from  Mitchell Joblin <mitchell.joblin.ext@siemens.com>, Siemens AG,  2012, 2013)
+    p.fit = igraph::power.law.fit(v.degree, implementation="plfit")
+    param.names = c("alpha", "xmin", "KS.p")
+    res = list()
+    res[param.names] = p.fit[param.names]
+
+    ## Check percent of vertices under power-law
+    res$num.power.law = length(which(v.degree >= res$xmin))
+    res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
+
+    return(cbind(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law))
+}
+
+generate.hierarchy = function(network) {
+    degrees = igraph::degree(network, mode="total")
+    cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
+
+    degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
+    cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
+
+    names.of.points = row.names(as.data.frame(degrees.without.cc))
+}
+
+
