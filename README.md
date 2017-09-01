@@ -236,7 +236,7 @@ There is no way to update the entries, except for the revision-based parameters.
   * **Note**: To include synchronicity-data-based edge attributes, you need to give the `"synchronicity"` edge attribute for `edge.attributes`.
 - `synchronicity.time.window`:
   * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
-  * [1, *5*, 10]
+  * [1, *5*, 10, 15]
   * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
 - `pasta`
   * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data

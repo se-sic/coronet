@@ -106,7 +106,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     logging::logdebug("read.synchronicity: starting.")
 
     ## check time.window
-    allowed.time.windows = c(1, 5, 10)
+    allowed.time.windows = c(1, 5, 10, 15)
     stopifnot((time.window) %in% allowed.time.windows)
 
     ## construct file

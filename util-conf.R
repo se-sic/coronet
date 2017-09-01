@@ -453,7 +453,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             synchronicity.time.window = list(
                 default = 5,
                 type = "numeric",
-                allowed = c(1, 5, 10),
+                allowed = c(1, 5, 10, 15),
                 allowed.number = 1
             ),
             pasta = list(
