@@ -229,6 +229,14 @@ ProjectData = R6::R6Class("ProjectData",
             private$project.conf$update.value(entry, value)
         },
 
+        #' Update the project configuration based on the given list
+        #' of values and reset the environment afterwards
+        #'
+        #' @param updated.values the new values for the project configuration
+        update.project.conf = function(updated.values = list()) {
+            private$project.conf$update.values(updated.values = updated.values)
+            self$reset.environment()
+        },
 
         ## BACKUP ####
 
