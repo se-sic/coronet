@@ -5,16 +5,26 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## System variables and R settings -----------------------------------------
+
 Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
 Sys.setenv(TZ = "UTC")
 options(stringsAsFactors = FALSE)
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit data -------------------------------------------------------------
 
 #' Read the commits from the 'commits.list' file.
 #'
@@ -93,6 +103,10 @@ read.commits.raw = function(data.path, artifact) {
     return(commit.data)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Synchronicity data ------------------------------------------------------
+
 #' Read the synchronicity data from file. The name of the file follows
 #' the following pattern: 'commit_sync_analysis_artifact_time.window.dat',
 #' where artifact and time.window are the given variables.
@@ -132,6 +146,10 @@ read.synchronicity = function(data.path, artifact, time.window) {
     logging::logdebug("read.synchronicity: finished.")
     return(synchronicity)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Mail data ---------------------------------------------------------------
 
 #' Read the mail data from the 'emails.list' file.
 #'
@@ -193,6 +211,10 @@ read.mails = function(data.path) {
     return(mail.data)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Author data -------------------------------------------------------------
+
 #' Read the author data from the 'authors.list' file.
 #'
 #' @param data.path the path to the author data
@@ -226,6 +248,10 @@ read.authors = function(data.path) {
     logging::logdebug("read.authors: finished.")
     return(authors.df)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## PaStA data --------------------------------------------------------------
 
 #' Read and parse the pasta data from the 'similar-mailbox' file.
 #' The form in the file is : <message-id> <possibly another message.id> => commit.hash.
@@ -280,6 +306,9 @@ read.pasta = function(data.path) {
     return(result.df)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Issue data --------------------------------------------------------------
 
 #' Read and parse the issue data from the 'issues.list' file.
 #' The parsed format is a data frame with message IDs as keys and commit hashes as values.

@@ -6,16 +6,17 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr") # for dlply function
 requireNamespace("igraph") # networks
 
-## / / / / / / / / / / / / / /
-## NETWORk META-CONFIGURATION
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vertex and edge types ---------------------------------------------------
 
 ## node types
 TYPE.AUTHOR = 1
@@ -26,15 +27,21 @@ TYPE.EDGES.INTRA = 3
 TYPE.EDGES.INTER = 4
 
 
-## NetworkBuilder ####
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## NetworkBuilder ----------------------------------------------------------
+
 NetworkBuilder = R6::R6Class("NetworkBuilder",
 
-    ## private members ####
+    ## * private -----------------------------------------------------------
+
     private = list(
+        ## * * data and configuration --------------------------------------
+
         proj.data = NULL,
         network.conf = NULL,
 
-        ## networks
+        ## * * network caching ---------------------------------------------
+
         authors.network.mail = NULL, # igraph
         authors.network.cochange = NULL, # igraph
         authors.network.issue = NULL, #igraph
@@ -43,7 +50,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
 
-        ## AUTHOR NETWORKS ####
+        ## * * author networks ---------------------------------------------
 
         #' Get the co-change-based author relation as network.
         #' If it doesn´t already exist build it first.
@@ -120,7 +127,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(author.relation)
         },
 
-        ## ARTIFACT NETWORKS ####
+        ## * * artifact networks -------------------------------------------
 
         #' Get the co-change-based artifact network,
         #' If it doesn´t already exist build it first.
@@ -255,7 +262,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
-        ## BIPARTITE RELATION ####
+        ## * * bipartite relation ------------------------------------------
 
         #' Get the key-value data for the bipartite relation,
         #' which is implied by the "artifact.relation" from the network configuration.
@@ -297,9 +304,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
     ),
 
+    ## * * public ----------------------------------------------------------
 
-    ## public members ####
     public = list(
+
         #' Constructor of the class. Constructs a new instance based on the
         #' given data object and the network configuration
         #'
@@ -315,7 +323,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (class(self)[1] == "ProjectData")
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
-        ## RESET ENVIRONMENT ##
+
+        ## * * resetting environment ---------------------------------------
 
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the data or configuration get changed.
@@ -326,7 +335,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.callgraph = NULL
         },
 
-        ## CONFIGURATION ####
+        ## * * configuration -----------------------------------------------
 
         #' Get the current network configuration.
         #'
@@ -360,8 +369,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$network.conf$update.value(entry, value)
         },
 
-        ## UPDATE CONFIGURATION ####
-
         #' Update the network configuration based on the given list
         #' of values and reset the environment afterwards
         #'
@@ -371,6 +378,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             self$reset.environment()
         },
 
+        ## * * networks ----------------------------------------------------
 
         #' Get the generic author network.
         #'
@@ -555,9 +563,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 )
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Union of networks ####
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions --------------------------------------------------------
 
 #' Combine networks to a bipartite network.
 #'
@@ -629,9 +636,8 @@ add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Exemplary network for illustration purposes
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Sample network ----------------------------------------------------------
 
 #' Get a example network for illustration purposes.
 #'

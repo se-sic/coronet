@@ -5,7 +5,15 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Initialization ----------------------------------------------------------
+
 source("util-init.R")
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Logging -----------------------------------------------------------------
 
 requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
@@ -13,6 +21,10 @@ if (file.exists("test.log")) file.remove("test.log")
 logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Case-study configuration ------------------------------------------------
 
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
@@ -25,7 +37,8 @@ AUTHOR.RELATION = "mail" # mail, cochange
 ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 
-## CONFIGURATION
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Project and network configuration ---------------------------------------
 
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -42,10 +55,13 @@ ranges = proj.conf$get.value("ranges")
 revisions.callgraph = proj.conf$get.value("revisions.callgraph")
 
 
-## PROJECT-LEVEL DATA
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Project-level data ------------------------------------------------------
 
 x.data = ProjectData$new(project.conf = proj.conf)
 x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
+
+## * Data retrieval --------------------------------------------------------
 
 # x.data$get.commits.raw()
 # x.data$get.synchronicity()
@@ -60,6 +76,9 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # x.data$get.commit2artifact()
 # x.data$get.commit2file()
 # x.data$get.thread2author()
+
+## * Network construction --------------------------------------------------
+
 # x$update.network.conf(updated.values = list(author.directed = TRUE))
 # x$get.author.network()
 # x$update.network.conf(updated.values = list(author.directed = FALSE))
@@ -73,15 +92,20 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # g = x$get.multi.network()
 # plot.network(g)
 
+## * Backups ---------------------------------------------------------------
+
 # ## save binary objects
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
 
-## RANGE-LEVEL DATA
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Range-level data --------------------------------------------------------
 
 y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
 y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+
+## * Data retrieval --------------------------------------------------------
 
 # y.data$get.commits.raw()
 # y.data$get.synchronicity()
@@ -96,6 +120,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # y.data$get.commit2artifact()
 # y.data$get.commit2file()
 # y.data$get.thread2author()
+
+## * Network construction --------------------------------------------------
+
 # y$update.network.conf(updated.values = list(edge.attributes = list("date")))
 # y$get.author.network()
 # y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
@@ -108,7 +135,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # plot.network(g)
 
 
-## BULK METHODS to construct Codeface ranges
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bulk methods for Codeface ranges ----------------------------------------
+
 # net.conf = NetworkConf$new()
 
 # ## author networks
@@ -148,7 +177,10 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # run.lapply(data, "get.data.path.callgraph")
 
 
-## SPLITTING DATA AND NETWORKS
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Splitting data and networks ---------------------------------------------
+
+## * Data-based splitting --------------------------------------------------
 
 # cf.data = split.data.time.based(x.data, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
@@ -171,6 +203,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
+
+## * Network-based splitting -----------------------------------------------
 
 # g = y$get.bipartite.network()
 # nets = split.network.time.based(g, time.period = "1 month", sliding.window = TRUE)
@@ -198,7 +232,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # }
 
 
-## MOTIF IDENTIFICATION
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motif identification ----------------------------------------------------
 
 # g = save.and.load("g", "y.multi.dat", skip = FALSE, if.not.found = function() {
 #     g = y$get.multi.network()
@@ -210,7 +245,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
 
 
-## PLOTS
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Plots -------------------------------------------------------------------
 
 # ## construct sample network for plotting
 # g = get.sample.network()
@@ -242,7 +278,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # print(p)
 
 
-## CORE/PERIPHERAL CLASSIFICATION
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Core/peripheral classification ------------------------------------------
 
 # range.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
 # range.data2 = RangeData$new(project.conf = proj.conf, range = ranges[[23]])

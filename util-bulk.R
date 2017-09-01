@@ -6,15 +6,15 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("parallel") # for parallel computation
 requireNamespace("igraph") # networks
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Multi networks
-##
-
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Multi networks ----------------------------------------------------------
 
 #' Collect the multi networks of the different Codeface ranges.
 #'
@@ -52,10 +52,8 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Bipartite networks
-##
-
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bipartite networks ------------------------------------------------------
 
 #' Collect the bipartite networks of the different Codeface ranges.
 #'
@@ -93,10 +91,8 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Author networks
-##
-
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Author networks ---------------------------------------------------------
 
 #' Collect the author networks of the different Codeface ranges.
 #'
@@ -134,10 +130,8 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Artifact networks
-##
-
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Artifact networks -------------------------------------------------------
 
 #' Collect the artifact networks of the different Codeface ranges.
 #'
@@ -175,9 +169,8 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Construct data
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construct data ----------------------------------------------------------
 
 #' Construct the range data for the Codeface ranges.
 #'
@@ -214,9 +207,8 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Run function on list of RangeData
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Run function on list of RangeData ---------------------------------------
 
 #' Run a given function on the list of RangeData.
 #'

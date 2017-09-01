@@ -8,18 +8,22 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("igraph")
 requireNamespace("logging")
 requireNamespace("parallel")
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## System variables and R settings -----------------------------------------
+
 Sys.setenv(TZ = "UTC")
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## High-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split data --------------------------------------------------------------
 
 #' Split project data in time-based ranges as specified
 #'
@@ -326,6 +330,10 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(cf.data)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split networks ----------------------------------------------------------
+
 #' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
 #' or to the given hard 'bins'.
 #'
@@ -535,6 +543,10 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     return(networks)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split raw data ----------------------------------------------------------
+
 #' Split the given data by the given bins.
 #'
 #' @param df a data.frame to be split
@@ -569,6 +581,10 @@ split.network.by.bins = function(network, bins, bins.vector) {
     logging::logdebug("split.data.time.based: finished.")
     return(nets)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unification of range names ----------------------------------------------
 
 #' Unify range names, i.e., add numbering suffixes to duplicate range names.
 #'
@@ -605,9 +621,8 @@ split.unify.range.names = function(ranges) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Low-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bin identification ------------------------------------------------------
 
 #' Compute bin information for a time-based splitting based on the given time period.
 #'

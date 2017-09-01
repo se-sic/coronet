@@ -2,15 +2,17 @@
 ## hunsen@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("igraph") # networks
 requireNamespace("ggplot2") ## plotting
 requireNamespace("ggraph") ## plotting networks
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Global plot options (e.g., vertex size and colors)
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Global plot options -----------------------------------------------------
+## (e.g., vertex size and colors)
 
 ## vertex size
 VERTEX.SIZE = 10
@@ -34,9 +36,8 @@ PLOT.NAMES.BY.TYPE.EDGE = c("unipartite", "bipartite")
 names(PLOT.NAMES.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Plot functions
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Plot functions ----------------------------------------------------------
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
 #'
@@ -158,9 +159,8 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Low-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Low-level functionality -------------------------------------------------
 
 #' Extend and transform the 'type' attribute of vertices and edges in the given network to get
 #' more flexibility while plotting.

@@ -6,26 +6,29 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## ProjectData
-##
-## Represents the data for building Networks
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## ProjectData -------------------------------------------------------------
 
-#### ProjectData ####
 ProjectData = R6::R6Class("ProjectData",
 
-    ## private members ####
+    ## * private -----------------------------------------------------------
+
     private = list(
-        ## configuration objects
+
+        ## * * configuration -----------------------------------------------
+
         project.conf = NULL, # list
 
-        ## raw data
+        ## * * raw data ----------------------------------------------------
+
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits.filtered.empty = NULL, #data.frame
@@ -40,7 +43,7 @@ ProjectData = R6::R6Class("ProjectData",
         ##issues
         issues = NULL, #data.frame
 
-        ## BASIC DATA ####
+        ## * * filtering commits -------------------------------------------
 
         #' Filter commits with empty artifacts from the commit list and save the new list
         #' to 'commits.filtered.empty'.
@@ -126,6 +129,8 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
+        ## * * pasta data -------------------------------------------
+
         #' Add the pasta data to the given data.frame for further analysis.
         #'
         #' @param data the base data as data.frame to append the PaStA data to.
@@ -153,8 +158,8 @@ ProjectData = R6::R6Class("ProjectData",
         }
     ),
 
+    ## * public ------------------------------------------------------------
 
-    ## public members ####
     public = list(
         #' The constructor of the class.
         #'
@@ -168,17 +173,16 @@ ProjectData = R6::R6Class("ProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
+        ## * * printing ----------------------------------------------------
 
-        ## TO STRING ;) ####
-        #' The to String method of the class.
+        #' The toString method of the class.
         get.class.name = function() {
             return(
                 sprintf("ProjectData<%s>", private$project.conf$get.value("repo"))
             )
         },
 
-
-        ## RESET ENVIRONMENT ##
+        ## * * resetting environment ---------------------------------------
 
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the project configuration or data gets
@@ -194,8 +198,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$pasta = NULL
         },
 
-
-        ## CONFIGURATION ####
+        ## * * configuration -----------------------------------------------
 
         #' Get the current project configuration.
         #'
@@ -238,7 +241,7 @@ ProjectData = R6::R6Class("ProjectData",
             self$reset.environment()
         },
 
-        ## BACKUP ####
+        ## * * backups -----------------------------------------------------
 
         #' Backup the current environment to a file on the disk.
         #'
@@ -247,8 +250,7 @@ ProjectData = R6::R6Class("ProjectData",
             save(self, file = file)
         },
 
-
-        ## PATHS ####
+        ## * * path retrieval ----------------------------------------------
 
         #' Get the absolute path to the project's result folder.
         #'
@@ -279,8 +281,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
-
-        ## RAW DATA ####
+        ## * * raw data ----------------------------------------------------
 
         #' Get the list of commits without empty artifacts.
         #' If it doesn´t already exist call the filter method.
@@ -442,7 +443,10 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        ## get the list of issues
+        #' Get the issue data.
+        #' If it doesn´t already exist call the read method.
+        #'
+        #' @return the issue data
         get.issues = function() {
             logging::loginfo("Getting issue data")
 
@@ -483,9 +487,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$artifacts)
         },
 
-
-        ## DATA ####
-
         #' Get single pasta items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
         #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
@@ -515,6 +516,8 @@ ProjectData = R6::R6Class("ProjectData",
                 return(result)
             }
         },
+
+        ## * * processed data ----------------------------------------------
 
         #' Map the corresponding authors to each artifact and return the list.
         #'
@@ -605,10 +608,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-
-
-        ## NotUsed  ####
-
         #' Map the corresponding commits to each author and return the list.
         #'
         #' @return the list of commits for each author
@@ -646,30 +645,24 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         }
 
-
-
-        ## EntNotUsed ####
-
     )
 )
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## RangeData
-##
-## Represents the data for one revision range for building Networks
 
-#### RangeData ####
-RangeData = R6::R6Class("RangeData",
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## RangeData ---------------------------------------------------------------
 
-    inherit = ProjectData,
+RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
-    ## private members ####
+    ## * private -----------------------------------------------------------
+
     private = list(
         range = NULL, # character
         revision.callgraph = NA # character
     ),
 
-    ## public members ####
+    ## * public ------------------------------------------------------------
+
     public = list(
 
         #' Constructor of the class. Constructs a new instance by calling the
@@ -694,9 +687,9 @@ RangeData = R6::R6Class("RangeData",
             logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
-        ## TO STRING ;) ####
+        ## * * printing ----------------------------------------------------
 
-        #' The to string method of the class.
+        #' The toString method of the class.
         get.class.name = function() {
             return(
                 sprintf("RangeData<%s, %s, %s>",
@@ -707,8 +700,7 @@ RangeData = R6::R6Class("RangeData",
             )
         },
 
-
-        ## PATHS ####
+        ## * * path retrieval ----------------------------------------------
 
         #' Construct and return the absolute path to the range's result folder.
         #'
@@ -728,7 +720,7 @@ RangeData = R6::R6Class("RangeData",
         },
 
 
-        ## DATA ####
+        ## * * raw data ----------------------------------------------------
 
         #' Get the 'range' of the current instance.
         #'
@@ -746,6 +738,10 @@ RangeData = R6::R6Class("RangeData",
 
     )
 )
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions --------------------------------------------------------
 
 ## TODO rename arguments 'thing1' and 'thing2' to 'key' and 'value', resp.
 #' Transform the 'base data' data.frame to a list in order to execute

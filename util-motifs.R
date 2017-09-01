@@ -2,25 +2,25 @@
 ## hunsen@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("plyr") # for rbind.fill.matrix
 requireNamespace("igraph") # graphs, baby!
 
 
-## / / / / / / / / / / / / / /
-## Line motif
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motifs ------------------------------------------------------------------
+
+## * Line motif -----------------------------------------------------------
 ## (i.e., two authors connected)
-##
 
 MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", type = c(TYPE.AUTHOR, TYPE.AUTHOR)) +
     igraph::edges("D1","D2", type = c(TYPE.EDGES.INTRA))
 
-
-## / / / / / / / / / / / / / /
-## Triangle motif
+## * Triangle motif --------------------------------------------------------
 ## (two authors are connected to one artifact)
-##
 
 ## positive triangle motif (including communication)
 MOTIFS.TRIANGLE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
@@ -35,10 +35,8 @@ MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::edges("D1","A" , "D2","A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
 
 
-## / / / / / / / / / / / / / /
-## Square motif
+## * Square motif ----------------------------------------------------------
 ## (two authors are connected to two distinct artifact that are coupled)
-##
 
 ## positive square motif (including communication)
 MOTIFS.SQUARE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
@@ -55,9 +53,8 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 
-## / / / / / / / / / / / / / /
-## Motif-identification functions
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motif-identification functions ------------------------------------------
 
 #' Search for the given \code{motif} in the given \code{network}.
 #'
@@ -210,9 +207,8 @@ motifs.count.all = function(network) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Low-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Low-level functionality -------------------------------------------------
 
 #' Remove vertices of type \code{TYPE.ARTIFACT} from the given vertex sequence(s) \code{vs}.
 #'
