@@ -15,7 +15,8 @@ pacakges = c(
     "sqldf",
     "testthat",
     "ggplot2",
-    "ggraph"
+    "ggraph",
+    "markovchain"
 )
 
 
