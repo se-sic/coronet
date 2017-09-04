@@ -644,31 +644,46 @@ add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
+SAMPLE.DATA = normalizePath("./sample")
+
 #' Get a example network for illustration purposes.
 #'
-#' @param network.conf the network configuration
+#' @param testing whether the function gets called from the test cases; if yes,
+#'                the path to the sample data is adapted [default: false]
 #'
 #' @return the sample network
-get.sample.network = function(network.conf = NetworkConf$new()) {
-    ## INDEPENDENT NETWORKS
-    authors = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6", type = TYPE.AUTHOR) +
-        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5", type = TYPE.EDGES.INTRA, weight = 1)
+get.sample.network = function(testing = FALSE) {
 
-    artifacts = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6", type = TYPE.ARTIFACT) +
-        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6", type = TYPE.EDGES.INTRA, weight = 1)
-    # artifacts = igraph::as.directed(artifacts, mode = "mutual")
+    ## project configuration
+    proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
+    proj.conf$update.values(list(artifact.filter.base = FALSE))
 
-    authors.to.artifacts.df = data.frame(
-        author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
-        artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
-    )
-    authors.to.artifacts = get.key.to.value.from.df(authors.to.artifacts.df, "author.name", "artifact")
+    ## RangeData object
+    range = proj.conf$get.value("ranges")[1]
+    range.callgraph = proj.conf$get.callgraph.revision.from.range(range)
+    proj.data = RangeData$new(proj.conf, range, range.callgraph)
 
-    ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
+    ## network configuration
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(
+        author.relation = "mail", author.directed = FALSE,
+        artifact.relation = "callgraph", artifact.directed = FALSE,
+        author.all.authors = TRUE, author.only.committers = FALSE,
+        simplify = TRUE
+    ))
+
+    ## network builder
+    net.builder = NetworkBuilder$new(proj.data, net.conf)
+
+    ## construct multi network
+    network = net.builder$get.multi.network()
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
+
+    ## set layout for plotting
+    lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
+                    245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
+                 nrow = 12, byrow = FALSE) # for sample graph
+    network = igraph::set.graph.attribute(network, "layout", lay)
 
     return(network)
 }

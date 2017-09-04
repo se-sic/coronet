@@ -67,10 +67,10 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D1", "D2") ],
         igraph::V(network)[ c("D1", "D4") ],
         igraph::V(network)[ c("D1", "D2") ], # unordered: D2, D1
-        igraph::V(network)[ c("D3", "D4") ],
         igraph::V(network)[ c("D1", "D4") ], # unordered: D4, D1
-        igraph::V(network)[ c("D3", "D4") ], # unordered: D4, D3
+        igraph::V(network)[ c("D3", "D4") ],
         igraph::V(network)[ c("D4", "D5") ],
+        igraph::V(network)[ c("D3", "D4") ], # unordered: D4, D3
         igraph::V(network)[ c("D4", "D5") ]  # unordered: D5, D4
     )
     matchings = motifs.search.in.network(network, MOTIFS.LINE, color.attr = "type", remove.duplicates = FALSE)
@@ -106,10 +106,10 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
     expected = list(
         igraph::V(network)[ c("D1", "D3", "A1", "A3") ],
         igraph::V(network)[ c("D2", "D3", "A1", "A3") ],
-        igraph::V(network)[ c("D1", "D3", "A1", "A3") ], # unordered: D3, D1, A1, A3
-        igraph::V(network)[ c("D2", "D3", "A1", "A3") ], # unordered: D3, D2, A1, A3
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ],
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ],
+        igraph::V(network)[ c("D1", "D3", "A1", "A3") ], # unordered: D3, D1, A1, A3
+        igraph::V(network)[ c("D2", "D3", "A1", "A3") ], # unordered: D3, D2, A1, A3
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ], # unordered: D5, D4, A5, A6
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ]  # unordered: D6, D4, A5, A6
     )
