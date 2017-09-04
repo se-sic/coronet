@@ -172,7 +172,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## check if revision for call-graphs is set
-            if (is.na(private$revision.callgraph)) {
+            if (is.na(private$proj.data$get.revision.callgraph())) {
                 logging::logerror("The call-graph revision is not set. Aborting...")
                 logging::logerror("This may be due to project-level analysis.
                                   The call-graph data is only available in range-level analysis.")
@@ -181,13 +181,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct path and file
             file.dir = private$proj.data$get.data.path.callgraph()
-            file.name = paste0("cg_nw_", private$proj.data$get.project.conf()$get.value("artifact.short"), "_", private$proj.data$get.revision.callgraph(), ".net")
+            file.name = sprintf("cg_nw_%s_%s.net",
+                                private$proj.data$get.project.conf.entry("artifact.short"),
+                                private$proj.data$get.revision.callgraph())
             file = file.path(file.dir, file.name)
 
             ## read network from disk
             artifacts.net = read.network.from.file(file)
             ## post-process network
-            artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$proj.data$get.project.conf()$get.value("artifact"))
+            artifacts.net = postprocess.artifact.names.callgraph(
+                artifacts.net,
+                private$proj.data$get.project.conf.entry("artifact")
+            )
 
             ## store network
             private$artifacts.network.callgraph = artifacts.net
