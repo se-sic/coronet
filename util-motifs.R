@@ -74,8 +74,6 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 #'
 #' @examples
 #' motifs.search.in.network(get.sample.network(), MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
-#'
-#' FIXME use 'lad' method for igraph::subgraph_isomorphisms as 'induced == TRUE' already filters false-positives?
 motifs.search.in.network = function(network, motif, color.attr = "type", remove.duplicates = TRUE) {
 
     ## find motif in network
@@ -124,7 +122,9 @@ motifs.search.in.network = function(network, motif, color.attr = "type", remove.
 #'                                              and communicating at the same time
 #' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
 #'                          removed. This logical value basically resembles the idea of respecting
-#'                          the order within a matched motif or not.
+#'                          the order within a matched motif or not. [default: TRUE]
+#' @param raw.data Whether to add attribute 'raw' to the result list, containing the raw vertex
+#'                 sequences describing the matched motifs [default: FALSE]
 #'
 #' @return A named list,
 #'         the item 'authors': the total number of authors in the network,
@@ -147,9 +147,8 @@ motifs.search.in.network = function(network, motif, color.attr = "type", remove.
 #'                             collaborating.and.communicating.raw == intersect(collaborating.raw, communicating.raw)
 #'
 #' FIXME give the motifs as a named list that can be used for iteration!
-#' FIXME change handling of raw data (store as attribute, make it optional, ...)
 motifs.count = function(network, motif.collaborating, motif.communicating, motif.collaborating.and.communicating,
-                        remove.duplicates = TRUE) {
+                        remove.duplicates = TRUE, raw.data = FALSE) {
     ## get isomorphisms, i.e., motifs in the network
     collaborating = motifs.search.in.network(network = network, motif = motif.collaborating,
                                              color.attr = "type", remove.duplicates = remove.duplicates)
@@ -168,36 +167,50 @@ motifs.count = function(network, motif.collaborating, motif.communicating, motif
     artifacts.length = length(igraph::V(network)[ type == TYPE.ARTIFACT ])
     authors.pairs = choose(authors.length, 2)
 
-    # return an object for later inspection
-    return(list(
+    ## construct result list
+    result = list(
         "authors" = authors.length, # total number of authors
         "artifacts" = artifacts.length, # total number of artifacts
         "complete" = authors.pairs, # total number of author pairs
         "collaborating" = length(collaborating), # number of author pairs that collaborate
-        "collaborating.raw" = collaborating,
         "communicating" = length(communicating), # number of author pairs that communicate
-        "communicating.raw" = communicating,
         "collaborating.and.communicating" = length(collaborating.and.communicating), # number of author pairs that collaborate and communicate
-        "collaborating.and.communicating.raw" = collaborating.and.communicating,
         "p1" = length(communicating) / authors.pairs, # fraction p1
         "p2" = length(collaborating.and.communicating) / length(collaborating), # fraction p2
         "correct" = correct # sanity check
-    ))
+    )
+    ## add raw data as attribute if wanted
+    if (raw.data) {
+        attr(result, "raw") = list(
+            "collaborating.raw" = collaborating,
+            "communicating.raw" = communicating,
+            "collaborating.and.communicating.raw" = collaborating.and.communicating
+        )
+    }
+
+    return(result)
 }
 
 #' Retrieve the motif count for a predefined list of motifs.
 #'
 #' @param network The network to use for the search
+#' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
+#'                          removed. This logical value basically resembles the idea of respecting
+#'                          the order within a matched motif or not. [default: TRUE]
+#' @param raw.data Whether to add attribute 'raw' to the result list, containing the raw vertex
+#'                 sequences describing the matched motifs [default: FALSE]
 #'
 #' @return A named list,
 #'         the item 'triangle': the motif data for the triangle motifs,
 #'         the item 'square': the motif data for the square motifs.
 #'
 #'         The items' data is preserved as returned from \code{motifs.count}.
-motifs.count.all = function(network) {
+motifs.count.all = function(network, remove.duplicates = TRUE, raw.data = FALSE) {
     # get motif counts
-    triangle = motifs.count(network, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.LINE, MOTIFS.TRIANGLE.POSITIVE)
-    square = motifs.count(network, MOTIFS.SQUARE.NEGATIVE, MOTIFS.LINE, MOTIFS.SQUARE.POSITIVE)
+    triangle = motifs.count(network, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.LINE, MOTIFS.TRIANGLE.POSITIVE,
+                            remove.duplicates = remove.duplicates, raw.data = raw.data)
+    square = motifs.count(network, MOTIFS.SQUARE.NEGATIVE, MOTIFS.LINE, MOTIFS.SQUARE.POSITIVE,
+                          remove.duplicates = remove.duplicates, raw.data = raw.data)
 
     # return raw data
     return(list(
