@@ -516,6 +516,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @return the path to the configuration folder
         get.configurations.folder = function(data, selection.process) {
             return(file.path(data, private$subfolder.configurations, selection.process))
+
         },
 
         #' Construct and return the path to a Codeface configuration.
@@ -589,7 +590,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 logging::logerror("Artifact '%s' cannot be converted to a proper Codeface tagging! Stopping...", artifact)
                 stop("Stopped due to wrong configuration parameters!")
             }
-
             ## construct file name for configuration
             conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
 

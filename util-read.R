@@ -336,13 +336,10 @@ read.issues = function(data.path) {
     ## set proper column names
     colnames(issue.data) = c(
         "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-        "author.id", "author.name", "author.email", # author information
+        "author.name", "author.mail", # author information
         "date", # the date
-        "event.name" # the event describing the row's entry
+        "ref.name", "event.name" # the event describing the row's entry
     )
-
-    ## remove unneeded columns from data
-    issue.data["author.id"] = NULL
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
@@ -351,9 +348,10 @@ read.issues = function(data.path) {
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
 
     ## convert dates and sort by 'date' column
+    print(issue.data)
     issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
     issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "null" ] = NA
+    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
     issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 

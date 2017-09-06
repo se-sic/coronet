@@ -101,6 +101,6 @@ generate.hierarchy = function(network) {
     degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
 
-    return(data.frame(x = log(degrees.without.cc), y = cluster.coeff))
+    return(data.frame(deg = log(degrees.without.cc), cc = cluster.coeff))
 }
 
