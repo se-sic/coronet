@@ -1,25 +1,26 @@
 
 requireNamespace("igraph")
 
-
-
-
-
 hub.indegree = function(network){
     degrees = igraph::degree(network, mode = c("in"))
     vertex = which.max(degrees)
-    return(igraph::V(network)[vertex])
-}
-
-density = function(network) {
-    density = igraph::graph.density(network)
-    return(density)
+    node = igraph::V(network)[vertex]
+    return(node)
 }
 
 avg.outdegree = function(network) {
     outdegrees = igraph::degree(network, mode = c("out"))
     avg = mean(outdegrees)
     return(avg)
+}
+
+node.degrees = function(network) {
+    return(igraph::degree(network, mode="total"))
+}
+
+density = function(network) {
+    density = igraph::graph.density(network)
+    return(density)
 }
 
 avg.pathlength = function(network) {
@@ -32,16 +33,19 @@ clustering.coeff = function(network) {
     return(cc)
 }
 
-# Not sure if this is correct
 modularity = function(network) {
     comm = igraph::cluster_walktrap(network)
     mod = igraph::modularity(network, igraph::membership(comm))
     return(mod)
 }
 
+amount.nodes = function(network) {
+    return(igraph::vcount(network))
+}
+
 # requires simplified network
 smallworldness = function(network) {
-    smallworldness <- determine.smallworldness(network) # smallworldness(nw.data$nw) #
+    smallworldness <- determine.smallworldness(network)
     return(smallworldness)
 }
 
@@ -73,11 +77,6 @@ determine.smallworldness = function(g) {
     return (s.delta)
 }
 
-
-amount.nodes = function(network) {
-    return(igraph::vcount(network))
-}
-
 power.law.fitting = function(network) {
     v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
 
@@ -102,7 +101,6 @@ generate.hierarchy = function(network) {
     degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
 
-    names.of.points = row.names(as.data.frame(degrees.without.cc))
+    return(data.frame(x = log(degrees.without.cc), y = cluster.coeff))
 }
-
 
