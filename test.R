@@ -5,7 +5,15 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Initialization ----------------------------------------------------------
+
 source("util-init.R")
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Logging -----------------------------------------------------------------
 
 requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
@@ -13,6 +21,10 @@ if (file.exists("test.log")) file.remove("test.log")
 logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 6L)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Case-study configuration ------------------------------------------------
 
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
@@ -25,37 +37,48 @@ AUTHOR.RELATION = "mail" # mail, cochange
 ARTIFACT.RELATION = "cochange" # cochange, callgraph
 
 
-## CONFIGURATION
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Project and network configuration ---------------------------------------
 
+## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-proj.conf$set.artifact.filter.base(FALSE)
+proj.conf$update.value("artifact.filter.base", FALSE)
+# proj.conf$print()
+
+## initialize network configuration
 net.conf = NetworkConf$new()
-#initialize with AUTHOR.RELATION and ARTIFACT.RELATION
 net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
+# net.conf$print()
 
 ## get ranges
-ranges = proj.conf$get.entry(entry.name = "ranges")
-revisions.callgraph = proj.conf$get.entry("revisions.callgraph")
+ranges = proj.conf$get.value("ranges")
+revisions.callgraph = proj.conf$get.value("revisions.callgraph")
 
 
-## PROJECT-LEVEL DATA
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Project-level data ------------------------------------------------------
 
 x.data = ProjectData$new(project.conf = proj.conf)
 x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
-# x$get.commits.raw()
-# x$get.synchronicity()
-# x$get.author2artifact()
-# x$get.commits.filtered()
-# x$get.commits.filtered.empty()
-# x$get.mails()
-# x$get.authors()
-# x$get.data.path()
-# x$get.author2artifact()
-# x$get.author2file()
-# x$get.commit2artifact()
-# x$get.commit2file()
-# x$get.thread2author()
+## * Data retrieval --------------------------------------------------------
+
+# x.data$get.commits.raw()
+# x.data$get.synchronicity()
+# x.data$get.author2artifact()
+# x.data$get.commits.filtered()
+# x.data$get.commits.filtered.empty()
+# x.data$get.mails()
+# x.data$get.authors()
+# x.data$get.data.path()
+# x.data$get.author2artifact()
+# x.data$get.author2file()
+# x.data$get.commit2artifact()
+# x.data$get.commit2file()
+# x.data$get.thread2author()
+
+## * Network construction --------------------------------------------------
+
 # x$update.network.conf(updated.values = list(author.directed = TRUE))
 # x$get.author.network()
 # x$update.network.conf(updated.values = list(author.directed = FALSE))
@@ -69,37 +92,38 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # g = x$get.multi.network()
 # plot.network(g)
 
+## * Backups ---------------------------------------------------------------
+
 # ## save binary objects
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
-# ## example for extensive configuration
 
-# net = x$get.bipartite.network()
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Range-level data --------------------------------------------------------
 
-# save(net, file = sprintf("busybox_%s_%s_%s.network",  x$get.network.conf.variable(var.name = "author.relation"),
-#                   ARTIFACT,  x$get.network.conf.variable(var.name = "artifact.relation")))
-
-
-## RANGE-LEVEL DATA
-
-y.data = RangeData$new(project.conf = proj.conf, range = ranges[[2]])
+y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
 y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
-# y$get.commits.raw()
-# y$get.commits.filtered()
-# y$get.commits.filtered.empty()
-# y$get.mails()
-# y$get.authors()
-# y$get.data.path()
-# y$get.data.path.callgraph()
-# y$get.author2artifact()
-# y$get.author2file()
-# y$update.network.conf(updated.values = list(edge.attributes = list("file")))
-# y$get.commit2artifact()
-# y$get.commit2file()
+## * Data retrieval --------------------------------------------------------
+
+# y.data$get.commits.raw()
+# y.data$get.synchronicity()
+# y.data$get.author2artifact()
+# y.data$get.commits.filtered()
+# y.data$get.commits.filtered.empty()
+# y.data$get.mails()
+# y.data$get.authors()
+# y.data$get.data.path()
+# y.data$get.author2artifact()
+# y.data$get.author2file()
+# y.data$get.commit2artifact()
+# y.data$get.commit2file()
+# y.data$get.thread2author()
+
+## * Network construction --------------------------------------------------
+
 # y$update.network.conf(updated.values = list(edge.attributes = list("date")))
-# y$get.thread2author()
 # y$get.author.network()
 # y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
 # y$get.artifact.network()
@@ -111,7 +135,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # plot.network(g)
 
 
-## BULK METHODS to construct Codeface ranges
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bulk methods for Codeface ranges ----------------------------------------
+
 # net.conf = NetworkConf$new()
 
 # ## author networks
@@ -151,9 +177,12 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # run.lapply(data, "get.data.path.callgraph")
 
 
-## SPLITTING DATA AND NETWORKS
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Splitting data and networks ---------------------------------------------
 
-# cf.data = split.data.time.based(x, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
+## * Data-based splitting --------------------------------------------------
+
+# cf.data = split.data.time.based(x.data, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
@@ -161,19 +190,21 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # print(run.lapply(cf.data, "get.class.name"))
 
 # mybins = as.POSIXct(c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30"))
-# cf.data = split.data.time.based(x, bins = mybins)
+# cf.data = split.data.time.based(x.data, bins = mybins)
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
-# cf.data = split.data.activity.based(x, activity.amount = 10000, activity.type = "mails")
+# cf.data = split.data.activity.based(x.data, activity.amount = 10000, activity.type = "mails")
 # for (range in names(cf.data)) {
 #     y = cf.data[[range]]
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
+
+## * Network-based splitting -----------------------------------------------
 
 # g = y$get.bipartite.network()
 # nets = split.network.time.based(g, time.period = "1 month", sliding.window = TRUE)
@@ -201,7 +232,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # }
 
 
-## MOTIF IDENTIFICATION
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motif identification ----------------------------------------------------
 
 # g = save.and.load("g", "y.multi.dat", skip = FALSE, if.not.found = function() {
 #     g = y$get.multi.network()
@@ -213,7 +245,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
 
 
-## PLOTS
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Plots -------------------------------------------------------------------
 
 # ## construct sample network for plotting
 # g = get.sample.network()
@@ -243,3 +276,63 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # # ggraph::facet_nodes( ~ vertex.type.char)
 # # ggraph::facet_graph(edge.type.char ~ vertex.type.char)
 # print(p)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Core/peripheral classification ------------------------------------------
+
+# range.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
+# range.data2 = RangeData$new(project.conf = proj.conf, range = ranges[[23]])
+# empty.range.data = RangeData$new(project.conf = proj.conf, range = ranges[[1]])
+
+# range.net = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
+# range.net2 = NetworkBuilder$new(project.data = range.data2, network.conf = net.conf)
+# empty.range.net = NetworkBuilder$new(project.data = empty.range.data, network.conf = net.conf)
+
+# network = range.net$get.author.network()
+# network2 = range.net2$get.author.network()
+# empty.network = empty.range.net$get.author.network()
+
+# network.list = list(empty.network, network, network2)
+# range.list = list(empty.range.data, range.data, range.data2)
+
+# ## test functions for single range
+# author.class = get.author.class.by.type(network = network, type = "network.degree")
+# get.author.class.by.type(network = network, type = "network.eigen")
+# get.author.class.by.type(data = range.data, type = "commit.count")
+# get.author.class.by.type(data = range.data, type = "loc.count")
+
+# ## test functions for single range with "empty" range data (network without edges)
+# author.class.empty.range = get.author.class.by.type(network = empty.network, type = "network.degree")
+# get.author.class.by.type(network = empty.network, type = "network.eigen")
+# get.author.class.by.type(data = empty.range.data, type = "commit.count")
+# get.author.class.by.type(data = empty.range.data, type = "loc.count")
+
+# ## test function for mutliple ranges (evolution)
+# author.class.overview = get.author.class.overview(network.list = network.list, type = "network.degree")
+# get.author.class.overview(network.list = network.list, type = "network.eigen")
+# get.author.class.overview(range.data.list = range.list, type = "commit.count")
+# author.class.overview.loc = get.author.class.overview(range.data.list = range.list, type = "loc.count")
+#
+# recurring.authors = get.recurring.authors(author.class.overview = author.class.overview, class = "both")
+# longterm.core = get.recurring.authors(author.class.overview = author.class.overview, class = "core")
+#
+# role.stability = get.role.stability(author.class.overview = author.class.overview)
+#
+# author.class.activity = get.author.class.activity(range.data = range.data, author.class = author.class,
+#                                                   activity.measure = "commit.count")
+# author.class.activity.empty = get.author.class.activity(range.data = empty.range.data,
+#                                                        author.class = author.class.empty.range, activity.measure = "loc.count")
+#
+# author.class.activity.overview = get.author.class.activity.overview(range.data.list = range.list,
+#                                                                     author.class.overview = author.class.overview,
+#                                                                     activity.measure = "commit.count")
+# get.author.class.activity.overview(range.data.list = range.list,
+#                                       author.class.overview = author.class.overview,
+#                                       activity.measure = "commit.count", longterm.cores = "Erik Andersen")
+#
+# calculate.cohens.kappa(author.classification.list = author.class.overview,
+#                        other.author.classification.list = author.class.overview.loc)
+#
+# get.class.turnover.overview(author.class.overview = author.class.overview)
+# get.unstable.authors.overview(author.class.overview = author.class.overview, saturation = 2)

@@ -6,26 +6,29 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## ProjectData
-##
-## Represents the data for building Networks
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## ProjectData -------------------------------------------------------------
 
-#### ProjectData ####
 ProjectData = R6::R6Class("ProjectData",
 
-    ## private members ####
+    ## * private -----------------------------------------------------------
+
     private = list(
-        ## configuration objects
+
+        ## * * configuration -----------------------------------------------
+
         project.conf = NULL, # list
 
-        ## raw data
+        ## * * raw data ----------------------------------------------------
+
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits.filtered.empty = NULL, #data.frame
@@ -40,7 +43,7 @@ ProjectData = R6::R6Class("ProjectData",
         ##issues
         issues = NULL, #data.frame
 
-        ## BASIC DATA ####
+        ## * * filtering commits -------------------------------------------
 
         #' Filter commits with empty artifacts from the commit list and save the new list
         #' to 'commits.filtered.empty'.
@@ -101,22 +104,22 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only process commits with the artifact listed in the configuration or missing
             commit.data = subset(commit.data, artifact.type %in%
-                                     c(private$project.conf$get.entry("artifact.codeface"), ""))
+                                     c(private$project.conf$get.value("artifact.codeface"), ""))
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$project.conf$get.artifact.filter.base()) {
+            if (private$project.conf$get.value("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
             }
 
             ## append synchronicity data if wanted
-            if (private$project.conf$get.synchronicity()) {
+            if (private$project.conf$get.value("synchronicity")) {
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data,
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
 
             ## add pasta data if wanted
-            if (private$project.conf$get.pasta()) {
+            if (private$project.conf$get.value("pasta")) {
                 self$get.pasta()
                 commit.data = private$add.pasta.data(commit.data)
             }
@@ -125,6 +128,8 @@ ProjectData = R6::R6Class("ProjectData",
             private$commits.filtered = commit.data
             logging::logdebug("filter.commits: finished.")
         },
+
+        ## * * pasta data -------------------------------------------
 
         #' Add the pasta data to the given data.frame for further analysis.
         #'
@@ -153,8 +158,8 @@ ProjectData = R6::R6Class("ProjectData",
         }
     ),
 
+    ## * public ------------------------------------------------------------
 
-    ## public members ####
     public = list(
         #' The constructor of the class.
         #'
@@ -168,17 +173,16 @@ ProjectData = R6::R6Class("ProjectData",
                 logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
+        ## * * printing ----------------------------------------------------
 
-        ## TO STRING ;) ####
-        #' The to String method of the class.
+        #' The toString method of the class.
         get.class.name = function() {
             return(
-                sprintf("ProjectData<%s>", private$project.conf$get.entry("repo"))
+                sprintf("ProjectData<%s>", private$project.conf$get.value("repo"))
             )
         },
 
-
-        ## RESET ENVIRONMENT ##
+        ## * * resetting environment ---------------------------------------
 
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the project configuration or data gets
@@ -194,8 +198,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$pasta = NULL
         },
 
-
-        ## CONFIGURATION ####
+        ## * * configuration -----------------------------------------------
 
         #' Get the current project configuration.
         #'
@@ -217,43 +220,28 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## get value from project configuration
+        #' Get  a value of the project configuration
+        #'
+        #' @return the value of the given entry name
         get.project.conf.entry = function(entry) {
-            if(entry == "synchronicity") {
-                return(project.conf$get.synchronicity())
-            } else if (entry == "synchronicity.time.window") {
-                return(project.conf$get.synchronicity.time.window())
-            } else if (entry == "artifact.filter.base") {
-                return(project.conf$get.artifact.filter.base())
-            } else if (entry == "pasta") {
-                return(project.conf$get.pasta())
-            } else {
-                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
-                return(NULL)
-            }
+            return(private$project.conf$get.value(entry))
         },
 
-        ## set a value of the project configuration and reset the environment
+        #' Set  a value of the project configuration and reset the environment
         set.project.conf.entry = function(entry, value) {
-            if(entry == "synchronicity" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.synchronicity(value)
-            } else if (entry == "synchronicity.time.window" && class(value) == "numeric") {
-                reset.environment()
-                project.conf$set.synchronicity.time.window(value)
-            } else if (entry == "artifact.filter.base" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.artifact.filter.base(value)
-            } else if (entry == "pasta" && class(value) == "logical") {
-                reset.environment()
-                project.conf$set.pasta(value)
-            } else {
-                logging::logwarn(paste("The variable", entry, "doesn't exist in the project configuration."))
-            }
+            private$project.conf$update.value(entry, value)
         },
 
+        #' Update the project configuration based on the given list
+        #' of values and reset the environment afterwards
+        #'
+        #' @param updated.values the new values for the project configuration
+        update.project.conf = function(updated.values = list()) {
+            private$project.conf$update.values(updated.values = updated.values)
+            self$reset.environment()
+        },
 
-        ## BACKUP ####
+        ## * * backups -----------------------------------------------------
 
         #' Backup the current environment to a file on the disk.
         #'
@@ -262,14 +250,13 @@ ProjectData = R6::R6Class("ProjectData",
             save(self, file = file)
         },
 
-
-        ## PATHS ####
+        ## * * path retrieval ----------------------------------------------
 
         #' Get the absolute path to the project's result folder.
         #'
         #' @return the path to the result folder
         get.data.path = function() {
-            data.path = private$project.conf$get.entry("datapath")
+            data.path = private$project.conf$get.value("datapath")
             return(data.path)
         },
 
@@ -277,7 +264,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the path to the synchronicity files
         get.data.path.synchronicity = function() {
-            data.path = private$project.conf$get.entry("datapath.synchronicity")
+            data.path = private$project.conf$get.value("datapath.synchronicity")
             return(data.path)
         },
 
@@ -285,17 +272,16 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the path to the pasta data
         get.data.path.pasta = function() {
-            data.path = private$project.conf$get.entry("datapath.pasta")
+            data.path = private$project.conf$get.value("datapath.pasta")
             return(data.path)
         },
 
         get.data.path.issues = function() {
-            data.path = private$project.conf$get.entry("datapath.issues")
+            data.path = private$project.conf$get.value("datapath.issues")
             return(data.path)
         },
 
-
-        ## RAW DATA ####
+        ## * * raw data ----------------------------------------------------
 
         #' Get the list of commits without empty artifacts.
         #' If it doesn´t already exist call the filter method.
@@ -338,7 +324,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$commits.raw)) {
                 private$commits.raw = read.commits.raw(
                     self$get.data.path(),
-                    private$project.conf$get.entry("artifact")
+                    private$project.conf$get.value("artifact")
                 )
             }
 
@@ -365,8 +351,8 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$synchronicity)) {
                 private$synchronicity = read.synchronicity(
                     self$get.data.path.synchronicity(),
-                    private$project.conf$get.entry("artifact"),
-                    private$project.conf$get.synchronicity.time.window()
+                    private$project.conf$get.value("artifact"),
+                    private$project.conf$get.value("synchronicity.time.window")
                 )
             }
 
@@ -417,7 +403,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails = read.mails(self$get.data.path())
 
                 ## add pasta data if wanted
-                if(private$project.conf$get.pasta()) {
+                if(private$project.conf$get.value("pasta")) {
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
@@ -457,10 +443,34 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
+        #' Get the issue data.
+        #' If it doesn´t already exist call the read method.
+        #'
+        #' @return the issue data
+        get.issues = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if(is.null(private$issues)) {
+                private$issues = read.issues(self$get.data.path.issues())
+            }
+            return(private$issues)
+        },
+
+        #' Set the issue data to the given new data.
+        #'
+        #' @param data the new issue data
+        set.issues = function(data) {
+            logging::loginfo("Setting issue data.")
+            if (is.null(data)) data = data.frame()
+            private$issues = data
+        },
+
         #' Get the list of artifacts of the project.
         #'
         #' @return the list of artifacts
         get.artifacts = function() {
+            ## FIXME the artifacts determination should be dependent on the artifact.relation
             logging::loginfo("Getting artifact data.")
 
             ## if artifacts are not read already, do this
@@ -476,20 +486,6 @@ ProjectData = R6::R6Class("ProjectData",
 
             return(private$artifacts)
         },
-
-        ## get the list of issues
-        get.issues = function() {
-            logging::loginfo("Getting issue data")
-
-            ## if issues have not been read yet do this
-            if(is.null(private$issues)) {
-                private$issues = read.issues(self$get.data.path.issues())
-            }
-            return(private$issues)
-        },
-
-
-        ## DATA ####
 
         #' Get single pasta items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
@@ -520,6 +516,8 @@ ProjectData = R6::R6Class("ProjectData",
                 return(result)
             }
         },
+
+        ## * * processed data ----------------------------------------------
 
         #' Map the corresponding authors to each artifact and return the list.
         #'
@@ -610,10 +608,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-
-
-        ## NotUsed  ####
-
         #' Map the corresponding commits to each author and return the list.
         #'
         #' @return the list of commits for each author
@@ -651,30 +645,24 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         }
 
-
-
-        ## EntNotUsed ####
-
     )
 )
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## RangeData
-##
-## Represents the data for one revision range for building Networks
 
-#### RangeData ####
-RangeData = R6::R6Class("RangeData",
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## RangeData ---------------------------------------------------------------
 
-    inherit = ProjectData,
+RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
-    ## private members ####
+    ## * private -----------------------------------------------------------
+
     private = list(
         range = NULL, # character
         revision.callgraph = NA # character
     ),
 
-    ## public members ####
+    ## * public ------------------------------------------------------------
+
     public = list(
 
         #' Constructor of the class. Constructs a new instance by calling the
@@ -699,27 +687,26 @@ RangeData = R6::R6Class("RangeData",
             logging::loginfo("Initialized data object %s", self$get.class.name())
         },
 
-        ## TO STRING ;) ####
+        ## * * printing ----------------------------------------------------
 
-        #' The to string method of the class.
+        #' The toString method of the class.
         get.class.name = function() {
             return(
                 sprintf("RangeData<%s, %s, %s>",
-                        private$project.conf$get.entry("repo"),
+                        private$project.conf$get.value("repo"),
                         private$range,
                         private$revision.callgraph
                 )
             )
         },
 
-
-        ## PATHS ####
+        ## * * path retrieval ----------------------------------------------
 
         #' Construct and return the absolute path to the range's result folder.
         #'
         #' @return the path to the range's result folder
         get.data.path = function() {
-            data.path = private$project.conf$get.entry("datapath")
+            data.path = private$project.conf$get.value("datapath")
             range = private$range
             return(file.path(data.path, range))
         },
@@ -728,12 +715,12 @@ RangeData = R6::R6Class("RangeData",
         #'
         #' @return the path to the range's result folder for callgraphs
         get.data.path.callgraph = function() {
-            data.path = file.path(private$project.conf$get.entry("datapath.callgraph"), private$revision.callgraph)
+            data.path = file.path(private$project.conf$get.value("datapath.callgraph"), private$revision.callgraph)
             return(data.path)
         },
 
 
-        ## DATA ####
+        ## * * raw data ----------------------------------------------------
 
         #' Get the 'range' of the current instance.
         #'
@@ -751,6 +738,10 @@ RangeData = R6::R6Class("RangeData",
 
     )
 )
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions --------------------------------------------------------
 
 ## TODO rename arguments 'thing1' and 'thing2' to 'key' and 'value', resp.
 #' Transform the 'base data' data.frame to a list in order to execute

@@ -8,18 +8,22 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("igraph")
 requireNamespace("logging")
 requireNamespace("parallel")
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## System variables and R settings -----------------------------------------
+
 Sys.setenv(TZ = "UTC")
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## High-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split data --------------------------------------------------------------
 
 #' Split project data in time-based ranges as specified
 #'
@@ -31,18 +35,19 @@ Sys.setenv(TZ = "UTC")
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
 #'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
-#' @param split.basis the data name to use as the basis for split bins, either 'commits' or 'mails'
+#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
-                                 split.basis = c("commits", "mails"), sliding.window = FALSE) {
+                                 split.basis = c("commits", "mails", "issues"), sliding.window = FALSE) {
     ## get actual raw data
     data = list(
         commits = project.data$get.commits.raw(),
-        mails = project.data$get.mails()
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues()
     )
     split.data = names(data)
     names(split.data) = split.data
@@ -113,11 +118,13 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.range.data$set.commits.raw(df.list[["commits"]])
         ## 2) mails
         cf.range.data$set.mails(df.list[["mails"]])
-        ## 3) synchronicity data
+        ## 3) issues
+        cf.range.data$set.issues(df.list[["issues"]])
+        ## 4) synchronicity data
         cf.range.data$set.synchronicity(project.data$get.synchronicity())
-        ## 4) ID--author mapping
+        ## 5) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
-        ## 5) pasta data
+        ## 6) pasta data
         cf.range.data$set.pasta(project.data$get.pasta())
 
         return(cf.range.data)
@@ -182,7 +189,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' than the specified amount.
 #'
 #' @param project.data the *Data object from which the data is retrieved
-#' @param activity.type the type of activity used for splitting, either 'commits' or 'mails' [default: commits]
+#' @param activity.type the type of activity used for splitting, either 'commits', 'mails', or 'issues'
+#'                      [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type'
 #' @param number.windows the number of consecutive data objects to get from this function
@@ -191,7 +199,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'                       [default: FALSE]
 #'
 #' @return the list of RangeData objects, each referring to one time period
-split.data.activity.based = function(project.data, activity.type = c("commits", "mails"),
+split.data.activity.based = function(project.data, activity.type = c("commits", "mails", "issues"),
                                      activity.amount = 5000, number.windows = NULL,
                                      sliding.window = FALSE) {
 
@@ -201,13 +209,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## get actual raw data
     data = list(
         commits = project.data$get.commits.raw(),
-        mails = project.data$get.mails()
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues()
     )
 
     ## define ID columns for mails and commits
     id.column = list(
         commits = "hash",
-        mails = "message.id"
+        mails = "message.id",
+        issues = "event.id"
     )
 
     ## get amount of available activity
@@ -239,7 +249,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
-    bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]], activity.amount)
+    bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
+                                              activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
     bins.date = as.POSIXct(bins)
 
@@ -318,6 +329,10 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     return(cf.data)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split networks ----------------------------------------------------------
 
 #' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
 #' or to the given hard 'bins'.
@@ -465,7 +480,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## identify bins
     logging::logdebug("Getting bins for activity-based splitting based on amount of edges.")
-    bins.data = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges)
+    bins.data = split.get.bins.activity.based(df, "my.unique.id", activity.amount = number.edges,
+                                              remove.duplicate.bins = FALSE)
     bins.date = bins.data[["bins"]]
     bins.vector = bins.data[["vector"]]
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
@@ -527,6 +543,10 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     return(networks)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split raw data ----------------------------------------------------------
+
 #' Split the given data by the given bins.
 #'
 #' @param df a data.frame to be split
@@ -561,6 +581,10 @@ split.network.by.bins = function(network, bins, bins.vector) {
     logging::logdebug("split.data.time.based: finished.")
     return(nets)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unification of range names ----------------------------------------------
 
 #' Unify range names, i.e., add numbering suffixes to duplicate range names.
 #'
@@ -597,9 +621,8 @@ split.unify.range.names = function(ranges) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Low-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bin identification ------------------------------------------------------
 
 #' Compute bin information for a time-based splitting based on the given time period.
 #'
@@ -647,13 +670,14 @@ split.get.bins.time.based = function(dates, time.period) {
 #' @param id a character string denoting the ID column of the data.frame 'df'
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
+#' @param remove.duplicate.bins remove duplicate bin borders? [default: FALSE]
 #'
 #' @return a list,
 #'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),
 #'         the item 'bins': the bin labels,  described by dates, each bin containing
 #'         'acitivity.amount' many unique items; each item in the vector indicates
 #'         the start of a bin, although the last item indicates the end of the last bin
-split.get.bins.activity.based = function(df, id, activity.amount) {
+split.get.bins.activity.based = function(df, id, activity.amount, remove.duplicate.bins = FALSE) {
     logging::logdebug("split.get.bins.activity.based: starting")
     ## get the unique integer IDs for each item in 'id' column
     ids = df[[id]]
@@ -698,6 +722,23 @@ split.get.bins.activity.based = function(df, id, activity.amount) {
     bins.date = do.call(c, bins.date)
     ## convert to character strings
     bins.date.char = strftime(bins.date)
+
+    ## if we have a duplicate bin border, merge the two things
+    if (remove.duplicate.bins && any(duplicated(bins.date))) {
+        ## find all duplicate bins (decreasing order)
+        duplicated.idx = sort(which(duplicated(bins.date)), decreasing = TRUE)
+        ## for each duplicate, we modify the current results appropriately
+        for (idx in duplicated.idx) {
+            ## 1) remove the date from the bins
+            bins.date = bins.date[-idx]
+            ## 2) remove the corresponding string
+            bins.date.char = bins.date.char[-idx]
+            ## 3) decrease all indices by 1 that are higher than the current
+            bins.activity = sapply(bins.activity, function(b) {
+                if (b >= idx) b - 1 else b
+            })
+        }
+    }
 
     logging::logdebug("split.get.bins.activity.based: finished.")
     return(list(

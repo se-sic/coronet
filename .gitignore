@@ -16,3 +16,5 @@ packrat/src/
 virtualenv/
 # folder for temp data
 data/
+# log files
+*.log
