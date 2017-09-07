@@ -918,6 +918,11 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     ## Check which authors can be treated as core based on the calculation base values
     author.class.threshold.idx = min(which(cumsum(author.data[[calc.base.name]]) >= author.class.threshold))
 
+    ## should never happen but is necessary, because of rounding errors
+    ## (author.data[[calc.base.name]] may be very close to integer value but not actually identical for eigencentrality)
+    if(is.infinite(author.class.threshold.idx)) {author.class.threshold.idx = nrow(author.data)}
+
+
     ## classify developers according to threshold
     core.classification = rep(FALSE, nrow(author.data))
     core.classification[1:author.class.threshold.idx] = TRUE
