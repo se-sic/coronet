@@ -60,6 +60,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * data and configuration --------------------------------------
 
         proj.data = NULL,
+        proj.data.original = NULL,
         network.conf = NULL,
 
         ## * * network caching ---------------------------------------------
@@ -71,6 +72,50 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.callgraph = NULL, # igraph
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
+
+        ## * * data cutting ---------------------------------------------
+
+        #' Clone the current data object and replace the specified
+        #' data sources by the cut ones
+        #'
+        #' @param cut.data the cut data sources
+        #'
+        #' @return the clone
+        clone.data = function(cut.data) {
+            clone = private$proj.data$clone()
+            if("mails" %in% names(cut.data)) {
+                clone$set.mails(cut.data$mails)
+            }
+            if("commits" %in% names(cut.data)) {
+                clone$set.commits.raw(cut.data$commits)
+                clone$set.commits.filtered(NULL)
+                clone$set.commits.filtered.empty(NULL)
+            }
+            if("issues" %in% names(cut.data)) {
+                clone$set.issues(cut.data$issues)
+            }
+            return(clone)
+        },
+
+        #' Cut the data sources of the data object to the same date ranges.
+        cut.data.to.same.timestamps = function() {
+            cut.data = private$proj.data$get.data.cut.to.same.date(data.sources = private$get.data.sources())
+            clone = private$clone.data(cut.data = cut.data)
+            private$proj.data.original = private$proj.data
+            private$proj.data = clone
+        },
+
+        #' Determine which data sources should be cut depending on the artifact and author relation.
+        #'
+        #' @return the data sources to be cut
+        get.data.sources = function() {
+            author.relation = private$network.conf$get.variable("author.relation")
+            artifact.relation = private$network.conf$get.variable("artifact.relation")
+            data.sources = c(RELATION.TO.DATASOURCE[[author.relation]])
+            data.sources = c(data.sources, RELATION.TO.DATASOURCE[[artifact.relation]])
+            data.sources = unique(data.sources)
+            return(data.sources)
+        },
 
         ## * * author networks ---------------------------------------------
 
@@ -379,6 +424,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             if (class(self)[1] == "ProjectData")
                 logging::loginfo("Initialized data object %s", self$get.class.name())
+
+            if(private$network.conf$get.variable("unify.date.ranges")) {
+                private$cut.data.to.same.timestamps()
+            }
         },
 
         ## * * resetting environment ---------------------------------------
@@ -390,6 +439,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$authors.network.cochange = NULL
             private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
+            if(!is.null(private$proj.data.original)) {
+                private$proj.data = private$proj.data.original
+                private$proj.data.original = NULL
+                if(private$network.conf$get.variable("unify.date.ranges")) {
+                    private$cut.data.to.same.timestamps()
+                }
+            }
         },
 
         ## * * configuration -----------------------------------------------

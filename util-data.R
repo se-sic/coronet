@@ -13,6 +13,18 @@ requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
+## / / / / / / / / / / / / / /
+## Constant
+##
+
+## mapping of relation to data source
+RELATION.TO.DATASOURCE = list(
+    "cochange"  = "commits",
+    "callgraph" = "commits",
+    "mail"      = "mails",
+    "issue"     = "issues"
+)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
@@ -40,8 +52,10 @@ ProjectData = R6::R6Class("ProjectData",
         mails = NULL, # data.frame
         ## authors
         authors = NULL, # list
-        ##issues
+        ## issues
         issues = NULL, #data.frame
+        ## timestamps of mail, issue and commit data
+        data.timestamps = NULL, #data.frame
 
         ## * * filtering commits -------------------------------------------
 
@@ -155,6 +169,45 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
             return(data)
+        },
+
+        #' Call the getters of the specified data sources in order to
+        #' initialize the sources and extract the timestamps.
+        #'
+        #' @param data.sources the data sources to be prepated
+        prepare.timestamps = function(data.sources) {
+            if("mails" %in% data.sources) {
+                self$get.mails()
+            }
+            if("commits" %in% data.sources) {
+                self$get.commits.raw()
+            }
+            if("issues" %in% data.sources) {
+                self$get.issues()
+            }
+
+        },
+
+        #' Extract the earliest and the latest date from the specified data source
+        #' and store it to the timestamps data.frame.
+        #'
+        #' @param source the specified data source
+        extract.timestamps = function(source) {
+            if(is.null(private$data.timestamps)) {
+                private$data.timestamps = data.frame(row.names = c("start", "end"))
+            }
+            if(source == "mails") {
+                private$data.timestamps$mails = c(as.POSIXct(min(private$mails$date)),
+                                          as.POSIXct(max(private$mails$date)))
+            } else if(source == "commits") {
+                private$data.timestamps$commits = c(as.POSIXct(min(private$commits.raw$date)),
+                                            as.POSIXct(max(private$commits.raw$date)))
+
+            } else if(source == "issues") {
+                private$data.timestamps$issues = c(as.POSIXct(min(private$issues$creation.date)),
+                                           as.POSIXct(max(private$issues$creation.date)))
+
+            }
         }
     ),
 
@@ -196,6 +249,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$mails = NULL
             private$authors = NULL
             private$pasta = NULL
+            private$data.timestamps = NULL
         },
 
         ## * * configuration -----------------------------------------------
@@ -298,6 +352,10 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered.empty)
         },
 
+        set.commits.filtered.empty = function(data) {
+            private$commits.filtered.empty = data
+        },
+
         #' Get the list of commits without the base artifact.
         #' If it doesn´t already exist call the filter method.
         #'
@@ -311,6 +369,10 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             return(private$commits.filtered)
+        },
+
+        set.commits.filtered = function(data) {
+            private$commits.filtered = data
         },
 
         #' Get the complete list of commits.
@@ -327,6 +389,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$project.conf$get.value("artifact")
                 )
             }
+            private$extract.timestamps(source = "commits")
 
             return(private$commits.raw)
         },
@@ -407,6 +470,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
+            private$extract.timestamps(source = "mails")
 
             return(private$mails)
         },
@@ -485,6 +549,88 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             return(private$artifacts)
+        },
+
+        set.artifacts = function(artifacts) {
+            logging::loginfo("Setting artifact data.")
+            private$artifacts = artifacts
+        },
+
+        ## get the list of issues
+        get.issues = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if(is.null(private$issues)) {
+                private$issues = read.issues(self$get.data.path.issues())
+            }
+            private$extract.timestamps(source = "issues")
+
+            return(private$issues)
+        },
+
+        #' Set the issue data to the given new data.
+        #'
+        #' @param issues the given new data
+        set.issues = function(issues) {
+            logging::loginfo("Setting issue data.")
+            private$issues = issues
+        },
+
+        #' Get the timestamps (earliest and latest date) of the specified data sources.
+        #' If 'simple' is TRUE return the overall latest start and earliest end date
+        #' in order to cut the specified data sources to the same date ranges.
+        #'
+        #' @param data.sources the specified data sources
+        #' @param simple whether or not the timestamps get simplified
+        #'
+        #' @return a data.frame with the timestamps
+        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
+            private$prepare.timestamps(data.sources = data.sources)
+            if(is.null(private$data.timestamps)) {
+                logging::logwarn("No timestamps available.")
+                return(data.frame())
+            } else if(simple == FALSE) {
+                timestamps = subset(private$data.timestamps, select = data.sources)
+                return(timestamps)
+            } else {
+                subset.timestamps = private$data.timestamps[data.sources]
+                timestamps.buffer = data.frame(max = apply(subset.timestamps,1,max),
+                                               min = apply(subset.timestamps,1,min))
+                timestamps = data.frame(start = timestamps.buffer["start", "max"],
+                                        end = timestamps.buffer["end", "min"])
+
+                return(timestamps)
+            }
+
+        },
+
+        #' Cut the specified data sources to the same date range depending on the extracted
+        #' timestamps.
+        #'
+        #' @param data.sources the specified data sources
+        #'
+        #' @return a list of the cut data.sources
+        get.data.cut.to.same.date = function(data.sources = c("mails", "commits", "issues")) {
+            timestamps = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
+            result = list()
+            if("mails" %in% data.sources) {
+                mails.cut = self$get.mails()[which(private$mails$date >= timestamps$start),]
+                mails.cut = mails.cut[which(mails.cut$date <= timestamps$end),]
+                result[["mails"]] = mails.cut
+            }
+            if("commits" %in% data.sources) {
+                commits.cut = self$get.commits.raw()[which(private$commits.raw$date >= timestamps$start),]
+                commits.cut = commits.cut[which(commits.cut$date <= timestamps$end),]
+                result[["commits"]] = commits.cut
+            }
+            if("issues" %in% data.sources) {
+                issues.cut = self$get.issues()[which(private$issues$creation.date >= timestamps$start),]
+                issues.cut = issues.cut[which(issues.cut$creation.date <= timestamps$end),]
+                result[["issues"]] = issues.cut
+            }
+
+            return(result)
         },
 
         #' Get single pasta items.
@@ -736,7 +882,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             return(private$revision.callgraph)
         }
 
-    )
+        )
 )
 
 
