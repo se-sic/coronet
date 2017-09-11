@@ -109,8 +109,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the data sources to be cut
         get.data.sources = function() {
-            author.relation = private$network.conf$get.variable("author.relation")
-            artifact.relation = private$network.conf$get.variable("artifact.relation")
+            author.relation = private$network.conf$get.value("author.relation")
+            artifact.relation = private$network.conf$get.value("artifact.relation")
             data.sources = c(RELATION.TO.DATASOURCE[[author.relation]])
             data.sources = c(data.sources, RELATION.TO.DATASOURCE[[artifact.relation]])
             data.sources = unique(data.sources)
@@ -425,7 +425,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (class(self)[1] == "ProjectData")
                 logging::loginfo("Initialized data object %s", self$get.class.name())
 
-            if(private$network.conf$get.variable("unify.date.ranges")) {
+            if(private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
             }
         },
@@ -442,7 +442,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if(!is.null(private$proj.data.original)) {
                 private$proj.data = private$proj.data.original
                 private$proj.data.original = NULL
-                if(private$network.conf$get.variable("unify.date.ranges")) {
+                if(private$network.conf$get.value("unify.date.ranges")) {
                     private$cut.data.to.same.timestamps()
                 }
             }
