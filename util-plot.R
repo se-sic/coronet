@@ -122,10 +122,10 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     }
 
     ## vertex and edge types
-    vertex.type = c(16, 15)
-    names(vertex.type) = names(PLOT.NAMES.BY.TYPE.VERTEX)
-    edge.type = c("dashed", "solid")
-    names(edge.type) = names(PLOT.NAMES.BY.TYPE.EDGE)
+    values.vertex.type = c(16, 15)
+    names(values.vertex.type) = names(PLOT.NAMES.BY.TYPE.VERTEX)
+    values.edge.type = c("dashed", "solid")
+    names(values.edge.type) = names(PLOT.NAMES.BY.TYPE.EDGE)
 
     p = p +
 
@@ -134,11 +134,11 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = colors.vertex.label) +
 
         ## scale vertices (colors and styles)
-        ggplot2::scale_shape_manual("Vertices", values = vertex.type, labels = PLOT.NAMES.BY.TYPE.VERTEX) +
+        ggplot2::scale_shape_manual("Vertices", values = values.vertex.type, labels = PLOT.NAMES.BY.TYPE.VERTEX) +
         ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.NAMES.BY.TYPE.VERTEX) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype_manual("Relations", values = edge.type, labels = PLOT.NAMES.BY.TYPE.EDGE) +
+        ggraph::scale_edge_linetype_manual("Relations", values = values.edge.type, labels = PLOT.NAMES.BY.TYPE.EDGE) +
         ggraph::scale_edge_colour_manual("Relations", values = colors.edge, labels = PLOT.NAMES.BY.TYPE.EDGE) +
 
         ## theme
