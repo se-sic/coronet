@@ -109,7 +109,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         logging::logdebug("Constructing data for range %s.", range)
         ## construct object for current range
         cf.range.data = RangeData$new(project.data$get.project.conf(), range)
-        ## TODO add revision.callgraph parameter
         ## get data for current range
         df.list = data.split[[range]]
 

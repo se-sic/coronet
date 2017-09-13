@@ -15,6 +15,7 @@ requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr") # for dlply function
 requireNamespace("igraph") # networks
 
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Vertex and edge types ---------------------------------------------------
 
@@ -25,6 +26,27 @@ TYPE.ARTIFACT = 2
 # edge types
 TYPE.EDGES.INTRA = 3
 TYPE.EDGES.INTER = 4
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Edge-attribute handling during simplification ---------------------------
+
+## Edge-attribute contraction: configure handling of attributes by name
+EDGE.ATTR.HANDLING = list(
+    ## network-analytic data
+    weight = "sum",
+    type = "first",
+
+    ## commit data
+    changed.files = "sum",
+    added.lines = "sum",
+    deleted.lines = "sum",
+    diff.size = "sum",
+    artifact.diff.size = "sum",
+
+    ## everything else
+    "concat"
+)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -66,7 +88,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## construct network based on artifact2author data
-            author.net = construct.dependency.network.from.list(
+            author.net = construct.network.from.list(
                 private$proj.data$get.artifact2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
@@ -93,7 +115,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-            author.relation = construct.dependency.network.from.list(
+            author.relation = construct.network.from.list(
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
@@ -115,7 +137,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.issue)
             }
 
-            author.relation = construct.dependency.network.from.list(
+            author.relation = construct.network.from.list(
                 private$proj.data$get.issue2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
@@ -143,7 +165,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.cochange)
             }
 
-            artifacts.net = construct.dependency.network.from.list(
+            artifacts.net = construct.network.from.list(
                 private$proj.data$get.commit2artifact(),
                 network.conf = private$network.conf,
                 directed = FALSE
@@ -172,7 +194,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## check if revision for call-graphs is set
-            if (is.na(private$revision.callgraph)) {
+            if (is.na(private$proj.data$get.revision.callgraph())) {
                 logging::logerror("The call-graph revision is not set. Aborting...")
                 logging::logerror("This may be due to project-level analysis.
                                   The call-graph data is only available in range-level analysis.")
@@ -181,13 +203,48 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct path and file
             file.dir = private$proj.data$get.data.path.callgraph()
-            file.name = paste0("cg_nw_", private$proj.data$get.project.conf()$get.value("artifact.short"), "_", private$proj.data$get.revision.callgraph(), ".net")
+            file.name = sprintf("cg_nw_%s_%s.net",
+                                private$proj.data$get.project.conf.entry("artifact.short"),
+                                private$proj.data$get.revision.callgraph())
             file = file.path(file.dir, file.name)
 
             ## read network from disk
-            artifacts.net = read.network.from.file(file)
-            ## post-process network
-            artifacts.net = postprocess.artifact.names.callgraph(artifacts.net, private$proj.data$get.project.conf()$get.value("artifact"))
+            artifacts.net = igraph::read.graph(file, format = "pajek")
+            # set vertex labels properly (copy "id" attribute to "name" attribute)
+            artifacts.net = igraph::set.vertex.attribute(
+                artifacts.net,
+                "name",
+                igraph::V(artifacts.net),
+                igraph::get.vertex.attribute(artifacts.net, "id")
+            )
+
+            ## process vertex names in artifact networks for consistent names:
+            ## Since feature and file networks may have unique naming structures, the names
+            ## need to be processed in order to match the ones coming from other analyses
+            ## (e.g. Codeface):
+            ## (1) retrieve parameters for processing
+            names = igraph::get.vertex.attribute(artifacts.net, "name")
+            artifact = private$proj.data$get.project.conf.entry("artifact")
+            ## (2) different replacings for different artifacts
+            ## feature
+            if (artifact == "feature") {
+                names = gsub("^CONFIG_", "ENABLE_", names) # BusyBox
+                names = gsub("^1$", "Base_Feature", names) # Base feature
+            }
+            ## file
+            else if (artifact == "file" || artifact == "function") {
+                ## transform to relative paths
+                names = gsub("^/local/bockthom/TypeChef-BusyboxAnalysis/gitbusybox/", "", names) # BusyBox
+                names = gsub("^/local/bockthom/openssl/", "", names) # OpenSSL
+                names = gsub("^/local/bockthom/sqlite/\\./", "", names) # SQLite
+                names = gsub("^/local/bockthom/sqlite/", "", names) # SQLite
+
+                ## remove call-graph extension
+                names = gsub(".cg", "", names, fixed = TRUE)
+            }
+            ## (3) set processed names inside graph object
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "name", value = names)
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "id", value = names)
 
             ## store network
             private$artifacts.network.callgraph = artifacts.net
@@ -564,7 +621,177 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Helper functions --------------------------------------------------------
+## Network and edge construction -------------------------------------------
+
+#' Construct a dependency network from the given list of lists.
+#' For example for a list of authors per thread, where all authors are connected if they are
+#' in the same thread (sublist).
+#'
+#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' vector of possible edge attributes in the given list.
+#'
+#' @param list the list of lists with data
+#' @param network.conf the network configuration
+#' @param directed whether or not the network should be directed
+#'
+#' @return the built network
+construct.network.from.list = function(list, network.conf, directed = FALSE) {
+    logging::loginfo("Create edges.")
+    logging::logdebug("construct.network.from.list: starting.")
+
+    # initialize an edge list to fill and the set of nodes
+    nodes.processed = c()
+    edge.list = data.frame()
+
+    keys = names(list)
+    keys.number = length(list)
+
+    if (directed) {
+
+        ## for all subsets (sets), connect all items in there with the previous ones
+        edge.list.data = parallel::mclapply(list, function(set) {
+            number.edges = sum(0:(nrow(set) - 1))
+            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                              match(attr(set, "group.name"), keys), keys.number,
+                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+            ## Skip artifacts with many, many edges
+            if (number.edges > network.conf$get.value("skip.threshold")) {
+                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
+                return(NULL)
+            }
+
+            # queue of already processed artifacts
+            edge.list.set = data.frame()
+            nodes.processed.set = c()
+
+            # connect the current item to all previous ones
+            for (item.no in 1:nrow(set)) {
+                item = set[item.no, ]
+
+                ## get vertex data
+                item.node = item[, 1]
+
+                ## get edge attributes
+                cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
+                item.edge.attrs = item[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+
+                ## construct edges
+                combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
+                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1)
+                    combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
+                edge.list.set = rbind(edge.list.set, combinations) # add to edge list
+
+                # mark current item as processed
+                nodes.processed.set = c(nodes.processed.set, item.node)
+            }
+
+            ## store set of processed nodes
+            attr(edge.list.set, "nodes.processed") = nodes.processed.set
+
+            logging::logdebug("Constructing edges for %s '%s': finished.", attr(set, "group.type"), attr(set, "group.name"))
+
+            return(edge.list.set)
+        })
+
+        edge.list = plyr::rbind.fill(edge.list.data)
+        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+
+    } else {
+
+        ## for all items in the sublists, construct the cartesian product
+        edge.list.data = parallel::mclapply(list, function(set) {
+            number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
+            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                              match(attr(set, "group.name"), keys), keys.number,
+                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+            ## Skip artifacts with many, many edges
+            if (number.edges > network.conf$get.value("skip.threshold")) {
+                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
+                return(NULL)
+            }
+
+            ## get vertex data
+            nodes = unique(set[, 1])
+
+            ## break if there is no developer
+            if (length(nodes) < 1) {
+                return(NULL)
+            }
+
+            ## if there is only one developer, just create the node, but no edges
+            if (length(nodes) == 1) {
+                edges = data.frame()
+                attr(edges, "nodes.processed") = nodes # store set of processed nodes
+                return(edges)
+            }
+
+            ## get combinations
+            combinations = combn(nodes, 2) # all unique pairs of developers
+
+            ## construct edge list
+            edges = apply(combinations, 2, function(comb) {
+                ## basic edge data
+                edge = data.frame(comb[1], comb[2])
+
+                ## get edge attibutes
+                edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
+                cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
+                edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+
+                # add edge attributes to edge list
+                edgelist = cbind(edge, edge.attrs)
+
+                return(edgelist)
+            })
+            edges = plyr::rbind.fill(edges)
+
+            ## store set of processed nodes
+            attr(edges, "nodes.processed") = nodes
+
+            return(edges)
+        })
+
+        edge.list = plyr::rbind.fill(edge.list.data)
+        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+
+    }
+
+    logging::loginfo("Construct network from edges.")
+
+    ## get unique list of vertices to produce
+    nodes.processed = unique(nodes.processed)
+
+    # if we do not have nodes AND the edge.list is empty, return rightaway
+    if (length(nodes.processed) == 0) {
+        return(create.empty.network(directed = directed))
+    }
+
+    ## if we have nodes to create, but no edges
+    if (is.null(edge.list) || nrow(edge.list) == 0) {
+        ## create network with only the vertices
+        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(nodes.processed)
+    }
+    ## if we have nodes and edges
+    else {
+        ## construct network from edge list
+        net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+    }
+
+    net = igraph::set.vertex.attribute(net, "id", value = igraph::get.vertex.attribute(net, "name"))
+    net = igraph::set.edge.attribute(net, "weight", value = 1)
+
+    # transform multiple edges to edge weights
+    if (network.conf$get.value("simplify"))
+        net = simplify.network(net)
+
+    logging::logdebug("construct.network.from.list: finished.")
+
+    return(net)
+}
 
 #' Combine networks to a bipartite network.
 #'
@@ -589,7 +816,7 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf) {
     ## combine networks
     u = igraph::disjoint_union(net1, net2)
 
-    u = add.edges.for.bip.relation(u, net1.to.net2, network.conf = network.conf)
+    u = add.edges.for.bipartite.relation(u, net1.to.net2, network.conf = network.conf)
 
     ## simplify network
     if (network.conf$get.value("simplify"))
@@ -605,7 +832,7 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf) {
 #' @param network.conf the network configuration
 #'
 #' @return the adjusted network
-add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
+add.edges.for.bipartite.relation = function(net, net1.to.net2, network.conf) {
 
     ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
@@ -635,35 +862,105 @@ add.edges.for.bip.relation = function(net, net1.to.net2, network.conf) {
     return(new.net)
 }
 
+#' Create an empty network that doesn´t break the algorithms.
+#'
+#' @param directed whether or not the network should be directed
+#'
+#' @return the new empty network
+create.empty.network = function(directed = TRUE) {
+    ## create empty network
+    net = igraph::graph.empty(0, directed = directed)
+
+    # set proper attributes
+    net = igraph::set.vertex.attribute(net, "name", value = "")
+    net = igraph::set.vertex.attribute(net, "type", value = 3)
+    net = igraph::set.edge.attribute(net, "type", value = 6)
+
+    return(net)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Network simplification --------------------------------------------------
+
+#' Simplify a given network.
+#'
+#' @param network the given network
+#'
+#' @return the simplified network
+simplify.network = function(network) {
+    logging::logdebug("simplify.network: starting.")
+    logging::loginfo("Simplifying network.")
+
+    ## simplify networks (contract edges and remove loops)
+    network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+
+    logging::logdebug("simplify.network: finished.")
+    return(network)
+}
+
+#' Simplify a list of networks.
+#'
+#' @param networks the list of networks
+#'
+#' @return the simplified networks
+simplify.networks = function(networks){
+    logging::logdebug("simplify.networks: starting.")
+    logging::loginfo(
+        "Simplifying networks (names = [%s]).",
+        paste(names(networks), collapse = ", ")
+    )
+
+    nets = parallel::mclapply(networks, simplify.network)
+
+    logging::logdebug("simplify.networks: finished.")
+    return(nets)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
+SAMPLE.DATA = normalizePath("./sample")
+
 #' Get a example network for illustration purposes.
 #'
-#' @param network.conf the network configuration
+#' @param testing whether the function gets called from the test cases; if yes,
+#'                the path to the sample data is adapted [default: false]
 #'
 #' @return the sample network
-get.sample.network = function(network.conf = NetworkConf$new()) {
-    ## INDEPENDENT NETWORKS
-    authors = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("D1", "D2", "D3", "D4", "D5", "D6", type = TYPE.AUTHOR) +
-        igraph::edges("D1", "D2", "D1", "D4", "D3", "D4", "D4", "D5", type = TYPE.EDGES.INTRA, weight = 1)
+get.sample.network = function(testing = FALSE) {
 
-    artifacts = igraph::graph.empty(directed = FALSE) +
-        igraph::vertices("A1", "A2", "A3", "A4", "A5", "A6", type = TYPE.ARTIFACT) +
-        igraph::edges("A1", "A2", "A1", "A3", "A2", "A3", "A2", "A4", "A5", "A6", type = TYPE.EDGES.INTRA, weight = 1)
-    # artifacts = igraph::as.directed(artifacts, mode = "mutual")
+    ## project configuration
+    proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
+    proj.conf$update.values(list(artifact.filter.base = FALSE))
 
-    authors.to.artifacts.df = data.frame(
-        author.name = c("D1", "D2", "D3", "D4", "D4", "D5", "D6"),
-        artifact    = c("A1", "A1", "A3", "A4", "A5", "A6", "A6")
-    )
-    authors.to.artifacts = get.key.to.value.from.df(authors.to.artifacts.df, "author.name", "artifact")
+    ## RangeData object
+    range = proj.conf$get.value("ranges")[1]
+    range.callgraph = proj.conf$get.callgraph.revision.from.range(range)
+    proj.data = RangeData$new(proj.conf, range, range.callgraph)
 
-    ## combine networks
-    network = combine.networks(authors, artifacts, authors.to.artifacts, network.conf)
+    ## network configuration
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(
+        author.relation = "mail", author.directed = FALSE,
+        artifact.relation = "callgraph", artifact.directed = FALSE,
+        author.all.authors = TRUE, author.only.committers = FALSE,
+        simplify = TRUE
+    ))
+
+    ## network builder
+    net.builder = NetworkBuilder$new(proj.data, net.conf)
+
+    ## construct multi network
+    network = net.builder$get.multi.network()
     network = igraph::set.graph.attribute(network, "sample.network", TRUE)
+
+    ## set layout for plotting
+    lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
+                    245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
+                 nrow = 12, byrow = FALSE) # for sample graph
+    network = igraph::set.graph.attribute(network, "layout", lay)
 
     return(network)
 }

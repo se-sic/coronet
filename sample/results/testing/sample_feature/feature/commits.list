@@ -1,0 +1,7 @@
+1;"2016-07-12 15:58:59";"D1";"d1@example.org";"6409a8f399b81919729d14554b923d494b6b4229";1;1;1;2;"a1.c";"A1";"Feature";1
+2;"2016-07-12 15:59:10";"D2";"d2@example.org";"722ca215917e3f22348b993acfc4fae578b4a4c9";1;1;1;2;"a1.c";"A1";"Feature";1
+3;"2016-07-12 16:00:45";"D3";"d3@example.org";"63dfa54e8661dfd7c5dbd9f94c8ed8f8adb73c34";1;1;0;1;"a3.c";"A3";"Feature";1
+4;"2016-07-12 16:01:23";"D4";"d4@example.org";"0453a02caa18cc6ede3e0db4cc7c631a207e85ba";1;1;0;1;"a4.c";"A4";"Feature";1
+5;"2016-07-12 16:05:41";"D4";"d4@example.org";"30929da7d73a09740d7c6f39b45da333bda50137";1;1;0;1;"a5.c";"A5";"Feature";1
+6;"2016-07-12 16:06:20";"D5";"d5@example.org";"467216f7a3d91ca8dae40b2357a4cb588bde1119";1;1;0;1;"a6.c";"A6";"Feature";1
+7;"2016-07-12 16:08:10";"D6";"d6@example.org";"a5a55766db2fc9a92b18ca36422523b0c0c2cfd7";1;1;0;1;"a6.c";"A6";"Feature";1

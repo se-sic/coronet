@@ -743,7 +743,6 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
 
-## TODO rename arguments 'thing1' and 'thing2' to 'key' and 'value', resp.
 #' Transform the 'base data' data.frame to a list in order to execute
 #' the following tasks:
 #'  - split by column given by key
@@ -754,15 +753,15 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 #'   - group.name (=unique(item[[key]]))
 #'
 #' @param base.data the base data for the method
-#' @param thing1 the key for the result
-#' @param thing2 the value for the result
+#' @param key the key for the result
+#' @param value the value for the result
 #' @param ... a possibility for further attributes to be passed
 #'
 #' @return the resulting list
-get.key.to.value.from.df = function(base.data, thing1, thing2, ...) {
+get.key.to.value.from.df = function(base.data, key, value, ...) {
     logging::logdebug("get.key.to.value.from.df: starting.")
 
-    ## define names for key (thing1) and value (thing2) columns
+    ## define names for key (key) and value (value) columns
     column.key = "data.coupling"
     column.value = "data.vertices"
 
@@ -776,20 +775,20 @@ get.key.to.value.from.df = function(base.data, thing1, thing2, ...) {
 
     ## re-arrange columns and use things as first columns
     cols.old = colnames(base.data)
-    base.data = base.data[c(thing1, thing2, cols.old)]
+    base.data = base.data[c(key, value, cols.old)]
     colnames(base.data) = c(column.key, column.value, cols.old)
 
-    ## group list by thing1 and construct a list: thing1 -> data.frame(thing2, other columns)
+    ## group list by key and construct a list: key -> data.frame(value, other columns)
     transform.df.per.item = function(df) {
-        group = unique(df[[thing1]])
+        group = unique(df[[key]])
         ## remove key column from list of columns and keep data.frame
         df = df[, -match(c(column.key), names(df)), drop = FALSE]
         ## add group information as attributes
-        attr(df, "group.type") = thing1
+        attr(df, "group.type") = key
         attr(df, "group.name") = group
         return(df)
     }
-    mylist = plyr::dlply(base.data, thing1, transform.df.per.item)
+    mylist = plyr::dlply(base.data, key, transform.df.per.item)
 
     ## remove object attributes introduced by dlply
     attr(mylist, "split_labels") = NULL
