@@ -1,66 +1,61 @@
-
 requireNamespace("igraph")
 
-hub.indegree = function(network){
+metrics.hub.indegree = function(network, project){
     degrees = igraph::degree(network, mode = c("in"))
     vertex = which.max(degrees)
-    node = igraph::V(network)[vertex]
-    return(node)
+    df = data.frame("name" = names(vertex), "degree" = unname(vertex), "project" = project)
+    return(df)
 }
 
-avg.outdegree = function(network) {
+metrics.avg.outdegree = function(network, project) {
     outdegrees = igraph::degree(network, mode = c("out"))
     avg = mean(outdegrees)
-    return(avg)
+    df = data.frame("project" = project, "avg.degree" = avg)
+    return(df)
 }
 
-node.degrees = function(network) {
-    return(igraph::degree(network, mode="total"))
+metrics.node.degrees = function(network) {
+    degrees = igraph::degree(network, mode="total")
+    return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
 
-density = function(network) {
+metrics.density = function(network, project) {
     density = igraph::graph.density(network)
-    return(density)
+    return(data.frame("project" = project, "density" = unname(density)))
 }
 
-avg.pathlength = function(network) {
-    return(igraph::average.path.length(network, directed = TRUE, unconnected = FALSE))
+metrics.avg.pathlength = function(network, project) {
+    return(data.frame("project" = project, "avg.pathlength" = igraph::average.path.length(network, directed = TRUE, unconnected = FALSE)))
 }
 
-clustering.coeff = function(network) {
+metrics.clustering.coeff = function(network, project) {
     local.cc = igraph::transitivity(network, type = "local", vids = NULL)
     cc = mean(local.cc, na.rm = TRUE)
-    return(cc)
+    return(data.frame("project" = project, "clustering.coeff" = cc))
 }
 
-modularity = function(network) {
+metrics.modularity = function(network, project) {
     comm = igraph::cluster_walktrap(network)
     mod = igraph::modularity(network, igraph::membership(comm))
-    return(mod)
+    return(data.frame("project" = project, "modularity" = mod))
 }
 
-amount.nodes = function(network) {
-    return(igraph::vcount(network))
+metrics.amount.nodes = function(network, project) {
+    return(data.frame("project" = project, "amount.nodes" = igraph::vcount(network)))
 }
 
 # requires simplified network
-smallworldness = function(network) {
-    smallworldness <- determine.smallworldness(network)
-    return(smallworldness)
-}
-
-
-determine.smallworldness = function(g) {
+metrics.smallworldness = function(network, project) {
 
     # construct Erdös-Renyi network with same number of nodes and edges as g
-    h = igraph::erdos.renyi.game(n=igraph::vcount(g), p.or.m=igraph::gsize(g), type="gnm", directed=TRUE)
+    h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=TRUE)
 
     ## compute clustering coefficients
-    g.cc = igraph::transitivity(g)
+    g.cc = igraph::transitivity(network)
     h.cc = igraph::transitivity(h)
 
     ## compute average shortest-path length
-    g.l = igraph::average.path.length(g)
+    g.l = igraph::average.path.length(network)
     h.l = igraph::average.path.length(h)
 
     ## binary decision
@@ -74,10 +69,10 @@ determine.smallworldness = function(g) {
     # if s.delta > 1, then the network is a small-world network
     #is.smallworld = ifelse(s.delta > 1, TRUE, FALSE)
 
-    return (s.delta)
+    return (data.frame("project" = project, "smallworldness" = s.delta))
 }
 
-power.law.fitting = function(network) {
+metrics.power.law.fitting = function(network) {
     v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
 
     ## Power-law fiting
@@ -90,17 +85,18 @@ power.law.fitting = function(network) {
     ## Check percent of vertices under power-law
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
-
-    return(cbind(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law))
+    df = data.frame(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)
+    browser()
+    return(data.frame("power.law" = names(df), "value" = c(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)))
 }
 
-generate.hierarchy = function(network) {
+metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode="total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
 
     degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
 
-    return(data.frame(deg = log(degrees.without.cc), cc = cluster.coeff))
+    return(data.frame(deg = log(degrees.without.cc), cc = log(cluster.coeff)))
 }
 

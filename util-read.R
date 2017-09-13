@@ -39,7 +39,7 @@ read.commits.raw = function(data.path, artifact) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                  fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                  encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(commit.data, 'try-error')) {
@@ -164,7 +164,7 @@ read.mails = function(data.path) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
     if (inherits(mail.data, 'try-error')) {
@@ -228,7 +228,7 @@ read.authors = function(data.path) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                 encoding = "UTF-8"), silent = TRUE)
 
     ## break if the list of authors is empty
     if (inherits(authors.df, 'try-error')) {
@@ -324,7 +324,7 @@ read.issues = function(data.path) {
 
     ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                  fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                   encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(issue.data, 'try-error')) {
