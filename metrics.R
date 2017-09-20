@@ -15,7 +15,7 @@ metrics.avg.outdegree = function(network, project) {
 }
 
 metrics.node.degrees = function(network) {
-    degrees = igraph::degree(network, mode="total")
+    degrees = sort(igraph::degree(network, mode="total"), decreasing = TRUE)
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
 
@@ -25,7 +25,7 @@ metrics.density = function(network, project) {
 }
 
 metrics.avg.pathlength = function(network, project) {
-    return(data.frame("project" = project, "avg.pathlength" = igraph::average.path.length(network, directed = TRUE, unconnected = FALSE)))
+    return(data.frame("project" = project, "avg.pathlength" = igraph::average.path.length(network, directed = TRUE, unconnected = TRUE)))
 }
 
 metrics.clustering.coeff = function(network, project) {
@@ -55,8 +55,8 @@ metrics.smallworldness = function(network, project) {
     h.cc = igraph::transitivity(h)
 
     ## compute average shortest-path length
-    g.l = igraph::average.path.length(network)
-    h.l = igraph::average.path.length(h)
+    g.l = igraph::average.path.length(network, unconnected = TRUE)
+    h.l = igraph::average.path.length(h, unconnected = TRUE)
 
     ## binary decision
     # intermediate variables
@@ -86,7 +86,6 @@ metrics.power.law.fitting = function(network) {
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
     df = data.frame(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)
-    browser()
     return(data.frame("power.law" = names(df), "value" = c(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)))
 }
 

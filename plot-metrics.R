@@ -61,9 +61,10 @@ metrics.plot.power.law.fitting = function(df) {
 }
 
 metrics.plot.hierarchy = function(df) {
-    plot = ggplot2::ggplot(df, ggplot2::aes(y = cc, x = deg, color = deg)) +
-        ggplot2::geom_point() +
-        ggplot2::geom_smooth()
+    pred = predict(lm(cc ~ deg, data = df))
+    plot = ggplot2::ggplot(df, ggplot2::aes(y = cc, x = deg)) +
+        ggplot2::geom_point(ggplot2::aes(color = deg)) +
+        ggplot2::geom_line(ggplot2::aes(y = pred))
     return(plot)
 }
 
