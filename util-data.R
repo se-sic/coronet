@@ -510,6 +510,9 @@ ProjectData = R6::R6Class("ProjectData",
             if(is.null(private$issues)) {
                 private$issues = read.issues(self$get.data.path.issues())
             }
+
+            private$extract.timestamps(source = "issues")
+
             return(private$issues)
         },
 
@@ -579,6 +582,9 @@ ProjectData = R6::R6Class("ProjectData",
             data.sources = match.arg(arg = data.sources, several.ok = TRUE, choices = c("mails", "commits", "issues"))
             timestamps = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
             timestamps.vector = c(timestamps$start, timestamps$end)
+            if(timestamps$start > timestamps$end) {
+                logging::logwarn("The datasources don't overlap. The result will be empty.")
+            }
             result = split.data.time.based(self, bins = timestamps.vector)
             return(result[[1]])
         },
@@ -831,7 +837,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             return(private$revision.callgraph)
         }
 
-        )
+    )
 )
 
 

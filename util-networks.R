@@ -456,6 +456,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$network.conf$update.value(entry, value)
         },
 
+        get.project.data = function() {
+            return(private$proj.data)
+        },
+
         #' Update the network configuration based on the given list
         #' of values and reset the environment afterwards
         #'
