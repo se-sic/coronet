@@ -46,8 +46,21 @@ test_that("Cut commit and mail data to same date range.", {
                                       artifact.type=c("Feature","FeatureExpression","Feature","FeatureExpression"),
                                       artifact.diff.size=as.integer(c(1,1,1,1)))
 
+    mail.data.expected = data.frame(author.name=c("Thomas"),
+                                    author.email=c("thomas@example.org"),
+                                    message.id=c("<65a1sf31sagd684dfv31@mail.gmail.com>"),
+                                    date=as.POSIXct(c("2016-07-12 16:04:40")),
+                                    date.offset=as.integer(c(100)),
+                                    subject=c("Re: Fw: busybox 2 tab"),
+                                    thread=sprintf("<thread-%s>", c(9)))
+
     commit.data = x$get.project.data()$get.commits.raw()
+    rownames(commit.data) = 1:nrow(commit.data)
+
+    mail.data = x$get.project.data()$get.mails()
+    rownames(mail.data) = 1:nrow(mail.data)
 
     expect_identical(commit.data, commit.data.expected, info = "Cut Raw commit data.")
+    expect_identical(mail.data, mail.data.expected, info = "Cut mail data.")
 
 })

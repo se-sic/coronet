@@ -510,7 +510,6 @@ ProjectData = R6::R6Class("ProjectData",
             if(is.null(private$issues)) {
                 private$issues = read.issues(self$get.data.path.issues())
             }
-
             private$extract.timestamps(source = "issues")
 
             return(private$issues)

@@ -456,6 +456,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$network.conf$update.value(entry, value)
         },
 
+        #' Get the project data Object of the NetworkBuilder.
+        #' This Method is mainly used for testing purposes at the moment.
+        #'
+        #' @return the project data object of the NetworkBuilder
         get.project.data = function() {
             return(private$proj.data)
         },
