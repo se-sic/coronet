@@ -965,11 +965,8 @@ SAMPLE.DATA = normalizePath("./sample")
 
 #' Get a example network for illustration purposes.
 #'
-#' @param testing whether the function gets called from the test cases; if yes,
-#'                the path to the sample data is adapted [default: false]
-#'
 #' @return the sample network
-get.sample.network = function(testing = FALSE) {
+get.sample.network = function() {
 
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
