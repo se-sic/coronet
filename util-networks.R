@@ -919,6 +919,46 @@ simplify.networks = function(networks){
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Multi-network views -----------------------------------------------------
+
+#' Extract the author-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the vertices of type TYPE.AUTHOR.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the author-vertex-induced subgraph of \code{network}
+extract.author.network.from.network = function(network) {
+    ## only retain all author vertices
+    author.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.AUTHOR])
+    return(author.network)
+}
+
+#' Extract the artifact-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the vertices of type TYPE.ARTIFACT.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the artifact-vertex-induced subgraph of \code{network}
+extract.artifact.network.from.network = function(network) {
+    ## only retain all artifact vertices
+    artifact.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.ARTIFACT])
+    return(artifact.network)
+}
+
+#' Extract the bipartite-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the edges of type TYPE.EDGES.INTER.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the bipartite-edge-induced subgraph of \code{network}
+extract.bipartite.network.from.network = function(network) {
+    ## only retain all bipartite edges and induced vertices
+    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
+    return(bip.network)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
 SAMPLE.DATA = normalizePath("./sample")
