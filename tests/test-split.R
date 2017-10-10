@@ -983,6 +983,44 @@ test_that("Split a network time-based (bins = ...).", {
 
 
 ##
+## Tests for split.networks.time.based(..., time.period = ...)
+##
+
+test_that("Split a list of networks time-based.", {
+
+    ## time period
+    time.period = "2 years"
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
+
+    ## obtain networks:
+    ## 1) co-change network
+    net.builder$update.network.conf(list(author.relation = "cochange"))
+    net.cochange = net.builder$get.author.network()
+    ## 2) mail network
+    net.builder$update.network.conf(list(author.relation = "mail"))
+    net.mail = net.builder$get.author.network()
+
+    ## split networks
+    net.split = split.networks.time.based(
+        networks = list(net.cochange, net.mail),
+        time.period = time.period,
+        sliding.window = FALSE
+    )
+
+    ## check whether the splitting information of the two split networks are identical
+    expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
+
+})
+
+
+##
 ## Tests for split.network.activity.based(...)
 ##
 

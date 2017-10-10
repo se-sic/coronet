@@ -420,6 +420,57 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     return(nets)
 }
 
+#' Discretizes a list of networks (using the edge attribute "date") according to the given 'time.period',
+#' using the very same bins for all networks. The procedure is as follows:
+#' 1) Identify the network in the list of \code{networks} with the smallest timestamp.
+#' 2) Use this identified network  is used to compute the bins for splitting.
+#' 3) All networks are then split using the computed and, thus, very same bins using the
+#'    function \code{split.network.time.based}.
+#' 4) The list of split networks is returned.
+#'
+#' For further information, see the documentation of \code{split.network.time.based}.
+#'
+#' Note: If you want to split a set of networks to a fixed set of bins (i.e., use the 'bins' argument of
+#' \code{split.network.time.based}), use \code{lapply} right away.
+#'
+#' Important notice: This function only works for unsimplified networks, where no edges have been
+#' contracted, which would combine edge attributes, especially the "date" attribute.
+#'
+#' @param networks the igraph networks to split, needs to have an edge attribute named "date"
+#' @param time.period the time period describing the length of the ranges, a character string,
+#'                    e.g., "3 mins" or "15 days"
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
+#'
+#' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
+#'         of networks, each itself referring to one time period
+split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE) {
+
+    ## get base network and obtain splitting information:
+
+    ## 1) extract date attributes from edges
+    min.dates = sapply(networks, function(net) {
+        min.date = min(igraph::E(net)$date)
+        return(min.date)
+    })
+    net.idx = which.min(min.dates)
+
+    ## 2) get bin information
+    base = networks[[net.idx]]
+    dates = as.POSIXct(igraph::get.edge.attribute(base, "date"), origin = "1970-01-01")
+    bins.info = split.get.bins.time.based(dates, time.period)
+    bins.date = as.POSIXct(bins.info[["bins"]])
+
+    ## 3) split all networks to the extracted bins
+    networks.split = lapply(networks, function(net) {
+        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window)
+    })
+
+    ## 4) return the split networks
+    return(networks.split)
+}
+
+
 #' Discretizes a network according to the given 'number.edges' or by a predefined 'number.windows'.
 #'
 #' Important: For a given amount of edges, the last set of data may be a lot smaller
