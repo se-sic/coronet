@@ -1,15 +1,15 @@
 requireNamespace("igraph")
 
-metrics.hub.indegree = function(network, project){
-    degrees = igraph::degree(network, mode = c("in"))
+metrics.hub.degree = function(network, project){
+    degrees = igraph::degree(network, mode = c("total"))
     vertex = which.max(degrees)
-    df = data.frame("name" = names(vertex), "degree" = unname(vertex), "project" = project)
+    df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]), "project" = project)
     return(df)
 }
 
-metrics.avg.outdegree = function(network, project) {
-    outdegrees = igraph::degree(network, mode = c("out"))
-    avg = mean(outdegrees)
+metrics.avg.degree = function(network, project) {
+    degrees = igraph::degree(network, mode = c("total"))
+    avg = mean(degrees)
     df = data.frame("project" = project, "avg.degree" = avg)
     return(df)
 }
@@ -25,12 +25,16 @@ metrics.density = function(network, project) {
 }
 
 metrics.avg.pathlength = function(network, project) {
-    return(data.frame("project" = project, "avg.pathlength" = igraph::average.path.length(network, directed = TRUE, unconnected = TRUE)))
+    return(data.frame("project" = project, "avg.pathlength" = igraph::average.path.length(network, directed = FALSE, unconnected = TRUE)))
 }
 
 metrics.clustering.coeff = function(network, project) {
-    local.cc = igraph::transitivity(network, type = "local", vids = NULL)
-    cc = mean(local.cc, na.rm = TRUE)
+    cc = igraph::transitivity(network, type = "localaverage", vids = NULL)
+    return(data.frame("project" = project, "clustering.coeff" = cc))
+}
+
+metrics.clustering.coeff.global = function(network, project) {
+    cc = igraph::transitivity(network, type = "global", vids = NULL)
     return(data.frame("project" = project, "clustering.coeff" = cc))
 }
 
@@ -48,12 +52,11 @@ metrics.amount.nodes = function(network, project) {
 metrics.smallworldness = function(network, project) {
 
     # construct Erdös-Renyi network with same number of nodes and edges as g
-    h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=TRUE)
+    h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=FALSE)
 
     ## compute clustering coefficients
     g.cc = igraph::transitivity(network)
     h.cc = igraph::transitivity(h)
-
     ## compute average shortest-path length
     g.l = igraph::average.path.length(network, unconnected = TRUE)
     h.l = igraph::average.path.length(h, unconnected = TRUE)
@@ -72,7 +75,7 @@ metrics.smallworldness = function(network, project) {
     return (data.frame("project" = project, "smallworldness" = s.delta))
 }
 
-metrics.power.law.fitting = function(network) {
+metrics.power.law.fitting = function(network, project) {
     v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
 
     ## Power-law fiting
@@ -86,7 +89,7 @@ metrics.power.law.fitting = function(network) {
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
     df = data.frame(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)
-    return(data.frame("power.law" = names(df), "value" = c(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)))
+    return(data.frame("project" = project, "KS.p" = res$KS.p))
 }
 
 metrics.hierarchy = function(network) {
@@ -96,6 +99,6 @@ metrics.hierarchy = function(network) {
     degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
 
-    return(data.frame(deg = log(degrees.without.cc), cc = log(cluster.coeff)))
+    return(data.frame(log.deg = log(degrees.without.cc), log.cc = log(cluster.coeff)))
 }
 
