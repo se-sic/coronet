@@ -423,7 +423,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #' Discretizes a list of networks (using the edge attribute "date") according to the given 'time.period',
 #' using the very same bins for all networks. The procedure is as follows:
 #' 1) Identify the network in the list of \code{networks} with the smallest timestamp.
-#' 2) Use this identified network  is used to compute the bins for splitting.
+#' 2) Use this identified network to compute the bins for splitting.
 #' 3) All networks are then split using the computed and, thus, very same bins using the
 #'    function \code{split.network.time.based}.
 #' 4) The list of split networks is returned.
