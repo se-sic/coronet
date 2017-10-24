@@ -348,7 +348,6 @@ read.issues = function(data.path) {
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
 
     ## convert dates and sort by 'date' column
-    print(issue.data)
     issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
     issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
     issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
