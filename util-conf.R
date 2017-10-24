@@ -385,6 +385,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 type = "numeric",
                 allowed = Inf,
                 allowed.number = 1
+            ),
+            unify.date.ranges = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
             )
         )
 

@@ -60,6 +60,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * data and configuration --------------------------------------
 
         proj.data = NULL,
+        proj.data.original = NULL,
         network.conf = NULL,
 
         ## * * network caching ---------------------------------------------
@@ -71,6 +72,26 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.callgraph = NULL, # igraph
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
+
+        ## * * data cutting ---------------------------------------------
+
+
+        #' Cut the data sources of the data object to the same date ranges.
+        cut.data.to.same.timestamps = function() {
+            cut.data = private$proj.data$get.data.cut.to.same.date(data.sources = private$get.data.sources())
+            private$proj.data = cut.data
+        },
+
+        #' Determine which data sources should be cut depending on the artifact and author relation.
+        #'
+        #' @return the data sources to be cut
+        get.data.sources = function() {
+            author.relation = private$network.conf$get.value("author.relation")
+            artifact.relation = private$network.conf$get.value("artifact.relation")
+            data.sources = unique(c(RELATION.TO.DATASOURCE[[author.relation]],
+                                    RELATION.TO.DATASOURCE[[artifact.relation]]))
+            return(data.sources)
+        },
 
         ## * * author networks ---------------------------------------------
 
@@ -372,6 +393,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                   #' @param network.conf the network configuration
         initialize = function(project.data, network.conf) {
             private$proj.data = project.data
+            private$proj.data.original = project.data
 
             if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
                 private$network.conf = network.conf
@@ -379,6 +401,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             if (class(self)[1] == "ProjectData")
                 logging::loginfo("Initialized data object %s", self$get.class.name())
+
+            if(private$network.conf$get.value("unify.date.ranges")) {
+                private$cut.data.to.same.timestamps()
+            }
         },
 
         ## * * resetting environment ---------------------------------------
@@ -391,6 +417,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$authors.network.issue = NULL
             private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
+            private$proj.data = private$proj.data.original
+            if(private$network.conf$get.value("unify.date.ranges")) {
+                private$cut.data.to.same.timestamps()
+            }
         },
 
         ## * * configuration -----------------------------------------------
@@ -425,6 +455,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Set  a value of the network configuration and reset the environment
         set.network.conf.entry = function(entry, value) {
             private$network.conf$update.value(entry, value)
+        },
+
+        #' Get the project data Object of the NetworkBuilder.
+        #' This Method is mainly used for testing purposes at the moment.
+        #'
+        #' @return the project data object of the NetworkBuilder
+        get.project.data = function() {
+            return(private$proj.data)
         },
 
         #' Update the network configuration based on the given list
