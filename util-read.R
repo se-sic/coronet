@@ -254,7 +254,7 @@ read.authors = function(data.path) {
 ## PaStA data --------------------------------------------------------------
 
 #' Read and parse the pasta data from the 'similar-mailbox' file.
-#' The form in the file is : <message-id> <possibly another message.id> => commit.hash.
+#' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
 #' The parsed form is a data frame with message IDs as keys and commit hashes as values.
 #'
 #' @param data.path the path to the pasta data
@@ -291,14 +291,18 @@ read.pasta = function(data.path) {
 
         # 1) split at arrow
         # 2) split keys
-        # 3) insert all key-value pairs by iteration (works also if there is only one key)
+        # 3) split values
+        # 4) insert all key-value pairs by iteration (works also if there is only one key)
         line.split = unlist(strsplit(line, SEPERATOR))
         keys = line.split[1]
-        value = line.split[2]
+        values = line.split[2]
         keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
+        values.split = unlist(strsplit(values, KEY.SEPERATOR))
 
         # Transform data to data.frame
-        df = data.frame(message.id = keys.split, commit.hash = value)
+        #df = data.frame(message.id = keys.split, commit.hash = values.split)
+        df = merge(keys.split, values.split)
+        colnames(df) = c("message.id", "commit.hash")
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)
