@@ -39,7 +39,7 @@ read.commits.raw = function(data.path, artifact) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                  fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                  encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(commit.data, 'try-error')) {
@@ -164,7 +164,7 @@ read.mails = function(data.path) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
     if (inherits(mail.data, 'try-error')) {
@@ -228,7 +228,7 @@ read.authors = function(data.path) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                 encoding = "UTF-8"), silent = TRUE)
 
     ## break if the list of authors is empty
     if (inherits(authors.df, 'try-error')) {
@@ -324,7 +324,7 @@ read.issues = function(data.path) {
 
     ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                  fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                   encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(issue.data, 'try-error')) {
@@ -336,13 +336,10 @@ read.issues = function(data.path) {
     ## set proper column names
     colnames(issue.data) = c(
         "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-        "author.id", "author.name", "author.email", # author information
+        "author.name", "author.mail", # author information
         "date", # the date
-        "event.name" # the event describing the row's entry
+        "ref.name", "event.name" # the event describing the row's entry
     )
-
-    ## remove unneeded columns from data
-    issue.data["author.id"] = NULL
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
@@ -353,7 +350,7 @@ read.issues = function(data.path) {
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
     issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "null" ] = NA
+    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
     issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 

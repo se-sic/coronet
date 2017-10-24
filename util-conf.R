@@ -522,6 +522,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @return the path to the configuration folder
         get.configurations.folder = function(data, selection.process) {
             return(file.path(data, private$subfolder.configurations, selection.process))
+
         },
 
         #' Construct and return the path to a Codeface configuration.
@@ -595,7 +596,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 logging::logerror("Artifact '%s' cannot be converted to a proper Codeface tagging! Stopping...", artifact)
                 stop("Stopped due to wrong configuration parameters!")
             }
-
             ## construct file name for configuration
             conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
 
@@ -611,7 +611,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$artifact = artifact
             conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
             conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
-
             ## store path to actual Codeface data
             conf$datapath = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
             ## store path to call graphs
@@ -628,7 +627,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## read revisions file
             revisions.file = file.path(conf$datapath, "revisions.list")
             revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
-                                           fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                           encoding = "UTF-8"), silent = TRUE)
             ## break if the list of revisions is empty or any other error occurs
             if (inherits(revisions.df, 'try-error')) {
                 logging::logerror("There are no revisions available for the current casestudy.")

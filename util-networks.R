@@ -414,6 +414,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         reset.environment = function() {
             private$authors.network.mail = NULL
             private$authors.network.cochange = NULL
+            private$authors.network.issue = NULL
             private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
             private$proj.data = private$proj.data.original
