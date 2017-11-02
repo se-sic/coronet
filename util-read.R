@@ -340,7 +340,7 @@ read.issues = function(data.path) {
     ## set proper column names
     colnames(issue.data) = c(
         "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-        "author.name", "author.mail", # author information
+        "author.name", "author.email", # author information
         "date", # the date
         "ref.name", "event.name" # the event describing the row's entry
     )
