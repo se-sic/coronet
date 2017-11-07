@@ -13,7 +13,10 @@ pacakges = c(
     "parallel",
     "logging",
     "sqldf",
-    "testthat"
+    "testthat",
+    "ggplot2",
+    "ggraph",
+    "markovchain"
 )
 
 

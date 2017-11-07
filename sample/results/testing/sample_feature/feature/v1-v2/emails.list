@@ -1,0 +1,8 @@
+"D1";"d1@example.org";"<d1-thread1@example.org>";"2004-10-09 18:38:13";0;"Thread 1";1
+"D2";"d2@example.org";"<d2-thread1@example.org>";"2005-02-09 18:49:49";0;"Thread 1";1
+"D1";"d1@example.org";"<d1-thread2@example.org>";"2010-07-12 10:05:36";0;"Thread 2";2
+"D4";"d4@example.org";"<d4-thread2@example.org>";"2010-07-12 11:05:35";0;"Thread 2";2
+"D4";"d1@example.org";"<d4-thread3@example.org>";"2010-07-12 12:05:34";0;"Thread 3";3
+"D3";"d3@example.org";"<d3-thread3@example.org>";"2010-07-12 12:05:40";0;"Thread 3";3
+"D4";"d4@example.org";"<d4-thread4@example.org>";"2010-07-12 12:05:41";0;"Thread 4";4
+"D5";"d5@example.org";"<d5-thread4@example.org>";"2010-07-12 12:05:42";0;"Thread 4";4

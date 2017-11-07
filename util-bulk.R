@@ -6,26 +6,33 @@
 ## hechtl@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("parallel") # for parallel computation
 requireNamespace("igraph") # networks
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Multi networks
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Multi networks ----------------------------------------------------------
 
-
+#' Collect the multi networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
         multi.network = range.data$get.multi.network()
@@ -45,21 +52,26 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Bipartite networks
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bipartite networks ------------------------------------------------------
 
-
+#' Collect the bipartite networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the bipartite network
         bp.network = range.data$get.bipartite.network()
@@ -79,21 +91,26 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Author networks
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Author networks ---------------------------------------------------------
 
-
+#' Collect the author networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the author network
         author.network = range.data$get.author.network()
@@ -113,21 +130,26 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Artifact networks
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Artifact networks -------------------------------------------------------
 
-
+#' Collect the artifact networks of the different Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, network.conf, range)
 
         ## get the artifact network
         artifact.network = range.data$get.artifact.network()
@@ -147,13 +169,20 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Construct data
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construct data ----------------------------------------------------------
 
+#' Construct the range data for the Codeface ranges.
+#'
+#' @param project.conf the project configuration
+#' @param network.conf the network configuration
+#' @param callgraphs whether or not callgraph data is existing
+#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#'
+#' @return the constructed data
 construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.entry("ranges")
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
@@ -164,7 +193,7 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
                                     "")
 
         ## construct range data
-        range.data = CodefaceRangeData$new(project.conf, network.conf, range, revision.callgraph)
+        range.data = RangeData$new(project.conf, network.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list
@@ -178,10 +207,15 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Run function on list of CodefaceRangeData
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Run function on list of RangeData ---------------------------------------
 
+#' Run a given function on the list of RangeData.
+#'
+#' @param data the given list of RangeData
+#' @param fun the function to be run
+#'
+#' @return the result of the function
 run.lapply = function(data, fun) {
     res = parallel::mclapply(data, function(dat) dat[[fun]]())
     return(res)

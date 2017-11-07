@@ -10,7 +10,6 @@
 packrat/
 packrat/lib*/
 packrat/src/
-
 # JetBrains files
 .idea/
 # virtualenv folder
