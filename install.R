@@ -31,5 +31,6 @@ filter.installed.packages <- function(packageList)  {
 
 p <- filter.installed.packages(pacakges)
 if(length(p) > 0) {
-    install.packages(p, dependencies=T, verbose=F, quiet=T)
+    print(sprintf("Installing package '%s'.", p))
+    install.packages(p, dependencies=T, verbose=F, quiet=F)
 }
