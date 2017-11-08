@@ -1,0 +1,25 @@
+language: r
+r: 3.3
+
+# TravisCI container
+sudo: false
+dist: trusty
+warnings_are_errors: false
+
+# # Branches
+# branches:
+#   only:
+#     - travis
+#     - claus-updates
+
+# R dependencies and information
+cache: packages
+repos:
+  CRAN: https://cloud.r-project.org
+
+# installation
+install:
+    - Rscript install.R
+
+script:
+    - Rscript tests.R
