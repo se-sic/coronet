@@ -4,6 +4,8 @@
 ## noemmer@fim.uni-passau.de
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -84,4 +86,28 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
     }
 
     return(get0(variable))
+}
+
+
+#' Calculate the bounds of a range from its name.
+#' @param range The range name
+#'
+#' @return character vector with two entries (start, end)
+#'         or NULL if the string could not be parsed
+get.range.bounds = function(range) {
+    patterns = c(
+        # date format
+        "\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?",
+        # commit format
+        "[A-F0-9a-f]{40}")
+
+    for (pattern in patterns) {
+        start.end = regmatches(range, gregexpr(pattern = pattern, range))[[1]]
+
+        if (length(start.end) == 2) {
+            return (start.end)
+        }
+    }
+
+    return (NULL)
 }
