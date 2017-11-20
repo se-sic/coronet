@@ -181,36 +181,83 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
 })
 
-test_that("Network construction of the author-cochange network", {
+test_that("Network construction of the undirected author-cochange network", {
 
-    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
-    data = data.frame(comb.1. = c("Claus Hunsen", "Claus Hunsen", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
-                      comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
-                      date = as.POSIXct(c(1468339139, 1468339245, 1468339541, 1468339570, 1468339541, 1468339592, 1468339570, 1468339592), origin = "1970-01-01"),
-                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
-                               "1143db502761379c2bfcecc2007fc34282e7ee61", "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
-                               "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
-                      file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
-                      artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
-                      artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature")
-    )
-
-
+    ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange"))
 
+    ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
 
+    ## build network
     network.built = network.builder$get.author.network()
 
+    ## vertex attributes
+    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
+
+    ## edge attributes
+    data = data.frame(comb.1. = c("Claus Hunsen", "Claus Hunsen", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
+                      comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
+                      date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:06:10",
+                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                               "1143db502761379c2bfcecc2007fc34282e7ee61", "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                      artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
+                      artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
+                      weight = c(1,1,1,1,1,1,1,1),
+                      type = c(3,3,3,3,3,3,3,3)
+    )
+
+    ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
     network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    network.expected = igraph::set.edge.attribute(network.expected, "weight", value = 1)
     igraph::V(network.expected)$type = TYPE.AUTHOR
-    igraph::E(network.expected)$type = TYPE.EDGES.INTRA
+
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+test_that("Network construction of the directed author-cochange network", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## vertex attributes
+    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
+
+    ## edge attributes
+    data = data.frame(from = c("Olaf", "Karl", "Thomas", "Thomas"),
+                      to = c("Claus Hunsen", "Olaf", "Olaf", "Karl"),
+                      date = as.POSIXct(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32",
+                                          "2016-07-12 16:06:32")),
+                      hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test3.c", "test2.c", "test2.c"),
+                      artifact.type = c("Feature", "Feature", "Feature", "Feature"),
+                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+                      weight = c(1, 1, 1, 1),
+                      type = c(3, 3, 3, 3)
+    )
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
+    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
+    igraph::V(network.expected)$type = TYPE.AUTHOR
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
