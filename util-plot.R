@@ -33,8 +33,12 @@ plot.network = function(net, labels = TRUE, grayscale = FALSE) {
     vertex.shapes.pch.legend = c(vertex.shapes.pch[1:2], NA, NA)
 
     ## correct missing type attributes
-    igraph::V(net)[ is.na(type) ]$type = 3
-    igraph::E(net)[ is.na(type) ]$type = 5
+    if (igraph::vcount(net) > 0) {
+        igraph::V(net)[ is.na(type) ]$type = 3
+    }
+    if (igraph::ecount(net) > 0) {
+        igraph::E(net)[ is.na(type) ]$type = 5
+    }
 
     ## vertex color by "type" attribute
     igraph::V(net)$color <- vertex.colors[igraph::V(net)$type]
