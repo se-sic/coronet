@@ -103,6 +103,7 @@ Install the library using the guide in our [README](README.md) file. Start imple
 * Do not include issue numbers in the PR title, but rather in the PR message body.
 * Follow the [style conventions](#style-conventions).
 * Document new code and provide proper tests.
+* Add your enhancements and fixes to the [changelog file](NEWS.md).
 * End all files with a newline.
 * Merge policy:
   * Tests must run successfully.
