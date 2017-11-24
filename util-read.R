@@ -67,7 +67,7 @@ read.commits = function(data.path, artifact) {
     if (artifact == "file") {
         ## aggregate diff size by hash and file
         commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
-                                   group by hash, file order by `date`, `author.name`, `id`, `file`, `artifact`")
+                                   group by hash, file order by `date`, `author.name`, `commit.id`, `file`, `artifact`")
 
         ## fix column class for diffsum
         commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
