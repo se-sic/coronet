@@ -474,6 +474,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             igraph::V(net)$type = TYPE.AUTHOR
             igraph::E(net)$type = TYPE.EDGES.INTRA
 
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
+
             return(net)
         },
 
@@ -498,6 +503,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
             igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
 
             return(net)
         },
@@ -537,6 +547,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 authors = igraph::get.vertex.attribute(u, "name", igraph::V(u)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
                 u = igraph::delete.vertices(u, authors.to.remove)
+            }
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(u, "range") = private$proj.data$get.range()
             }
 
             return(u)
@@ -612,6 +627,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
                                  network.conf = private$network.conf)
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(u, "range") = private$proj.data$get.range()
+            }
 
             return(u)
         }
