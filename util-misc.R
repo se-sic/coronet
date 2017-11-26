@@ -92,19 +92,46 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 #' Calculate the bounds of a range from its name.
 #' @param range The range name
 #'
-#' @return character vector with two entries (start, end)
+#' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
+#'         or of type character if input was a commit hash;
 #'         or NULL if the string could not be parsed
 get.range.bounds = function(range) {
-    patterns = c(
-        # date format
-        "\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?",
-        # commit format
-        "[A-F0-9a-f]{40}")
 
-    for (pattern in patterns) {
+    ## try to parse and convert the input range with
+    ## a given pattern and optional conversion option
+    try.parse = function (pattern, convert) {
         start.end = regmatches(range, gregexpr(pattern = pattern, range))[[1]]
 
         if (length(start.end) == 2) {
+            if(!missing(convert)) {
+                start.end = convert(start.end)
+            }
+
+            return (start.end)
+        }
+        return (NULL)
+    }
+
+    ## build a lambda function so not every possible pattern has to be tested
+    build.lambda = function(pattern, convert) {
+        return (function() {
+            return (try.parse(pattern, convert))
+        })
+    }
+
+    ## the patterns to test with appropriate conversions (if any)
+    tests = c(
+        ## date format (assuming dates are GMT)
+        build.lambda("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?",
+             function(x) { return (as.POSIXct(x, "GMT")) }),
+
+        ## commit format
+        build.lambda("[A-F0-9a-f]{40}")
+    )
+
+    for(lambda in tests) {
+        start.end = lambda()
+        if(!is.null(start.end)) {
             return (start.end)
         }
     }
