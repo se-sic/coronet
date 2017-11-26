@@ -13,6 +13,7 @@ options(stringsAsFactors = FALSE)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sourcing library files --------------------------------------------------
 
+source("util-covariates.R")
 source("util-misc.R")
 source("util-conf.R")
 source("util-read.R")
