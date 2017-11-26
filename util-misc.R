@@ -103,17 +103,17 @@ get.range.bounds = function(range) {
         start.end = regmatches(range, gregexpr(pattern = pattern, range))[[1]]
 
         if (length(start.end) == 2) {
-            if(!missing(convert)) {
-                start.end = convert(start.end)
-            }
-
-            return (start.end)
+            return (convert(start.end))
         }
         return (NULL)
     }
 
     ## build a lambda function so not every possible pattern has to be tested
     build.lambda = function(pattern, convert) {
+        if(missing(convert)) {
+            convert = function(x) { return (x) }
+        }
+
         return (function() {
             return (try.parse(pattern, convert))
         })
