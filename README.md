@@ -32,6 +32,8 @@ source("path/to/util-init.R", chdir = TRUE)
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `testthat`: For the test suite
 - `markovchain`: For core/peripheral transition probabilities
+- `ggplot2`: For plotting of data
+- `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 
 
 ## How-To
