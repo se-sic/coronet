@@ -20,7 +20,7 @@ ARTIFACT = "feature"
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
-test_that("Read the raw commit data.", {
+test_that("Read the raw commit data with the feature artifact.", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -55,6 +55,45 @@ test_that("Read the raw commit data.", {
                                       artifact.type=c("Feature","FeatureExpression","Feature","FeatureExpression","Feature",
                                                       "FeatureExpression","Feature","Feature","Feature"),
                                       artifact.diff.size=as.integer(c(1,1,1,1,1,1,1,1,1)))
+
+    ## check the results
+    expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
+
+    ## check order of commits (ordered by date?)
+    dates = order(commit.data.read[["date"]])
+    dates.expected = seq_len(nrow(commit.data.expected))
+    expect_identical(dates, dates.expected, info = "Ordering by date.")
+})
+
+
+test_that("Read the raw commit data with the file artifact.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+
+    ## read the actual data
+    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+
+    ## build the expected data.frame
+    commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32716,32717,32714,32715)),
+                                      date=get.date.from.string(c("2016-07-12 15:58:59","2016-07-12 16:00:45",
+                                                                  "2016-07-12 16:05:41","2016-07-12 16:06:32")),
+                                      author.name=c("Claus Hunsen","Olaf","Olaf","Thomas"),
+                                      author.email=c("hunsen@fim.uni-passau.de","olaf@example.org",
+                                                     "olaf@example.org","thomas@example.org"),
+                                      committer.date=get.date.from.string(NA),
+                                      committer.name=NA,
+                                      committer.email=NA,
+                                      hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                             "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      changed.files=as.integer(c(1,1,1,1)),
+                                      added.lines=as.integer(c(1,1,1,1)),
+                                      deleted.lines=as.integer(c(1,0,0,0)),
+                                      diff.size=as.integer(c(2,1,1,1)),
+                                      file=c("test.c","test.c","test2.c","test2.c"),
+                                      artifact=c("test.c","test.c","test2.c","test2.c"),
+                                      artifact.type=c("File", "File", "File", "File"),
+                                      artifact.diff.size=c(1,1,1,1))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
