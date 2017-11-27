@@ -35,14 +35,22 @@ test_that("Network construction of the undirected artifact-cochange network", {
     network.built = network.builder$get.artifact.network()
 
     ## vertex attributes
-    vertices = c("Base_Feature", "A")
+    vertices = c("Base_Feature", "foo", "A")
+
+    data = data.frame(from = c("Base_Feature", "Base_Feature"),
+                      to = c("foo", "foo"),
+                      date = as.POSIXct(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                      hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test2.c", "test2.c"),
+                      artifact.type = c("Feature", "Feature"),
+                      artifact = c("Base_Feature", "foo"),
+                      weight = c(1, 1),
+                      type = c(3, 3))
 
     ## build expected network
-    network.expected = igraph::graph.empty(n = 0, directed = FALSE) + igraph::vertices(vertices)
+    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)
     network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    network.expected = igraph::set.edge.attribute(network.expected, "weight", value = 1)
     igraph::V(network.expected)$type = TYPE.ARTIFACT
-    igraph::E(network.expected)$type = TYPE.EDGES.INTRA
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })

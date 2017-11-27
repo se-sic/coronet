@@ -51,9 +51,9 @@ test_that("Read the raw commit data.", {
                                       diff.size=as.integer(c(2,2,1,1,1,1,1,1,1)),
                                       file=c("test.c","test.c","test.c","test.c","test2.c","test2.c","test3.c","test2.c","test2.c"),
                                       artifact=c("A","defined(A)","A","defined(A)","Base_Feature","Base_Feature","Base_Feature",
-                                                 "Base_Feature","Base_Feature"),
+                                                 "Base_Feature","foo"),
                                       artifact.type=c("Feature","FeatureExpression","Feature","FeatureExpression","Feature",
-                                                      "FeatureExpression","Feature","Feature","FeatureExpression"),
+                                                      "FeatureExpression","Feature","Feature","Feature"),
                                       artifact.diff.size=as.integer(c(1,1,1,1,1,1,1,1,1)))
 
     ## check the results
