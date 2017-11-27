@@ -11,14 +11,19 @@
 #'                  with the names being the name of the vertex.
 #' @param cumulative Should the attribute be calculated from project start to end of range?
 #'
-compute.vertex.attributes = function(list.of.networks, project.data, attr.name, compute.attr, cumulative = FALSE) {
+compute.vertex.attributes = function(list.of.networks, project.data, attr.name, what = c("range", "cumulative", "all"), compute.attr) {
     list.of.ranges = as.list(names(list.of.networks))
+    what = match.arg(what)
 
     return (lapply(list.of.ranges, function(range) {
         start.end = get.range.bounds(range)
 
-        if(cumulative) {
+        if(what == "cumulative" || what == "all") {
             start.end[1] = as.POSIXct("1970-01-01 00:00:00", "GMT")
+        }
+
+        if(what == "all") {
+            start.end[2] = as.POSIXct("9999-01-01 00:00:00", "GMT")
         }
 
         range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
@@ -38,6 +43,45 @@ get.commit.count.per.range = function(data) {
     return (commit.count.list)
 }
 
-add.commit.count = function(list.of.networks, data, cumulative = FALSE) {
-    compute.vertex.attributes(list.of.networks, data, "commit.count", get.commit.count.per.range, cumulative)
+add.commit.count = function(list.of.networks, data, what = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, "commit.count", what, get.commit.count.per.range)
+}
+
+
+
+add.mail.attribute = function(list.of.networks, data, what = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, "email.addresses", what,
+                              function(range.data) {
+                                  author.to.mail = range.data$get.author2commit()
+                                  author.to.mail = lapply(author.to.mail, function(a) {
+                                      return ( unique(a$author.email) )
+                                      })
+
+                                  return (author.to.mail)
+                              })
+}
+
+add.artifact.count = function(list.of.networks, data, what = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, "artifact.count", what,
+                              function(range.data) {
+                                  return (lapply(range.data$get.author2artifact(), length))
+                              })
+}
+
+add.first.activity = function(list.of.networks, data, what = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, "first.activity", what,
+                              function(range.data) {
+                                  return (lapply(range.data$get.author2commit(),
+                                         function(x) { return ( min(x$date) ) }))
+                              })
+}
+
+add.activity.range = function(list.of.networks, data, what = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, "activity.range", what,
+                              function(range.data) {
+                                  return (lapply(range.data$get.author2commit(),
+                                                 function(x) {
+                                                     return ( c(start = min(x$date), end = max(x$date)) )
+                                                 }))
+                              })
 }
