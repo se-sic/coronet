@@ -93,46 +93,27 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 #' @param range The range name
 #'
 #' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
-#'         or of type character if input was a commit hash;
+#'         or of type character if input was a commit hash or version;
 #'         or NULL if the string could not be parsed
 get.range.bounds = function(range) {
 
-    ## try to parse and convert the input range with
-    ## a given pattern and optional conversion option
-    try.parse = function (pattern, convert) {
-        start.end = regmatches(range, gregexpr(pattern = pattern, range))[[1]]
-
-        if (length(start.end) == 2) {
-            return (convert(start.end))
-        }
-        return (NULL)
-    }
-
-    ## build a lambda function so not every possible pattern has to be tested
-    build.lambda = function(pattern, convert) {
-        if(missing(convert)) {
-            convert = function(x) { return (x) }
-        }
-
-        return (function() {
-            return (try.parse(pattern, convert))
-        })
-    }
-
     ## the patterns to test with appropriate conversions (if any)
-    tests = c(
+    tests = list(
         ## date format (assuming dates are GMT)
-        build.lambda("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?",
-             function(x) { return (as.POSIXct(x, "GMT")) }),
+        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", as.POSIXct),
 
         ## commit format
-        build.lambda("[A-F0-9a-f]{40}")
+        c("[A-F0-9a-f]{40}", identity),
+
+        ## version format
+        c("([A-Za-z0-9]+[\\._]?)+", identity)
     )
 
-    for(lambda in tests) {
-        start.end = lambda()
-        if(!is.null(start.end)) {
-            return (start.end)
+    for(pattern in tests) {
+        start.end = regmatches(range, gregexpr(pattern = pattern[[1]], range))[[1]]
+
+        if (length(start.end) == 2) {
+            return (pattern[[2]](start.end))
         }
     }
 

@@ -734,6 +734,15 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @return the revision callgraph
         get.revision.callgraph = function() {
             return(private$revision.callgraph)
+        },
+
+        #' Get the bounds of the current instance
+        #'
+        #' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
+        #'         or of type character if input was a commit hash or version;
+        #'         or NULL if the string could not be parsed
+        get.bounds = function() {
+            return (get.range.bounds(private$range))
         }
 
     )
