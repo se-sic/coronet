@@ -150,16 +150,18 @@ Install the library using the guide in our [README](README.md) file. Start imple
     * **indentation width**: 4 spaces,
     * **line length**: more than 80 characters are allowed, 120 characters should be the maximum,
     * **identifiers**: substrings in identifiers are separated only with `.` (and *not* camel-casing or `_`),
-    * **assignments**: only with `=`
-    * **quoting** (e.g., of strings): always use double quotes instead of single quotes
-    * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`)
+    * **assignments**: only with `=`,
+    * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
+    * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`), and
+    * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["1"item1"]]`
 * To **include packages**, always use `requireNamespace` (and *not* `library`). Consequently, you need to use package prefixes (e.g., `igraph::`) when calling a package's functions.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
     * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details).
-    * We use **networks**, no "graphs".
+    * We use **networks**, not "graphs".
     * We talk about **authors**, not developers.
 * Also **add tests** to the test suite for each new functionality you add!
+* Keep the code as simple as possible.
 
 
 ## Disclaimer
