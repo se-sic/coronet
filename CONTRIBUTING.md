@@ -126,7 +126,7 @@ Install the library using the guide in our [README](README.md) file. Start imple
     * Then follows an empty line.
     * Then follows the signed-off tags.
 * Configure git to use your **complete name**, not your username.
-* **Do not commit incremental development**, that is, half-baked, not working code. Please work until a change is complete, and then make one commit. Naturally, you will need to fix bugs in later commits, this is no problem.
+* **Do not commit incremental development**, that is, half-baked, really not working code. Please work until a change is complete, and then make one commit. Naturally, you will need to fix bugs in later commits, this is no problem. This means also that you do not need to commit all your changes to, for example, address an issue does not need to be squashed in one single commit.
 * When you introduce new files, please make sure they have a correct copyright headers and stick to the current naming scheme.
 * Reference GitHub issues by adding their identifier (e.g., #11) in the commit message.
 * Here's an example commit message in the expected form:
