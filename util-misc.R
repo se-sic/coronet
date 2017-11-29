@@ -4,6 +4,8 @@
 ## noemmer@fim.uni-passau.de
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -13,6 +15,7 @@ requireNamespace("plyr") # for rbind.fill and dlply
 requireNamespace("parallel") # for parallel computation
 requireNamespace("igraph") # networks
 requireNamespace("logging") # for logging
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -84,4 +87,38 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
     }
 
     return(get0(variable))
+}
+
+
+#' Calculate the bounds of a range from its name.
+#' @param range The range name
+#'
+#' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
+#'         or of type character if input was a commit hash or version;
+#'         or the unaltered given range if the string could not be parsed
+get.range.bounds = function(range) {
+
+    ## the patterns to test with appropriate conversions (if any)
+    tests = list(
+        ## date format (assuming dates are GMT)
+        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", function(x) {
+            lubridate::ymd_hms(x, truncated = 3)
+        }),
+
+        ## commit format
+        c("[A-F0-9a-f]{40}", identity),
+
+        ## version format
+        c("([A-Za-z0-9]+[\\._]?)+", identity)
+    )
+
+    for(pattern in tests) {
+        start.end = regmatches(range, gregexpr(pattern = pattern[[1]], range))[[1]]
+
+        if (length(start.end) == 2) {
+            return (pattern[[2]](start.end))
+        }
+    }
+
+    return (range)
 }

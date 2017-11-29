@@ -184,22 +184,25 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 # cf.data = split.data.time.based(x.data, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
 # for (range in names(cf.data)) {
-#     y = cf.data[[range]]
+#     y.data = cf.data[[range]]
+#     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
-# mybins = as.POSIXct(c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30"))
+# mybins = c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30")
 # cf.data = split.data.time.based(x.data, bins = mybins)
 # for (range in names(cf.data)) {
-#     y = cf.data[[range]]
+#     y.data = cf.data[[range]]
+#     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
 
 # cf.data = split.data.activity.based(x.data, activity.amount = 10000, activity.type = "mails")
 # for (range in names(cf.data)) {
-#     y = cf.data[[range]]
+#     y.data = cf.data[[range]]
+#     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #     plot.network(y$get.bipartite.network())
 # }
 # print(run.lapply(cf.data, "get.class.name"))
@@ -213,7 +216,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # }
 
 # g = y$get.bipartite.network()
-# mybins = as.POSIXct(c("2013-05-23", "2013-06-11", "2013-06-27"))
+# mybins = c("2004-10-23", "2004-11-11", "2004-12-27 00:12:23")
 # nets = split.network.time.based(g, bins = mybins)
 # for (net in nets) {
 #     plot.network(net)

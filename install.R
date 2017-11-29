@@ -16,7 +16,8 @@ pacakges = c(
     "testthat",
     "ggplot2",
     "ggraph",
-    "markovchain"
+    "markovchain",
+    "lubridate"
 )
 
 
