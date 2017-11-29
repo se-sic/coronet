@@ -95,7 +95,7 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 #'
 #' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
 #'         or of type character if input was a commit hash or version;
-#'         or NULL if the string could not be parsed
+#'         or the unaltered given range if the string could not be parsed
 get.range.bounds = function(range) {
 
     ## the patterns to test with appropriate conversions (if any)
@@ -120,5 +120,5 @@ get.range.bounds = function(range) {
         }
     }
 
-    return (NULL)
+    return (range)
 }
