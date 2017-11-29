@@ -153,7 +153,7 @@ Install the library using the guide in our [README](README.md) file. Start imple
     * **assignments**: only with `=`,
     * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
     * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`), and
-    * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["1"item1"]]`
+    * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`
 * To **include packages**, always use `requireNamespace` (and *not* `library`). Consequently, you need to use package prefixes (e.g., `igraph::`) when calling a package's functions.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
