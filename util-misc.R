@@ -15,6 +15,7 @@ requireNamespace("plyr") # for rbind.fill and dlply
 requireNamespace("parallel") # for parallel computation
 requireNamespace("igraph") # networks
 requireNamespace("logging") # for logging
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -100,8 +101,9 @@ get.range.bounds = function(range) {
     ## the patterns to test with appropriate conversions (if any)
     tests = list(
         ## date format (assuming dates are GMT)
-        ## Add zeros for dates without time. Will be ignored if there is a time already.
-        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", function(x) as.POSIXct(paste(x, " 00:00:00"))),
+        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", function(x) {
+            lubridate::ymd_hms(x, truncated = 3)
+        }),
 
         ## commit format
         c("[A-F0-9a-f]{40}", identity),

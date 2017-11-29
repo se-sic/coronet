@@ -11,9 +11,10 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Libraries ---------------------------------------------------------------
 
-requireNamespace("igraph")
-requireNamespace("logging")
-requireNamespace("parallel")
+requireNamespace("igraph") # networks
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -69,7 +70,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     else {
         ## get bins based on parameter
         split.basis = NULL
-        bins = strftime(bins)
+        bins = lubridate::ymd_hms(bins, truncated = 3)
+        bins = strftime(bins, format = "%Y-%m-%d %H:%M:%S")
         bins.labels = head(bins, -1)
         split.by.bins = TRUE
         ## logging
@@ -155,7 +157,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date)
+        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -251,7 +253,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
                                               activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
-    bins.date = as.POSIXct(bins)
+    bins.date = lubridate::ymd_hms(bins, truncated = 3)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
@@ -303,7 +305,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date)
+        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -358,7 +360,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 
     ## get bin information for all edges
     if (!is.null(bins)) {
-        bins.date = as.POSIXct(bins)
+        bins.date = lubridate::ymd_hms(bins, truncated = 3)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
@@ -415,7 +417,8 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     attr(nets, "bins") = bins.date
 
     ## set ranges as names
-    names(nets) = construct.ranges(bins.date, sliding.window = sliding.window)
+    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    names(nets) = construct.ranges(revs, sliding.window = sliding.window)
 
     return(nets)
 }
@@ -579,7 +582,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     attr(networks, "bins") = bins.date
 
     ## set ranges as names
-    names(networks) = construct.ranges(bins.date, sliding.window = sliding.window)
+    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    names(networks) = construct.ranges(revs, sliding.window = sliding.window)
 
     ## issue warning if ranges are not unique
     if (any(duplicated(names(networks)))) {
@@ -600,7 +604,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 #' Split the given data by the given bins.
 #'
 #' @param df a data.frame to be split
-#' @param bins a vector with the length of 'ncol(df)' assigning a bin for each row of 'df'
+#' @param bins a vector with the length of 'nrow(df)' assigning a bin for each row of 'df'
 #'
 #' @return a list of data.frames, with the length of 'unique(bins)'
 split.data.by.bins = function(df, bins) {
@@ -693,7 +697,7 @@ split.get.bins.time.based = function(dates, time.period) {
         ## add last bin
         max(dates) + 1
     )
-    dates.breaks.chr = strftime(head(dates.breaks, -1))
+    dates.breaks.chr = strftime(head(dates.breaks, -1), format = "%Y-%m-%d %H:%M:%S")
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
@@ -709,7 +713,7 @@ split.get.bins.time.based = function(dates, time.period) {
     ## return properly
     return(list(
         vector = dates.bins,
-        bins = strftime(dates.breaks)
+        bins = strftime(dates.breaks, format = "%Y-%m-%d %H:%M:%S")
     ))
 }
 
@@ -771,7 +775,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## unlist bins
     bins.date = do.call(c, bins.date)
     ## convert to character strings
-    bins.date.char = strftime(bins.date)
+    bins.date.char = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
     ## if we have a duplicate bin border, merge the two things
     if (remove.duplicate.bins && any(duplicated(bins.date))) {

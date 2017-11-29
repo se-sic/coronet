@@ -279,12 +279,12 @@ test_that("Split a data object time-based (bins == ... ).", {
     )
 
     ## split data
-    results = split.data.time.based(project.data, bins = c("2016-01-01 00:00:01", "2016-12-31 23:59:59"),
+    results = split.data.time.based(project.data, bins = c("2016-01-01 00:00:00", "2016-12-31 23:59:59"),
                                     split.basis = "mails", sliding.window = FALSE)
 
     ## check time ranges
     expected = c(
-        "2016-01-01 00:00:01-2016-12-31 23:59:59"
+        "2016-01-01 00:00:00-2016-12-31 23:59:59"
     )
     result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
@@ -292,19 +292,19 @@ test_that("Split a data object time-based (bins == ... ).", {
     ## check data for all ranges
     expected.data = list(
         commits.raw = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$commits.raw
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commits.raw
         ),
         mails = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
         ),
         issues = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% 7:31, ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% 7:31, ]
         ),
         synchronicity = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$synchronicity
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$synchronicity
         ),
         pasta = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$pasta
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$pasta
         )
     )
     results.data = list(
@@ -1222,13 +1222,12 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ##
 
     ## results
-    expected.bins.long  = c('2000-01-01 00:00:00', '2000-01-11 00:00:00', '2000-01-21 00:00:00', '2000-01-29 00:00:01')
-    expected.bins.short = c('2000-01-01', '2000-01-11', '2000-01-21', '2000-01-29 00:00:01')
+    expected.bins  = c('2000-01-01 00:00:00', '2000-01-11 00:00:00', '2000-01-21 00:00:00', '2000-01-29 00:00:01')
     expected = list(
-        vector = factor(head(expected.bins.short, -1))[c(3, 3, 2, 3, 2,
-                                                         1, 1, 3, 2, 1,
-                                                         2, 1, 3, 1, 2)],
-        bins = expected.bins.long
+        vector = factor(head(expected.bins, -1))[c(3, 3, 2, 3, 2,
+                                                   1, 1, 3, 2, 1,
+                                                   2, 1, 3, 1, 2)],
+        bins = expected.bins
     )
     results = split.get.bins.time.based(dates.posixct, "10 days")
 
@@ -1240,11 +1239,10 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ##
 
     ## results
-    expected.bins.long  = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
-    expected.bins.short = c('2000-01-01', '2000-01-29 00:00:01')
+    expected.bins  = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
     expected = list(
-        vector = factor(head(expected.bins.short, -1))[ rep(1, length.dates) ],
-        bins = expected.bins.long
+        vector = factor(head(expected.bins, -1))[ rep(1, length.dates) ],
+        bins = expected.bins
     )
     results = split.get.bins.time.based(dates.posixct, "1 year")
 
