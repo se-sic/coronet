@@ -1,9 +1,6 @@
-# codeface-extraction-r - The network utility library
+# codeface-extraction-r - The network library
 
-> > TODO more detailled project information
-
-This project is an addendum to the project `codeface-extraction` [https://github.com/clhunsen/codeface-extraction].
-It reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling.
+The network library `codeface-extraction-r` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 
 ## Integration
