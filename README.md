@@ -16,10 +16,11 @@ Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your 
 
 This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
-Best, you source all files of the library in your project using the following command:
+To initialize the library in your project, you need to source all files of the library in your project using the following command:
 ```
 source("path/to/util-init.R", chdir = TRUE)
 ```
+It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
 
 ### Needed R packages
 
