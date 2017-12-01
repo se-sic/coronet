@@ -18,12 +18,6 @@ requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## System variables and R settings -----------------------------------------
-
-Sys.setenv(TZ = "UTC")
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
 
 #' Split project data in time-based ranges as specified

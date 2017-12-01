@@ -16,14 +16,6 @@ requireNamespace("digest") # for sha1 hashing of IDs
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## System variables and R settings -----------------------------------------
-
-Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
-Sys.setenv(TZ = "UTC")
-options(stringsAsFactors = FALSE)
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit data -------------------------------------------------------------
 
 #' Read the commits from the 'commits.list' file.
