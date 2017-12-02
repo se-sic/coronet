@@ -19,7 +19,7 @@ requireNamespace("igraph")
 #' @param mode The mode to be used for determining the degrees.
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
-metrics.hub.degree = function(network, mode){
+metrics.hub.degree = function(network, modec = c("total", "in", "out")){
     degrees = igraph::degree(network, mode = c(mode))
     vertex = which.max(degrees)
     df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]))
@@ -32,7 +32,7 @@ metrics.hub.degree = function(network, mode){
 #' @param mode The mode to be used for determining the degrees.
 #'
 #' @return The average degree of the nodes in the network.
-metrics.avg.degree = function(network, mode) {
+metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     degrees = igraph::degree(network, mode = c(mode))
     avg = mean(degrees)
     return(avg)
@@ -41,10 +41,17 @@ metrics.avg.degree = function(network, mode) {
 #' Calculate all node degrees for the given network
 #'
 #' @param network The network to be examined
+#' @param sort Whether the resulting dataframe is to be sorted by the node degree
+#' @param sort.decreasing If sorting is active, this says whether the dataframe is to be sorted
+#' in descending or ascending order.
 #'
 #' @return A dataframe containing the nodes and their respective degrees.
-metrics.node.degrees = function(network) {
-    degrees = sort(igraph::degree(network, mode="total"), decreasing = TRUE)
+metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
+    if(sort) {
+        degrees = sort(igraph::degree(network, mode="total"), decreasing = sort.decreasing)
+    } else {
+        igraph::degree(network, mode="total")
+    }
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
 
@@ -73,10 +80,10 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 #' Calculate the average local clustering coefficient for the given network.
 #'
 #' @param network The network to be examined.
-#' @param cc.type The type of cluserting coefficient to be calculated, i.e. global or local.
+#' @param cc.type The type of cluserting coefficient to be calculated.
 #'
-#' @return The average local clustering coefficient of the network.
-metrics.clustering.coeff = function(network, cc.type) {
+#' @return The clustering coefficient of the network.
+metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
     cc = igraph::transitivity(network, type = cc.type, vids = NULL)
     return(cc)
 }
@@ -94,18 +101,18 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
     return(data.frame("name" = name, "modularity" = mod))
 }
 
-## This function determines whether a network can be considered a
-## small-world network based on a quantitative categorical decision.
-##
-## The procedure used in this function is based on the work "Network
-## 'Small-World-Ness': A Quantitative Method for Determining Canonical
-## Network Equivalence" by Mark D. Humphries and Kevin Gurney [1].
-## [1] http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0002051
-##
-## The algorithm relies on the Erdös-Renyi random network with the same number
-## of nodes and edges as the given network.
+#' This function determines whether a network can be considered a
+#' small-world network based on a quantitative categorical decision.
 #'
-#' @param network The network to be examined
+#' The procedure used in this function is based on the work "Network
+#' 'Small-World-Ness': A Quantitative Method for Determining Canonical
+#' Network Equivalence" by Mark D. Humphries and Kevin Gurney [1].
+#' [1] http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0002051
+#'
+#' The algorithm relies on the Erdös-Renyi random network with the same number
+#' of nodes and edges as the given network.
+#'
+#' @param network The network to be examined. This network needs to be simplified for the calculation to work.
 #'
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
@@ -113,14 +120,14 @@ metrics.smallworldness = function(network) {
     # construct Erdös-Renyi network with same number of nodes and edges as g
     h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=FALSE)
 
-    ## compute clustering coefficients
+    # compute clustering coefficients
     g.cc = igraph::transitivity(network, type = 'global')
     h.cc = igraph::transitivity(h, type = 'global')
-    ## compute average shortest-path length
+    # compute average shortest-path length
     g.l = igraph::average.path.length(network, unconnected = TRUE)
     h.l = igraph::average.path.length(h, unconnected = TRUE)
 
-    ## binary decision
+    # binary decision
     # intermediate variables
     gamma = g.cc / h.cc
     lambda = g.l / h.l
@@ -164,7 +171,8 @@ metrics.scale.freeness = function(network) {
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode="total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
-    degrees.without.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
+    degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
+    cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     return(data.frame(log.deg = log(degrees.without.without.cluster.coeff), log.cc = log(cluster.coeff)))
 }
 
