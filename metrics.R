@@ -1,31 +1,41 @@
+## (c) Thomas Bock, February 2015
+## bockthom@fim.uni-passau.de
+## (c) Raphael Nömmer, 2017
+## noemmer@fim.uni-passau.de
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("igraph")
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Metric functions --------------------------------------------------------
 
 
 #' Determine the maximum degree for the given network.
 #'
 #' @param network The network to be examined
-#' @param name The name of the network
+#' @param mode The mode to be used for determining the degrees.
 #'
-#' @return A dataframe containing the name of the vertex with the maximum degree, the degree and
-#' the name of the network that this value belongs to.
-metrics.hub.degree = function(network, name){
-    degrees = igraph::degree(network, mode = c("total"))
+#' @return A dataframe containing the name of the vertex with with maximum degree its degree.
+metrics.hub.degree = function(network, mode){
+    degrees = igraph::degree(network, mode = c(mode))
     vertex = which.max(degrees)
-    df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]), "name" = name)
+    df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]))
     return(df)
 }
 
 #' Calculate the average degree of a network.
 #'
 #' @param network The network to be examined
-#' @param name The name of the network
+#' @param mode The mode to be used for determining the degrees.
 #'
-#' @return A dataframe containing the average degree of the network and the name of the network.
-metrics.avg.degree = function(network, name) {
-    degrees = igraph::degree(network, mode = c("total"))
+#' @return The average degree of the nodes in the network.
+metrics.avg.degree = function(network, mode) {
+    degrees = igraph::degree(network, mode = c(mode))
     avg = mean(degrees)
-    df = data.frame("name" = name, "avg.degree" = avg)
-    return(df)
+    return(avg)
 }
 
 #' Calculate all node degrees for the given network
@@ -38,87 +48,74 @@ metrics.node.degrees = function(network) {
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
 
-#' Calculate the density of the given network
+#' Calculate the density of the given network.
 #'
-#' @param network The network to be examined
-#' @param name The name of the network
+#' @param network The network to be examined.
 #'
-#' @return A dataframe containing the network density and the name of the network.
-metrics.density = function(network, name) {
+#' @return The density of the network.
+metrics.density = function(network) {
     density = igraph::graph.density(network)
-    return(data.frame("name" = name, "density" = unname(density)))
+    return(density)
 }
 
 #' Calculate the average path length for the given network.
 #'
-#' @param network The network to e examined
-#' @param name The name of the network
+#' @param network The network to be examined.
+#' @param directed Wehther the given network is directed or undirected.
+#' @param unconnected Whether all nodes of the network are connected.
 #'
-#' @return A dataframe containing the average path length and the name of the network.
-metrics.avg.pathlength = function(network, name) {
-    return(data.frame("name" = name, "avg.pathlength" =
-                          igraph::average.path.length(network, directed = FALSE, unconnected = TRUE)))
+#' @return The average pathlength of the given network.
+metrics.avg.pathlength = function(network, directed, unconnected) {
+    avg.pathlength = igraph::average.path.length(network, directed = directed, unconnected = unconnected)
+    return(avg.pathlength)
 }
 
 #' Calculate the average local clustering coefficient for the given network.
 #'
-#' @param network The network to be examined
-#' @param name The name of the network
+#' @param network The network to be examined.
+#' @param cc.type The type of cluserting coefficient to be calculated, i.e. global or local.
 #'
-#' @return A dataframe containing the average local clustering coefficient and the name of the network.
-metrics.clustering.coeff = function(network, name) {
-    cc = igraph::transitivity(network, type = "localaverage", vids = NULL)
-    return(data.frame("name" = name, "clustering.coeff" = cc))
-}
-
-#' Calculate the global clustering coefficient for the given network.
-#'
-#' @param network The network to be examined
-#' @param name The name of the network
-#'
-#' @return A dataframe containing the global clustering coefficient of the network and the name of the network.
-metrics.clustering.coeff.global = function(network, name) {
-    cc = igraph::transitivity(network, type = "global", vids = NULL)
-    return(data.frame("name" = name, "clustering.coeff" = cc))
+#' @return The average local clustering coefficient of the network.
+metrics.clustering.coeff = function(network, cc.type) {
+    cc = igraph::transitivity(network, type = cc.type, vids = NULL)
+    return(cc)
 }
 
 #' Calculate the modularity metric for the given network.
 #'
 #' @param network The network to be examined
-#' @param name The name of the network
+#' @param community.detection.algorithm The algorithm to be used for the detection of communities which
+#' is required for the calculation of the clustering coefficient.
 #'
-#' @return A dataframe containing the modularity value for the given network and the name of the network.
-metrics.modularity = function(network, name) {
-    comm = igraph::cluster_walktrap(network)
+#' @return The modularity value for the given network.
+metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
+    comm = community.detection.algorithm(network)
     mod = igraph::modularity(network, igraph::membership(comm))
     return(data.frame("name" = name, "modularity" = mod))
 }
 
-#' Count the number of nodes for the given network.
+## This function determines whether a network can be considered a
+## small-world network based on a quantitative categorical decision.
+##
+## The procedure used in this function is based on the work "Network
+## 'Small-World-Ness': A Quantitative Method for Determining Canonical
+## Network Equivalence" by Mark D. Humphries and Kevin Gurney [1].
+## [1] http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0002051
+##
+## The algorithm relies on the Erdös-Renyi random network with the same number
+## of nodes and edges as the given network.
 #'
 #' @param network The network to be examined
-#' @param name The name of the network
 #'
-#' @return A dataframe containing the number of nodes in the network and the name of the network.
-metrics.amount.nodes = function(network, name) {
-    return(data.frame("name" = name, "amount.nodes" = igraph::vcount(network)))
-}
-
-#' Calculate the smallworldness value for the given network.
-#' This metric requires a simplified network.
-#'
-#' @param network The network to be examined
-#' @param name The name of the network
-#'
-#' @return A dataframe containing the smallworldness value of the network and the name of the network.
-metrics.smallworldness = function(network, name) {
+#' @return The smallworldness value of the network.
+metrics.smallworldness = function(network) {
 
     # construct Erdös-Renyi network with same number of nodes and edges as g
     h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=FALSE)
 
     ## compute clustering coefficients
-    g.cc = igraph::transitivity(network)
-    h.cc = igraph::transitivity(h)
+    g.cc = igraph::transitivity(network, type = 'global')
+    h.cc = igraph::transitivity(h, type = 'global')
     ## compute average shortest-path length
     g.l = igraph::average.path.length(network, unconnected = TRUE)
     h.l = igraph::average.path.length(h, unconnected = TRUE)
@@ -134,16 +131,15 @@ metrics.smallworldness = function(network, name) {
     # if s.delta > 1, then the network is a small-world network
     #is.smallworld = ifelse(s.delta > 1, TRUE, FALSE)
 
-    return (data.frame("name" = name, "smallworldness" = s.delta))
+    return ("smallworldness" = s.delta)
 }
 
 #' Determine scale freeness of a network using the power law fitting method.
 #'
 #' @param network The network to be examined
-#' @param name The name of the network
 #'
-#' @return A dataframe containing the scale freeness value of the network and the name of the network.
-metrics.scale.freeness = function(network, name) {
+#' @return A dataframe containing the different values, connected to scale-freeness.
+metrics.scale.freeness = function(network) {
     v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
 
     ## Power-law fiting
@@ -157,10 +153,10 @@ metrics.scale.freeness = function(network, name) {
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
     df = data.frame(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)
-    return(data.frame("name" = name, "KS.p" = res$KS.p))
+    return(df)
 }
 
-#' Calculate the hierarchy for a network
+#' Calculate the hierarchy for a network.
 #'
 #' @param network The network to be examined
 #'
@@ -168,8 +164,7 @@ metrics.scale.freeness = function(network, name) {
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode="total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
-    degrees.without.cc = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(log.deg = log(degrees.without.cc), log.cc = log(cluster.coeff)))
+    degrees.without.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
+    return(data.frame(log.deg = log(degrees.without.without.cluster.coeff), log.cc = log(cluster.coeff)))
 }
 
