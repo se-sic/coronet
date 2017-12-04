@@ -13,7 +13,6 @@ options(stringsAsFactors = FALSE)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sourcing library files --------------------------------------------------
 
-source("util-covariates.R")
 source("util-misc.R")
 source("util-conf.R")
 source("util-read.R")
@@ -25,3 +24,4 @@ source("util-bulk.R")
 source("util-plot.R")
 source("util-core-peripheral.R")
 source("util-networks-metrics.R")
+source("util-covariates.R")

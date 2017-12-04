@@ -13,10 +13,30 @@
 #'                  with the names being the name of the vertex.
 #'
 compute.vertex.attributes = function(list.of.networks, project.data, attr.name, what = c("range", "cumulative", "all"), compute.attr) {
+    net.to.range.list = networks.to.ranges(list.of.networks, project.data, what)
+
+    return (compute.vertex.attributes.with.n2r(net.to.range.list, attr.name, compute.attr))
+}
+
+compute.vertex.attributes.with.n2r = function(net.to.range.list, attr.name, compute.attr) {
+    return (lapply(net.to.range.list, function(net.to.range) {
+
+        current.network = net.to.range[["network"]]
+        range.data = net.to.range[["data"]]
+
+        attr.df = compute.attr(range.data, current.network)
+
+        attributes = lapply(igraph::V(current.network)$name, function(x) attr.df[[x]])
+        return (igraph::set_vertex_attr(current.network, attr.name, value = attributes))
+    }))
+}
+
+networks.to.ranges = function(list.of.networks, project.data, what = c("range", "cumulative", "all")) {
     list.of.ranges = as.list(names(list.of.networks))
+
     what = match.arg(what)
 
-    return (lapply(list.of.ranges, function(range) {
+    net.to.range.list = lapply(list.of.ranges, function(range) {
         start.end = get.range.bounds(range)
 
         if(what == "cumulative" || what == "all") {
@@ -28,13 +48,13 @@ compute.vertex.attributes = function(list.of.networks, project.data, attr.name, 
         }
 
         range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
-        current.network = list.of.networks[[range]]
 
-        attr.df = compute.attr(range.data, current.network)
+        return (list("network" = list.of.networks[[range]], "data" = range.data))
+    })
 
-        attributes = lapply(igraph::V(current.network)$name, function(x) { return (attr.df[[x]]) })
-        return (igraph::set_vertex_attr(current.network, attr.name, value = attributes))
-    }))
+    names(net.to.range.list) = names(list.of.networks)
+
+    return(net.to.range.list)
 }
 
 add.vertex.attributes.commit.count = function(list.of.networks, data, name = "commit.count", what = c("range", "cumulative", "all")) {
@@ -76,13 +96,24 @@ add.vertex.attributes.first.activity = function(list.of.networks, data, what = c
 }
 
 add.vertex.attributes.active.ranges = function(list.of.networks, data) {
-    compute.vertex.attributes(list.of.networks, data, "active.ranges", "range",
-                              function(range.data, net) {
-                                  return (lapply(range.data$get.author2commit(),
-                                                 function(x) {
-                                                     return ( c(start = min(x["date"]), end = max(x["date"])) )
-                                                 }))
-                              })
+    net.to.range.list = networks.to.ranges(list.of.networks, data, "range")
+
+    range.to.authors = lapply(net.to.range.list,
+                                function(net.to.range)
+                                    names(net.to.range[["data"]]$get.author2commit())
+                            )
+
+    author.names = unique(unlist(range.to.authors))
+
+    active.ranges = lapply(author.names,
+                           function(author)
+                               names(Filter(function(range)
+                                   author %in% range, range.to.authors)))
+
+    names(active.ranges) = author.names
+
+    compute.vertex.attributes.with.n2r(net.to.range.list, "active.ranges",
+                              function(range.data, net) active.ranges)
 }
 
 add.vertex.attributes.author.role = function(list.of.networks, data, what = c("range", "cumulative", "all"),
