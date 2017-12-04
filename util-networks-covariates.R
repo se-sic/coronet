@@ -6,7 +6,7 @@
 #' Important: This function only works for lists of networks which have timestamps used in their range names.
 #'
 #' @param list.of.networks The list of networks to add vertex attributes to
-#' @param project.data The entire project date
+#' @param project.data The entire project data
 #' @param attr.name The name of the attribute to add
 #' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
 #' @param compute.attr The function to compute the attribute to add. Must return a named list
@@ -18,6 +18,13 @@ compute.vertex.attributes = function(list.of.networks, project.data, attr.name, 
     return (compute.vertex.attributes.with.n2r(net.to.range.list, attr.name, compute.attr))
 }
 
+#' Utility function to compute vertex attributes for a list of network
+#'
+#' @param net.to.range.list A list containing tuples with networks and corresponding range data.
+#' @param attr.name The name of the attribute to add
+#' @param compute.attr The function to compute the attribute to add. Must return a named list
+#'                  with the names being the name of the vertex.
+#'
 compute.vertex.attributes.with.n2r = function(net.to.range.list, attr.name, compute.attr) {
     return (lapply(net.to.range.list, function(net.to.range) {
 
@@ -31,6 +38,12 @@ compute.vertex.attributes.with.n2r = function(net.to.range.list, attr.name, comp
     }))
 }
 
+#' Map a list of networks to their corresponding range data.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The entire project data
+#' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
+#'
 networks.to.ranges = function(list.of.networks, project.data, aggretation = c("range", "cumulative", "all")) {
     list.of.ranges = as.list(names(list.of.networks))
 
@@ -57,6 +70,13 @@ networks.to.ranges = function(list.of.networks, project.data, aggretation = c("r
     return(net.to.range.list)
 }
 
+#' Add commit count attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
+#'
 add.vertex.attributes.commit.count = function(list.of.networks, data, name = "commit.count", aggretation = c("range", "cumulative", "all")) {
     compute.vertex.attributes(list.of.networks, data, name, aggretation, function(range.data, net) {
         commit.count.df = get.author.commit.count(range.data)[c("author.name", "freq")]
@@ -67,7 +87,12 @@ add.vertex.attributes.commit.count = function(list.of.networks, data, name = "co
 }
 
 
-
+#' Add author email attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#'
 add.vertex.attributes.author.email = function(list.of.networks, data, name = "author.email", aggretation = c("range", "cumulative", "all")) {
     compute.vertex.attributes(list.of.networks, data, name, aggretation,
                               function(range.data, net) {
@@ -78,22 +103,42 @@ add.vertex.attributes.author.email = function(list.of.networks, data, name = "au
                               })
 }
 
-add.vertex.attributes.artifact.count = function(list.of.networks, data, aggretation = c("range", "cumulative", "all")) {
-    compute.vertex.attributes(list.of.networks, data, "artifact.count", aggretation,
+#' Add unique artifact count attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
+#'
+add.vertex.attributes.artifact.count = function(list.of.networks, data, name = "artifact.count", aggretation = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, name, aggretation,
                               function(range.data, net) {
                                   return (lapply(range.data$get.author2artifact(), function(x) length(unique(x))))
                               })
 }
 
-add.vertex.attributes.first.activity = function(list.of.networks, data, aggretation = c("range", "cumulative", "all")) {
-    compute.vertex.attributes(list.of.networks, data, "first.activity", aggretation,
+#' Add first activity attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
+#'
+add.vertex.attributes.first.activity = function(list.of.networks, data, name = "first.activity", aggretation = c("range", "cumulative", "all")) {
+    compute.vertex.attributes(list.of.networks, data, name, aggretation,
                               function(range.data, net) {
                                   return (lapply(range.data$get.author2commit(),
                                          function(x) { return ( min(x["date"]) ) }))
                               })
 }
 
-add.vertex.attributes.active.ranges = function(list.of.networks, data) {
+#' Add active ranges attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#'
+add.vertex.attributes.active.ranges = function(list.of.networks, data, name = "active.ranges") {
     net.to.range.list = networks.to.ranges(list.of.networks, data, "range")
 
     range.to.authors = lapply(net.to.range.list,
@@ -110,13 +155,20 @@ add.vertex.attributes.active.ranges = function(list.of.networks, data) {
 
     names(active.ranges) = author.names
 
-    compute.vertex.attributes.with.n2r(net.to.range.list, "active.ranges",
+    compute.vertex.attributes.with.n2r(net.to.range.list, name,
                               function(range.data, net) active.ranges)
 }
 
-add.vertex.attributes.author.role = function(list.of.networks, data, aggretation = c("range", "cumulative", "all"),
+#' Add author role attribute
+#'
+#' @param list.of.networks The network list
+#' @param data The project data
+#' @param name The attribute name to add
+#' @param aggretation One of range, cumulative or all. Determines the data to use for the attribute calculation.
+#'
+add.vertex.attributes.author.role = function(list.of.networks, data, name = "author.role", aggretation = c("range", "cumulative", "all"),
                                      type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
-    compute.vertex.attributes(list.of.networks, data, "classification", aggretation,
+    compute.vertex.attributes(list.of.networks, data, name, aggretation,
                               function(range.data, net) {
                                   author.class = get.author.class.by.type(net, range.data, type)
                                   author.class = plyr::ldply(author.class, .id = "type")
