@@ -150,7 +150,7 @@ metrics.smallworldness = function(network) {
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network) {
-    v.degree <- sort(igraph::degree(network, mode="all"), decreasing=TRUE)
+    v.degree <- sort(igraph::degree(network, mode="total"), decreasing=TRUE)
 
     ## Power-law fiting
     ## (from  Mitchell Joblin <mitchell.joblin.ext@siemens.com>, Siemens AG,  2012, 2013)
