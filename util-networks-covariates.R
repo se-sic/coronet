@@ -96,14 +96,17 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
+#' @param activity.type What kind of activity? (mail, commit)
 #' @param name The attribute name to add
 #' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.first.activity = function(list.of.networks, project.data, name = "first.activity", aggregation.level = c("range", "cumulative", "project")) {
+add.vertex.attribute.first.activity = function(list.of.networks, project.data, activity.type = c("mail", "commit", "issue"), name = "first.activity", aggregation.level = c("range", "cumulative", "project")) {
+    activity.type.function = paste("get.author2", match.arg(activity.type), sep = "")
+
     split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
                               function(range.data, net)
-                                  lapply(range.data$get.author2commit(),
+                                  lapply(range.data[[activity.type.function]](),
                                          function(x) min(x[["date"]]))
                               )
 }
