@@ -15,8 +15,8 @@ requireNamespace("igraph")
 
 #' Determine the maximum degree for the given network.
 #'
-#' @param network The network to be examined
-#' @param mode The mode to be used for determining the degrees.
+#' @param network the network to be examined
+#' @param mode the mode to be used for determining the degrees
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")){
@@ -29,8 +29,8 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")){
 
 #' Calculate the average degree of a network.
 #'
-#' @param network The network to be examined
-#' @param mode The mode to be used for determining the degrees.
+#' @param network the network to be examined
+#' @param mode the mode to be used for determining the degrees
 #'
 #' @return The average degree of the nodes in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
@@ -42,10 +42,10 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
 
 #' Calculate all node degrees for the given network
 #'
-#' @param network The network to be examined
-#' @param sort Whether the resulting dataframe is to be sorted by the node degree
-#' @param sort.decreasing If sorting is active, this says whether the dataframe is to be sorted
-#' in descending or ascending order.
+#' @param network the network to be examined
+#' @param sort whether the resulting dataframe is to be sorted by the node degree
+#' @param sort.decreasing if sorting is active, this says whether the dataframe is to be sorted
+#' in descending or ascending order
 #'
 #' @return A dataframe containing the nodes and their respective degrees.
 metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
@@ -59,7 +59,7 @@ metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
 
 #' Calculate the density of the given network.
 #'
-#' @param network The network to be examined.
+#' @param network the network to be examined
 #'
 #' @return The density of the network.
 metrics.density = function(network) {
@@ -69,9 +69,9 @@ metrics.density = function(network) {
 
 #' Calculate the average path length for the given network.
 #'
-#' @param network The network to be examined.
-#' @param directed Wehther the given network is directed or undirected.
-#' @param unconnected Whether all nodes of the network are connected.
+#' @param network the network to be examined
+#' @param directed wehther the given network is directed or undirected
+#' @param unconnected whether all nodes of the network are connected
 #'
 #' @return The average pathlength of the given network.
 metrics.avg.pathlength = function(network, directed, unconnected) {
@@ -81,8 +81,8 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 
 #' Calculate the average local clustering coefficient for the given network.
 #'
-#' @param network The network to be examined.
-#' @param cc.type The type of cluserting coefficient to be calculated.
+#' @param network the network to be examined
+#' @param cc.type the type of cluserting coefficient to be calculated
 #'
 #' @return The clustering coefficient of the network.
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
@@ -93,9 +93,9 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 
 #' Calculate the modularity metric for the given network.
 #'
-#' @param network The network to be examined
-#' @param community.detection.algorithm The algorithm to be used for the detection of communities which
-#' is required for the calculation of the clustering coefficient.
+#' @param network the network to be examined
+#' @param community.detection.algorithm the algorithm to be used for the detection of communities which
+#' is required for the calculation of the clustering coefficient
 #'
 #' @return The modularity value for the given network.
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
@@ -115,7 +115,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' The algorithm relies on the Erdös-Renyi random network with the same number
 #' of nodes and edges as the given network.
 #'
-#' @param network The network to be examined. This network needs to be simplified for the calculation to work.
+#' @param network the network to be examined. This network needs to be simplified for the calculation to work
 #'
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
@@ -146,7 +146,7 @@ metrics.smallworldness = function(network) {
 
 #' Determine scale freeness of a network using the power law fitting method.
 #'
-#' @param network The network to be examined
+#' @param network the network to be examined
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network) {
@@ -168,9 +168,10 @@ metrics.scale.freeness = function(network) {
 
 #' Calculate the hierarchy for a network.
 #'
-#' @param network The network to be examined
+#' @param network the network to be examined
 #'
-#' @return A dataframe containing the logarithm of the node degree and the logarithm of the local clustering coefficient for each node.
+#' @return A dataframe containing the logarithm of the node degree and the logarithm
+#' of the local clustering coefficient for each node.
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode="total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
