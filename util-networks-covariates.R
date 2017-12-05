@@ -15,10 +15,10 @@
 #'                  with the names being the name of the vertex.
 #' @return A list of networks with the added attribute
 #'
-split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.name, aggregation.level = c("range", "cumulative", "project"), compute.attr) {
+split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.name, aggregation.level = c("range", "cumulative", "project"), default.value, compute.attr) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
 
-    add.vertex.attribute(net.to.range.list, attr.name, compute.attr)
+    add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr)
 }
 
 #' Utility function to compute vertex attributes for a list of network to range tuples.
@@ -29,7 +29,7 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #'                  with the names being the name of the vertex.
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute = function(net.to.range.list, attr.name, compute.attr) {
+add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr) {
     lapply(net.to.range.list, function(net.to.range) {
 
         current.network = net.to.range[["network"]]
@@ -37,7 +37,14 @@ add.vertex.attribute = function(net.to.range.list, attr.name, compute.attr) {
 
         attr.df = compute.attr(range.data, current.network)
 
-        attributes = lapply(igraph::V(current.network)$name, function(x) attr.df[[x]])
+        attributes = lapply(igraph::V(current.network)$name, function(x) {
+            if(x %in% names(attr.df)) {
+                attr.df[[x]]
+            } else {
+                default.value
+            }
+        })
+
         igraph::set_vertex_attr(current.network, attr.name, value = attributes)
     })
 }
@@ -52,10 +59,10 @@ add.vertex.attribute = function(net.to.range.list, attr.name, compute.attr) {
 #' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.commit.count = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project")) {
-    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, function(range.data, net) {
+add.vertex.attribute.commit.count = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value, function(range.data, net) {
         commit.count.df = get.author.commit.count(range.data)[c("author.name", "freq")]
-        commit.count.list = structure(commit.count.df["freq"], names = commit.count.df["author.name"])
+        commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[["author.name"]])
 
         commit.count.list
     })
@@ -69,8 +76,8 @@ add.vertex.attribute.commit.count = function(list.of.networks, project.data, nam
 #' @param name The attribute name to add
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", aggregation.level = c("range", "cumulative", "project")) {
-    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
+add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", aggregation.level = c("range", "cumulative", "project"), default.value = NA) {
+    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                               function(range.data, net) {
                                   authors = range.data$get.authors()
                                   structure(names = authors[["author.name"]], authors[["author.email"]])
@@ -85,8 +92,8 @@ add.vertex.attribute.author.email = function(list.of.networks, project.data, nam
 #' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.artifact.count = function(list.of.networks, project.data, name = "artifact.count", aggregation.level = c("range", "cumulative", "project")) {
-    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
+add.vertex.attribute.artifact.count = function(list.of.networks, project.data, name = "artifact.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                               function(range.data, net)
                                   lapply(range.data$get.author2artifact(), function(x) length(unique(x)))
                               )
@@ -101,10 +108,11 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 #' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.first.activity = function(list.of.networks, project.data, activity.type = c("mail", "commit", "issue"), name = "first.activity", aggregation.level = c("range", "cumulative", "project")) {
+add.vertex.attribute.first.activity = function(list.of.networks, project.data, activity.type = c("mail", "commit", "issue"), name = "first.activity",
+                                               aggregation.level = c("range", "cumulative", "project"), default.value = NA) {
     activity.type.function = paste("get.author2", match.arg(activity.type), sep = "")
 
-    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
+    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                               function(range.data, net)
                                   lapply(range.data[[activity.type.function]](),
                                          function(x) min(x[["date"]]))
@@ -118,7 +126,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data, a
 #' @param name The attribute name to add
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges") {
+add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges", default.value = list()) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
 
     range.to.authors = lapply(net.to.range.list,
@@ -135,7 +143,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 
     names(active.ranges) = author.names
 
-    add.vertex.attribute(net.to.range.list, name,
+    add.vertex.attribute(net.to.range.list, name, default.value,
                               function(range.data, net) active.ranges)
 }
 
@@ -148,12 +156,12 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 #' @return A list of networks with the added attribute
 #'
 add.vertex.attribute.author.role = function(list.of.networks, project.data, name = "author.role", aggregation.level = c("range", "cumulative", "project"),
-                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
-    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
+                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count"), default.value = NA) {
+    split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                               function(range.data, net) {
                                   author.class = get.author.class.by.type(net, range.data, type)
                                   author.class = plyr::ldply(author.class, .id = "type")
 
-                                  structure(author.class["type"], names= author.class["author.name"])
+                                  structure(author.class[["type"]], names= author.class[["author.name"]])
                               })
 }
