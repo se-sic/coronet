@@ -19,7 +19,8 @@ requireNamespace("igraph")
 #' @param mode The mode to be used for determining the degrees.
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
-metrics.hub.degree = function(network, modec = c("total", "in", "out")){
+metrics.hub.degree = function(network, mode = c("total", "in", "out")){
+    match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     vertex = which.max(degrees)
     df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]))
@@ -33,6 +34,7 @@ metrics.hub.degree = function(network, modec = c("total", "in", "out")){
 #'
 #' @return The average degree of the nodes in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
+    match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     avg = mean(degrees)
     return(avg)
@@ -84,6 +86,7 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 #'
 #' @return The clustering coefficient of the network.
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
+    match.arg(cc.type)
     cc = igraph::transitivity(network, type = cc.type, vids = NULL)
     return(cc)
 }
@@ -173,6 +176,6 @@ metrics.hierarchy = function(network) {
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
     degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(log.deg = log(degrees.without.without.cluster.coeff), log.cc = log(cluster.coeff)))
+    return(data.frame(log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
 }
 
