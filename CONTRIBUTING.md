@@ -152,8 +152,9 @@ Install the library using the guide in our [README](README.md) file. Start imple
     * **identifiers**: substrings in identifiers are separated only with `.` (and *not* camel-casing or `_`),
     * **assignments**: only with `=`,
     * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
-    * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`), and
-    * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`
+    * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`),
+    * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`, and
+    * **return statements**: always use the function `return()` to return a value from a function; do not use one when you intend to not return anything.
 * To **include packages**, always use `requireNamespace` (and *not* `library`). Consequently, you need to use package prefixes (e.g., `igraph::`) when calling a package's functions.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
@@ -161,7 +162,7 @@ Install the library using the guide in our [README](README.md) file. Start imple
     * We use **networks**, not "graphs".
     * We talk about **authors**, not developers.
 * Also **add tests** to the test suite for each new functionality you add!
-* Keep the code as simple as possible.
+* Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 
 
 ## Disclaimer
