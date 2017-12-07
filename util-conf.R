@@ -622,7 +622,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## read revisions file
             revisions.file = file.path(conf$datapath, "revisions.list")
             revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
-                                           fileEncoding = "latin1", encoding = "utf8"), silent = TRUE)
+                                           encoding = "UTF-8"), silent = TRUE)
             ## break if the list of revisions is empty or any other error occurs
             if (inherits(revisions.df, 'try-error')) {
                 logging::logerror("There are no revisions available for the current casestudy.")
