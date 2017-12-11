@@ -620,7 +620,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## store path to pasta data
             conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
             ## store path to issue data
-            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, "issues")
+            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
 
             ## READ REVISIONS META-DATA
 

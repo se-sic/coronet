@@ -11,15 +11,10 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Libraries ---------------------------------------------------------------
 
-requireNamespace("igraph")
-requireNamespace("logging")
-requireNamespace("parallel")
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## System variables and R settings -----------------------------------------
-
-Sys.setenv(TZ = "UTC")
+requireNamespace("igraph") # networks
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -69,7 +64,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     else {
         ## get bins based on parameter
         split.basis = NULL
-        bins = strftime(bins)
+        bins = lubridate::ymd_hms(bins, truncated = 3)
+        bins = strftime(bins, format = "%Y-%m-%d %H:%M:%S")
         bins.labels = head(bins, -1)
         split.by.bins = TRUE
         ## logging
@@ -155,7 +151,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date)
+        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -251,7 +247,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
                                               activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
-    bins.date = as.POSIXct(bins)
+    bins.date = lubridate::ymd_hms(bins, truncated = 3)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
@@ -303,7 +299,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date)
+        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -358,7 +354,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 
     ## get bin information for all edges
     if (!is.null(bins)) {
-        bins.date = as.POSIXct(bins)
+        bins.date = lubridate::ymd_hms(bins, truncated = 3)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
@@ -415,10 +411,62 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     attr(nets, "bins") = bins.date
 
     ## set ranges as names
-    names(nets) = construct.ranges(bins.date, sliding.window = sliding.window)
+    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    names(nets) = construct.ranges(revs, sliding.window = sliding.window)
 
     return(nets)
 }
+
+#' Discretizes a list of networks (using the edge attribute "date") according to the given 'time.period',
+#' using the very same bins for all networks. The procedure is as follows:
+#' 1) Identify the network in the list of \code{networks} with the smallest timestamp.
+#' 2) Use this identified network to compute the bins for splitting.
+#' 3) All networks are then split using the computed and, thus, very same bins using the
+#'    function \code{split.network.time.based}.
+#' 4) The list of split networks is returned.
+#'
+#' For further information, see the documentation of \code{split.network.time.based}.
+#'
+#' Note: If you want to split a set of networks to a fixed set of bins (i.e., use the 'bins' argument of
+#' \code{split.network.time.based}), use \code{lapply} right away.
+#'
+#' Important notice: This function only works for unsimplified networks, where no edges have been
+#' contracted, which would combine edge attributes, especially the "date" attribute.
+#'
+#' @param networks the igraph networks to split, needs to have an edge attribute named "date"
+#' @param time.period the time period describing the length of the ranges, a character string,
+#'                    e.g., "3 mins" or "15 days"
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
+#'
+#' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
+#'         of networks, each itself referring to one time period
+split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE) {
+
+    ## get base network and obtain splitting information:
+
+    ## 1) extract date attributes from edges
+    min.dates = sapply(networks, function(net) {
+        min.date = min(igraph::E(net)$date)
+        return(min.date)
+    })
+    net.idx = which.min(min.dates)
+
+    ## 2) get bin information
+    base = networks[[net.idx]]
+    dates = as.POSIXct(igraph::get.edge.attribute(base, "date"), origin = "1970-01-01")
+    bins.info = split.get.bins.time.based(dates, time.period)
+    bins.date = as.POSIXct(bins.info[["bins"]])
+
+    ## 3) split all networks to the extracted bins
+    networks.split = lapply(networks, function(net) {
+        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window)
+    })
+
+    ## 4) return the split networks
+    return(networks.split)
+}
+
 
 #' Discretizes a network according to the given 'number.edges' or by a predefined 'number.windows'.
 #'
@@ -528,7 +576,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     attr(networks, "bins") = bins.date
 
     ## set ranges as names
-    names(networks) = construct.ranges(bins.date, sliding.window = sliding.window)
+    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    names(networks) = construct.ranges(revs, sliding.window = sliding.window)
 
     ## issue warning if ranges are not unique
     if (any(duplicated(names(networks)))) {
@@ -549,7 +598,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 #' Split the given data by the given bins.
 #'
 #' @param df a data.frame to be split
-#' @param bins a vector with the length of 'ncol(df)' assigning a bin for each row of 'df'
+#' @param bins a vector with the length of 'nrow(df)' assigning a bin for each row of 'df'
 #'
 #' @return a list of data.frames, with the length of 'unique(bins)'
 split.data.by.bins = function(df, bins) {
@@ -642,7 +691,7 @@ split.get.bins.time.based = function(dates, time.period) {
         ## add last bin
         max(dates) + 1
     )
-    dates.breaks.chr = strftime(head(dates.breaks, -1))
+    dates.breaks.chr = strftime(head(dates.breaks, -1), format = "%Y-%m-%d %H:%M:%S")
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
@@ -658,7 +707,7 @@ split.get.bins.time.based = function(dates, time.period) {
     ## return properly
     return(list(
         vector = dates.bins,
-        bins = strftime(dates.breaks)
+        bins = strftime(dates.breaks, format = "%Y-%m-%d %H:%M:%S")
     ))
 }
 
@@ -720,7 +769,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## unlist bins
     bins.date = do.call(c, bins.date)
     ## convert to character strings
-    bins.date.char = strftime(bins.date)
+    bins.date.char = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
 
     ## if we have a duplicate bin border, merge the two things
     if (remove.duplicate.bins && any(duplicated(bins.date))) {

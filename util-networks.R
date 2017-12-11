@@ -513,6 +513,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             igraph::V(net)$type = TYPE.AUTHOR
             igraph::E(net)$type = TYPE.EDGES.INTRA
 
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
+
             return(net)
         },
 
@@ -537,6 +542,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
             igraph::E(net)$type = TYPE.EDGES.INTRA
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
 
             return(net)
         },
@@ -576,6 +586,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 authors = igraph::get.vertex.attribute(u, "name", igraph::V(u)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
                 u = igraph::delete.vertices(u, authors.to.remove)
+            }
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(u, "range") = private$proj.data$get.range()
             }
 
             return(u)
@@ -651,6 +666,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks
             u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
                                  network.conf = private$network.conf)
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(u, "range") = private$proj.data$get.range()
+            }
 
             return(u)
         }
@@ -958,17 +978,54 @@ simplify.networks = function(networks){
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Multi-network views -----------------------------------------------------
+
+#' Extract the author-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the vertices of type TYPE.AUTHOR.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the author-vertex-induced subgraph of \code{network}
+extract.author.network.from.network = function(network) {
+    ## only retain all author vertices
+    author.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.AUTHOR])
+    return(author.network)
+}
+
+#' Extract the artifact-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the vertices of type TYPE.ARTIFACT.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the artifact-vertex-induced subgraph of \code{network}
+extract.artifact.network.from.network = function(network) {
+    ## only retain all artifact vertices
+    artifact.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.ARTIFACT])
+    return(artifact.network)
+}
+
+#' Extract the bipartite-network part from the given (multi) network, i.e.,
+#' return the subgraph induced by the edges of type TYPE.EDGES.INTER.
+#'
+#' @param network the (multi) network to reduce
+#'
+#' @return the bipartite-edge-induced subgraph of \code{network}
+extract.bipartite.network.from.network = function(network) {
+    ## only retain all bipartite edges and induced vertices
+    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
+    return(bip.network)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
 SAMPLE.DATA = normalizePath("./sample")
 
 #' Get a example network for illustration purposes.
 #'
-#' @param testing whether the function gets called from the test cases; if yes,
-#'                the path to the sample data is adapted [default: false]
-#'
 #' @return the sample network
-get.sample.network = function(testing = FALSE) {
+get.sample.network = function() {
 
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")

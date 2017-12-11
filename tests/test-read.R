@@ -138,8 +138,11 @@ test_that("Read the author data.", {
     author.data.read = read.authors(proj.conf$get.value("datapath"))
 
     ## build the expected data.frame
-    author.data.expected = data.frame(author.id=as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943,4944)),
-                                      author.name=c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl","Max"))
+    author.data.expected = data.frame(
+        author.id = as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943,4944)),
+        author.name = c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl","Max"),
+        author.email = c("thomas@example.org", "olaf@example.org", "hunsen@fim.uni-passau.de", "udo@example.org", "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
+    )
 
     ## check the results
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
@@ -184,7 +187,7 @@ test_that("Read and parse the issue data.", {
                                      author.name=c("Karl","Karl","Karl","Olaf","Olaf","Karl","udo","udo","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Olaf","Claus Hunsen","Olaf","Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Claus Hunsen","Claus Hunsen","Claus Hunsen","Claus Hunsen","Max","Max","Max"),
                                      author.email=c("karl@example.org","karl@example.org","karl@example.org","olaf@example.org","olaf@example.org","karl@example.org","udo@example.org","udo@example.org","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","olaf@example.org","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","max@example.org","max@example.org","max@example.org"),
                                      date=as.POSIXct(c("2013-04-21 23:52:09","2013-05-05 23:28:57","2013-05-05 23:28:57","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-06-01 22:37:03","2016-04-17 02:07:37","2016-04-17 02:07:37","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 16:03:23","2016-07-12 16:05:47","2016-07-14 02:03:14","2016-07-14 17:42:52","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-19 10:47:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-08-31 18:21:48","2016-10-05 01:07:46","2016-10-13 15:33:56","2016-12-06 14:03:42","2016-12-07 15:37:02","2016-12-07 15:37:02","2016-12-07 15:37:21","2016-12-07 15:53:02","2016-12-07 15:53:02","2017-02-20 22:25:41","2017-03-02 17:30:10","2017-05-23 12:32:21","2017-05-23 12:32:21","2017-05-23 12:32:39")),
-                                     ref.name=c(rep("", 7), rep("Karl", 2), rep("", 2), rep("Thomas", 2), "", rep("udo", 2), "", rep("Claus Hunsen", 2), rep("", 17)),
+                                     ref.name=c(rep("", 6), rep("Karl", 2), rep("Claus Hunsen", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
                                      event.name=c("created","commented","referenced","merged","closed","head_ref_deleted","mentioned","subscribed","mentioned","subscribed","created","renamed","commented","commented","commented","mentioned","subscribed","commented","referenced","mentioned","subscribed","commented","commented","commented","commented","commented","merged","closed","commented","commented","created","commented","commented","merged","closed","commented"))
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(

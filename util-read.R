@@ -16,14 +16,6 @@ requireNamespace("digest") # for sha1 hashing of IDs
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## System variables and R settings -----------------------------------------
-
-Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
-Sys.setenv(TZ = "UTC")
-options(stringsAsFactors = FALSE)
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit data -------------------------------------------------------------
 
 #' Read the commits from the 'commits.list' file.
@@ -240,9 +232,12 @@ read.authors = function(data.path) {
     ## set proper column names based on Codeface extraction:
     ##
     ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-    colnames(authors.df) = c(
-        "author.id", "author.name" # author information
-    )
+    cols.names = c("author.id", "author.name")
+    ## if there is a third column, we have e-mail-address data available
+    if (ncol(authors.df) == 3) {
+        cols.names = c(cols.names, "author.email")
+    }
+    colnames(authors.df) = cols.names
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")

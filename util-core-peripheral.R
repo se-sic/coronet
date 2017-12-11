@@ -915,8 +915,14 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
         author.data = head(author.data, result.limit)
     }
 
-    ## Check which authors can be treated as core based on the calculation base values
-    author.class.threshold.idx = min(which(cumsum(author.data[[calc.base.name]]) >= author.class.threshold))
+    ## Check which authors can be treated as core based on the calculation base values:
+    ## (1) check which positions are over the threshold
+    ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
+    author.cumsum = cumsum(author.data[[calc.base.name]])
+    author.class.threshold.idx = min(which(
+        author.cumsum > author.class.threshold |
+            sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
+    ))
 
     ## classify developers according to threshold
     core.classification = rep(FALSE, nrow(author.data))

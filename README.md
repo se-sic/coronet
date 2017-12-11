@@ -1,9 +1,6 @@
-# codeface-extraction-r - The network utility library
+# codeface-extraction-r - The network library
 
-> > TODO more detailled project information
-
-This project is an addendum to the project `codeface-extraction` [https://github.com/clhunsen/codeface-extraction].
-It reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling.
+The network library `codeface-extraction-r` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 
 ## Integration
@@ -16,10 +13,11 @@ Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your 
 
 This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
-Best, you source all files of the library in your project using the following command:
+To initialize the library in your project, you need to source all files of the library in your project using the following command:
 ```
 source("path/to/util-init.R", chdir = TRUE)
 ```
+It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
 
 ### Needed R packages
 
@@ -31,7 +29,10 @@ source("path/to/util-init.R", chdir = TRUE)
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `testthat`: For the test suite
+- `ggplot2`: For plotting of data
+- `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
+- `lubridate`: For convenient date conversion and parsing
 
 
 ## How-To
