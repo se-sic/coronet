@@ -328,7 +328,7 @@ read.issues = function(data.path) {
 
     ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                   encoding = "UTF-8"), silent = TRUE)
+                                encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(issue.data, 'try-error')) {
