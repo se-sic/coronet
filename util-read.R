@@ -229,15 +229,15 @@ read.authors = function(data.path) {
         stop("Stopped due to missing authors.")
     }
 
+    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    if (ncol(authors.df) != 3) {
+        authors.df[3] = NA
+    }
+
     ## set proper column names based on Codeface extraction:
     ##
     ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-    cols.names = c("author.id", "author.name")
-    ## if there is a third column, we have e-mail-address data available
-    if (ncol(authors.df) == 3) {
-        cols.names = c(cols.names, "author.email")
-    }
-    colnames(authors.df) = cols.names
+    colnames(authors.df) = c("author.id", "author.name", "author.email")
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
