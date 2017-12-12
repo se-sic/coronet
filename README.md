@@ -82,67 +82,6 @@ For examples on how to use both classes and how to build networks with them, ple
 
 ## Configuration Classes
 
-### NetworkConf
-
-In this section, we give an overview on the parameters of the `NetworkConf` class and their meaning.
-
-All parameters can be retrieved with the method `NetworkConf$get.variable(...)`, by passing one parameter name as method parameter.
-Updates to the parameters can be done by calling `NetworkConf$update.variables(...)` and passing a list of parameter names and their respective values.
-
-**Note**: Default values are shown in *italics*.
-
-- `author.relation`
-  * The relation among authors, encoded as edges in an author network
-  * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
-  * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
-- `author.directed`
-  * The (time-based) directedness of edges in an author network
-  * [`TRUE`, *`FALSE`*]
-- `author.all.authors`
-  * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
-  * **Note**: Depending on the chosen author relation, there may be isolates then
-  * [`TRUE`, *`FALSE`*]
-- `author.only.committers`
-  * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
-  * [`TRUE`, *`FALSE`*]
-- `artifact.relation`
-  * The relation among artifacts, encoded as edges in an artifact network
-  * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
-  * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
-- `artifact.directed`
-  * The (time-based) directedness of edges in an artifact network
-  * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
-  * [`TRUE`, *`FALSE`*]
-- `edge.attributes`
-  * The list of edge-attribute names and information
-  * a subset of the following as a single vector:
-       - timestamp information: *`"date"`*
-       - author information: `"author.name"`, `"author.email"`
-       - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
-       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
-       - PaStA information: `"pasta"`,
-       - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
-  * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
-  * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
-  * **Note**: For the edge attributes `"pasta"` and `"synchronicty"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
-- `simplify`
-  * Perform edge contraction to retrieve a simplified network
-  * [`TRUE`, *`FALSE`*]
-- `skip.threshold`
-  * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
-  * any positive integer
-  * **Example**: The amount of `mail`-based directed edges in an author network for one thread with 100 authors is 5049.
-    A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this thread from the network.
-- `unify.date.ranges`
-  * Cut the data sources to the largest start date and the smallest end date across all data sources
-  * **Note**: This parameter does not affect the original data object, but rather creates a clone.
-  * [`TRUE`, *`FALSE`*]
-
-The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
-You can also update the object at any time, but as soon as you do so, all cached data of the data object are reset and have to be rebuilt.
-
-For more examples, please look in the file `test.R`.
-
 ## ProjectConf
 
 In this section, we give an overview on the parameters of the `ProjectConf` class and their meaning.
@@ -246,6 +185,67 @@ There is no way to update the entries, except for the revision-based parameters.
   * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
   * [`TRUE`, *`FALSE`*]
   * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
+
+### NetworkConf
+
+In this section, we give an overview on the parameters of the `NetworkConf` class and their meaning.
+
+All parameters can be retrieved with the method `NetworkConf$get.variable(...)`, by passing one parameter name as method parameter.
+Updates to the parameters can be done by calling `NetworkConf$update.variables(...)` and passing a list of parameter names and their respective values.
+
+**Note**: Default values are shown in *italics*.
+
+- `author.relation`
+  * The relation among authors, encoded as edges in an author network
+  * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
+  * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
+- `author.directed`
+  * The (time-based) directedness of edges in an author network
+  * [`TRUE`, *`FALSE`*]
+- `author.all.authors`
+  * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
+  * **Note**: Depending on the chosen author relation, there may be isolates then
+  * [`TRUE`, *`FALSE`*]
+- `author.only.committers`
+  * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
+  * [`TRUE`, *`FALSE`*]
+- `artifact.relation`
+  * The relation among artifacts, encoded as edges in an artifact network
+  * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
+  * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
+- `artifact.directed`
+  * The (time-based) directedness of edges in an artifact network
+  * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
+  * [`TRUE`, *`FALSE`*]
+- `edge.attributes`
+  * The list of edge-attribute names and information
+  * a subset of the following as a single vector:
+       - timestamp information: *`"date"`*
+       - author information: `"author.name"`, `"author.email"`
+       - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
+       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
+       - PaStA information: `"pasta"`,
+       - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
+  * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
+  * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
+  * **Note**: For the edge attributes `"pasta"` and `"synchronicty"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
+- `simplify`
+  * Perform edge contraction to retrieve a simplified network
+  * [`TRUE`, *`FALSE`*]
+- `skip.threshold`
+  * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
+  * any positive integer
+  * **Example**: The amount of `mail`-based directed edges in an author network for one thread with 100 authors is 5049.
+    A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this thread from the network.
+- `unify.date.ranges`
+  * Cut the data sources to the largest start date and the smallest end date across all data sources
+  * **Note**: This parameter does not affect the original data object, but rather creates a clone.
+  * [`TRUE`, *`FALSE`*]
+
+The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
+You can also update the object at any time, but as soon as you do so, all cached data of the data object are reset and have to be rebuilt.
+
+For more examples, please look in the file `test.R`.
 
 
 ## File overview
