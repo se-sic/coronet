@@ -173,21 +173,16 @@ ProjectData = R6::R6Class("ProjectData",
             return(data)
         },
 
+        ## * * timestamps -------------------------------------------
+
         #' Call the getters of the specified data sources in order to
         #' initialize the sources and extract the timestamps.
         #'
         #' @param data.sources the data sources to be prepated
         prepare.timestamps = function(data.sources) {
-            if("mails" %in% data.sources) {
-                self$get.mails()
+            for(source in data.sources) {
+                self[[ paste0("get.", source) ]]()
             }
-            if("commits" %in% data.sources) {
-                self$get.commits()
-            }
-            if("issues" %in% data.sources) {
-                self$get.issues()
-            }
-
         },
 
         #' Extract the earliest and the latest date from the specified data source
@@ -195,21 +190,38 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param source the specified data source
         extract.timestamps = function(source) {
+            ## initialize data structure for timestamp
             if(is.null(private$data.timestamps)) {
-                private$data.timestamps = data.frame(row.names = c("start", "end"))
+                private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
             }
-            if(source == "mails") {
-                private$data.timestamps$mails = c(min(private$mails$date),
-                                          max(private$mails$date))
-            } else if(source == "commits") {
-                private$data.timestamps$commits = c(min(private$commits$date),
-                                            max(private$commits$date))
 
-            } else if(source == "issues") {
-                private$data.timestamps$issues = c(min(private$issues$date),
-                                           max(private$issues$date))
-
+            ## collect minimum and maximum date for data source
+            ## 1) if we have data available
+            if (nrow(private[[source]]) > 0) {
+                source.date.min = min(private[[source]][, "date"])
+                source.date.max = max(private[[source]][, "date"])
             }
+            ## NAs otherwise
+            else {
+                source.date.min = NA
+                source.date.max = NA
+            }
+
+            ## remove old line if existing
+            private$data.timestamps = subset(
+                private$data.timestamps,
+                !(rownames(private$data.timestamps) == source)
+            )
+
+            ## store the data in the timestamp data set
+            private$data.timestamps = rbind(
+                private$data.timestamps,
+                data.frame(
+                    start = source.date.min,
+                    end = source.date.max,
+                    row.names = source
+                )
+            )
         }
     ),
 
@@ -569,30 +581,42 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$artifacts)
         },
 
+        ## * * data cutting -----------------------------------------
+
         #' Get the timestamps (earliest and latest date) of the specified data sources.
-        #' If 'simple' is TRUE return the overall latest start and earliest end date
+        #' If 'simple' is TRUE, return the overall latest start and earliest end date
         #' in order to cut the specified data sources to the same date ranges.
+        #'
+        #' If there are no actual data available for a data source, the result indicates NA
         #'
         #' @param data.sources the specified data sources
         #' @param simple whether or not the timestamps get simplified
         #'
-        #' @return a data.frame with the timestamps
+        #' @return a data.frame with the timestamps of each data source as columns "start" and "end",
+        #'         with the data source as corresponding row name
         get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
-            data.sources = match.arg(arg = data.sources, several.ok = TRUE, choices = c("mails", "commits", "issues"))
-            private$prepare.timestamps(data.sources = data.sources)
-           if(simple == FALSE) {
-                timestamps = subset(private$data.timestamps, select = data.sources)
-                return(timestamps)
-            } else {
-                subset.timestamps = private$data.timestamps[data.sources]
-                timestamps.buffer = data.frame(max = apply(subset.timestamps, 1, max),
-                                               min = apply(subset.timestamps, 1, min))
-                timestamps = data.frame(start = timestamps.buffer["start", "max"],
-                                        end = timestamps.buffer["end", "min"])
+            ## check arguments
+            data.sources = match.arg(arg = data.sources, several.ok = TRUE)
 
-                return(timestamps)
+            ## read all data sources and prepare list of timestamps
+            private$prepare.timestamps(data.sources = data.sources)
+
+            ## get the needed subset of timestamp data
+            subset.timestamps = private$data.timestamps[data.sources, ]
+
+            ## get the proper subset of timestamps for returning
+            if(simple) {
+                ## get minima and maxima across data sources (rows)
+                timestamps = data.frame(
+                    start = max(subset.timestamps[, "start"], na.rm = TRUE),
+                    end = min(subset.timestamps[, "end"], na.rm = TRUE)
+                )
+            } else {
+                ## select the complete raw data
+                timestamps = subset.timestamps
             }
 
+            return(timestamps)
         },
 
         #' Cut the specified data sources to the same date range depending on the extracted
@@ -602,14 +626,22 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return a list of the cut data.sources
         get.data.cut.to.same.date = function(data.sources = c("mails", "commits", "issues")) {
-            data.sources = match.arg(arg = data.sources, several.ok = TRUE, choices = c("mails", "commits", "issues"))
-            timestamps = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
-            timestamps.vector = c(timestamps$start, timestamps$end)
-            if(timestamps$start > timestamps$end) {
-                logging::logwarn("The datasources don't overlap. The result will be empty.")
+            ## check arguments
+            data.sources = match.arg(arg = data.sources, several.ok = TRUE)
+
+            ## get the timestamp data as vector
+            timestamps.df = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
+            timestamps = c(start = timestamps.df[, "start"], end = timestamps.df[, "end"])
+
+            ## check consistency
+            if(timestamps["start"] > timestamps["end"]) {
+                logging::logwarn("The datasources don't overlap. The result will be empty!")
             }
-            result = split.data.time.based(self, bins = timestamps.vector)
-            return(result[[1]])
+
+            ## split data based on the timestamps and get the single result
+            result = split.data.time.based(self, bins = timestamps)[[1]]
+
+            return(result)
         },
 
         #' Get single pasta items.
