@@ -333,9 +333,9 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @return A list containing tuples with the keys "network" and "data".
 #'
 split.data.by.networks = function(list.of.networks, project.data, aggregation.level = c("range", "cumulative", "project")) {
-    list.of.ranges = as.list(names(list.of.networks))
-
     aggregation.level = match.arg(aggregation.level)
+
+    list.of.ranges = as.list(names(list.of.networks))
 
     net.to.range.list = lapply(list.of.ranges, function(range) {
         start.end = get.range.bounds(range)
@@ -350,12 +350,15 @@ split.data.by.networks = function(list.of.networks, project.data, aggregation.le
 
         range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
 
-        list("network" = list.of.networks[[range]], "data" = range.data)
+        net.to.range.entry = list("network" = list.of.networks[[range]],
+                                  "data" = range.data)
+
+        return (net.to.range.entry)
     })
 
     names(net.to.range.list) = names(list.of.networks)
 
-    net.to.range.list
+    return(net.to.range.list)
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
