@@ -24,8 +24,8 @@ requireNamespace("digest") # for sha1 hashing of IDs
 #' @param artifact the artifact whichs commits are read
 #'
 #' @return the read commits
-read.commits.raw = function(data.path, artifact) {
-    logging::logdebug("read.commits.raw: starting.")
+read.commits = function(data.path, artifact) {
+    logging::logdebug("read.commits: starting.")
 
     file = file.path(data.path, "commits.list")
 
@@ -91,8 +91,18 @@ read.commits.raw = function(data.path, artifact) {
     commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
 
     ## store the commit data
-    logging::logdebug("read.commits.raw: finished.")
+    logging::logdebug("read.commits: finished.")
     return(commit.data)
+}
+
+#' Read the commits from the 'commits.list' file.
+#'
+#' @param data.path the path to the commit list
+#' @param artifact the artifact whichs commits are read
+#'
+#' @return the read commits
+read.commits.raw = function(data.path, artifact) {
+    return(read.commits(data.path = data.path, artifact = artifact))
 }
 
 

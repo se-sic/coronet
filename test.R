@@ -63,7 +63,7 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 ## * Data retrieval --------------------------------------------------------
 
-# x.data$get.commits.raw()
+# x.data$get.commits()
 # x.data$get.synchronicity()
 # x.data$get.author2artifact()
 # x.data$get.commits.filtered()
@@ -107,7 +107,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 ## * Data retrieval --------------------------------------------------------
 
-# y.data$get.commits.raw()
+# y.data$get.commits()
 # y.data$get.synchronicity()
 # y.data$get.author2artifact()
 # y.data$get.commits.filtered()

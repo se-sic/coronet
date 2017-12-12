@@ -52,7 +52,7 @@ test_that("Cut commit and mail data to same date range.", {
                                     subject=c("Re: Fw: busybox 2 tab"),
                                     thread=sprintf("<thread-%s>", c(9)))
 
-    commit.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.commits.raw()
+    commit.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.commits()
     rownames(commit.data) = 1:nrow(commit.data)
 
     mail.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.mails()

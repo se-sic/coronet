@@ -22,7 +22,7 @@ test_that("Read the raw commit data.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data
-    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+    commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
     commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713,32710,32710,32714,32711,32711)),

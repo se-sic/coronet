@@ -968,7 +968,7 @@ get.commit.data = function(range.data, columns = c("author.name", "author.email"
     logging::logdebug("get.commit.data: starting.")
 
     ## Get commit data
-    commits.df = range.data$get.commits.raw()
+    commits.df = range.data$get.commits()
 
     ## In case no commit data is available, return NA
     if(nrow(commits.df) == 0) {

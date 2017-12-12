@@ -15,9 +15,9 @@ requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 
-## / / / / / / / / / / / / / /
-## Constant
-##
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
 
 ## mapping of relation to data source
 RELATION.TO.DATASOURCE = list(
@@ -46,7 +46,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits.filtered.empty = NULL, #data.frame
-        commits.raw = NULL, # data.frame
+        commits = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
         pasta = NULL, # data.frame
@@ -107,7 +107,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## get raw commit data
-            commit.data = self$get.commits.raw()
+            commit.data = self$get.commits()
 
             ## break if the list of commits is empty
             if (nrow(commit.data) == 0) {
@@ -182,7 +182,7 @@ ProjectData = R6::R6Class("ProjectData",
                 self$get.mails()
             }
             if("commits" %in% data.sources) {
-                self$get.commits.raw()
+                self$get.commits()
             }
             if("issues" %in% data.sources) {
                 self$get.issues()
@@ -202,8 +202,8 @@ ProjectData = R6::R6Class("ProjectData",
                 private$data.timestamps$mails = c(min(private$mails$date),
                                           max(private$mails$date))
             } else if(source == "commits") {
-                private$data.timestamps$commits = c(min(private$commits.raw$date),
-                                            max(private$commits.raw$date))
+                private$data.timestamps$commits = c(min(private$commits$date),
+                                            max(private$commits$date))
 
             } else if(source == "issues") {
                 private$data.timestamps$issues = c(min(private$issues$date),
@@ -245,7 +245,7 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits.filtered.empty = NULL
-            private$commits.raw = NULL
+            private$commits = NULL
             private$artifacts = NULL
             private$synchronicity = NULL
             private$mails = NULL
@@ -332,6 +332,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
+        #' Get the absolute path to the result folder for issue data.
+        #'
+        #' @return the path to the issue data
         get.data.path.issues = function() {
             data.path = private$project.conf$get.value("datapath.issues")
             return(data.path)
@@ -373,28 +376,47 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it doesn´t already exist call the read method first.
         #'
         #' @return the list of commits
-        get.commits.raw = function() {
+        get.commits = function() {
             logging::loginfo("Getting raw commit data.")
 
             ## if commits are not read already, do this
-            if (is.null(private$commits.raw)) {
-                private$commits.raw = read.commits.raw(
+            if (is.null(private$commits)) {
+                private$commits = read.commits(
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
             }
             private$extract.timestamps(source = "commits")
 
-            return(private$commits.raw)
+            return(private$commits)
+        },
+
+        #' Get the complete list of commits.
+        #' If it doesn´t already exist call the read method first.
+        #'
+        #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
+        #'
+        #' @return the list of commits
+        get.commits.raw = function() {
+            return(self$get.commits())
         },
 
         #' Set the commit list of the project to a new one.
         #'
         #' @param data the new list of commits
-        set.commits.raw = function(data) {
+        set.commits = function(data) {
             logging::loginfo("Setting raw commit data.")
             if (is.null(data)) data = data.frame()
-            private$commits.raw = data
+            private$commits = data
+        },
+
+        #' Set the commit list of the project to a new one.
+        #'
+        #' Note: This is just a delegate for \code{ProjectData$set.commits(data)}.
+        #'
+        #' @param data the new list of commits
+        set.commits.raw = function(data) {
+            self$set.commits(data)
         },
 
         #' Get the synchronicity data.
@@ -694,7 +716,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-
+        #' Map the corresponding authors to each issue and return the list.
+        #'
+        #' @return the list of authors for each issue
         get.issue2author = function() {
             logging::loginfo("Getting issue--author data")
 
@@ -703,6 +727,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
+        #' Map the corresponding issues to each author and return the list.
+        #'
+        #' @return the list of issues for each author
         get.author2issue = function() {
             logging::loginfo("Getting author--issue data")
 
@@ -718,7 +745,7 @@ ProjectData = R6::R6Class("ProjectData",
           logging::loginfo("Getting author--commit data.")
 
           ## store the authors per artifact
-          mylist = get.key.to.value.from.df(self$get.commits.raw(), "author.name", "hash")
+          mylist = get.key.to.value.from.df(self$get.commits(), "author.name", "hash")
           mylist = parallel::mclapply(mylist, unique)
 
           return(mylist)

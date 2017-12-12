@@ -40,7 +40,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  split.basis = c("commits", "mails", "issues"), sliding.window = FALSE) {
     ## get actual raw data
     data = list(
-        commits = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues()
     )
@@ -110,7 +110,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## set data
         ## 1) commits
-        cf.range.data$set.commits.raw(df.list[["commits"]])
+        cf.range.data$set.commits(df.list[["commits"]])
         ## 2) mails
         cf.range.data$set.mails(df.list[["mails"]])
         ## 3) issues
@@ -203,7 +203,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## get actual raw data
     data = list(
-        commits = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues()
     )
@@ -280,7 +280,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## clone the project data and update raw data to split it again
         project.data.clone = project.data$clone()
-        project.data.clone$set.commits.raw(data[["commits"]])
+        project.data.clone$set.commits(data[["commits"]])
         project.data.clone$set.mails(data[["mails"]])
 
         ## split data for sliding windows

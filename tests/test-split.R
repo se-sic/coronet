@@ -46,7 +46,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -68,10 +68,10 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits.raw[1:4, ],
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits[1:4, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data.frame(),
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits.raw[5:9, ]
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[5:9, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data.frame(),
@@ -95,7 +95,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -119,7 +119,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -142,11 +142,11 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2004-10-09 18:38:13-2007-10-09 18:38:13" = data.frame(),
             "2007-10-09 18:38:13-2010-10-09 18:38:13" = data.frame(),
             "2010-10-09 18:38:13-2013-10-09 18:38:13" = data.frame(),
-            "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$commits.raw[1:4, ]
+            "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$commits[1:4, ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2007-10-09 18:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
@@ -174,7 +174,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -198,7 +198,7 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -220,9 +220,9 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2013-04-21 23:52:09-2015-04-21 23:52:09" = data.frame(),
-            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$commits.raw,
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$commits,
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data.frame()
         ),
         mails = list(
@@ -247,7 +247,7 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -271,7 +271,7 @@ test_that("Split a data object time-based (bins == ... ).", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -291,8 +291,8 @@ test_that("Split a data object time-based (bins == ... ).", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commits.raw
+        commits = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commits
         ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
@@ -308,7 +308,7 @@ test_that("Split a data object time-based (bins == ... ).", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -332,7 +332,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -354,10 +354,10 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$commits.raw[1:4, ],
-            "2016-07-12 16:05:41-2016-07-12 16:06:32" = data$commits.raw[5:7, ],
-            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commits.raw[8:9, ]
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$commits[1:4, ],
+            "2016-07-12 16:05:41-2016-07-12 16:06:32" = data$commits[5:7, ],
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commits[8:9, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$mails[rownames(data$mails) %in% 16:17, ],
@@ -381,7 +381,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -394,7 +394,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     ##
 
     ## split data
-    results = split.data.activity.based(project.data, activity.amount = nrow(data$commits.raw) + 10,
+    results = split.data.activity.based(project.data, activity.amount = nrow(data$commits) + 10,
                                         activity.type = "commits", sliding.window = FALSE)
 
     ## check time ranges
@@ -406,8 +406,8 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commits.raw
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commits
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) %in% 16:17, ]
@@ -423,7 +423,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -449,9 +449,9 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$commits.raw[1:6, ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data$commits.raw[7:9, ]
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$commits[1:6, ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data$commits[7:9, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$mails[rownames(data$mails) %in% 16:17, ],
@@ -471,7 +471,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -482,7 +482,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     ## too large number of windows
 
     expect_error(
-        split.data.activity.based(project.data, activity.type = "commits", number.windows = nrow(project.data$get.commits.raw()) + 10),
+        split.data.activity.based(project.data, activity.type = "commits", number.windows = nrow(project.data$get.commits()) + 10),
         info = "Error expected (number.windows) (1)."
     )
 
@@ -507,7 +507,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -532,12 +532,12 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data.frame(),
             "2010-07-12 11:05:35-2010-07-12 12:05:41" = data.frame(),
             "2010-07-12 12:05:41-2010-07-12 12:05:44" = data.frame(),
             "2010-07-12 12:05:44-2016-07-12 15:58:40" = data.frame(),
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commits.raw[1:4, ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commits[1:4, ],
             "2016-07-12 16:05:37-2016-07-12 16:05:38" = data.frame()
         ),
         mails = list(
@@ -574,7 +574,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -599,8 +599,8 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commits.raw[1:4, ]
+        commits = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commits[1:4, ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
@@ -616,7 +616,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -642,9 +642,9 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data.frame(),
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits.raw[1:4, ]
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits[1:4, ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
@@ -664,7 +664,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -699,7 +699,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
         issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
@@ -722,9 +722,9 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$commits.raw[1:6, ],
-            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$commits.raw[7:9, ],
+        commits = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$commits[1:6, ],
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$commits[7:9, ],
             "2016-08-31 18:21:48-2017-02-20 22:25:41" = data.frame(),
             "2017-02-20 22:25:41-2017-05-23 12:32:40" = data.frame()
         ),
@@ -754,7 +754,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -779,8 +779,8 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$commits.raw
+        commits = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$commits
         ),
         mails = list(
             "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
@@ -796,7 +796,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
@@ -822,8 +822,8 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$commits.raw,
+        commits = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$commits,
             "2016-07-27 22:25:25-2017-05-23 12:32:40" = data.frame()
         ),
         mails = list(
@@ -844,7 +844,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
