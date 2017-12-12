@@ -52,7 +52,7 @@ metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
     if(sort) {
         degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
     } else {
-        igraph::degree(network, mode = "total")
+        degrees = igraph::degree(network, mode = "total")
     }
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
@@ -101,7 +101,7 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
     comm = community.detection.algorithm(network)
     mod = igraph::modularity(network, igraph::membership(comm))
-    return(data.frame("name" = name, "modularity" = mod))
+    return("modularity" = mod)
 }
 
 #' This function determines whether a network can be considered a
