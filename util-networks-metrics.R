@@ -9,9 +9,9 @@
 
 requireNamespace("igraph")
 
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Metric functions --------------------------------------------------------
-
 
 #' Determine the maximum degree for the given network.
 #'
@@ -19,8 +19,8 @@ requireNamespace("igraph")
 #' @param mode the mode to be used for determining the degrees
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
-metrics.hub.degree = function(network, mode = c("total", "in", "out")){
-    match.arg(mode)
+metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
+    mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     vertex = which.max(degrees)
     df = data.frame("name" = names(vertex), "degree" = unname(degrees[vertex]))
@@ -34,7 +34,7 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")){
 #'
 #' @return The average degree of the nodes in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
-    match.arg(mode)
+    mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     avg = mean(degrees)
     return(avg)
@@ -44,15 +44,15 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
 #'
 #' @param network the network to be examined
 #' @param sort whether the resulting dataframe is to be sorted by the node degree
-#' @param sort.decreasing if sorting is active, this says whether the dataframe is to be sorted
-#' in descending or ascending order
+#' @param sort.decreasing if sorting is active, this says whether the dataframe is to be
+#'            sorted in descending or ascending order
 #'
 #' @return A dataframe containing the nodes and their respective degrees.
 metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
     if(sort) {
-        degrees = sort(igraph::degree(network, mode="total"), decreasing = sort.decreasing)
+        degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
     } else {
-        igraph::degree(network, mode="total")
+        igraph::degree(network, mode = "total")
     }
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
@@ -70,7 +70,7 @@ metrics.density = function(network) {
 #' Calculate the average path length for the given network.
 #'
 #' @param network the network to be examined
-#' @param directed wehther the given network is directed or undirected
+#' @param directed whether to consider directed paths in directed networks
 #' @param unconnected whether all nodes of the network are connected
 #'
 #' @return The average pathlength of the given network.
@@ -86,7 +86,7 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 #'
 #' @return The clustering coefficient of the network.
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
-    match.arg(cc.type)
+    cc.type = match.arg(cc.type)
     cc = igraph::transitivity(network, type = cc.type, vids = NULL)
     return(cc)
 }
@@ -94,8 +94,8 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 #' Calculate the modularity metric for the given network.
 #'
 #' @param network the network to be examined
-#' @param community.detection.algorithm the algorithm to be used for the detection of communities which
-#' is required for the calculation of the clustering coefficient
+#' @param community.detection.algorithm the algorithm to be used for the detection of communities
+#'            which is required for the calculation of the clustering coefficient
 #'
 #' @return The modularity value for the given network.
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
@@ -115,17 +115,24 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' The algorithm relies on the Erdös-Renyi random network with the same number
 #' of nodes and edges as the given network.
 #'
-#' @param network the network to be examined. This network needs to be simplified for the calculation to work
+#' To check the result value \code{s.delta} for a binary (true/false) decision on smallworldness,
+#' do this: \code{is.smallworld = s.delta > 1}.
+#'
+#' Important: The given network needs to be simplified for the calculation to work!
+#'
+#' @param network the simplified network to be examined
 #'
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
-
     # construct Erdös-Renyi network with same number of nodes and edges as g
-    h = igraph::erdos.renyi.game(n=igraph::vcount(network), p.or.m=igraph::gsize(network), type="gnm", directed=FALSE)
+    h = igraph::erdos.renyi.game(n = igraph::vcount(network),
+                                 p.or.m = igraph::ecount(network),
+                                 type = "gnm",
+                                 directed = FALSE)
 
     # compute clustering coefficients
-    g.cc = igraph::transitivity(network, type = 'global')
-    h.cc = igraph::transitivity(h, type = 'global')
+    g.cc = igraph::transitivity(network, type = "global")
+    h.cc = igraph::transitivity(h, type = "global")
     # compute average shortest-path length
     g.l = igraph::average.path.length(network, unconnected = TRUE)
     h.l = igraph::average.path.length(h, unconnected = TRUE)
@@ -138,9 +145,8 @@ metrics.smallworldness = function(network) {
     # indicator s.delta
     s.delta = gamma / lambda
 
-    # if s.delta > 1, then the network is a small-world network
-    #is.smallworld = ifelse(s.delta > 1, TRUE, FALSE)
-
+    ## if s.delta > 1, then the network is a small-world network
+    # is.smallworld = s.delta > 1
     return ("smallworldness" = s.delta)
 }
 
@@ -150,11 +156,11 @@ metrics.smallworldness = function(network) {
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network) {
-    v.degree <- sort(igraph::degree(network, mode="total"), decreasing=TRUE)
+    v.degree = sort(igraph::degree(network, mode = "total"), decreasing = TRUE)
 
     ## Power-law fiting
-    ## (from  Mitchell Joblin <mitchell.joblin.ext@siemens.com>, Siemens AG,  2012, 2013)
-    p.fit = igraph::power.law.fit(v.degree, implementation="plfit")
+    ## (by  Mitchell Joblin <mitchell.joblin.ext@siemens.com>, Siemens AG,  2012, 2013)
+    p.fit = igraph::power.law.fit(v.degree, implementation = "plfit")
     param.names = c("alpha", "xmin", "KS.p")
     res = list()
     res[param.names] = p.fit[param.names]
@@ -162,7 +168,7 @@ metrics.scale.freeness = function(network) {
     ## Check percent of vertices under power-law
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
-    df = data.frame(res$alpha,res$xmin,res$KS.p,res$num.power.law,res$percent.power.law)
+    df = data.frame(res$alpha, res$xmin, res$KS.p, res$num.power.law, res$percent.power.law)
     return(df)
 }
 
@@ -173,7 +179,7 @@ metrics.scale.freeness = function(network) {
 #' @return A dataframe containing the logarithm of the node degree and the logarithm
 #' of the local clustering coefficient for each node.
 metrics.hierarchy = function(network) {
-    degrees = igraph::degree(network, mode="total")
+    degrees = igraph::degree(network, mode = "total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
     degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
