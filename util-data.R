@@ -581,6 +581,36 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$artifacts)
         },
 
+        #' Get single pasta items.
+        #' For a given 'message.id', the associated 'commit.hash' is returned.
+        #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
+        #'
+        #' @param message.id the message ID to get the corresponding commit hash
+        #' @param commit.hash the commit hash to get the corresponding message ID
+        #'
+        #' @return the selected pasta data
+        get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
+            logging::loginfo("Getting pasta items started.")
+            #if neither message.id nor commit.hash are specified break the code
+            if(is.null(message.id) && is.null(commit.hash)) {
+                logging::logwarn("Neither message.id nor commit.hash specified.")
+                return()
+            }
+
+            ## get pasta data
+            self$get.pasta()
+
+            ## if a message.id is given just return the attached list of commit hashes
+            ## else gather all message.ids which contain the given commit.hash and return them
+            if(!is.null(message.id)) {
+                result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+                return(result)
+            } else {
+                result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+                return(result)
+            }
+        },
+
         ## * * data cutting -----------------------------------------
 
         #' Get the timestamps (earliest and latest date) of the specified data sources.
@@ -642,36 +672,6 @@ ProjectData = R6::R6Class("ProjectData",
             result = split.data.time.based(self, bins = timestamps)[[1]]
 
             return(result)
-        },
-
-        #' Get single pasta items.
-        #' For a given 'message.id', the associated 'commit.hash' is returned.
-        #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
-        #'
-        #' @param message.id the message ID to get the corresponding commit hash
-        #' @param commit.hash the commit hash to get the corresponding message ID
-        #'
-        #' @return the selected pasta data
-        get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
-            logging::loginfo("Getting pasta items started.")
-            #if neither message.id nor commit.hash are specified break the code
-            if(is.null(message.id) && is.null(commit.hash)) {
-                logging::logwarn("Neither message.id nor commit.hash specified.")
-                return()
-            }
-
-            ## get pasta data
-            self$get.pasta()
-
-            ## if a message.id is given just return the attached list of commit hashes
-            ## else gather all message.ids which contain the given commit.hash and return them
-            if(!is.null(message.id)) {
-                result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
-                return(result)
-            } else {
-                result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
-                return(result)
-            }
         },
 
         ## * * processed data ----------------------------------------------
