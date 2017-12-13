@@ -37,7 +37,7 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     avg = mean(degrees)
-    return(avg)
+    return(c(avg.degree = avg))
 }
 
 #' Calculate all node degrees for the given network
@@ -64,7 +64,7 @@ metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
 #' @return The density of the network.
 metrics.density = function(network) {
     density = igraph::graph.density(network)
-    return(density)
+    return(c(density = density))
 }
 
 #' Calculate the average path length for the given network.
@@ -76,7 +76,7 @@ metrics.density = function(network) {
 #' @return The average pathlength of the given network.
 metrics.avg.pathlength = function(network, directed, unconnected) {
     avg.pathlength = igraph::average.path.length(network, directed = directed, unconnected = unconnected)
-    return(avg.pathlength)
+    return(c(avg.pathlength = avg.pathlength))
 }
 
 #' Calculate the average local clustering coefficient for the given network.
@@ -88,7 +88,7 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
     cc.type = match.arg(cc.type)
     cc = igraph::transitivity(network, type = cc.type, vids = NULL)
-    return(cc)
+    return(c(clustering = cc))
 }
 
 #' Calculate the modularity metric for the given network.
@@ -101,7 +101,7 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
     comm = community.detection.algorithm(network)
     mod = igraph::modularity(network, igraph::membership(comm))
-    return("modularity" = mod)
+    return(c(modularity = mod))
 }
 
 #' This function determines whether a network can be considered a
@@ -147,7 +147,7 @@ metrics.smallworldness = function(network) {
 
     ## if s.delta > 1, then the network is a small-world network
     # is.smallworld = s.delta > 1
-    return ("smallworldness" = s.delta)
+    return (c(smallworldness = s.delta))
 }
 
 #' Determine scale freeness of a network using the power law fitting method.
@@ -168,7 +168,7 @@ metrics.scale.freeness = function(network) {
     ## Check percent of vertices under power-law
     res$num.power.law = length(which(v.degree >= res$xmin))
     res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
-    df = data.frame(res$alpha, res$xmin, res$KS.p, res$num.power.law, res$percent.power.law)
+    df = as.data.frame(res, row.names = "scale.freeness")
     return(df)
 }
 
