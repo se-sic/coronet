@@ -8,13 +8,13 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
 ### Submodule
 
 Please insert the project into yours by use of [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
-Furthermore, the file `install.R` installs all needed R packages (see below) into your R library.
+Furthermore, the file `install.R` installs all needed R packages (see [below](#needed-r-packages)) into your R library.
 Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
 
 This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
 To initialize the library in your project, you need to source all files of the library in your project using the following command:
-```
+```R
 source("path/to/util-init.R", chdir = TRUE)
 ```
 It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
@@ -40,7 +40,7 @@ It may lead to unpredictable behavior, when you do not do this, as we need to se
 In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
 For more examples, please see the file `test.R`.
 
-```
+```R
 CF.DATA = "/path/to/codeface-data" # path to codeface data
 
 CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
@@ -57,39 +57,44 @@ net.conf = NetworkConf$new()
 
 ## update the values of the NetworkConf object to the specific needs
 net.conf$update.values(list(author.relation = AUTHOR.RELATION,
-                            artifact.relation = ARTIFACT.RELATION))
+                            artifact.relation = ARTIFACT.RELATION,
+                            simplify = TRUE))
 
 ## get ranges information from project configuration
-ranges = proj.conf$get.entry(entry.name = "ranges")
+ranges = proj.conf$get.entry("ranges")
 
 ## create data object which actually holds and handles data
-cf.data = ProjectData$new(proj.conf, net.conf)
+data = ProjectData$new(proj.conf)
+
+## create network builder to construct networks from the given data object
+netbuilder = NetworkBuilder$new(data, net.conf)
 
 ## create and get the bipartite network
 ## (construction configured by net.conf's "artifact.relation")
-bpn = cf.data$get.bipartite.network()
+bpn = netbuilder$get.bipartite.network()
 
 ## plot the retrieved network
-plot.bipartite.network(bpn)
+plot.network(bpn)
+
 ```
 
 There are two different classes of configuration objects in this library:
-- the `ProjectConf` class, which determines all configuration parameters needed for the configured project (mainly data paths) and
-- the `NetworkConf` class, which is used for all configuration parameters concerning data retrieval and network construction.
+- the `ProjectConf` class which determines all configuration parameters needed for the configured project (mainly data paths) and
+- the `NetworkConf` class which is used for all configuration parameters concerning data retrieval and network construction.
 
 You can find an overview on all the parameters in these classes below in this file.
 For examples on how to use both classes and how to build networks with them, please look in the file `test.R`.
 
 ## Configuration Classes
 
-## ProjectConf
+### ProjectConf
 
 In this section, we give an overview on the parameters of the `ProjectConf` class and their meaning.
 
 All parameters can be retrieved with the method `ProjectConf$get.entry(...)`, by passing one parameter name as method parameter.
 There is no way to update the entries, except for the revision-based parameters.
 
-### Basic Information
+#### Basic Information
 
 - `project`
   * The project name from the Codeface analysis
@@ -103,7 +108,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `mailinglists`
   * A list of the mailinglists of the project containing their name, type and source
 
-### Artifact-Related Information
+#### Artifact-Related Information
 
 - `artifact`
   * The artifact of the project used for all data retrievals
@@ -117,9 +122,9 @@ There is no way to update the entries, except for the revision-based parameters.
   * The Codeface tagging parameter for the project, based on the `artifact` parameter
   * Either `"proximity"` or `"feature"`
 
-### Revision-Related Information
+#### Revision-Related Information
 
-**Note**: This data is updated after performing a data-based splitting (i.e., by calling the functions `split.data.*`).
+**Note**: This data is updated after performing a data-based splitting (i.e., by calling the functions `split.data.*(...)`).
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
 
 - `revisions`
@@ -134,7 +139,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `ranges.callgraph`
   * The revision ranges based on the list `revisions.callgraph`
 
-### Data Paths
+#### Data Paths
 
 - `datapath`
   * The data path to the Codeface results folder of this project
@@ -145,9 +150,9 @@ There is no way to update the entries, except for the revision-based parameters.
 - `datapath.pasta`
   * The data path to the pasta data
 
-### Splitting Information
+#### Splitting Information
 
-**Note**: This data is added to the `ProjectConf` object only after performing a data-based splitting (by calling the functions `split.data.*`).
+**Note**: This data is added to the `ProjectConf` object only after performing a data-based splitting (by calling the  functions `split.data.*(...)`).
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
 
 - `split.type`
@@ -165,13 +170,13 @@ There is no way to update the entries, except for the revision-based parameters.
 - `split.ranges`
   * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
 
-### Data-Retrieval-Related Parameters (Configurable!)
+#### (Configurable) Data-Retrieval-Related Parameters
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
 - `artifact.filter.base`
   - Remove all artifact information regarding the base artifact
-    (`Base_Feature` or `File_Level` for features and functions, respectively, as artifacts)
+    (`"Base_Feature"` or `"File_Level"` for features and functions, respectively, as artifacts)
   - [*`TRUE`*, `FALSE`]
 - `synchronicity`
   * Read and add synchronicity data to commits and co-change-based networks
@@ -228,7 +233,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
        - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
-  * **Note**: For the edge attributes `"pasta"` and `"synchronicty"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
+  * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
@@ -250,26 +255,32 @@ For more examples, please look in the file `test.R`.
 
 ## File overview
 
+- `util-init.R`
+  * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
 - `util-conf.R`
   * The configuration classes of the project
+- `util-read.R`
+  * Functionality to read data file from disk
 - `util-data.R`
   * All representations of the data classes
-- `util-plot.R`
-  * Everything needed for plotting networks
-- `util-misc.R`
-  * Helper functions and also legacy functions, both needed in the other files
+- `util-networks.R`
+  * The `NetworkBuilder` class and all corresponding helper functions to construct networks
 - `util-split.R`
   * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
 - `util-motifs.R`
   * Functionality for the identifaction of network motifs (subgraph patterns)
 - `util-bulk.R`
   * Collection functionality for the different network types (using Codeface revision ranges)
+- `util-plot.R`
+  * Everything needed for plotting networks
 - `util-core-peripheral.R`
   * Author classification (core and peripheral) and related functions
-- `util-init.R`
-  * Initialization file that can be used by other analysis projects (see Section *Submodule*)
+- `util-networks-metrics.R`
+  * A set of network-metric functions
+- `util-misc.R`
+  * Helper functions and also legacy functions, both needed in the other files
 - `test.R`
-  * Showcase file (see Section *How-To*)
+  * Showcase file (see Section also [*How-To*](#how-to))
 - `tests.R`
   * Test suite (running all tests in `tests/` subfolder)
 
