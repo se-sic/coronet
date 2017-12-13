@@ -38,7 +38,7 @@ It may lead to unpredictable behavior, when you do not do this, as we need to se
 ## How-To
 
 In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
-For more examples, please see the file `test.R`.
+For more examples, please see the file `showcase.R`.
 
 ```R
 CF.DATA = "/path/to/codeface-data" # path to codeface data
@@ -83,7 +83,7 @@ There are two different classes of configuration objects in this library:
 - the `NetworkConf` class which is used for all configuration parameters concerning data retrieval and network construction.
 
 You can find an overview on all the parameters in these classes below in this file.
-For examples on how to use both classes and how to build networks with them, please look in the file `test.R`.
+For examples on how to use both classes and how to build networks with them, please look in the file `showcase.R`.
 
 ## Configuration Classes
 
@@ -250,7 +250,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
 You can also update the object at any time, but as soon as you do so, all cached data of the data object are reset and have to be rebuilt.
 
-For more examples, please look in the file `test.R`.
+For more examples, please look in the file `showcase.R`.
 
 
 ## File overview
@@ -279,7 +279,7 @@ For more examples, please look in the file `test.R`.
   * A set of network-metric functions
 - `util-misc.R`
   * Helper functions and also legacy functions, both needed in the other files
-- `test.R`
+- `showcase.R`
   * Showcase file (see Section also [*How-To*](#how-to))
 - `tests.R`
   * Test suite (running all tests in `tests/` subfolder)
