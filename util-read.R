@@ -21,7 +21,7 @@ requireNamespace("digest") # for sha1 hashing of IDs
 #' Read the commits from the 'commits.list' file.
 #'
 #' @param data.path the path to the commit list
-#' @param artifact the artifact whichs commits are read
+#' @param artifact the artifact whose commits are read
 #'
 #' @return the read commits
 read.commits = function(data.path, artifact) {
@@ -98,7 +98,9 @@ read.commits = function(data.path, artifact) {
 #' Read the commits from the 'commits.list' file.
 #'
 #' @param data.path the path to the commit list
-#' @param artifact the artifact whichs commits are read
+#' @param artifact the artifact whose commits are read
+#'
+#' Note: This is just a delegate for \code{read.commits(data.path, artifact)}.
 #'
 #' @return the read commits
 read.commits.raw = function(data.path, artifact) {
@@ -114,7 +116,7 @@ read.commits.raw = function(data.path, artifact) {
 #' where artifact and time.window are the given variables.
 #'
 #' @param data.path the path to the synchronicity data
-#' @param artifact the artifact whichs synchronicity data get read
+#' @param artifact the artifact whose synchronicity data get read
 #' @param time.window the time window of the data to be read
 #'
 #' @return the read synchronicity data
@@ -320,11 +322,10 @@ read.pasta = function(data.path) {
 ## Issue data --------------------------------------------------------------
 
 #' Read and parse the issue data from the 'issues.list' file.
-#' The parsed format is a data frame with message IDs as keys and commit hashes as values.
 #'
-#' @param data.path the path to the pasta data
+#' @param data.path the path to the issue data
 #'
-#' @return the read and parsed pasta data
+#' @return the read and parsed issue data
 read.issues = function(data.path) {
     logging::logdebug("read.issues: starting.")
 
