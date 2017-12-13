@@ -21,11 +21,11 @@ requireNamespace("digest") # for sha1 hashing of IDs
 #' Read the commits from the 'commits.list' file.
 #'
 #' @param data.path the path to the commit list
-#' @param artifact the artifact whichs commits are read
+#' @param artifact the artifact whose commits are read
 #'
 #' @return the read commits
-read.commits.raw = function(data.path, artifact) {
-    logging::logdebug("read.commits.raw: starting.")
+read.commits = function(data.path, artifact) {
+    logging::logdebug("read.commits: starting.")
 
     file = file.path(data.path, "commits.list")
 
@@ -91,8 +91,20 @@ read.commits.raw = function(data.path, artifact) {
     commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
 
     ## store the commit data
-    logging::logdebug("read.commits.raw: finished.")
+    logging::logdebug("read.commits: finished.")
     return(commit.data)
+}
+
+#' Read the commits from the 'commits.list' file.
+#'
+#' @param data.path the path to the commit list
+#' @param artifact the artifact whose commits are read
+#'
+#' Note: This is just a delegate for \code{read.commits(data.path, artifact)}.
+#'
+#' @return the read commits
+read.commits.raw = function(data.path, artifact) {
+    return(read.commits(data.path = data.path, artifact = artifact))
 }
 
 
@@ -104,7 +116,7 @@ read.commits.raw = function(data.path, artifact) {
 #' where artifact and time.window are the given variables.
 #'
 #' @param data.path the path to the synchronicity data
-#' @param artifact the artifact whichs synchronicity data get read
+#' @param artifact the artifact whose synchronicity data get read
 #' @param time.window the time window of the data to be read
 #'
 #' @return the read synchronicity data
@@ -229,15 +241,15 @@ read.authors = function(data.path) {
         stop("Stopped due to missing authors.")
     }
 
+    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    if (ncol(authors.df) != 3) {
+        authors.df[3] = NA
+    }
+
     ## set proper column names based on Codeface extraction:
     ##
     ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-    cols.names = c("author.id", "author.name")
-    ## if there is a third column, we have e-mail-address data available
-    if (ncol(authors.df) == 3) {
-        cols.names = c(cols.names, "author.email")
-    }
-    colnames(authors.df) = cols.names
+    colnames(authors.df) = c("author.id", "author.name", "author.email")
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -249,7 +261,7 @@ read.authors = function(data.path) {
 ## PaStA data --------------------------------------------------------------
 
 #' Read and parse the pasta data from the 'similar-mailbox' file.
-#' The form in the file is : <message-id> <possibly another message.id> => commit.hash.
+#' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
 #' The parsed form is a data frame with message IDs as keys and commit hashes as values.
 #'
 #' @param data.path the path to the pasta data
@@ -286,14 +298,18 @@ read.pasta = function(data.path) {
 
         # 1) split at arrow
         # 2) split keys
-        # 3) insert all key-value pairs by iteration (works also if there is only one key)
+        # 3) split values
+        # 4) insert all key-value pairs by iteration (works also if there is only one key)
         line.split = unlist(strsplit(line, SEPERATOR))
         keys = line.split[1]
-        value = line.split[2]
+        values = line.split[2]
         keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
+        values.split = unlist(strsplit(values, KEY.SEPERATOR))
 
         # Transform data to data.frame
-        df = data.frame(message.id = keys.split, commit.hash = value)
+        #df = data.frame(message.id = keys.split, commit.hash = values.split)
+        df = merge(keys.split, values.split)
+        colnames(df) = c("message.id", "commit.hash")
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)
@@ -306,11 +322,10 @@ read.pasta = function(data.path) {
 ## Issue data --------------------------------------------------------------
 
 #' Read and parse the issue data from the 'issues.list' file.
-#' The parsed format is a data frame with message IDs as keys and commit hashes as values.
 #'
-#' @param data.path the path to the pasta data
+#' @param data.path the path to the issue data
 #'
-#' @return the read and parsed pasta data
+#' @return the read and parsed issue data
 read.issues = function(data.path) {
     logging::logdebug("read.issues: starting.")
 
@@ -331,13 +346,10 @@ read.issues = function(data.path) {
     ## set proper column names
     colnames(issue.data) = c(
         "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-        "author.id", "author.name", "author.email", # author information
+        "author.name", "author.email", # author information
         "date", # the date
-        "event.name" # the event describing the row's entry
+        "ref.name", "event.name" # the event describing the row's entry
     )
-
-    ## remove unneeded columns from data
-    issue.data["author.id"] = NULL
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
@@ -348,7 +360,7 @@ read.issues = function(data.path) {
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
     issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "null" ] = NA
+    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
     issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 

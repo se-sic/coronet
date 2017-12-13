@@ -17,6 +17,18 @@ requireNamespace("parallel") # for parallel computation
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
+
+## mapping of relation to data source
+RELATION.TO.DATASOURCE = list(
+    "cochange"  = "commits",
+    "callgraph" = "commits",
+    "mail"      = "mails",
+    "issue"     = "issues"
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
 
 ProjectData = R6::R6Class("ProjectData",
@@ -34,7 +46,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits.filtered.empty = NULL, #data.frame
-        commits.raw = NULL, # data.frame
+        commits = NULL, # data.frame
         artifacts = NULL, # list
         synchronicity = NULL, # data.frame
         pasta = NULL, # data.frame
@@ -42,8 +54,10 @@ ProjectData = R6::R6Class("ProjectData",
         mails = NULL, # data.frame
         ## authors
         authors = NULL, # list
-        ##issues
+        ## issues
         issues = NULL, #data.frame
+        ## timestamps of mail, issue and commit data
+        data.timestamps = NULL, #data.frame
 
         ## * * filtering commits -------------------------------------------
 
@@ -93,7 +107,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## get raw commit data
-            commit.data = self$get.commits.raw()
+            commit.data = self$get.commits()
 
             ## break if the list of commits is empty
             if (nrow(commit.data) == 0) {
@@ -157,6 +171,57 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
             return(data)
+        },
+
+        ## * * timestamps -------------------------------------------
+
+        #' Call the getters of the specified data sources in order to
+        #' initialize the sources and extract the timestamps.
+        #'
+        #' @param data.sources the data sources to be prepated
+        prepare.timestamps = function(data.sources) {
+            for(source in data.sources) {
+                self[[ paste0("get.", source) ]]()
+            }
+        },
+
+        #' Extract the earliest and the latest date from the specified data source
+        #' and store it to the timestamps data.frame.
+        #'
+        #' @param source the specified data source
+        extract.timestamps = function(source) {
+            ## initialize data structure for timestamp
+            if(is.null(private$data.timestamps)) {
+                private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
+            }
+
+            ## collect minimum and maximum date for data source
+            ## 1) if we have data available
+            if (nrow(private[[source]]) > 0) {
+                source.date.min = min(private[[source]][, "date"])
+                source.date.max = max(private[[source]][, "date"])
+            }
+            ## NAs otherwise
+            else {
+                source.date.min = NA
+                source.date.max = NA
+            }
+
+            ## remove old line if existing
+            private$data.timestamps = subset(
+                private$data.timestamps,
+                !(rownames(private$data.timestamps) == source)
+            )
+
+            ## store the data in the timestamp data set
+            private$data.timestamps = rbind(
+                private$data.timestamps,
+                data.frame(
+                    start = source.date.min,
+                    end = source.date.max,
+                    row.names = source
+                )
+            )
         }
     ),
 
@@ -192,12 +257,13 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits.filtered.empty = NULL
-            private$commits.raw = NULL
+            private$commits = NULL
             private$artifacts = NULL
             private$synchronicity = NULL
             private$mails = NULL
             private$authors = NULL
             private$pasta = NULL
+            private$data.timestamps = NULL
         },
 
         ## * * configuration -----------------------------------------------
@@ -278,6 +344,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
+        #' Get the absolute path to the result folder for issue data.
+        #'
+        #' @return the path to the issue data
         get.data.path.issues = function() {
             data.path = private$project.conf$get.value("datapath.issues")
             return(data.path)
@@ -319,27 +388,47 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it doesn´t already exist call the read method first.
         #'
         #' @return the list of commits
-        get.commits.raw = function() {
+        get.commits = function() {
             logging::loginfo("Getting raw commit data.")
 
             ## if commits are not read already, do this
-            if (is.null(private$commits.raw)) {
-                private$commits.raw = read.commits.raw(
+            if (is.null(private$commits)) {
+                private$commits = read.commits(
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
             }
+            private$extract.timestamps(source = "commits")
 
-            return(private$commits.raw)
+            return(private$commits)
+        },
+
+        #' Get the complete list of commits.
+        #' If it doesn´t already exist call the read method first.
+        #'
+        #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
+        #'
+        #' @return the list of commits
+        get.commits.raw = function() {
+            return(self$get.commits())
         },
 
         #' Set the commit list of the project to a new one.
         #'
         #' @param data the new list of commits
-        set.commits.raw = function(data) {
+        set.commits = function(data) {
             logging::loginfo("Setting raw commit data.")
             if (is.null(data)) data = data.frame()
-            private$commits.raw = data
+            private$commits = data
+        },
+
+        #' Set the commit list of the project to a new one.
+        #'
+        #' Note: This is just a delegate for \code{ProjectData$set.commits(data)}.
+        #'
+        #' @param data the new list of commits
+        set.commits.raw = function(data) {
+            self$set.commits(data)
         },
 
         #' Get the synchronicity data.
@@ -409,6 +498,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
+            private$extract.timestamps(source = "mails")
 
             return(private$mails)
         },
@@ -456,6 +546,8 @@ ProjectData = R6::R6Class("ProjectData",
             if(is.null(private$issues)) {
                 private$issues = read.issues(self$get.data.path.issues())
             }
+            private$extract.timestamps(source = "issues")
+
             return(private$issues)
         },
 
@@ -517,6 +609,69 @@ ProjectData = R6::R6Class("ProjectData",
                 result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
                 return(result)
             }
+        },
+
+        ## * * data cutting -----------------------------------------
+
+        #' Get the timestamps (earliest and latest date) of the specified data sources.
+        #' If 'simple' is TRUE, return the overall latest start and earliest end date
+        #' in order to cut the specified data sources to the same date ranges.
+        #'
+        #' If there are no actual data available for a data source, the result indicates NA
+        #'
+        #' @param data.sources the specified data sources
+        #' @param simple whether or not the timestamps get simplified
+        #'
+        #' @return a data.frame with the timestamps of each data source as columns "start" and "end",
+        #'         with the data source as corresponding row name
+        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
+            ## check arguments
+            data.sources = match.arg(arg = data.sources, several.ok = TRUE)
+
+            ## read all data sources and prepare list of timestamps
+            private$prepare.timestamps(data.sources = data.sources)
+
+            ## get the needed subset of timestamp data
+            subset.timestamps = private$data.timestamps[data.sources, ]
+
+            ## get the proper subset of timestamps for returning
+            if(simple) {
+                ## get minima and maxima across data sources (rows)
+                timestamps = data.frame(
+                    start = max(subset.timestamps[, "start"], na.rm = TRUE),
+                    end = min(subset.timestamps[, "end"], na.rm = TRUE)
+                )
+            } else {
+                ## select the complete raw data
+                timestamps = subset.timestamps
+            }
+
+            return(timestamps)
+        },
+
+        #' Cut the specified data sources to the same date range depending on the extracted
+        #' timestamps.
+        #'
+        #' @param data.sources the specified data sources
+        #'
+        #' @return a list of the cut data.sources
+        get.data.cut.to.same.date = function(data.sources = c("mails", "commits", "issues")) {
+            ## check arguments
+            data.sources = match.arg(arg = data.sources, several.ok = TRUE)
+
+            ## get the timestamp data as vector
+            timestamps.df = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
+            timestamps = c(start = timestamps.df[, "start"], end = timestamps.df[, "end"])
+
+            ## check consistency
+            if(timestamps["start"] > timestamps["end"]) {
+                logging::logwarn("The datasources don't overlap. The result will be empty!")
+            }
+
+            ## split data based on the timestamps and get the single result
+            result = split.data.time.based(self, bins = timestamps)[[1]]
+
+            return(result)
         },
 
         ## * * processed data ----------------------------------------------
@@ -593,7 +748,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-
+        #' Map the corresponding authors to each issue and return the list.
+        #'
+        #' @return the list of authors for each issue
         get.issue2author = function() {
             logging::loginfo("Getting issue--author data")
 
@@ -602,6 +759,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
+        #' Map the corresponding issues to each author and return the list.
+        #'
+        #' @return the list of issues for each author
         get.author2issue = function() {
             logging::loginfo("Getting author--issue data")
 
@@ -617,7 +777,7 @@ ProjectData = R6::R6Class("ProjectData",
           logging::loginfo("Getting author--commit data.")
 
           ## store the authors per artifact
-          mylist = get.key.to.value.from.df(self$get.commits.raw(), "author.name", "hash")
+          mylist = get.key.to.value.from.df(self$get.commits(), "author.name", "hash")
           mylist = parallel::mclapply(mylist, unique)
 
           return(mylist)
@@ -646,7 +806,6 @@ ProjectData = R6::R6Class("ProjectData",
 
             return(mylist)
         }
-
     )
 )
 

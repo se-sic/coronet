@@ -300,6 +300,326 @@ Conf = R6::R6Class("Conf",
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## ProjectConf -------------------------------------------------------------
+
+ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
+
+                          ## * private -----------------------------------------------------------
+
+                          private = list(
+
+                              ## * * project info ------------------------------------------------
+
+                              data = NULL, # character
+                              selection.process = NULL, # character
+                              casestudy = NULL, # character
+                              artifact = NULL, # character
+
+                              ## * * attributes ---------------------------------------------------
+
+                              attributes = list(
+                                  artifact.filter.base = list(
+                                      default = TRUE,
+                                      type = "logical",
+                                      allowed = c(TRUE, FALSE),
+                                      allowed.number = 1
+                                  ),
+                                  synchronicity = list(
+                                      default = FALSE,
+                                      type = "logical",
+                                      allowed = c(TRUE, FALSE),
+                                      allowed.number = 1
+                                  ),
+                                  synchronicity.time.window = list(
+                                      default = 5,
+                                      type = "numeric",
+                                      allowed = c(1, 5, 10, 15),
+                                      allowed.number = 1
+                                  ),
+                                  pasta = list(
+                                      default = FALSE,
+                                      type = "logical",
+                                      allowed = c(TRUE, FALSE),
+                                      allowed.number = 1
+                                  )
+                              ),
+
+                              ## * * revisions and ranges ----------------------------------------
+
+                              #' Change the revision names to a equal name standard.
+                              #'
+                              #' @param ranges the list of ranges to be postprocessed
+                              #'
+                              #' @return the postprocessed ranges
+                              postprocess.revision.list = function(ranges) {
+                                  # remove names ,e.g. "version", from release cycle names
+                                  casestudy = private$casestudy
+                                  to.remove = c(
+                                      "version-", "v-","version_", "v_","version", "v",
+                                      paste0(casestudy, "-"), paste0(casestudy,"-"),
+                                      paste0(casestudy, "_"), paste0(casestudy,"_"),
+                                      casestudy, casestudy
+                                  )
+
+                                  # run gsub for all pattern
+                                  ranges = tolower(ranges)
+                                  for (string in to.remove) {
+                                      ranges = gsub(string, "", ranges)
+                                  }
+
+                                  # return simplified list of ranges
+                                  return(ranges)
+                              },
+
+                              #' Change the revision names of callgraph data to a equal name standard.
+                              #'
+                              #' @param r list of revisions to be postprocessed
+                              #'
+                              #' @return list of postprocessed revisions
+                              postprocess.revision.list.for.callgraph.data = function(r) {
+                                  r = gsub("version-", "", r) # remove version prefix (SQLite)
+                                  r = gsub("OpenSSL_", "", r) # remove name prefix (OpenSSL)
+                                  r = gsub("\\.", "_", r) # replace dots by underscores
+                                  return(r)
+                              },
+
+                              ## * * path construction -------------------------------------------
+
+                              subfolder.configurations = "configurations",
+                              subfolder.results = "results",
+
+                              #' Construct and return the path to the configuration folder of Codeface.
+                              #'
+                              #' @param data the path to the codeface-data folder
+                              #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+                              #'
+                              #' @return the path to the configuration folder
+                              get.configurations.folder = function(data, selection.process) {
+                                  return(file.path(data, private$subfolder.configurations, selection.process))
+
+                              },
+
+                              #' Construct and return the path to a Codeface configuration.
+                              #'
+                              #' @param data the path to the codeface-data folder
+                              #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+                              #' @param casestudy the current casestudy
+                              #' @param tagging the current tagging ('feature', 'proximity')
+                              #'
+                              #' @return the path to the configuration
+                              construct.conf.path = function(data, selection.process, casestudy, tagging) {
+                                  ## construct the base name of the configuration
+                                  conf.basename = paste(casestudy, "_", tagging, ".conf", sep = "")
+                                  ## construct complete path
+                                  conf.file = file.path(private$get.configurations.folder(data, selection.process), conf.basename)
+                                  ## return path to config file
+                                  return(conf.file)
+                              },
+
+                              #' Construct and return the path to the results folder of Codeface.
+                              #'
+                              #' @param data the path to the codeface-data folder
+                              #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+                              #' @param casestudy the current casestudy
+                              #' @param suffix the suffix of the casestudy's results folder
+                              #' @param subfolder an optional subfolder
+                              #'
+                              #' @return the path to the results folder
+                              #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
+                              get.results.folder = function(data, selection.process, casestudy, suffix, subfolder = NULL) {
+                                  path = file.path(data, private$subfolder.results, selection.process, paste(casestudy, suffix, sep = "_"))
+                                  if (!is.null(subfolder)) {
+                                      path = file.path(path, subfolder)
+                                  }
+                                  return(path)
+                              }
+
+                          ),
+
+                          ## * public ------------------------------------------------------------
+
+                          public = list(
+
+                              #' Constructor of the class.
+                              #'
+                              #' @param data the path to the codeface-data folder
+                              #' @param selection.process the selection process of the current study ('threemonth', 'releases')
+                              #' @param casestudy the current casestudy
+                              #' @param artifact the artifact to study ('feature','function','file')
+                              initialize = function(data, selection.process, casestudy, artifact = "feature") {
+                                  super$initialize()
+
+                                  if (!missing(data) && is.character(data)) {
+                                      private$data <- data
+                                  }
+                                  if (!missing(selection.process) && is.character(selection.process)) {
+                                      private$selection.process <- selection.process
+                                  }
+                                  if (!missing(casestudy) && is.character(casestudy)) {
+                                      private$casestudy <- casestudy
+                                  }
+                                  if (!missing(artifact) && is.character(artifact)) {
+                                      private$artifact <- artifact
+                                  }
+
+                                  logging::loginfo("Construct configuration: starting.")
+
+                                  ## convert artifact to tagging
+                                  tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
+                                  if (is.null(tagging)) {
+                                      logging::logerror("Artifact '%s' cannot be converted to a proper Codeface tagging! Stopping...", artifact)
+                                      stop("Stopped due to wrong configuration parameters!")
+                                  }
+                                  ## construct file name for configuration
+                                  conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
+
+                                  ## load case-study confuration from given file
+                                  logging::loginfo("Attempting to load configuration file: %s", conf.file)
+                                  conf = yaml::yaml.load_file(conf.file)
+
+                                  ## store basic information
+                                  conf$selection.process = selection.process
+                                  conf$casestudy = casestudy
+
+                                  ## store artifact in configuration
+                                  conf$artifact = artifact
+                                  conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
+                                  conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
+                                  ## store path to actual Codeface data
+                                  conf$datapath = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
+                                  ## store path to call graphs
+                                  conf$datapath.callgraph = private$get.results.folder(data, selection.process, casestudy, "callgraphs")
+                                  ## store path to synchronicity data
+                                  conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
+                                  ## store path to pasta data
+                                  conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
+                                  ## store path to issue data
+                                  conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
+
+                                  ## READ REVISIONS META-DATA
+
+                                  ## read revisions file
+                                  revisions.file = file.path(conf$datapath, "revisions.list")
+                                  revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
+                                                                 encoding = "UTF-8"), silent = TRUE)
+                                  ## break if the list of revisions is empty or any other error occurs
+                                  if (inherits(revisions.df, 'try-error')) {
+                                      logging::logerror("There are no revisions available for the current casestudy.")
+                                      logging::logerror("Attempted to load following file: %s", revisions.file)
+                                      stop("Stopped due to missing revisions.")
+                                  }
+                                  ## convert columns accordingly
+                                  revisions.cols = c(revision = "as.character", date = "as.POSIXct")
+                                  for (i in 1:ncol(revisions.df)) {
+                                      revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
+                                      colnames(revisions.df)[i] = names(revisions.cols)[i]
+                                  }
+                                  revisions = revisions.df[["revision"]]
+                                  revisions.dates = revisions.df[["date"]]
+                                  if (!is.null(revisions.dates)) names(revisions.dates) = revisions
+                                  conf[["revisions"]] = NULL
+
+                                  ## change structure of values (i.e., insert 'default' sublists)
+                                  conf = lapply(conf, function(entry) {
+                                      return(list(value = entry, updatable = FALSE))
+                                  })
+
+                                  ## SAVE FULL CONFIGURATION OBJECT
+                                  private$attributes = c(conf, private$attributes)
+
+                                  ## construct and save revisions and ranges
+                                  ## (this has to be done after storing conf due to the needed access to the conf object)
+                                  self$set.revisions(revisions, revisions.dates)
+
+                                  # ## logging
+                                  # self$print(allowed = TRUE)
+
+                                  logging::loginfo("Construct configuration: finished.")
+                              },
+
+                              ## * * helper methods ----------------------------------------------
+
+                              #' Get the corresponding callgraph revision for the given range.
+                              #'
+                              #' @param range the range for the callgraph revisions
+                              #'
+                              #' @return the callgraph revisions
+                              get.callgraph.revision.from.range = function(range) {
+                                  idx = which(self$get.value("ranges") == range)
+                                  rev = self$get.value("revisions.callgraph")[idx + 1]
+                                  return(rev)
+                              },
+
+                              ## * * updating revisions and splitting information ----------------
+
+                              #' Set the revisions and ranges for the study.
+                              #'
+                              #' @param revisions the revisions of the study
+                              #' @param revisions.dates the revision dates of the study
+                              #' @param sliding.window whether sliding window splitting is enabled or not
+                              #'                       default: 'FALSE'
+                              set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
+                                  ## construct revisions for call-graph data
+                                  revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
+
+                                  ## assemble revision data
+                                  rev.data = list(
+                                      revisions = revisions,
+                                      revisions.dates = revisions.dates,
+                                      revisions.callgraph = revisions.callgraph,
+                                      ranges = construct.ranges(revisions, sliding.window = sliding.window),
+                                      ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
+                                  )
+                                  ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
+                                  rev.data = lapply(rev.data, function(entry) {
+                                      return(list(value = entry, updatable = FALSE))
+                                  })
+
+                                  ## insert new values (update if needed)
+                                  for (name in names(rev.data)) {
+                                      private[["attributes"]][[name]] = rev.data[[name]]
+                                  }
+                              },
+
+                              #' Update the information on revisions and ranges regarding splitting.
+                              #'
+                              #' @param type either "time-based" or "activity-based", depending on splitting function
+                              #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
+                              #'               amount given to acitivity-based splitting
+                              #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
+                              #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
+                              #' @param revisions the revisions of the study
+                              #' @param revisions.dates the revision dates of the study
+                              set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
+                                  ## assemble splitting information
+                                  split.info = list(
+                                      ## basic slpitting information
+                                      split.type = type,
+                                      split.length = length,
+                                      split.basis = basis,
+                                      split.sliding.window = sliding.window,
+                                      ## splitting information on ranges
+                                      split.revisions = revisions,
+                                      split.revisions.dates = revisions.dates,
+                                      split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
+
+                                  )
+                                  ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
+                                  split.info = lapply(split.info, function(entry) {
+                                      return(list(value = entry, updatable = FALSE))
+                                  })
+
+                                  ## insert new values (update if needed)
+                                  for (name in names(split.info)) {
+                                      private[["attributes"]][[name]] = split.info[[name]]
+                                  }
+                              }
+
+                          )
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkConf -------------------------------------------------------------
 
 NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
@@ -385,6 +705,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 type = "numeric",
                 allowed = Inf,
                 allowed.number = 1
+            ),
+            unify.date.ranges = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
             )
         )
 
@@ -413,327 +739,6 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
             ## return invisible
             invisible()
-        }
-
-    )
-)
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## ProjectConf -------------------------------------------------------------
-
-ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
-
-    ## * private -----------------------------------------------------------
-
-    private = list(
-
-        ## * * project info ------------------------------------------------
-
-        data = NULL, # character
-        selection.process = NULL, # character
-        casestudy = NULL, # character
-        artifact = NULL, # character
-
-        ## * * attributes ---------------------------------------------------
-
-        attributes = list(
-            artifact.filter.base = list(
-                default = TRUE,
-                type = "logical",
-                allowed = c(TRUE, FALSE),
-                allowed.number = 1
-            ),
-            synchronicity = list(
-                default = FALSE,
-                type = "logical",
-                allowed = c(TRUE, FALSE),
-                allowed.number = 1
-            ),
-            synchronicity.time.window = list(
-                default = 5,
-                type = "numeric",
-                allowed = c(1, 5, 10, 15),
-                allowed.number = 1
-            ),
-            pasta = list(
-                default = FALSE,
-                type = "logical",
-                allowed = c(TRUE, FALSE),
-                allowed.number = 1
-            )
-        ),
-
-        ## * * revisions and ranges ----------------------------------------
-
-        #' Change the revision names to a equal name standard.
-        #'
-        #' @param ranges the list of ranges to be postprocessed
-        #'
-        #' @return the postprocessed ranges
-        postprocess.revision.list = function(ranges) {
-            # remove names ,e.g. "version", from release cycle names
-            casestudy = private$casestudy
-            to.remove = c(
-                "version-", "v-","version_", "v_","version", "v",
-                paste0(casestudy, "-"), paste0(casestudy,"-"),
-                paste0(casestudy, "_"), paste0(casestudy,"_"),
-                casestudy, casestudy
-            )
-
-            # run gsub for all pattern
-            ranges = tolower(ranges)
-            for (string in to.remove) {
-                ranges = gsub(string, "", ranges)
-            }
-
-            # return simplified list of ranges
-            return(ranges)
-        },
-
-        #' Change the revision names of callgraph data to a equal name standard.
-        #'
-        #' @param r list of revisions to be postprocessed
-        #'
-        #' @return list of postprocessed revisions
-        postprocess.revision.list.for.callgraph.data = function(r) {
-            r = gsub("version-", "", r) # remove version prefix (SQLite)
-            r = gsub("OpenSSL_", "", r) # remove name prefix (OpenSSL)
-            r = gsub("\\.", "_", r) # replace dots by underscores
-            return(r)
-        },
-
-        ## * * path construction -------------------------------------------
-
-        subfolder.configurations = "configurations",
-        subfolder.results = "results",
-
-        #' Construct and return the path to the configuration folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #'
-        #' @return the path to the configuration folder
-        get.configurations.folder = function(data, selection.process) {
-            return(file.path(data, private$subfolder.configurations, selection.process))
-        },
-
-        #' Construct and return the path to a Codeface configuration.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #' @param tagging the current tagging ('feature', 'proximity')
-        #'
-        #' @return the path to the configuration
-        construct.conf.path = function(data, selection.process, casestudy, tagging) {
-            ## construct the base name of the configuration
-            conf.basename = paste(casestudy, "_", tagging, ".conf", sep = "")
-            ## construct complete path
-            conf.file = file.path(private$get.configurations.folder(data, selection.process), conf.basename)
-            ## return path to config file
-            return(conf.file)
-        },
-
-        #' Construct and return the path to the results folder of Codeface.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #' @param suffix the suffix of the casestudy's results folder
-        #' @param subfolder an optional subfolder
-        #'
-        #' @return the path to the results folder
-        #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
-        get.results.folder = function(data, selection.process, casestudy, suffix, subfolder = NULL) {
-            path = file.path(data, private$subfolder.results, selection.process, paste(casestudy, suffix, sep = "_"))
-            if (!is.null(subfolder)) {
-                path = file.path(path, subfolder)
-            }
-            return(path)
-        }
-
-    ),
-
-    ## * public ------------------------------------------------------------
-
-    public = list(
-
-        #' Constructor of the class.
-        #'
-        #' @param data the path to the codeface-data folder
-        #' @param selection.process the selection process of the current study ('threemonth', 'releases')
-        #' @param casestudy the current casestudy
-        #' @param artifact the artifact to study ('feature','function','file')
-        initialize = function(data, selection.process, casestudy, artifact = "feature") {
-            super$initialize()
-
-            if (!missing(data) && is.character(data)) {
-                private$data <- data
-            }
-            if (!missing(selection.process) && is.character(selection.process)) {
-                private$selection.process <- selection.process
-            }
-            if (!missing(casestudy) && is.character(casestudy)) {
-                private$casestudy <- casestudy
-            }
-            if (!missing(artifact) && is.character(artifact)) {
-                private$artifact <- artifact
-            }
-
-            logging::loginfo("Construct configuration: starting.")
-
-            ## convert artifact to tagging
-            tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
-            if (is.null(tagging)) {
-                logging::logerror("Artifact '%s' cannot be converted to a proper Codeface tagging! Stopping...", artifact)
-                stop("Stopped due to wrong configuration parameters!")
-            }
-
-            ## construct file name for configuration
-            conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
-
-            ## load case-study confuration from given file
-            logging::loginfo("Attempting to load configuration file: %s", conf.file)
-            conf = yaml::yaml.load_file(conf.file)
-
-            ## store basic information
-            conf$selection.process = selection.process
-            conf$casestudy = casestudy
-
-            ## store artifact in configuration
-            conf$artifact = artifact
-            conf$artifact.short = ARTIFACT.TO.ABBREVIATION[[ conf$artifact ]]
-            conf$artifact.codeface = ARTIFACT.CODEFACE[[ conf$artifact ]]
-
-            ## store path to actual Codeface data
-            conf$datapath = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
-            ## store path to call graphs
-            conf$datapath.callgraph = private$get.results.folder(data, selection.process, casestudy, "callgraphs")
-            ## store path to synchronicity data
-            conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
-            ## store path to pasta data
-            conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
-            ## store path to issue data
-            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
-
-            ## READ REVISIONS META-DATA
-
-            ## read revisions file
-            revisions.file = file.path(conf$datapath, "revisions.list")
-            revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
-                                           encoding = "UTF-8"), silent = TRUE)
-            ## break if the list of revisions is empty or any other error occurs
-            if (inherits(revisions.df, 'try-error')) {
-                logging::logerror("There are no revisions available for the current casestudy.")
-                logging::logerror("Attempted to load following file: %s", revisions.file)
-                stop("Stopped due to missing revisions.")
-            }
-            ## convert columns accordingly
-            revisions.cols = c(revision = "as.character", date = "as.POSIXct")
-            for (i in 1:ncol(revisions.df)) {
-                revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
-                colnames(revisions.df)[i] = names(revisions.cols)[i]
-            }
-            revisions = revisions.df[["revision"]]
-            revisions.dates = revisions.df[["date"]]
-            if (!is.null(revisions.dates)) names(revisions.dates) = revisions
-            conf[["revisions"]] = NULL
-
-            ## change structure of values (i.e., insert 'default' sublists)
-            conf = lapply(conf, function(entry) {
-                return(list(value = entry, updatable = FALSE))
-            })
-
-            ## SAVE FULL CONFIGURATION OBJECT
-            private$attributes = c(conf, private$attributes)
-
-            ## construct and save revisions and ranges
-            ## (this has to be done after storing conf due to the needed access to the conf object)
-            self$set.revisions(revisions, revisions.dates)
-
-            # ## logging
-            # self$print(allowed = TRUE)
-
-            logging::loginfo("Construct configuration: finished.")
-        },
-
-        ## * * helper methods ----------------------------------------------
-
-        #' Get the corresponding callgraph revision for the given range.
-        #'
-        #' @param range the range for the callgraph revisions
-        #'
-        #' @return the callgraph revisions
-        get.callgraph.revision.from.range = function(range) {
-            idx = which(self$get.value("ranges") == range)
-            rev = self$get.value("revisions.callgraph")[idx + 1]
-            return(rev)
-        },
-
-        ## * * updating revisions and splitting information ----------------
-
-        #' Set the revisions and ranges for the study.
-        #'
-        #' @param revisions the revisions of the study
-        #' @param revisions.dates the revision dates of the study
-        #' @param sliding.window whether sliding window splitting is enabled or not
-        #'                       default: 'FALSE'
-        set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
-            ## construct revisions for call-graph data
-            revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
-
-            ## assemble revision data
-            rev.data = list(
-                revisions = revisions,
-                revisions.dates = revisions.dates,
-                revisions.callgraph = revisions.callgraph,
-                ranges = construct.ranges(revisions, sliding.window = sliding.window),
-                ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
-            )
-            ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
-            rev.data = lapply(rev.data, function(entry) {
-                return(list(value = entry, updatable = FALSE))
-            })
-
-            ## insert new values (update if needed)
-            for (name in names(rev.data)) {
-                private[["attributes"]][[name]] = rev.data[[name]]
-            }
-        },
-
-        #' Update the information on revisions and ranges regarding splitting.
-        #'
-        #' @param type either "time-based" or "activity-based", depending on splitting function
-        #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
-        #'               amount given to acitivity-based splitting
-        #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
-        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
-        #' @param revisions the revisions of the study
-        #' @param revisions.dates the revision dates of the study
-        set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
-            ## assemble splitting information
-            split.info = list(
-                ## basic slpitting information
-                split.type = type,
-                split.length = length,
-                split.basis = basis,
-                split.sliding.window = sliding.window,
-                ## splitting information on ranges
-                split.revisions = revisions,
-                split.revisions.dates = revisions.dates,
-                split.ranges = construct.ranges(revisions, sliding.window = sliding.window)
-
-            )
-            ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
-            split.info = lapply(split.info, function(entry) {
-                return(list(value = entry, updatable = FALSE))
-            })
-
-            ## insert new values (update if needed)
-            for (name in names(split.info)) {
-                private[["attributes"]][[name]] = split.info[[name]]
-            }
         }
 
     )
