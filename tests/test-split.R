@@ -11,7 +11,7 @@ context("Splitting functionality.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
-ARTIFACT = "feature" # function, feature, file, featureexpression
+ARTIFACT = "feature"
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
@@ -44,10 +44,11 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
         pasta = project.data$get.pasta()
     )
@@ -62,20 +63,25 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
         "2016-07-12 16:01:59-2016-07-12 16:04:59",
         "2016-07-12 16:04:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits.raw[1:4, ],
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits[1:4, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data.frame(),
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits.raw[5:9, ]
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[5:9, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data.frame(),
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[rownames(data$mails) == 16, ],
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 17, ]
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% 18:20, ],
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% 21, ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% 22, ]
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$synchronicity,
@@ -89,8 +95,9 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
@@ -110,10 +117,11 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
         pasta = project.data$get.pasta()
     )
@@ -129,22 +137,28 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
         "2010-10-09 18:38:13-2013-10-09 18:38:13",
         "2013-10-09 18:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2004-10-09 18:38:13-2007-10-09 18:38:13" = data.frame(),
             "2007-10-09 18:38:13-2010-10-09 18:38:13" = data.frame(),
             "2010-10-09 18:38:13-2013-10-09 18:38:13" = data.frame(),
-            "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$commits.raw[1:4, ]
+            "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$commits[1:4, ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2007-10-09 18:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
             "2007-10-09 18:38:13-2010-10-09 18:38:13" = data$mails[rownames(data$mails) %in% 3:12, ],
             "2010-10-09 18:38:13-2013-10-09 18:38:13" = data.frame(),
             "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2007-10-09 18:38:13" = data.frame(),
+            "2007-10-09 18:38:13-2010-10-09 18:38:13" = data.frame(),
+            "2010-10-09 18:38:13-2013-10-09 18:38:13" = data$issues[rownames(data$issues) %in% 1:6, ],
+            "2013-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(8:9, 18:21), ]
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2007-10-09 18:38:13" = data$synchronicity,
@@ -160,8 +174,82 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges.")
+
+})
+
+
+##
+## Tests for split.data.time.based(..., split.basis = 'issues')
+##
+
+test_that("Split a data object time-based (split.basis == 'issues').", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits(),
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
+        synchronicity = project.data$get.synchronicity(),
+        pasta = project.data$get.pasta()
+    )
+
+    ## split data
+    results = split.data.time.based(project.data, time.period = "2 years",
+                                    split.basis = "issues", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2013-04-21 23:52:09-2015-04-21 23:52:09",
+        "2015-04-21 23:52:09-2017-04-21 23:52:09",
+        "2017-04-21 23:52:09-2017-05-23 12:32:40"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges.")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2013-04-21 23:52:09-2015-04-21 23:52:09" = data.frame(),
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$commits,
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data.frame()
+        ),
+        mails = list(
+            "2013-04-21 23:52:09-2015-04-21 23:52:09" = data.frame(),
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$mails[rownames(data$mails) %in% 14:17, ],
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data.frame()
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2015-04-21 23:52:09" = data$issues[rownames(data$issues) %in% 1:6, ],
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% 7:33, ],
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 34:36, ]
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2015-04-21 23:52:09" = data$synchronicity,
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$synchronicity,
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$synchronicity
+        ),
+        pasta = list(
+            "2013-04-21 23:52:09-2015-04-21 23:52:09" = data$pasta,
+            "2015-04-21 23:52:09-2017-04-21 23:52:09" = data$pasta,
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
@@ -181,43 +269,48 @@ test_that("Split a data object time-based (bins == ... ).", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
         pasta = project.data$get.pasta()
     )
 
     ## split data
-    results = split.data.time.based(project.data, bins = c("2016-01-01 00:00:01", "2016-12-31 23:59:59"),
+    results = split.data.time.based(project.data, bins = c("2016-01-01 00:00:00", "2016-12-31 23:59:59"),
                                     split.basis = "mails", sliding.window = FALSE)
 
     ## check time ranges
     expected = c(
-        "2016-01-01 00:00:01-2016-12-31 23:59:59"
+        "2016-01-01 00:00:00-2016-12-31 23:59:59"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$commits.raw
+        commits = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commits
         ),
         mails = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
+        ),
+        issues = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% 7:31, ]
         ),
         synchronicity = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$synchronicity
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$synchronicity
         ),
         pasta = list(
-            "2016-01-01 00:00:01-2016-12-31 23:59:59" = data$pasta
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$pasta
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
@@ -237,10 +330,11 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
         pasta = project.data$get.pasta()
     )
@@ -255,19 +349,24 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         "2016-07-12 16:05:41-2016-07-12 16:06:32",
         "2016-07-12 16:06:32-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
-    expect_equal(result, expected, info = "Time ranges.")
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges (activity.amount).")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$commits.raw[1:4, ],
-            "2016-07-12 16:05:41-2016-07-12 16:06:32" = data$commits.raw[5:7, ],
-            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commits.raw[8:9, ]
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$commits[1:4, ],
+            "2016-07-12 16:05:41-2016-07-12 16:06:32" = data$commits[5:7, ],
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commits[8:9, ]
         ),
         mails = list(
-            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$mails[rownames(data$mails) == 16:17, ],
+            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$mails[rownames(data$mails) %in% 16:17, ],
             "2016-07-12 16:05:41-2016-07-12 16:06:32" = data.frame(),
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data.frame()
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:05:41" = data$issues[rownames(data$issues) %in% 18:21, ],
+            "2016-07-12 16:05:41-2016-07-12 16:06:32" = data$issues[rownames(data$issues) %in% 22, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data.frame()
         ),
         synchronicity = list(
@@ -282,35 +381,39 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
-    expect_equal(results.data, expected.data, info = "Data for ranges.")
+    expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
     ##
     ## split by too-large activity amount
     ##
 
     ## split data
-    results = split.data.activity.based(project.data, activity.amount = nrow(data$commits.raw) + 10,
+    results = split.data.activity.based(project.data, activity.amount = nrow(data$commits) + 10,
                                         activity.type = "commits", sliding.window = FALSE)
 
     ## check time ranges
     expected = c(
         "2016-07-12 15:58:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commits.raw
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commits
         ),
         mails = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 16:17, ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) %in% 16:17, ]
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% 18:22, ]
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$synchronicity
@@ -320,12 +423,73 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
-    expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
+    expect_equal(results.data, expected.data, info = "Data for ranges for too-large activity amount (activity.amount).")
+
+    ##
+    ## split by number of windows
+    ##
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "commits", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2016-07-12 15:58:59-2016-07-12 16:06:10",
+        "2016-07-12 16:06:10-2016-07-12 16:06:33"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges (number.windows).")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$commits[1:6, ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data$commits[7:9, ]
+        ),
+        mails = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data.frame()
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% 18:22, ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data.frame()
+        ),
+        synchronicity = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$synchronicity,
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data$synchronicity
+        ),
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$pasta,
+            "2016-07-12 16:06:10-2016-07-12 16:06:33" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "commits", number.windows = nrow(project.data$get.commits()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "commits", number.windows = 0),
+        info = "Error expected (number.windows) (2)."
+    )
 
 })
 
@@ -341,10 +505,11 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     net.conf = NetworkConf$new()
 
     ## data object
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    project.data = ProjectData$new(proj.conf)
     data = list(
-        commits.raw = project.data$get.commits.raw(),
+        commits = project.data$get.commits(),
         mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
         synchronicity = project.data$get.synchronicity(),
         pasta = project.data$get.pasta()
     )
@@ -362,17 +527,17 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         "2016-07-12 15:58:40-2016-07-12 16:05:37",
         "2016-07-12 16:05:37-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges.")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
+        commits = list(
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data.frame(),
             "2010-07-12 11:05:35-2010-07-12 12:05:41" = data.frame(),
             "2010-07-12 12:05:41-2010-07-12 12:05:44" = data.frame(),
             "2010-07-12 12:05:44-2016-07-12 15:58:40" = data.frame(),
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commits.raw[1:4, ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commits[1:4, ],
             "2016-07-12 16:05:37-2016-07-12 16:05:38" = data.frame()
         ),
         mails = list(
@@ -382,6 +547,14 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
             "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$mails[rownames(data$mails) %in% 10:12, ],
             "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$mails[rownames(data$mails) %in% 14:16, ],
             "2016-07-12 16:05:37-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 17, ]
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data.frame(),
+            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data.frame(),
+            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data.frame(),
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:6, 8:9), ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% 18:21, ],
+            "2016-07-12 16:05:37-2016-07-12 16:05:38" = data.frame()
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$synchronicity,
@@ -401,8 +574,9 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
@@ -420,16 +594,19 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     expected = c(
         "2004-10-09 18:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.entry("ranges")
+    result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
 
     ## check data for all ranges
     expected.data = list(
-        commits.raw = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commits.raw[1:4, ]
+        commits = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commits[1:4, ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6,8:9,18:21), ]
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$synchronicity
@@ -439,13 +616,253 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         )
     )
     results.data = list(
-        commits.raw = lapply(results, function(cf.data) cf.data$get.commits.raw()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 
+    ##
+    ## split by number of windows
+    ##
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "mail", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2004-10-09 18:38:13-2010-07-12 12:05:43",
+        "2010-07-12 12:05:43-2016-07-12 16:05:38"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges (number.windows).")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data.frame(),
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits[1:4, ]
+        ),
+        mails = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 9:17, ]
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data.frame(),
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6,8:9,18:21), ]
+        ),
+        synchronicity = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$synchronicity,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$synchronicity
+        ),
+        pasta = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$pasta,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "mails", number.windows = nrow(project.data$get.mails()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "mails", number.windows = 0),
+        info = "Error expected (number.windows) (2)."
+    )
+})
+
+
+##
+## Tests for split.data.activity.based(..., activity.type = 'issues')
+##
+
+test_that("Split a data object activity-based (activity.type = 'issues').", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits(),
+        mails = project.data$get.mails(),
+        issues = project.data$get.issues(),
+        synchronicity = project.data$get.synchronicity(),
+        pasta = project.data$get.pasta()
+    )
+
+    ## split data
+    results = split.data.activity.based(project.data, activity.amount = 8,
+                                        activity.type = "issues", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2013-04-21 23:52:09-2016-07-12 16:05:47",
+        "2016-07-12 16:05:47-2016-08-31 18:21:48",
+        "2016-08-31 18:21:48-2017-02-20 22:25:41",
+        "2017-02-20 22:25:41-2017-05-23 12:32:40"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges.")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$commits[1:6, ],
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$commits[7:9, ],
+            "2016-08-31 18:21:48-2017-02-20 22:25:41" = data.frame(),
+            "2017-02-20 22:25:41-2017-05-23 12:32:40" = data.frame()
+        ),
+        mails = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$mails[rownames(data$mails) %in% 14:17, ],
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data.frame(),
+            "2016-08-31 18:21:48-2017-02-20 22:25:41" = data.frame(),
+            "2017-02-20 22:25:41-2017-05-23 12:32:40" = data.frame()
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$issues[rownames(data$issues) %in% c(1:6, 8:9, 18:21), ],
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$issues[rownames(data$issues) %in% c(7, 10:17, 22), ],
+            "2016-08-31 18:21:48-2017-02-20 22:25:41" = data$issues[rownames(data$issues) %in% 23:31, ],
+            "2017-02-20 22:25:41-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 32:36, ]
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$synchronicity,
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$synchronicity,
+            "2016-08-31 18:21:48-2017-02-20 22:25:41" = data$synchronicity,
+            "2017-02-20 22:25:41-2017-05-23 12:32:40" = data$synchronicity
+        ),
+        pasta = list(
+            "2013-04-21 23:52:09-2016-07-12 16:05:47" = data$pasta,
+            "2016-07-12 16:05:47-2016-08-31 18:21:48" = data$pasta,
+            "2016-08-31 18:21:48-2017-02-20 22:25:41" = data$pasta,
+            "2017-02-20 22:25:41-2017-05-23 12:32:40" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges.")
+
+    ##
+    ## split by too-large activity amount
+    ##
+
+    ## split data
+    results = split.data.activity.based(project.data, activity.amount = nrow(data$issues) + 10,
+                                        activity.type = "issues", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2013-04-21 23:52:09-2017-05-23 12:32:40"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$commits
+        ),
+        mails = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$issues
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$synchronicity
+        ),
+        pasta = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
+
+    ##
+    ## split by number of windows
+    ##
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "issues", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2013-04-21 23:52:09-2016-07-27 22:25:25",
+        "2016-07-27 22:25:25-2017-05-23 12:32:40"
+    )
+    result = proj.conf$get.value("ranges")
+    expect_equal(result, expected, info = "Time ranges (number.windows).")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$commits,
+            "2016-07-27 22:25:25-2017-05-23 12:32:40" = data.frame()
+        ),
+        mails = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$mails[rownames(data$mails) %in% 14:17, ],
+            "2016-07-27 22:25:25-2017-05-23 12:32:40" = data.frame()
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$issues[rownames(data$issues) %in% c( 1:14, 18:22), ],
+            "2016-07-27 22:25:25-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:17, 23:36), ]
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$synchronicity,
+            "2016-07-27 22:25:25-2017-05-23 12:32:40" = data$synchronicity
+        ),
+        pasta = list(
+            "2013-04-21 23:52:09-2016-07-27 22:25:25" = data$pasta,
+            "2016-07-27 22:25:25-2017-05-23 12:32:40" = data$pasta
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "issues", number.windows = nrow(project.data$get.issues()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "issues", number.windows = 0),
+        info = "Error expected (number.windows) (2)."
+    )
 })
 
 
@@ -460,16 +877,18 @@ test_that("Split a network time-based (time.period = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ##
     ## simplify = FALSE
     ##
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expected = list(
         "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph.edges(author.net, c(1:2)),
@@ -493,11 +912,11 @@ test_that("Split a network time-based (time.period = ...).", {
     ##
 
     ## update network configuration
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = TRUE))
-    project.data$reset.environment()
+    net.builder$update.network.conf(list(author.relation = "cochange", simplify = TRUE))
+    net.builder$reset.environment()
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
@@ -516,16 +935,18 @@ test_that("Split a network time-based (bins = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ##
     ## simplify = FALSE
     ##
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     ## results
     expected = list(
@@ -550,13 +971,51 @@ test_that("Split a network time-based (bins = ...).", {
     ##
 
     ## update network configuration
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = TRUE))
-    project.data$reset.environment()
+    net.conf$update.values(list(author.relation = "cochange", simplify = TRUE))
+    net.builder$reset.environment()
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
+
+})
+
+
+##
+## Tests for split.networks.time.based(..., time.period = ...)
+##
+
+test_that("Split a list of networks time-based.", {
+
+    ## time period
+    time.period = "2 years"
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
+
+    ## obtain networks:
+    ## 1) co-change network
+    net.builder$update.network.conf(list(author.relation = "cochange"))
+    net.cochange = net.builder$get.author.network()
+    ## 2) mail network
+    net.builder$update.network.conf(list(author.relation = "mail"))
+    net.mail = net.builder$get.author.network()
+
+    ## split networks
+    net.split = split.networks.time.based(
+        networks = list(net.cochange, net.mail),
+        time.period = time.period,
+        sliding.window = FALSE
+    )
+
+    ## check whether the splitting information of the two split networks are identical
+    expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
 
 })
 
@@ -569,12 +1028,14 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
 
     ## retrieve author network
-    author.net = project.data$get.author.network()
+    author.net = net.builder$get.author.network()
 
     ##
     ## number.edges (1)
@@ -761,13 +1222,12 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ##
 
     ## results
-    expected.bins.long  = c('2000-01-01 00:00:00', '2000-01-11 00:00:00', '2000-01-21 00:00:00', '2000-01-29 00:00:01')
-    expected.bins.short = c('2000-01-01', '2000-01-11', '2000-01-21', '2000-01-29 00:00:01')
+    expected.bins  = c('2000-01-01 00:00:00', '2000-01-11 00:00:00', '2000-01-21 00:00:00', '2000-01-29 00:00:01')
     expected = list(
-        vector = factor(head(expected.bins.short, -1))[c(3, 3, 2, 3, 2,
-                                                         1, 1, 3, 2, 1,
-                                                         2, 1, 3, 1, 2)],
-        bins = expected.bins.long
+        vector = factor(head(expected.bins, -1))[c(3, 3, 2, 3, 2,
+                                                   1, 1, 3, 2, 1,
+                                                   2, 1, 3, 1, 2)],
+        bins = expected.bins
     )
     results = split.get.bins.time.based(dates.posixct, "10 days")
 
@@ -779,11 +1239,10 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ##
 
     ## results
-    expected.bins.long  = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
-    expected.bins.short = c('2000-01-01', '2000-01-29 00:00:01')
+    expected.bins  = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
     expected = list(
-        vector = factor(head(expected.bins.short, -1))[ rep(1, length.dates) ],
-        bins = expected.bins.long
+        vector = factor(head(expected.bins, -1))[ rep(1, length.dates) ],
+        bins = expected.bins
     )
     results = split.get.bins.time.based(dates.posixct, "1 year")
 
@@ -837,26 +1296,28 @@ test_that("Check consistency of data and network time-based splitting.", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", artifact.filter.base = FALSE, simplify = FALSE))
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
-    ## retrieve project data
-    project.data = CodefaceProjectData$new(proj.conf, net.conf)
+    ## retrieve project data and network builder
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
     ## retrieve author network
-    project.net = project.data$get.author.network()
+    project.net = net.builder$get.author.network()
 
     ## set time period for splitting
     time.period = "7 mins"
 
     ## split data
     results.data = split.data.time.based(project.data, time.period = time.period, split.basis = "commits")
-    results.data.network = lapply(results.data, function(d) d$get.author.network())
+    results.data.network = lapply(results.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
 
     ## split network
     results.network = split.network.time.based(project.net, time.period = time.period)
 
     ## check ranges
-    expect_equal(names(results.network), names(results.data.network))
+    expect_equal(names(results.network), names(results.data.network), info = "Range equality.")
 
     ## the chosen time-window size results in the following condition:
     ## 1) Thomas and Karl only appear in the second time window, both working on the base feature.
@@ -869,5 +1330,127 @@ test_that("Check consistency of data and network time-based splitting.", {
     check.identical = mapply(results.data.network, results.network, FUN = function(d, n) {
         igraph::identical_graphs(d, n)
     })
+    expect_true(all(check.identical), info = "Network equality.")
+
+})
+
+
+##
+## Tests for duplicate range names
+##
+
+test_that("Check and correct duplicate range names during network activity-based splitting.", {
+
+    ## define dates for edges and the resulting changes
+    dates = as.POSIXct(c(
+        "2000-01-01 01:00:00", "2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+        "2001-01-01 12:00:00", "2001-01-01 12:00:00",
+
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+        "2002-01-01 12:00:00", "2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00", "2003-01-01 12:00:00"
+    ))
+    expected.ranges = c(
+        "2000-01-01 01:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2001-01-01 12:00:00",
+        "2001-01-01 12:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2003-01-01 12:00:01"
+    )
+    expected.ranges.corrected = c(
+        "2000-01-01 01:00:00-2001-01-01 12:00:00",
+
+        "2001-01-01 12:00:00-2001-01-01 12:00:00 (1)",
+        "2001-01-01 12:00:00-2001-01-01 12:00:00 (2)",
+
+        "2001-01-01 12:00:00-2002-01-01 12:00:00",
+
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (1)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (2)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (3)",
+        "2002-01-01 12:00:00-2002-01-01 12:00:00 (4)",
+
+        "2002-01-01 12:00:00-2003-01-01 12:00:01"
+    )
+
+    ## construct a small network
+    net = igraph::make_empty_graph(directed = FALSE) +
+        igraph::vertices(c("A", "B")) +
+        igraph::edges(rep(c("A", "B"), times = length(dates)))
+    ## set some date attributes that are appropriate for the test case
+    net = igraph::set.edge.attribute(net, "date", value = dates)
+
+    ## define split arguments
+    split.function = split.network.activity.based
+    split.activity.amount = 2
+    split.arguments = list(network = net, number.edges = split.activity.amount, sliding.window = FALSE)
+
+    ## check for issued warning
+    expect_output(
+        do.call(split.function, split.arguments),
+        "WARNING::Due to the splitting, there are duplicated range names.",
+        fixed = TRUE,
+        info = "Generate warning."
+    )
+
+    ## check range names
+    net.split = do.call(split.function, split.arguments)
+    ranges = names(net.split)
+    expect_equal(ranges, expected.ranges, info = "Ranges (original).")
+
+    ## correct ranges
+    ranges.corrected = split.unify.range.names(ranges)
+    expect_equal(ranges.corrected, expected.ranges.corrected, info = "Ranges (unified).")
+
+
+    ## Arbitrary range names (1)
+    ranges = c("A-B", "B-C", "C-D")
+    expected = c("A-B", "B-C", "C-D")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (1).")
+
+    ## Arbitrary range names (2)
+    ranges = c("A-B", "A-B", "B-C", "B-C", "C-D")
+    expected = c("A-B (1)", "A-B (2)", "B-C (1)", "B-C (2)", "C-D")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (2).")
+
+    ## Arbitrary range names (3)
+    ranges = c("A-B", "A-B", "B-C", "A-B", "B-C")
+    expected = c("A-B (1)", "A-B (2)", "B-C (1)", "A-B (1)", "B-C (1)")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (3).")
+
+    ## Arbitrary range names (4)
+    ranges = c("A-B", "A-B", "B-C", "C-D", "C-D")
+    expected = c("A-B (1)", "A-B (2)", "B-C", "C-D (1)", "C-D (2)")
+    result = split.unify.range.names(ranges)
+    expect_identical(result, expected, info = "Arbitrary ranges (4).")
+
+    ##
+    ## the removal duplicate ranges
+    ##
+
+    df = data.frame(date = dates, id = 1:length(dates))
+    expected = expected.ranges[c(1, 4, 9)]
+    result = construct.ranges(
+        split.get.bins.activity.based(df, "id", activity.amount = split.activity.amount, remove.duplicate.bins = TRUE)[["bins"]],
+        sliding.window = FALSE
+    )
+    expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
 })

@@ -67,10 +67,10 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D1", "D2") ],
         igraph::V(network)[ c("D1", "D4") ],
         igraph::V(network)[ c("D1", "D2") ], # unordered: D2, D1
-        igraph::V(network)[ c("D3", "D4") ],
         igraph::V(network)[ c("D1", "D4") ], # unordered: D4, D1
-        igraph::V(network)[ c("D3", "D4") ], # unordered: D4, D3
+        igraph::V(network)[ c("D3", "D4") ],
         igraph::V(network)[ c("D4", "D5") ],
+        igraph::V(network)[ c("D3", "D4") ], # unordered: D4, D3
         igraph::V(network)[ c("D4", "D5") ]  # unordered: D5, D4
     )
     matchings = motifs.search.in.network(network, MOTIFS.LINE, color.attr = "type", remove.duplicates = FALSE)
@@ -106,10 +106,10 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
     expected = list(
         igraph::V(network)[ c("D1", "D3", "A1", "A3") ],
         igraph::V(network)[ c("D2", "D3", "A1", "A3") ],
-        igraph::V(network)[ c("D1", "D3", "A1", "A3") ], # unordered: D3, D1, A1, A3
-        igraph::V(network)[ c("D2", "D3", "A1", "A3") ], # unordered: D3, D2, A1, A3
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ],
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ],
+        igraph::V(network)[ c("D1", "D3", "A1", "A3") ], # unordered: D3, D1, A1, A3
+        igraph::V(network)[ c("D2", "D3", "A1", "A3") ], # unordered: D3, D2, A1, A3
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ], # unordered: D5, D4, A5, A6
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ]  # unordered: D6, D4, A5, A6
     )
@@ -131,26 +131,34 @@ test_that("Motif counts for sample network (remove.duplicates = TRUE).", {
         "artifacts" = 6, # total number of artifacts
         "complete" = 15, # total number of author pairs
         "collaborating" = 2, # number of author pairs that collaborate
-        "collaborating.raw" = list(
+        "communicating" = 4, # number of author pairs that communicate
+        "collaborating.and.communicating" = 1 # number of author pairs that collaborate and communicate
+    )
+    attr(expected.triangle, "raw") = list(
+        "collaborating" = list(
             igraph::V(network)[ c("D1", "D2", "A1") ],
             igraph::V(network)[ c("D5", "D6", "A6") ]
         ),
-        "communicating" = 4, # number of author pairs that communicate
-        "communicating.raw" = list(
+        "communicating" = list(
             igraph::V(network)[ c("D1", "D2") ],
             igraph::V(network)[ c("D1", "D4") ],
             igraph::V(network)[ c("D3", "D4") ],
             igraph::V(network)[ c("D4", "D5") ]
         ),
-        "collaborating.and.communicating" = 1, # number of author pairs that collaborate and communicate
-        "collaborating.and.communicating.raw" = list(
+        "collaborating.and.communicating" = list(
             igraph::V(network)[ c("D1", "D2", "A1") ]
-        ),
-        "p1" = 4 / 15, # fraction p1
-        "p2" = 1 / 2, # fraction p2
-        "correct" = TRUE # sanity check
+        )
     )
-    result.triangle = motifs.count(network, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.LINE, MOTIFS.TRIANGLE.POSITIVE, remove.duplicates = TRUE)
+    result.triangle = motifs.count(
+        network,
+        motifs = list(
+            collaborating = MOTIFS.TRIANGLE.NEGATIVE,
+            communicating = MOTIFS.LINE,
+            collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE
+        ),
+        remove.duplicates = TRUE,
+        raw.data = TRUE
+    )
     expect_equal(result.triangle, expected.triangle, info = "Triangle motif.")
 
     ## Square motif
@@ -159,37 +167,78 @@ test_that("Motif counts for sample network (remove.duplicates = TRUE).", {
         "artifacts" = 6, # total number of artifacts
         "complete" = 15, # total number of author pairs
         "collaborating" = 4, # number of author pairs that collaborate
-        "collaborating.raw" = list(
+        "communicating" = 4, # number of author pairs that communicate
+        "collaborating.and.communicating" = 1 # number of author pairs that collaborate and communicate
+    )
+    attr(expected.square, "raw") = list(
+        "collaborating" = list(
             igraph::V(network)[ c("D1", "D3", "A1", "A3") ],
             igraph::V(network)[ c("D2", "D3", "A1", "A3") ],
             igraph::V(network)[ c("D4", "D5", "A5", "A6") ],
             igraph::V(network)[ c("D4", "D6", "A5", "A6") ]
         ),
-        "communicating" = 4, # number of author pairs that communicate
-        "communicating.raw" = list(
+        "communicating" = list(
             igraph::V(network)[ c("D1", "D2") ],
             igraph::V(network)[ c("D1", "D4") ],
             igraph::V(network)[ c("D3", "D4") ],
             igraph::V(network)[ c("D4", "D5") ]
         ),
-        "collaborating.and.communicating" = 1, # number of author pairs that collaborate and communicate
-        "collaborating.and.communicating.raw" = list(
+        "collaborating.and.communicating" = list(
             igraph::V(network)[ c("D4", "D5", "A5", "A6") ]
-        ),
-        "p1" = 4 / 15, # fraction p1
-        "p2" = 1 / 4, # fraction p2
-        "correct" = TRUE # sanity check
+        )
     )
-    result.square = motifs.count(network, MOTIFS.SQUARE.NEGATIVE, MOTIFS.LINE, MOTIFS.SQUARE.POSITIVE, remove.duplicates = TRUE)
+    result.square = motifs.count(
+        network,
+        motifs = list(
+            collaborating = MOTIFS.SQUARE.NEGATIVE,
+            communicating = MOTIFS.LINE,
+            collaborating.and.communicating = MOTIFS.SQUARE.POSITIVE
+        ),
+        remove.duplicates = TRUE,
+        raw.data = TRUE
+    )
     expect_equal(result.square, expected.square, info = "Square motif.")
 
+    ##
     ## All motifs.
-    expected.all = list(
-        triangle = expected.triangle,
-        square = expected.square
+    ##
+
+    ## expected results
+    expected.triangle.all = c(
+        expected.triangle,
+        list(
+            "p1" = 4 / 15, # fraction p1
+            "p2" = 1 / 2 # fraction p2
+        )
     )
-    result.all = motifs.count.all(network)
+    attr(expected.triangle.all, "raw") = attr(expected.triangle, "raw")
+
+    expected.square.all = c(
+        expected.square,
+        list(
+            "p1" = 4 / 15, # fraction p1
+            "p2" = 1 / 4 # fraction p2
+        )
+    )
+    attr(expected.square.all, "raw") = attr(expected.square, "raw")
+
+    ## All motifs (with raw data)
+    expected.all = list(
+        triangle = expected.triangle.all,
+        square = expected.square.all
+    )
+    result.all = motifs.count.all(network, raw.data = TRUE)
     expect_equal(result.all, expected.all, info = "All motifs.")
+
+    ## All motifs (no raw data)
+    attr(expected.triangle.all, "raw") = NULL
+    attr(expected.square.all, "raw") = NULL
+    expected.all = list(
+        triangle = expected.triangle.all,
+        square = expected.square.all
+    )
+    result.all = motifs.count.all(network, raw.data = FALSE)
+    expect_equal(result.all, expected.all, info = "All motifs (no raw data).")
 
 })
 

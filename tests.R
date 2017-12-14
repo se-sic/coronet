@@ -2,17 +2,29 @@
 ## hunsen@fim.uni-passau.de
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Initialization ----------------------------------------------------------
+
 source("util-init.R")
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Logging -----------------------------------------------------------------
 
 library("logging")
 logging::basicConfig(level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 1L)
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("testthat")
 
 
-## run all tests in the subfolder 'tests'
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Run tests in subfolder 'tests' ------------------------------------------
 
 do.tests <- function(dir) {
     res <- testthat::test_dir(dir, reporter = "check")

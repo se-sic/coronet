@@ -2,25 +2,25 @@
 ## hunsen@fim.uni-passau.de
 
 
-## libraries
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
 requireNamespace("plyr") # for rbind.fill.matrix
 requireNamespace("igraph") # graphs, baby!
 
 
-## / / / / / / / / / / / / / /
-## Line motif
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motifs ------------------------------------------------------------------
+
+## * Line motif -----------------------------------------------------------
 ## (i.e., two authors connected)
-##
 
 MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", type = c(TYPE.AUTHOR, TYPE.AUTHOR)) +
     igraph::edges("D1","D2", type = c(TYPE.EDGES.INTRA))
 
-
-## / / / / / / / / / / / / / /
-## Triangle motif
+## * Triangle motif --------------------------------------------------------
 ## (two authors are connected to one artifact)
-##
 
 ## positive triangle motif (including communication)
 MOTIFS.TRIANGLE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
@@ -35,10 +35,8 @@ MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::edges("D1","A" , "D2","A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
 
 
-## / / / / / / / / / / / / / /
-## Square motif
+## * Square motif ----------------------------------------------------------
 ## (two authors are connected to two distinct artifact that are coupled)
-##
 
 ## positive square motif (including communication)
 MOTIFS.SQUARE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
@@ -55,9 +53,8 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 
-## / / / / / / / / / / / / / /
-## Motif-identification functions
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Motif-identification functions ------------------------------------------
 
 #' Search for the given \code{motif} in the given \code{network}.
 #'
@@ -77,8 +74,6 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 #'
 #' @examples
 #' motifs.search.in.network(get.sample.network(), MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
-#'
-#' FIXME use 'lad' method for igraph::subgraph_isomorphisms as 'induced == TRUE' already filters false-positives?
 motifs.search.in.network = function(network, motif, color.attr = "type", remove.duplicates = TRUE) {
 
     ## find motif in network
@@ -121,88 +116,116 @@ motifs.search.in.network = function(network, motif, color.attr = "type", remove.
 #' Retrieve the motif count for the given group of motifs.
 #'
 #' @param network The network to use for the search
-#' @param motif.collaborating A motif describing the collaboration of authors on artifacts
-#' @param motif.communicating A motif describing communication among authors only
-#' @param motif.collaborating.and.communicating A motif describing authors collaborating
-#'                                              and communicating at the same time
+#' @param motifs a (named) list of network motifs to search for; the names are re-used in the
+#'               return value (see below)
 #' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
 #'                          removed. This logical value basically resembles the idea of respecting
-#'                          the order within a matched motif or not.
+#'                          the order within a matched motif or not. [default: TRUE]
+#' @param raw.data Whether to add attribute 'raw' to the result list, containing the raw vertex
+#'                 sequences describing the matched motifs [default: FALSE]
 #'
 #' @return A named list,
 #'         the item 'authors': the total number of authors in the network,
 #'         the item 'artifacts': the total number of artifacts in the network,
-#'         the item 'complete': the total number of author pairs,
-#'         the item 'collaborating': the number of author pairs that collaborate
-#'                                   (i.e., amount of matched instances of \code{motif.collaborating}),
-#'         the item 'collaborating.raw': the matched instances of \code{motif.collaborating}),
-#'         the item 'communicating': the number of author pairs that communicate
-#'                                   (i.e., amount of matched instances of \code{motif.communicating}),
-#'         the item 'communicating.raw': the matched instances of \code{motif.communicating}),
-#'         the item 'collaborating.and.communicating': the number of author pairs that collaborate and communicate
-#'                                   (i.e., amount of matched instances of \code{motif.collaborating.and.communicating})
-#'         the item 'collaborating.and.communicating.raw': the matched instances of \code{motif.collaborating.and.communicating}),
+#'         the item 'complete': the total number of author pairs, and
+#'         one item for each motif given with the argument \code{motifs}:
+#'                       the names are taken from the list \code{motifs} or, if they do not exist,
+#'                       replaced with a number sequence.
 #'
-#'         the item 'p1': the fraction of author pairs communicating,
-#'         the item 'p2': the fraction of collaborating author pairs that are also communicating
-#'                        (i.e., the fraction of fulfilled coordination requirements),
-#'         the item 'correct': a sanitiy check whether
-#'                             collaborating.and.communicating.raw == intersect(collaborating.raw, communicating.raw)
-#'
-#' FIXME give the motifs as a named list that can be used for iteration!
-#' FIXME change handling of raw data (store as attribute, make it optional, ...)
-motifs.count = function(network, motif.collaborating, motif.communicating, motif.collaborating.and.communicating,
-                        remove.duplicates = TRUE) {
-    ## get isomorphisms, i.e., motifs in the network
-    collaborating = motifs.search.in.network(network = network, motif = motif.collaborating,
-                                             color.attr = "type", remove.duplicates = remove.duplicates)
-    communicating = motifs.search.in.network(network = network, motif = motif.communicating,
-                                             color.attr = "type", remove.duplicates = remove.duplicates)
-    collaborating.and.communicating = motifs.search.in.network(network = network, motif = motif.collaborating.and.communicating,
-                                                               color.attr = "type", remove.duplicates = remove.duplicates)
+#'         The list get the attribute "raw", when \code{raw.data} is enabled; then,
+#'         for each motif in the list \code{motifs}, the raw matched motifs are stored.
+motifs.count = function(network, motifs, remove.duplicates = TRUE, raw.data = FALSE) {
 
-    ## compute intersections for verification of matched sets
-    cleaned.collaborating = unique(motifs.remove.artifacts.from.matched.motifs(network, collaborating))
-    cleaned.collaborating.and.communicating = unique(motifs.remove.artifacts.from.matched.motifs(network, collaborating.and.communicating))
-    correct = setequal(cleaned.collaborating.and.communicating, intersect(cleaned.collaborating, communicating))
+    ## get names of motifs
+    if (is.null(names(motifs))) {
+        names(motifs) = seq_along(motifs)
+    }
+    motif.names = names(motifs)
 
-    ## get list of authors
-    authors.length = length(igraph::V(network)[ type == TYPE.AUTHOR ])
-    artifacts.length = length(igraph::V(network)[ type == TYPE.ARTIFACT ])
-    authors.pairs = choose(authors.length, 2)
+    ## run search for all motifs
+    res = lapply(motifs, function(motif) {
+        motifs.search.in.network(
+            network = network,
+            motif = motif,
+            color.attr = "type",
+            remove.duplicates = remove.duplicates
+        )
+    })
 
-    # return an object for later inspection
-    return(list(
-        "authors" = authors.length, # total number of authors
-        "artifacts" = artifacts.length, # total number of artifacts
-        "complete" = authors.pairs, # total number of author pairs
-        "collaborating" = length(collaborating), # number of author pairs that collaborate
-        "collaborating.raw" = collaborating,
-        "communicating" = length(communicating), # number of author pairs that communicate
-        "communicating.raw" = communicating,
-        "collaborating.and.communicating" = length(collaborating.and.communicating), # number of author pairs that collaborate and communicate
-        "collaborating.and.communicating.raw" = collaborating.and.communicating,
-        "p1" = length(communicating) / authors.pairs, # fraction p1
-        "p2" = length(collaborating.and.communicating) / length(collaborating), # fraction p2
-        "correct" = correct # sanity check
+    ## construct result list:
+    result = list()
+    ## (1) basic numbers
+    author.count = length(igraph::V(network)[ type == TYPE.AUTHOR ])
+    artifact.count = length(igraph::V(network)[ type == TYPE.ARTIFACT ])
+    result = c(result, list(
+        "authors" = author.count, # total number of authors
+        "artifacts" = artifact.count, # total number of artifacts
+        "complete" = choose(author.count, 2) # total number of author pairs
     ))
+    ## (2) motif counts
+    for (name in motif.names) {
+        result[name] = length(res[[name]])
+    }
+
+    ## add raw data as attribute if wanted
+    if (raw.data) {
+        attr(result, "raw") = res
+    }
+
+    return(result)
 }
 
 #' Retrieve the motif count for a predefined list of motifs.
 #'
 #' @param network The network to use for the search
+#' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
+#'                          removed. This logical value basically resembles the idea of respecting
+#'                          the order within a matched motif or not. [default: TRUE]
+#' @param raw.data Whether to add attribute 'raw' to the result list, containing the raw vertex
+#'                 sequences describing the matched motifs [default: FALSE]
 #'
 #' @return A named list,
 #'         the item 'triangle': the motif data for the triangle motifs,
 #'         the item 'square': the motif data for the square motifs.
 #'
 #'         The items' data is preserved as returned from \code{motifs.count}.
-motifs.count.all = function(network) {
-    # get motif counts
-    triangle = motifs.count(network, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.LINE, MOTIFS.TRIANGLE.POSITIVE)
-    square = motifs.count(network, MOTIFS.SQUARE.NEGATIVE, MOTIFS.LINE, MOTIFS.SQUARE.POSITIVE)
+#'
+#'         Each sublist is augmented with the following items:
+#'         - the item 'p1': the fraction of author pairs communicating,
+#'         - the item 'p2': the fraction of collaborating author pairs that are also
+#'           communicating (i.e., the fraction of fulfilled coordination requirements),
+motifs.count.all = function(network, remove.duplicates = TRUE, raw.data = FALSE) {
+    ## (1) triangle motif
+    triangle = motifs.count(
+        network,
+        motifs = list(
+            collaborating = MOTIFS.TRIANGLE.NEGATIVE,
+            communicating = MOTIFS.LINE,
+            collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE
+        ),
+        remove.duplicates = remove.duplicates,
+        raw.data = raw.data
+    )
+    ## fractions
+    triangle["p1"] = triangle[["communicating"]] / triangle[["complete"]]
+    triangle["p2"] = triangle[["collaborating.and.communicating"]] / triangle[["collaborating"]]
 
-    # return raw data
+    ## (2) square motif
+    square = motifs.count(
+        network,
+        motifs = list(
+            collaborating = MOTIFS.SQUARE.NEGATIVE,
+            communicating = MOTIFS.LINE,
+            collaborating.and.communicating = MOTIFS.SQUARE.POSITIVE
+        ),
+        remove.duplicates = remove.duplicates,
+        raw.data = raw.data
+    )
+    ## fractions
+    square["p1"] = square[["communicating"]] / square[["complete"]]
+    square["p2"] = square[["collaborating.and.communicating"]] / square[["collaborating"]]
+
+    ## return data
     return(list(
         "triangle" = triangle,
         "square" = square
@@ -210,9 +233,8 @@ motifs.count.all = function(network) {
 }
 
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Low-level functionality
-##
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Low-level functionality -------------------------------------------------
 
 #' Remove vertices of type \code{TYPE.ARTIFACT} from the given vertex sequence(s) \code{vs}.
 #'

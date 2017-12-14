@@ -56,8 +56,8 @@ get.author.class.by.type = function(network = NULL, data = NULL,
     result = switch(type,
                     "network.degree" = get.author.class.network.degree(network = network),
                     "network.eigen" = get.author.class.network.eigen(network = network),
-                    "commit.count" = get.author.class.commit.count(codeface.range.data = data),
-                    "loc.count"= get.author.class.loc.count(codeface.range.data = data))
+                    "commit.count" = get.author.class.commit.count(range.data = data),
+                    "loc.count" = get.author.class.loc.count(range.data = data))
 
     logging::logdebug("get.author.class.by.type: finished.")
     return(result)
@@ -68,14 +68,14 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 ##
 ## The data can either be given as list of raw range data (for the count-based metrics)
 ## or as list of networks for the network-based metrics).
-get.author.class.overview = function(network.list = NULL, codeface.range.data.list = NULL,
+get.author.class.overview = function(network.list = NULL, range.data.list = NULL,
                                      type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.overview: starting.")
 
     type = match.arg(type)
 
-    if(is.null(codeface.range.data.list) && (type == "commit.count" || type == "loc.count")) {
-        logging::logerror("For count-based metric evolution, a list of codeface range-data objects is needed.")
+    if(is.null(range.data.list) && (type == "commit.count" || type == "loc.count")) {
+        logging::logerror("For count-based metric evolution, a list of RangeData objects is needed.")
         stop("For the count-based metrics, the raw data has to be given.")
 
     } else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
@@ -84,10 +84,10 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
     }
 
     res = list()
-    if(!is.null(codeface.range.data.list)) {
-        for (i in 1:length(codeface.range.data.list)) {
-            range.data = codeface.range.data.list[[i]]
-            range.name = names(codeface.range.data.list)[[i]]
+    if(!is.null(range.data.list)) {
+        for (i in 1:length(range.data.list)) {
+            range.data = range.data.list[[i]]
+            range.name = names(range.data.list)[[i]]
 
             ## Get classification data of the current range
             range.class =
@@ -128,7 +128,7 @@ get.author.class.overview = function(network.list = NULL, codeface.range.data.li
 ## An individual split range can be set for each version as a list of vectors with the version name as the key.
 ## An integer value can be set as "sliding.window.core" to specify, that the core authors of the last
 ## version ranges (according to the value) shall be included in the core author set of the current range.
-get.author.class.activity.overview = function(codeface.range.data.list = NULL,
+get.author.class.activity.overview = function(range.data.list = NULL,
                                               author.class.overview = NULL,
                                               split = c(),
                                               sliding.window.core = NULL,
@@ -138,8 +138,8 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
 
     activity.measure = match.arg(activity.measure)
 
-    if(is.null(codeface.range.data.list)) {
-        logging::logerror("A list of Codeface range-data objects is needed for the activity analysis.")
+    if(is.null(range.data.list)) {
+        logging::logerror("A list of RangeData objects is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
 
@@ -148,13 +148,13 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
         stop("Author classification has to be given.")
     }
 
-    if(length(codeface.range.data.list) != length(author.class.overview)) {
+    if(length(range.data.list) != length(author.class.overview)) {
         logging::logerror("The raw data and the author classification use a different number of ranges.")
         stop("Raw data and author classification have to match.")
     }
 
     res = list()
-    for (i in 1:length(codeface.range.data.list)) {
+    for (i in 1:length(range.data.list)) {
 
         ## Check if an individual split for each version range is set
         if (class(split) == "list") {
@@ -175,7 +175,7 @@ get.author.class.activity.overview = function(codeface.range.data.list = NULL,
             }
         }
 
-        res[[i]] = get.author.class.activity(codeface.range.data.list[[i]],
+        res[[i]] = get.author.class.activity(range.data.list[[i]],
                                              author.class = author.class.overview[[i]],
                                              activity.measure = activity.measure,
                                              split = range.split,
@@ -386,7 +386,7 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(network = NULL, codeface.range.data = NULL, result.limit = NULL) {
+get.author.class.network.eigen = function(network = NULL, range.data = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
     if(is.null(network)) {
@@ -425,11 +425,11 @@ get.author.class.network.eigen = function(network = NULL, codeface.range.data = 
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the number of commits made withing a version range.
-get.author.class.commit.count = function(codeface.range.data, result.limit = NULL) {
+get.author.class.commit.count = function(range.data, result.limit = NULL) {
     logging::logdebug("get.author.class.commit.count: starting.")
 
     ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(codeface.range.data)
+    author.commit.count = get.author.commit.count(range.data)
 
     ## Get the author classification based on the commit counts
     res = get.author.class(author.commit.count, "freq", result.limit = result.limit)
@@ -440,11 +440,11 @@ get.author.class.commit.count = function(codeface.range.data, result.limit = NUL
 
 ## Get the commit count threshold  of the specified version range
 ## on which a author can be classified as core.
-get.commit.count.threshold = function(codeface.range.data) {
+get.commit.count.threshold = function(range.data) {
     logging::logdebug("get.commit.count.threshold: starting.")
 
     ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(codeface.range.data)
+    author.commit.count = get.author.commit.count(range.data)
     threshold = get.threshold(author.commit.count$freq)
 
     logging::logdebug("get.commit.count.threshold: finished.")
@@ -453,11 +453,11 @@ get.commit.count.threshold = function(codeface.range.data) {
 
 ## Get the commit count per author of the specified version range
 ## as a data frame ordered by the commit count.
-get.author.commit.count = function(codeface.range.data) {
+get.author.commit.count = function(range.data) {
     logging::logdebug("get.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(codeface.range.data)[[1]]
+    commits.df = get.commit.data(range.data)[[1]]
 
     ## Return NA in case no commit data is available
     if(all(is.na(commits.df))) {
@@ -475,11 +475,11 @@ get.author.commit.count = function(codeface.range.data) {
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(codeface.range.data, result.limit = NULL) {
+get.author.class.loc.count = function(range.data, result.limit = NULL) {
     logging::logdebug("get.author.class.loc.count: starting.")
 
     ## Get the changed lines (loc counts) per author
-    author.loc.count = get.author.loc.count(codeface.range.data)
+    author.loc.count = get.author.loc.count(range.data)
 
     ## Get the author classification based on the loc counts
     res = get.author.class(author.loc.count, "loc", result.limit = result.limit)
@@ -490,11 +490,11 @@ get.author.class.loc.count = function(codeface.range.data, result.limit = NULL) 
 
 ## Get the loc count threshold of the specified version range
 ## on which a author can be classified as core.
-get.loc.count.threshold = function(codeface.range.data) {
+get.loc.count.threshold = function(range.data) {
     logging::logdebug("get.loc.count.threshold: starting.")
 
     ## Get the loc per author
-    author.loc.count = get.author.loc.count(codeface.range.data)
+    author.loc.count = get.author.loc.count(range.data)
 
     threshold = get.threshold(author.loc.count$loc)
 
@@ -504,11 +504,11 @@ get.loc.count.threshold = function(codeface.range.data) {
 
 ## Get the changed lines per author of the specified version range
 ## as a data frame ordered by the changed lines.
-get.author.loc.count = function(codeface.range.data) {
+get.author.loc.count = function(range.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(codeface.range.data,
+    commits.df = get.commit.data(range.data,
                                  columns = c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
 
     ## Return NA in case no commit data is available
@@ -533,7 +533,7 @@ get.author.loc.count = function(codeface.range.data) {
 ## A split interval can be set by defining the number of weeks for each requested range as a vector,
 ## e.g., c(1, 1, 1) for a three-week range that shall be treated as three one-week ranges.
 ## A vector of addition core authors can be specified which will always be set as core in each range.
-get.author.class.activity = function(codeface.range.data = NULL,
+get.author.class.activity = function(range.data = NULL,
                                      author.class = NULL,
                                      activity.measure = c("commit.count", "loc.count"),
                                      split = c(),
@@ -542,8 +542,8 @@ get.author.class.activity = function(codeface.range.data = NULL,
 
     activity.measure = match.arg(activity.measure)
 
-    if(is.null(codeface.range.data)) {
-        logging::logerror("A Codeface range-data object is needed for the activity analysis.")
+    if(is.null(range.data)) {
+        logging::logerror("A RangeData object is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
     if(is.null(author.class)) {
@@ -560,7 +560,7 @@ get.author.class.activity = function(codeface.range.data = NULL,
     author.core = unique(c(author.class$core$author.name, additional.cores))
 
     ## Get the splitted commit data with all necessary columns
-    commits.data = get.commit.data(codeface.range.data,
+    commits.data = get.commit.data(range.data,
                                    columns = c("author.name", "added.lines", "deleted.lines"),
                                    split = split)
 
@@ -915,19 +915,24 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
         author.data = head(author.data, result.limit)
     }
 
-    ## Check which authors can be treated as core based on the calculation base values
-    author.class.threshold.idx = min(which(cumsum(author.data[[calc.base.name]]) >= author.class.threshold))
+    ## Check which authors can be treated as core based on the calculation base values:
+    ## (1) check which positions are over the threshold
+    ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
+    author.cumsum = cumsum(author.data[[calc.base.name]])
+    author.class.threshold.idx = min(which(
+        author.cumsum > author.class.threshold |
+            sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
+    ))
 
     ## classify developers according to threshold
     core.classification = rep(FALSE, nrow(author.data))
     core.classification[1:author.class.threshold.idx] = TRUE
 
-    ## If we have not found a core author, the author with the highest calculation base value
-    ## will be treated as core, to return at least one core author. The only exception is the
-    ## case that no activity/collaboration occured. Then, all authors are classified as peripheral.
+    ## With no activity/collaboration occurring, all authors are classified as peripheral.
     if(author.class.threshold == 0) {
         logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
         core.classification = rep(FALSE, length(core.classification))
+        # ## old code: if we found no core author (should not happen anymore)
         # } else if (!any(core.classification)) {
         #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
     }
@@ -959,11 +964,11 @@ get.threshold = function(data.list) {
 ## Get the commit data with the specified columns for the specified version range as a data frame
 ## for each specified split range.
 ## A split interval can be set by defining the number of weeks for each requested range as a vector.
-get.commit.data = function(codeface.range.data, columns = c("author.name", "author.email"), split = c()) {
+get.commit.data = function(range.data, columns = c("author.name", "author.email"), split = c()) {
     logging::logdebug("get.commit.data: starting.")
 
     ## Get commit data
-    commits.df = codeface.range.data$get.commits.raw()
+    commits.df = range.data$get.commits()
 
     ## In case no commit data is available, return NA
     if(nrow(commits.df) == 0) {
