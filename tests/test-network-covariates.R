@@ -1,0 +1,208 @@
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
+
+##
+## Context
+##
+
+CF.DATA = file.path(".", "codeface-data")
+CF.SELECTION.PROCESS = "testing"
+CASESTUDY = "test"
+ARTIFACT = "feature"
+AGGREGATION.LEVELS = c("range", "cumulative", "project")
+
+## use only when debugging this file independently
+if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
+
+get.network.covariates.test.networks = function() {
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## retrieve project data and network builder
+    project.data = ProjectData$new(proj.conf)
+
+    ## split data
+    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+    input.data = split.data.time.based(x.data, bins = mybins)
+    input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
+
+    return(list("networks" = input.data.networks, "project.data" = project.data))
+}
+
+get.network.covariates.test.networks.data = function() {
+    networks.and.data = get.network.covariates.test.networks()
+
+    ## split data by networks
+    results = lapply(AGGREGATION.LEVELS, function(level)
+        split.data.by.networks(networks.and.data[["networks"]], networks.and.data[["project.data"]], level)
+    )
+    names(results) = AGGREGATION.LEVELS
+
+    return(results)
+}
+
+test.compute.attr = function(range.data, current.network) {
+    authors = range.data$get.authors()[["author.name"]]
+
+    ## Olaf should get default value
+    authors = authors[-which(authors == "Olaf")]
+
+    attributes = lapply(authors, function(name) 1)
+    names(attributes) = authors
+    return(attributes)
+}
+
+test_that("Test add.vertex.attribute", {
+    test.networks = get.network.covariates.test.networks.data()
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute(test.networks[[level]], "test.attr", 42,
+                                                  test.compute.attr)
+
+        expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
+
+        actual.attributes = lapply(networks.with.attr, function(net) igraph::V(net)$test.attr)
+        expect_identical(expected.attributes, actual.attributes)
+    })
+
+})
+
+network.covariates.test.build.expected = function(a,b,c) {
+    arguments = list(a,b,c)
+
+    names(arguments) = c('2016-07-12 15:00:00-2016-07-12 16:00:00',
+              '2016-07-12 16:00:00-2016-07-12 16:05:00',
+              '2016-07-12 16:05:00-2030-01-01 00:00:00')
+
+    return(arguments)
+}
+
+test_that("Test split.and.add.vertex.attribute", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = split.and.add.vertex.attribute(networks.and.data[["networks"]], networks.and.data[["project.data"]],
+                                                            "test.attr", level, 42, test.compute.attr)
+
+        expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
+
+        actual.attributes = lapply(networks.with.attr, function(net) igraph::V(net)$test.attr)
+        expect_identical(expected.attributes, actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.commit.count", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 1L)),
+                               cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L,  1L)),
+                               project = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)))
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.commit.count(networks.and.data[["networks"]],
+                                                               networks.and.data[["project.data"]],
+                                                            aggregation.level = level)
+        actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "commit.count"))
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.author.email", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = network.covariates.test.build.expected(list("hunsen@fim.uni-passau.de"),
+                                           list("olaf@example.org"),
+                                           list("olaf@example.org", "karl@example.org", "thomas@example.org"))
+
+    networks.with.attr = add.vertex.attribute.author.email(networks.and.data[["networks"]],
+                                                           networks.and.data[["project.data"]])
+
+    actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "author.email"))
+
+    expect_identical(expected.attributes, actual.attributes)
+})
+
+test_that("Test add.vertex.attribute.artifact.count", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    # TODO IS THIS EVEN RIGHT?!
+
+    expected.attributes = list(range = network.covariates.test.build.expected(list(14L),
+                                                                              list(14L),
+                                                                              list(14L, 14L, 14L)),
+                               cumulative = network.covariates.test.build.expected(list(14L),
+                                                                                   list(14L),
+                                                                                   list(14L, 14L, 14L)),
+                               project = network.covariates.test.build.expected(list(14L),
+                                                                                list(14L),
+                                                                                list(14L, 14L, 14L)))
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.artifact.count(networks.and.data[["networks"]],
+                                                               networks.and.data[["project.data"]], aggregation.level = level)
+
+        actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "artifact.count"))
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.first.activity", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(range = list(mail = network.covariates.test.build.expected(list("2016-07-12 15:58:40"),
+                                                        list(NA),
+                                                        list("2016-07-12 16:05:37",
+                                                             NA, NA)),
+                                            commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
+                                                          list("2016-07-12 16:00:45"),
+                                                          list("2016-07-12 16:05:41",
+                                                               "2016-07-12 16:06:10",
+                                                               "2016-07-12 16:06:32")),
+                                            issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
+                                                         list(NA),
+                                                         list("2016-07-27 22:25:25", NA, "2016-07-14 02:03:14"))),
+
+                               cumulative = list(mail = network.covariates.test.build.expected(list("2004-10-09 18:38:13"),
+                                                             list("2016-07-12 15:58:50"),
+                                                             list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
+                                   commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
+                                                 list("2016-07-12 16:00:45"),
+                                                 list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                   issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
+                                                list("2013-05-25 20:02:08"),
+                                                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))),
+                               project = list(mail = network.covariates.test.build.expected(list("2004-10-09 18:38:13"),
+                                                          list("2016-07-12 15:58:50"),
+                                                          list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
+                                   commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
+                                                 list("2016-07-12 16:00:45"),
+                                                 list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                   issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
+                                                list("2013-05-25 20:02:08"),
+                                                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))))
+
+    ## convert date strings to posix
+    expected.attributes = lapply(expected.attributes, function(types)
+        lapply(types, function(times) lapply(times, function(date.list) lapply(date.list, function(date)
+                                                                               as.POSIXct(date))))
+    )
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        attr = lapply(c("mail", "commit", "issue"), function(type) {
+
+            networks.with.attr = add.vertex.attribute.first.activity(networks.and.data[["networks"]],
+                                                                 networks.and.data[["project.data"]],
+                                                                 aggregation.level = level,
+                                                                 activity.type = type)
+
+            actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "first.activity"))
+
+            expect_equal(expected.attributes[[level]][[type]], actual.attributes)
+        })
+    })
+})
