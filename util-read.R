@@ -287,7 +287,7 @@ read.pasta = function(data.path) {
     filepath = file.path(data.path, "similar-mailbox")
 
     ## read data from disk [can be empty]
-    lines = try(readLines(filepath), silent = TRUE)
+    lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of pasta items is empty
     if (inherits(lines, 'try-error')) {
