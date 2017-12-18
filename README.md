@@ -19,6 +19,13 @@ source("path/to/util-init.R", chdir = TRUE)
 ```
 It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
 
+### Selecting the correct version
+
+When selecting a version to work with, you should consider the following points:
+- Each version (i.e., a tag) contains a major and a minor version in the form `v{major}.{minor}`.
+- On the branch `master`, there is always the most recent and complete version.
+- You should always work with the current version (e.g., `v3.0`) on the `master` branch, *unless* there is a branch called `{your_version}-fixes` (e.g., `v3.0-fixes`), then select this one as it contains backported bugfixes for this version.
+
 ### Needed R packages
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)

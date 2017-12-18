@@ -96,7 +96,22 @@ Enhancements are tracked as GitHub issues. Create an issue and provide the neede
 
 ### Your First Code Contribution
 
+#### Installation
+
 Install the library using the guide in our [README](README.md) file. Start implementing your code additions. Please keep the [style conventions](#style-conventions) in mind when implementing.
+
+#### Our branching and tagging system
+
+In our development process, we pursue the following idea:
+- Each version (i.e., a tag) contains a major and a minor version in the form `v{major}.{minor}`.
+- The branch `master` should always contain the most recent and complete version.
+- For each version, we maintain a stable branch `v{major}.{minor}-fixes` (e.g., `v2.3-fixes`) containing backported fixes for this particular version.
+- The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
+
+The current build status is as follows:
+- `master`: [![Build Status](https://travis-ci.com/se-passau/codeface-extraction-r.svg?token=8VFPdy2kjPXtstT72yww&branch=master)](https://travis-ci.com/se-passau/codeface-extraction-r)
+- `dev`: [![Build Status](https://travis-ci.com/se-passau/codeface-extraction-r.svg?token=8VFPdy2kjPXtstT72yww&branch=dev)](https://travis-ci.com/se-passau/codeface-extraction-r)
+
 
 ### Pull Requests
 
