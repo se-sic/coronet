@@ -681,6 +681,8 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     "date",
                     # author information
                     "author.name", "author.email",
+                    # committer information
+                    "committer.date", "committer.name", "committer.email",
                     # e-mail information
                     "message.id", "thread", "subject",
                     ## commit information

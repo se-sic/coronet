@@ -42,15 +42,25 @@ read.commits = function(data.path, artifact) {
 
     ## set proper column names based on Codeface extraction:
     ##
-    ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitHash,
+    ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitDate,
+    ## acom.name, acom.email1, c.commitHash,
     ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
     ## cd.file, cd.entityId, cd.entityType, cd.size
-    colnames(commit.data) = c(
+    commit.data.columns = c(
         "commit.id", # id
         "date", "author.name", "author.email", # author information
+        "committer.date", "committer.name", "committer.email", # committer information
         "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
         "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
+    ## if there are no committer data available, we need to add dummy data (NAs) for this
+    if (ncol(commit.data) != length(commit.data.columns)) {
+        ## add three columns with NAs
+        commit.data[, 14:16] = NA
+        ## do a re-ordering
+        commit.data = commit.data[c(1:4, 14:16, 5:13)]
+    }
+    colnames(commit.data) = commit.data.columns
 
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
@@ -85,6 +95,7 @@ read.commits = function(data.path, artifact) {
 
     ## convert dates and sort by them
     commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
+    commit.data[["committer.date"]] = as.POSIXct(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for thread ID for better recognition
