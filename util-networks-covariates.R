@@ -163,7 +163,9 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
                            function(author) {
                                filter.by.author = Filter(function(range) author %in% range,
                                                  range.to.authors)
-                               active.ranges.of.author = names(filtered)
+
+                               active.ranges.of.author = names(filter.by.author)
+
                                return(active.ranges.of.author)
                                })
 

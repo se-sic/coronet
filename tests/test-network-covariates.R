@@ -55,6 +55,16 @@ test.compute.attr = function(range.data, current.network) {
     return(attributes)
 }
 
+network.covariates.test.build.expected = function(a,b,c) {
+    arguments = list(a,b,c)
+
+    names(arguments) = c('2016-07-12 15:00:00-2016-07-12 16:00:00',
+                         '2016-07-12 16:00:00-2016-07-12 16:05:00',
+                         '2016-07-12 16:05:00-2030-01-01 00:00:00')
+
+    return(arguments)
+}
+
 test_that("Test add.vertex.attribute", {
     test.networks = get.network.covariates.test.networks.data()
 
@@ -70,21 +80,12 @@ test_that("Test add.vertex.attribute", {
 
 })
 
-network.covariates.test.build.expected = function(a,b,c) {
-    arguments = list(a,b,c)
-
-    names(arguments) = c('2016-07-12 15:00:00-2016-07-12 16:00:00',
-              '2016-07-12 16:00:00-2016-07-12 16:05:00',
-              '2016-07-12 16:05:00-2030-01-01 00:00:00')
-
-    return(arguments)
-}
-
 test_that("Test split.and.add.vertex.attribute", {
     networks.and.data = get.network.covariates.test.networks()
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = split.and.add.vertex.attribute(networks.and.data[["networks"]], networks.and.data[["project.data"]],
+        networks.with.attr = split.and.add.vertex.attribute(networks.and.data[["networks"]],
+                                                            networks.and.data[["project.data"]],
                                                             "test.attr", level, 42, test.compute.attr)
 
         expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
@@ -141,7 +142,8 @@ test_that("Test add.vertex.attribute.artifact.count", {
 
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.artifact.count(networks.and.data[["networks"]],
-                                                               networks.and.data[["project.data"]], aggregation.level = level)
+                                                               networks.and.data[["project.data"]],
+                                                               aggregation.level = level)
 
         actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "artifact.count"))
 
@@ -204,3 +206,79 @@ test_that("Test add.vertex.attribute.first.activity", {
         })
     })
 })
+
+
+test_that("Test add.vertex.attribute.active.ranges", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(range = network.covariates.test.build.expected(list(c("2016-07-12 15:00:00-2016-07-12 16:00:00")),
+                                                                              list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                     "2016-07-12 16:05:00-2030-01-01 00:00:00")),
+                                                                              list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                     "2016-07-12 16:05:00-2030-01-01 00:00:00"),
+                                                                                   "2016-07-12 16:05:00-2030-01-01 00:00:00",
+                                                                                   "2016-07-12 16:05:00-2030-01-01 00:00:00")),
+                               cumulative = network.covariates.test.build.expected(list("2016-07-12 15:00:00-2016-07-12 16:00:00"),
+                                                                                   list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                          "2016-07-12 16:05:00-2030-01-01 00:00:00")),
+                                                                                   list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                          "2016-07-12 16:05:00-2030-01-01 00:00:00"),
+                                                                                        "2016-07-12 16:05:00-2030-01-01 00:00:00",
+                                                                                        "2016-07-12 16:05:00-2030-01-01 00:00:00")),
+                               project = network.covariates.test.build.expected(list("2016-07-12 15:00:00-2016-07-12 16:00:00"),
+                                                                                list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                       "2016-07-12 16:05:00-2030-01-01 00:00:00")),
+                                                                                list(c("2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                                                                       "2016-07-12 16:05:00-2030-01-01 00:00:00"),
+                                                                                     "2016-07-12 16:05:00-2030-01-01 00:00:00",
+                                                                                     "2016-07-12 16:05:00-2030-01-01 00:00:00")))
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.active.ranges(networks.and.data[["networks"]],
+                                                                 networks.and.data[["project.data"]])
+
+        actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "active.ranges"))
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.author.role.simple", {
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(range = list(commit.count = network.covariates.test.build.expected(list("core"),
+                                                                                                  list("core"),
+                                                                                                  list("core", "core", "peripheral")),
+                                            loc.count = network.covariates.test.build.expected(list("core"),
+                                                                                               list("core"),
+                                                                                               list("core", "core", "peripheral"))),
+                               cumulative = list(commit.count = network.covariates.test.build.expected(list("core"),
+                                                                                                      list("core"),
+                                                                                                      list("core", "core", "peripheral")),
+                                                loc.count = network.covariates.test.build.expected(list("core"),
+                                                                                                   list("peripheral"),
+                                                                                                   list("core", "core", "peripheral"))),
+                               project = list(commit.count = network.covariates.test.build.expected(list("core"),
+                                                                                                    list("core"),
+                                                                                                    list("core", "core", "peripheral")),
+                                              loc.count = network.covariates.test.build.expected(list("core"),
+                                                                                                 list("core"),
+                                                                                                 list("core", "core", "peripheral"))))
+
+
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        lapply(c("commit.count", "loc.count"), function(type) {
+            networks.with.attr = add.vertex.attribute.author.role.simple(networks.and.data[["networks"]],
+                                                                         networks.and.data[["project.data"]],
+                                                                         type = type,
+                                                                         aggregation.level = level)
+
+            actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "author.role"))
+            actual.attributes = lapply(actual.attributes, function(net.attr) lapply(net.attr, as.character))
+
+            expect_identical(expected.attributes[[level]][[type]], actual.attributes)
+        })
+    })
+})
+
