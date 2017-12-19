@@ -129,17 +129,15 @@ test_that("Test add.vertex.attribute.author.email", {
 test_that("Test add.vertex.attribute.artifact.count", {
     networks.and.data = get.network.covariates.test.networks()
 
-    # TODO IS THIS EVEN RIGHT?!
-
-    expected.attributes = list(range = network.covariates.test.build.expected(list(14L),
-                                                                              list(14L),
-                                                                              list(14L, 14L, 14L)),
-                               cumulative = network.covariates.test.build.expected(list(14L),
-                                                                                   list(14L),
-                                                                                   list(14L, 14L, 14L)),
-                               project = network.covariates.test.build.expected(list(14L),
-                                                                                list(14L),
-                                                                                list(14L, 14L, 14L)))
+    expected.attributes = list(range = network.covariates.test.build.expected(list(1L),
+                                                                              list(1L),
+                                                                              list(1L, 1L, 1L)),
+                               cumulative = network.covariates.test.build.expected(list(1L),
+                                                                                   list(1L),
+                                                                                   list(2L, 1L, 1L)),
+                               project = network.covariates.test.build.expected(list(1L),
+                                                                                list(2L),
+                                                                                list(2L, 1L, 1L)))
 
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.artifact.count(networks.and.data[["networks"]],

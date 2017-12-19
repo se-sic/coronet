@@ -114,8 +114,8 @@ add.vertex.attribute.author.email = function(list.of.networks, project.data, nam
 add.vertex.attribute.artifact.count = function(list.of.networks, project.data, name = "artifact.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                               function(range.data, net)
-                                  lapply(range.data$get.author2artifact(), function(x) length(unique(x)))
-                              )
+                                  lapply(range.data$get.author2artifact(), function(x) length(unique(x[["artifact"]])))
+                             )
     return(nets.with.attr)
 }
 
