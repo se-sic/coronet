@@ -1472,7 +1472,7 @@ test_that("Test splitting data by networks", {
 
     ## split data
     mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
-    input.data = split.data.time.based(x.data, bins = mybins)
+    input.data = split.data.time.based(project.data, bins = mybins)
     input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
 
     aggregation.level = c("range", "cumulative", "project")
