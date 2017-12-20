@@ -111,6 +111,7 @@ Conf = R6::R6Class("Conf",
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
+            ## FIXME do we need this?
             private$check.values()
         },
 
@@ -462,7 +463,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 private$artifact <- artifact
             }
 
-            logging::loginfo("Construct configuration: starting.")
+            logging::loginfo("Construct project configuration: starting.")
 
             ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
@@ -534,7 +535,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             # ## logging
             # self$print(allowed = TRUE)
 
-            logging::loginfo("Construct configuration: finished.")
+            logging::loginfo("Construct project configuration: finished.")
         },
 
         ## * * helper methods ----------------------------------------------
