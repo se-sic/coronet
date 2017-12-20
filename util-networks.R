@@ -976,6 +976,20 @@ simplify.networks = function(networks){
     return(nets)
 }
 
+#' Delete isolate vertices from the given network, i.e., any vertices without any in-going
+#' or out-going edges.
+#'
+#' @param network the network from which isolates are to be removed
+#'
+#' @return the network without isolates
+delete.isolates = function(network) {
+    network.no.isolates = igraph::delete.vertices(
+        network,
+        igraph::degree(network, mode = "all") == 0
+    )
+    return(network.no.isolates)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Multi-network views -----------------------------------------------------
@@ -984,11 +998,16 @@ simplify.networks = function(networks){
 #' return the subgraph induced by the vertices of type TYPE.AUTHOR.
 #'
 #' @param network the (multi) network to reduce
+#' @param remove.isolates whether to remove isolates after extraction [default: FALSE]
 #'
 #' @return the author-vertex-induced subgraph of \code{network}
-extract.author.network.from.network = function(network) {
+extract.author.network.from.network = function(network, remove.isolates = FALSE) {
     ## only retain all author vertices
     author.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.AUTHOR])
+    ## remove isolates if wanted
+    if (remove.isolates) {
+        author.network = delete.isolates(author.network)
+    }
     return(author.network)
 }
 
@@ -996,11 +1015,16 @@ extract.author.network.from.network = function(network) {
 #' return the subgraph induced by the vertices of type TYPE.ARTIFACT.
 #'
 #' @param network the (multi) network to reduce
+#' @param remove.isolates whether to remove isolates after extraction [default: FALSE]
 #'
 #' @return the artifact-vertex-induced subgraph of \code{network}
-extract.artifact.network.from.network = function(network) {
+extract.artifact.network.from.network = function(network, remove.isolates = FALSE) {
     ## only retain all artifact vertices
     artifact.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.ARTIFACT])
+    ## remove isolates if wanted
+    if (remove.isolates) {
+        artifact.network = delete.isolates(artifact.network)
+    }
     return(artifact.network)
 }
 
