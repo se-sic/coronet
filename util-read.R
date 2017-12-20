@@ -42,15 +42,25 @@ read.commits = function(data.path, artifact) {
 
     ## set proper column names based on Codeface extraction:
     ##
-    ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitHash,
+    ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitDate,
+    ## acom.name, acom.email1, c.commitHash,
     ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
     ## cd.file, cd.entityId, cd.entityType, cd.size
-    colnames(commit.data) = c(
+    commit.data.columns = c(
         "commit.id", # id
         "date", "author.name", "author.email", # author information
+        "committer.date", "committer.name", "committer.email", # committer information
         "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
         "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
+    ## if there are no committer data available, we need to add dummy data (NAs) for this
+    if (ncol(commit.data) != length(commit.data.columns)) {
+        ## add three columns with NAs
+        commit.data[, 14:16] = NA
+        ## do a re-ordering
+        commit.data = commit.data[c(1:4, 14:16, 5:13)]
+    }
+    colnames(commit.data) = commit.data.columns
 
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
@@ -85,6 +95,7 @@ read.commits = function(data.path, artifact) {
 
     ## convert dates and sort by them
     commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
+    commit.data[["committer.date"]] = as.POSIXct(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for thread ID for better recognition
@@ -241,15 +252,15 @@ read.authors = function(data.path) {
         stop("Stopped due to missing authors.")
     }
 
-    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != 3) {
-        authors.df[3] = NA
-    }
-
     ## set proper column names based on Codeface extraction:
     ##
     ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-    colnames(authors.df) = c("author.id", "author.name", "author.email")
+    authors.df.columns = c("author.id", "author.name", "author.email")
+    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    if (ncol(authors.df) != length(authors.df.columns)) {
+        authors.df[3] = NA
+    }
+    colnames(authors.df) = authors.df.columns
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -276,7 +287,7 @@ read.pasta = function(data.path) {
     filepath = file.path(data.path, "similar-mailbox")
 
     ## read data from disk [can be empty]
-    lines = try(readLines(filepath), silent = TRUE)
+    lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of pasta items is empty
     if (inherits(lines, 'try-error')) {

@@ -225,8 +225,9 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `edge.attributes`
   * The list of edge-attribute names and information
   * a subset of the following as a single vector:
-       - timestamp information: *`"date"`*
+       - timestamp information: *`"date"`*,
        - author information: `"author.name"`, `"author.email"`
+       - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
        - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
        - PaStA information: `"pasta"`,
