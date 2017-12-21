@@ -14,6 +14,12 @@ AGGREGATION.LEVELS = c("range", "cumulative", "project")
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Utility functions -------------------------------------------------------
+
+#' Load test data and generate test networks
+#' @return Tuple containing project data and list of networks
 get.network.covariates.test.networks = function() {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -32,6 +38,8 @@ get.network.covariates.test.networks = function() {
     return(list("networks" = input.data.networks, "project.data" = project.data))
 }
 
+#' Get splitted test data
+#' @return splitted test data for each level
 get.network.covariates.test.networks.data = function() {
     networks.and.data = get.network.covariates.test.networks()
 
@@ -44,6 +52,10 @@ get.network.covariates.test.networks.data = function() {
     return(results)
 }
 
+#' Sample computation callback
+#' @param range.data The current range data
+#' @param current.network The current network
+#' @return A list containing the value 1 for each author except "Olaf"
 test.compute.attr = function(range.data, current.network) {
     authors = range.data$get.authors()[["author.name"]]
 
@@ -55,6 +67,11 @@ test.compute.attr = function(range.data, current.network) {
     return(attributes)
 }
 
+#' Build list with appropriate range names
+#' @param a Value for first range
+#' @param b Value for second range
+#' @param c Value for third range
+#' @return The list of a,b,c with range names
 network.covariates.test.build.expected = function(a,b,c) {
     arguments = list(a,b,c)
 
@@ -65,42 +82,60 @@ network.covariates.test.build.expected = function(a,b,c) {
     return(arguments)
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unit tests --------------------------------------------------------------
+
+#' Test the add.vertex.attribute method
 test_that("Test add.vertex.attribute", {
+    ## Test setup
+
     test.networks = get.network.covariates.test.networks.data()
+    expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
+
+    ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute(test.networks[[level]], "test.attr", 42,
                                                   test.compute.attr)
 
-        expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
-
         actual.attributes = lapply(networks.with.attr, function(net) igraph::V(net)$test.attr)
         expect_identical(expected.attributes, actual.attributes)
     })
-
 })
 
+#' Test the split.and.add.vertex.attribute method
 test_that("Test split.and.add.vertex.attribute", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
+
+    ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = split.and.add.vertex.attribute(networks.and.data[["networks"]],
                                                             networks.and.data[["project.data"]],
                                                             "test.attr", level, 42, test.compute.attr)
 
-        expected.attributes = network.covariates.test.build.expected(list(1), list(42), list(42, 1, 1))
-
         actual.attributes = lapply(networks.with.attr, function(net) igraph::V(net)$test.attr)
         expect_identical(expected.attributes, actual.attributes)
     })
 })
 
+#' Test the add.vertex.attribute.commit.count method
 test_that("Test add.vertex.attribute.commit.count", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 1L)),
                                cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L,  1L)),
                                project = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)))
+
+    ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.commit.count(networks.and.data[["networks"]],
@@ -112,12 +147,19 @@ test_that("Test add.vertex.attribute.commit.count", {
     })
 })
 
+
+#' Test the add.vertex.attribute.author.email method
 test_that("Test add.vertex.attribute.author.email", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = network.covariates.test.build.expected(list("hunsen@fim.uni-passau.de"),
                                            list("olaf@example.org"),
                                            list("olaf@example.org", "karl@example.org", "thomas@example.org"))
+
+    ## Test
 
     networks.with.attr = add.vertex.attribute.author.email(networks.and.data[["networks"]],
                                                            networks.and.data[["project.data"]])
@@ -127,7 +169,11 @@ test_that("Test add.vertex.attribute.author.email", {
     expect_identical(expected.attributes, actual.attributes)
 })
 
+#' Test the add.vertex.attribute.artifact.count method
 test_that("Test add.vertex.attribute.artifact.count", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(range = network.covariates.test.build.expected(list(1L),
@@ -140,6 +186,8 @@ test_that("Test add.vertex.attribute.artifact.count", {
                                                                                 list(2L),
                                                                                 list(2L, 1L, 1L)))
 
+    ## Test
+
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.artifact.count(networks.and.data[["networks"]],
                                                                networks.and.data[["project.data"]],
@@ -151,7 +199,11 @@ test_that("Test add.vertex.attribute.artifact.count", {
     })
 })
 
+#' Test the add.vertex.attribute.first.activity method
 test_that("Test add.vertex.attribute.first.activity", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(range = list(mail = network.covariates.test.build.expected(list("2016-07-12 15:58:40"),
@@ -192,6 +244,8 @@ test_that("Test add.vertex.attribute.first.activity", {
                                                                                as.POSIXct(date))))
     )
 
+    ## Test
+
     lapply(AGGREGATION.LEVELS, function(level) {
         attr = lapply(c("mail", "commit", "issue"), function(type) {
 
@@ -208,7 +262,11 @@ test_that("Test add.vertex.attribute.first.activity", {
 })
 
 
+#' Test the add.vertex.attribute.active.ranges method
 test_that("Test add.vertex.attribute.active.ranges", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(range = network.covariates.test.build.expected(list(c("2016-07-12 15:00:00-2016-07-12 16:00:00")),
@@ -233,6 +291,8 @@ test_that("Test add.vertex.attribute.active.ranges", {
                                                                                      "2016-07-12 16:05:00-2030-01-01 00:00:00",
                                                                                      "2016-07-12 16:05:00-2030-01-01 00:00:00")))
 
+    ## Test
+
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.active.ranges(networks.and.data[["networks"]],
                                                                  networks.and.data[["project.data"]])
@@ -243,7 +303,11 @@ test_that("Test add.vertex.attribute.active.ranges", {
     })
 })
 
+#' Test the add.vertex.attribute.author.role.simple method
 test_that("Test add.vertex.attribute.author.role.simple", {
+
+    ## Test setup
+
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(range = list(commit.count = network.covariates.test.build.expected(list("core"),
@@ -265,7 +329,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                                                                                                  list("core"),
                                                                                                  list("core", "core", "peripheral"))))
 
-
+    ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
         lapply(c("commit.count", "loc.count"), function(type) {
