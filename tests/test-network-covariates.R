@@ -124,8 +124,8 @@ test_that("Test split.and.add.vertex.attribute", {
     })
 })
 
-#' Test the add.vertex.attribute.commit.count method
-test_that("Test add.vertex.attribute.commit.count", {
+#' Test the add.vertex.attribute.commit.count.author method
+test_that("Test add.vertex.attribute.commit.count.author", {
 
     ## Test setup
 
@@ -138,7 +138,7 @@ test_that("Test add.vertex.attribute.commit.count", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.commit.count(networks.and.data[["networks"]],
+        networks.with.attr = add.vertex.attribute.commit.count.author(networks.and.data[["networks"]],
                                                                networks.and.data[["project.data"]],
                                                             aggregation.level = level)
         actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "commit.count"))

@@ -6,6 +6,8 @@
 ## mitchell.joblin@uni-passau.de
 ## (c) Sofie Kemper, 2017
 ## kemperso@fim.uni-passau.de
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
@@ -449,6 +451,50 @@ get.commit.count.threshold = function(range.data) {
 
     logging::logdebug("get.commit.count.threshold: finished.")
     return(threshold)
+}
+
+#' Get the commit count per comitter in the given range data
+#'
+#' @param range.data The data to count on
+#' @return A data frame in descending order by the commit count.
+get.committer.not.author.commit.count = function(range.data) {
+    logging::logdebug("get.committer.not.author.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute a query to get the commit count per author
+    res = sqldf::sqldf("SELECT *, COUNT(*) As `freq` FROM `commits.df` WHERE committer.name <> author.name GROUP BY `committer.name`,`author.name` ORDER BY `freq` DESC")
+
+    logging::logdebug("get.committer.not.author.commit.count: finished.")
+    return(res)
+}
+
+#' Get the commit count per comitter in the given range data
+#'
+#' @param range.data The data to count on
+#' @return A data frame in descending order by the commit count.
+get.committer.commit.count = function(range.data) {
+    logging::logdebug("get.contributer.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "committer.email"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute a query to get the commit count per author
+    res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `committer.name` order by `freq` desc")
+
+    logging::logdebug("get.author.commit.count: finished.")
+    return(res)
 }
 
 ## Get the commit count per author of the specified version range

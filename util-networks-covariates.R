@@ -1,6 +1,9 @@
 ## (c) Felix Prasse, 2017
 ## prassefe@fim.uni-passau.de
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Utility functions -------------------------------------------------------
+
 #' Utility function to compute vertex attributes for a list of network
 #'
 #' Important: This function only works for lists of networks which have timestamps used in their range names.
@@ -59,9 +62,10 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
     return (nets.with.attr)
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Author network functions ------------------------------------------------
 
-
-#' Add commit count attribute
+#' Add commit count attribute based on author name
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -70,17 +74,92 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 #' @param default.value The default value to add if a vertex has no matching value
 #' @return A list of networks with the added attribute
 #'
-add.vertex.attribute.commit.count = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+add.vertex.attribute.commit.count.author = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+    nets.with.attr = add.vertex.attribute.commit.count(list.of.networks, project.data, name, aggregation.level,
+                                                       default.value, get.author.commit.count, "author.name")
+
+    return(nets.with.attr)
+}
+
+#' Add commit count attribute based on author name where author is not committer
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.commit.count.committer.not.author = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+
+    nets.with.attr = add.vertex.attribute.commit.count(list.of.networks, project.data, name, aggregation.level,
+                                                       default.value, get.committer.not.author.commit.count, "author.name")
+
+    return(nets.with.attr)
+}
+
+#' Add commit count attribute based on comitter name where committer is not author
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.commit.count.committer.not.author = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+
+    nets.with.attr = add.vertex.attribute.commit.count(list.of.networks, project.data, name, aggregation.level,
+                                                       default.value, get.committer.not.author.commit.count, "committer.name")
+
+    return(nets.with.attr)
+}
+
+#' Add commit count attribute based on comitter name
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.commit.count.committer = function(list.of.networks, project.data, name = "commit.count", aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+
+    nets.with.attr = add.vertex.attribute.commit.count(list.of.networks, project.data, name, aggregation.level,
+                                                       default.value, get.committer.commit.count, "committer.name")
+
+    return(nets.with.attr)
+}
+
+#' Add commit count attribute based using commit.count.method
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @param commit.count.method The method reference for counting the commits
+#' @param name.column The name of the author or committer column
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.commit.count = function(list.of.networks, project.data, name = "commit.count",
+                                             aggregation.level = c("range", "cumulative", "project"),
+                                             default.value = 0, commit.count.method, name.column) {
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value, function(range.data, net) {
-        commit.count.df = get.author.commit.count(range.data)[c("author.name", "freq")]
-        commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[["author.name"]])
+        commit.count.df = commit.count.method(range.data)[c(name.column, "freq")]
+
+        if(!is.data.frame(commit.count.df)) {
+            return(list())
+        }
+
+        commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[[name.column]])
 
         return(commit.count.list)
     })
 
     return(nets.with.attr)
 }
-
 
 #' Add author email attribute
 #'
@@ -228,5 +307,72 @@ add.vertex.attribute.author.role = function(list.of.networks, project.data, clas
                                        author.to.role = structure(author.class[["type"]], names= author.class[["author.name"]])
                                        return(author.to.role)
                                    })
+    return(nets.with.attr)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Artifact network functions ----------------------------------------------
+
+#' Add the count of editors that worked on an artifact
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.data, name = "editor.count",
+                                               aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+                                                    function(range.data, net)
+                                                        lapply(range.data$get.artifact2author(), nrow)
+    )
+    return(nets.with.attr)
+}
+
+#' Add the first occurrence of the artifact
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, project.data, name = "first.occurrence",
+                                                      aggregation.level = c("range", "cumulative", "project"), default.value = NA) {
+
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+                                                    function(range.data, net) {
+                                                        artifact.to.dates = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "date")
+                                                        artifact.to.first = lapply(artifact.to.dates, function(a) min(a[["date"]]))
+                                                        return(artifact.to.first)
+                                                    }
+    )
+    return(nets.with.attr)
+}
+
+#' Add the amount of times the artifact was changed
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @param default.value The default value to add if a vertex has no matching value
+#' @return A list of networks with the added attribute
+#'
+add.vertex.attribute.artifact.change.count = function(list.of.networks, project.data, name = "change.count",
+                                                          aggregation.level = c("range", "cumulative", "project"), default.value = 0) {
+
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+                                                    function(range.data, net) {
+                                                        artifact.to.commit = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "hash")
+                                                        artifact.change.count = lapply(artifact.to.commit, nrow)
+                                                        return(artifact.change.count)
+                                                    }
+    )
     return(nets.with.attr)
 }
