@@ -20,7 +20,10 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 #' Load test data and generate test networks
 #' @return Tuple containing project data and list of networks
-get.network.covariates.test.networks = function() {
+get.network.covariates.test.networks = function(network.type = c("author", "artifact")) {
+
+    network.type.function = paste("get", match.arg(network.type), "network", sep = ".")
+
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("artifact.filter.base", FALSE)
@@ -33,14 +36,14 @@ get.network.covariates.test.networks = function() {
     ## split data
     mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
     input.data = split.data.time.based(project.data, bins = mybins)
-    input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
+    input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)[[network.type.function]]())
 
     return(list("networks" = input.data.networks, "project.data" = project.data))
 }
 
 #' Get splitted test data
 #' @return splitted test data for each level
-get.network.covariates.test.networks.data = function() {
+get.network.covariates.test.networks.data = function(network.type = c("author", "artifact")) {
     networks.and.data = get.network.covariates.test.networks()
 
     ## split data by networks
@@ -82,8 +85,12 @@ network.covariates.test.build.expected = function(a,b,c) {
     return(arguments)
 }
 
+posixList = function(...) {
+    return(lapply(list(...), as.POSIXct))
+}
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Unit tests --------------------------------------------------------------
+## Unit tests for author networks ------------------------------------------
 
 #' Test the add.vertex.attribute method
 test_that("Test add.vertex.attribute", {
@@ -346,3 +353,68 @@ test_that("Test add.vertex.attribute.author.role.simple", {
     })
 })
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unit tests for artifact networks ----------------------------------------
+
+#' Test the add.vertex.attribute.artifact.editor.count method
+test_that("Test add.vertex.attribute.artifact.editor.count", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact")
+
+    expected.attributes = network.covariates.test.build.expected(list(1L),
+                                                                 list(1L),
+                                                                 list(3L))
+
+    ## Test
+
+    networks.with.attr = add.vertex.attribute.artifact.editor.count(networks.and.data[["networks"]],
+                                                           networks.and.data[["project.data"]])
+
+    actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "editor.count"))
+
+    expect_identical(expected.attributes, actual.attributes)
+})
+
+#' Test the add.vertex.attribute.artifact.first.occurrence method
+test_that("Test add.vertex.attribute.artifact.first.occurrence", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact")
+
+    expected.attributes = network.covariates.test.build.expected(posixList("2016-07-12 15:58:59 UTC"),
+                                                                 posixList("2016-07-12 16:00:45 UTC"),
+                                                                 posixList("2016-07-12 16:05:41 UTC"))
+
+    ## Test
+
+    networks.with.attr = add.vertex.attribute.artifact.first.occurrence(networks.and.data[["networks"]],
+                                                                    networks.and.data[["project.data"]])
+
+    actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "first.occurrence"))
+
+    expect_equal(expected.attributes, actual.attributes)
+})
+
+#' Test the add.vertex.attribute.artifact.change.count method
+test_that("Test add.vertex.attribute.artifact.change.count", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact")
+
+    expected.attributes = network.covariates.test.build.expected(list(1L),
+                                                                 list(1L),
+                                                                 list(3L))
+
+    ## Test
+
+    networks.with.attr = add.vertex.attribute.artifact.change.count(networks.and.data[["networks"]],
+                                                                    networks.and.data[["project.data"]])
+
+    actual.attributes = lapply(networks.with.attr, function(net) igraph::vertex_attr(net, "change.count"))
+
+    expect_identical(expected.attributes, actual.attributes)
+})
