@@ -34,7 +34,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     project.data = ProjectData$new(proj.conf)
 
     ## split data
-    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+    mybins = parse.date(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
     input.data = split.data.time.based(project.data, bins = mybins)
     input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)[[network.type.function]]())
 
@@ -85,8 +85,8 @@ network.covariates.test.build.expected = function(a,b,c) {
     return(arguments)
 }
 
-posixList = function(...) {
-    return(lapply(list(...), as.POSIXct))
+dateList = function(...) {
+    return(parse.date(list(...)))
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -213,48 +213,45 @@ test_that("Test add.vertex.attribute.first.activity", {
 
     networks.and.data = get.network.covariates.test.networks()
 
-    expected.attributes = list(range = list(mail = network.covariates.test.build.expected(list("2016-07-12 15:58:40"),
-                                                        list(NA),
-                                                        list("2016-07-12 16:05:37",
-                                                             NA, NA)),
-                                            commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
-                                                          list("2016-07-12 16:00:45"),
-                                                          list("2016-07-12 16:05:41",
-                                                               "2016-07-12 16:06:10",
-                                                               "2016-07-12 16:06:32")),
-                                            issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
-                                                         list(NA),
-                                                         list("2016-07-27 22:25:25", NA, "2016-07-14 02:03:14"))),
+    expected.attributes = list(range = list(mail = network.covariates.test.build.expected(dateList("2016-07-12 15:58:40"),
+                                                                                          dateList(NA),
+                                                                                          dateList("2016-07-12 16:05:37",
+                                                                                                   NA, NA)),
+                                            commit = network.covariates.test.build.expected(dateList("2016-07-12 15:58:59"),
+                                                                                            dateList("2016-07-12 16:00:45"),
+                                                                                            dateList("2016-07-12 16:05:41",
+                                                                                                     "2016-07-12 16:06:10",
+                                                                                                     "2016-07-12 16:06:32")),
 
-                               cumulative = list(mail = network.covariates.test.build.expected(list("2004-10-09 18:38:13"),
-                                                             list("2016-07-12 15:58:50"),
-                                                             list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
-                                   commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
-                                                 list("2016-07-12 16:00:45"),
-                                                 list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
-                                   issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
-                                                list("2013-05-25 20:02:08"),
-                                                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))),
-                               project = list(mail = network.covariates.test.build.expected(list("2004-10-09 18:38:13"),
-                                                          list("2016-07-12 15:58:50"),
-                                                          list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
-                                   commit = network.covariates.test.build.expected(list("2016-07-12 15:58:59"),
-                                                 list("2016-07-12 16:00:45"),
-                                                 list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
-                                   issue = network.covariates.test.build.expected(list("2016-07-12 15:59:25"),
-                                                list("2013-05-25 20:02:08"),
-                                                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))))
+                                            issue = network.covariates.test.build.expected(dateList("2016-07-12 15:59:25"),
+                                                                                           dateList(NA),
+                                                                                           dateList("2016-07-27 22:25:25",
+                                                                                                    NA, "2016-07-14 02:03:14"))),
 
-    ## convert date strings to posix
-    expected.attributes = lapply(expected.attributes, function(types)
-        lapply(types, function(times) lapply(times, function(date.list) lapply(date.list, function(date)
-                                                                               as.POSIXct(date))))
-    )
+                               cumulative = list(mail = network.covariates.test.build.expected(dateList("2004-10-09 18:38:13"),
+                                                                                               dateList("2016-07-12 15:58:50"),
+                                                                                               dateList("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
+                                   commit = network.covariates.test.build.expected(dateList("2016-07-12 15:58:59"),
+                                                                                   dateList("2016-07-12 16:00:45"),
+                                                                                   dateList("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                   issue = network.covariates.test.build.expected(dateList("2016-07-12 15:59:25"),
+                                                                                  dateList("2013-05-25 20:02:08"),
+                                                                                  dateList("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))),
+                               project = list(mail = network.covariates.test.build.expected(dateList("2004-10-09 18:38:13"),
+                                                                                            dateList("2016-07-12 15:58:50"),
+                                                                                            dateList("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")),
+                                   commit = network.covariates.test.build.expected(dateList("2016-07-12 15:58:59"),
+                                                                                   dateList("2016-07-12 16:00:45"),
+                                                                                   dateList("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                   issue = network.covariates.test.build.expected(dateList("2016-07-12 15:59:25"),
+                                                                                  dateList("2013-05-25 20:02:08"),
+                                                                                  dateList("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25"))))
+
 
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        attr = lapply(c("mail", "commit", "issue"), function(type) {
+         lapply(c("mail", "commit", "issue"), function(type) {
 
             networks.with.attr = add.vertex.attribute.first.activity(networks.and.data[["networks"]],
                                                                  networks.and.data[["project.data"]],
@@ -384,9 +381,9 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(posixList("2016-07-12 15:58:59 UTC"),
-                                                                 posixList("2016-07-12 16:00:45 UTC"),
-                                                                 posixList("2016-07-12 16:05:41 UTC"))
+    expected.attributes = network.covariates.test.build.expected(dateList("2016-07-12 15:58:59 UTC"),
+                                                                 dateList("2016-07-12 16:00:45 UTC"),
+                                                                 dateList("2016-07-12 16:05:41 UTC"))
 
     ## Test
 

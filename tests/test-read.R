@@ -1,6 +1,7 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
-
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 context("Reading functionality.")
 
@@ -26,14 +27,14 @@ test_that("Read the raw commit data.", {
 
     ## build the expected data.frame
     commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713,32710,32710,32714,32711,32711)),
-                                      date=as.POSIXct(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
+                                      date=parse.date(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45","2016-07-12 16:05:41","2016-07-12 16:05:41",
                                                         "2016-07-12 16:06:10","2016-07-12 16:06:32","2016-07-12 16:06:32")),
                                       author.name=c("Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Olaf","Karl","Thomas","Thomas"),
                                       author.email=c("hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org",
                                                      "olaf@example.org","olaf@example.org","olaf@example.org","karl@example.org",
                                                      "thomas@example.org","thomas@example.org"),
-                                      committer.date=as.POSIXct(NA),
+                                      committer.date=parse.date(NA),
                                       committer.name=NA,
                                       committer.email=NA,
                                       hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0","72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -105,7 +106,7 @@ test_that("Read the mail data.", {
                                                  "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
                                                  "<65a1sf31sagd684dfv31@mail.gmail.com>",
                                                  "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"),
-                                    date=as.POSIXct(c("2004-10-09 18:38:13","2005-02-09 18:49:49","2010-07-12 10:05:36",
+                                    date=parse.date(c("2004-10-09 18:38:13","2005-02-09 18:49:49","2010-07-12 10:05:36",
                                                            "2010-07-12 11:05:35","2010-07-12 12:05:34","2010-07-12 12:05:40",
                                                            "2010-07-12 12:05:41","2010-07-12 12:05:42","2010-07-12 12:05:43",
                                                            "2010-07-12 12:05:44","2010-07-12 12:05:45","2010-07-12 12:05:46",
@@ -184,12 +185,12 @@ test_that("Read and parse the issue data.", {
     ## build the expected data.frame
     issue.data.expected = data.frame(issue.id=sprintf("<issue-%s>", rep(c(2,48,51,48,2,48,51,57), c(6,2,5,5,1,3,8,6))),
                                      issue.state=rep(c("CLOSED","OPEN","CLOSED","OPEN","CLOSED","OPEN","CLOSED","CLOSED"), c(6,2,5,5,1,3,8,6)),
-                                     creation.date=as.POSIXct(rep(c("2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-04-17 02:06:38","2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-12-07 15:53:02"), c(6,2,5,5,1,3,8,6))),
-                                     closing.date=as.POSIXct(rep(c("2013-05-25 20:02:08",NA,"2016-12-07 15:37:02",NA,"2014-05-25 20:02:08",NA,"2016-12-07 15:37:02","2017-05-23 12:32:21"), c(6,2,5,5,1,3,8,6))),
+                                     creation.date=parse.date(rep(c("2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-04-17 02:06:38","2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-12-07 15:53:02"), c(6,2,5,5,1,3,8,6))),
+                                     closing.date=parse.date(rep(c("2013-05-25 20:02:08",NA,"2016-12-07 15:37:02",NA,"2014-05-25 20:02:08",NA,"2016-12-07 15:37:02","2017-05-23 12:32:21"), c(6,2,5,5,1,3,8,6))),
                                      is.pull.request=rep(c(TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE), c(6,2,5,5,1,3,8,6)),
                                      author.name=c("Karl","Karl","Karl","Olaf","Olaf","Karl","udo","udo","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Olaf","Claus Hunsen","Olaf","Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Claus Hunsen","Claus Hunsen","Claus Hunsen","Claus Hunsen","Max","Max","Max"),
                                      author.email=c("karl@example.org","karl@example.org","karl@example.org","olaf@example.org","olaf@example.org","karl@example.org","udo@example.org","udo@example.org","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","olaf@example.org","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","max@example.org","max@example.org","max@example.org"),
-                                     date=as.POSIXct(c("2013-04-21 23:52:09","2013-05-05 23:28:57","2013-05-05 23:28:57","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-06-01 22:37:03","2016-04-17 02:07:37","2016-04-17 02:07:37","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 16:03:23","2016-07-12 16:05:47","2016-07-14 02:03:14","2016-07-14 17:42:52","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-19 10:47:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-08-31 18:21:48","2016-10-05 01:07:46","2016-10-13 15:33:56","2016-12-06 14:03:42","2016-12-07 15:37:02","2016-12-07 15:37:02","2016-12-07 15:37:21","2016-12-07 15:53:02","2016-12-07 15:53:02","2017-02-20 22:25:41","2017-03-02 17:30:10","2017-05-23 12:32:21","2017-05-23 12:32:21","2017-05-23 12:32:39")),
+                                     date=parse.date(c("2013-04-21 23:52:09","2013-05-05 23:28:57","2013-05-05 23:28:57","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-06-01 22:37:03","2016-04-17 02:07:37","2016-04-17 02:07:37","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 16:03:23","2016-07-12 16:05:47","2016-07-14 02:03:14","2016-07-14 17:42:52","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-19 10:47:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-08-31 18:21:48","2016-10-05 01:07:46","2016-10-13 15:33:56","2016-12-06 14:03:42","2016-12-07 15:37:02","2016-12-07 15:37:02","2016-12-07 15:37:21","2016-12-07 15:53:02","2016-12-07 15:53:02","2017-02-20 22:25:41","2017-03-02 17:30:10","2017-05-23 12:32:21","2017-05-23 12:32:21","2017-05-23 12:32:39")),
                                      ref.name=c(rep("", 6), rep("Karl", 2), rep("Claus Hunsen", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
                                      event.name=c("created","commented","referenced","merged","closed","head_ref_deleted","mentioned","subscribed","mentioned","subscribed","created","renamed","commented","commented","commented","mentioned","subscribed","commented","referenced","mentioned","subscribed","commented","commented","commented","commented","commented","merged","closed","commented","commented","created","commented","commented","merged","closed","commented"))
     ## calculate event IDs

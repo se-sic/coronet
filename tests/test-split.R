@@ -1128,7 +1128,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
     ## ## generated with:
     ## sprintf("c('%s')", paste(
     ##     strftime(sample(
-    ##         seq.POSIXt(as.POSIXct("2000-01-01"), as.POSIXct("2000-02-01"), by = "1 days"),
+    ##         seq.POSIXt(parse.date("2000-01-01"), parse.date("2000-02-01"), by = "1 days"),
     ##         length.dates,
     ##         replace = FALSE
     ##     )), collapse = "', '"))
@@ -1173,7 +1173,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
         net = net + igraph::edge(
             sample(seq_len(vcount), 1), # from vertex
             sample(seq_len(vcount), 1), # to vertex
-            date = as.POSIXct(dates[e.id])
+            date = parse.date(dates[e.id])
             )
     }
 
@@ -1209,11 +1209,11 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     dates = c('2000-01-25', '2000-01-23', '2000-01-15', '2000-01-27', '2000-01-13',
               '2000-01-03', '2000-01-05', '2000-01-29', '2000-01-19', '2000-01-01',
               '2000-01-11', '2000-01-07', '2000-01-21', '2000-01-09', '2000-01-17')
-    dates.posixct = as.POSIXct(dates)
+    dates.posixct = parse.date(dates)
     ## ## generated with:
     ## sprintf("c('%s')", paste(
     ##     strftime(sample(
-    ##         seq.POSIXt(as.POSIXct("2000-01-01"), as.POSIXct("2000-02-01"), by = "1 days"),
+    ##         seq.POSIXt(parse.date("2000-01-01"), parse.date("2000-02-01"), by = "1 days"),
     ##         length.dates,
     ##         replace = FALSE
     ##     )), collapse = "', '"))
@@ -1343,7 +1343,7 @@ test_that("Check consistency of data and network time-based splitting.", {
 test_that("Check and correct duplicate range names during network activity-based splitting.", {
 
     ## define dates for edges and the resulting changes
-    dates = as.POSIXct(c(
+    dates = parse.date(c(
         "2000-01-01 01:00:00", "2001-01-01 12:00:00",
 
         "2001-01-01 12:00:00", "2001-01-01 12:00:00",
@@ -1471,7 +1471,7 @@ test_that("Test splitting data by networks", {
     project.data = ProjectData$new(proj.conf)
 
     ## split data
-    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+    mybins = parse.date(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
     input.data = split.data.time.based(project.data, bins = mybins)
     input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
 
