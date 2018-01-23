@@ -17,10 +17,15 @@ source("util-init.R")
 
 requireNamespace("logging")
 logging::basicConfig(level = "DEBUG")
-if (file.exists("test.log")) file.remove("test.log")
-logging::addHandler(logging::writeToFile, file = "test.log", level = "DEBUG")
-assign("last.warning", NULL, envir = baseenv())
-options(mc.cores = 6L)
+if (file.exists("showcase.log")) file.remove("showcase.log")
+logging::addHandler(logging::writeToFile, file = "showcase.log", level = "DEBUG")
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## System variables and R settings -----------------------------------------
+
+assign("last.warning", NULL, envir = baseenv()) # reset warnings
+options(mc.cores = 6L) # configure parallelism
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
