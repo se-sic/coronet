@@ -325,6 +325,41 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(cf.data)
 }
 
+#' Map a list of networks to their corresponding range data.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The entire project data
+#' @param aggregation.level One of range, cumulative or project. Determines the data to use for the attribute calculation.
+#' @return A list containing tuples with the keys "network" and "data".
+#'
+split.data.by.networks = function(list.of.networks, project.data, aggregation.level = c("range", "cumulative", "project")) {
+    aggregation.level = match.arg(aggregation.level)
+
+    list.of.ranges = as.list(names(list.of.networks))
+
+    net.to.range.list = lapply(list.of.ranges, function(range) {
+        start.end = get.range.bounds(range)
+
+        if(aggregation.level == "cumulative" || aggregation.level == "project") {
+            start.end[1] = as.POSIXct("1970-01-01 00:00:00")
+        }
+
+        if(aggregation.level == "project") {
+            start.end[2] = as.POSIXct("9999-01-01 00:00:00")
+        }
+
+        range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+
+        net.to.range.entry = list("network" = list.of.networks[[range]],
+                                  "data" = range.data)
+
+        return (net.to.range.entry)
+    })
+
+    names(net.to.range.list) = names(list.of.networks)
+
+    return(net.to.range.list)
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
