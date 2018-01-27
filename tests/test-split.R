@@ -1,6 +1,7 @@
 ## (c) Claus Hunsen, 2017
 ## hunsen@fim.uni-passau.de
-
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 context("Splitting functionality.")
 
@@ -1127,7 +1128,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
     ## ## generated with:
     ## sprintf("c('%s')", paste(
     ##     strftime(sample(
-    ##         seq.POSIXt(as.POSIXct("2000-01-01"), as.POSIXct("2000-02-01"), by = "1 days"),
+    ##         seq.POSIXt(parse.date("2000-01-01"), parse.date("2000-02-01"), by = "1 days"),
     ##         length.dates,
     ##         replace = FALSE
     ##     )), collapse = "', '"))
@@ -1172,7 +1173,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
         net = net + igraph::edge(
             sample(seq_len(vcount), 1), # from vertex
             sample(seq_len(vcount), 1), # to vertex
-            date = as.POSIXct(dates[e.id])
+            date = parse.date(dates[e.id])
             )
     }
 
@@ -1208,11 +1209,11 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     dates = c('2000-01-25', '2000-01-23', '2000-01-15', '2000-01-27', '2000-01-13',
               '2000-01-03', '2000-01-05', '2000-01-29', '2000-01-19', '2000-01-01',
               '2000-01-11', '2000-01-07', '2000-01-21', '2000-01-09', '2000-01-17')
-    dates.posixct = as.POSIXct(dates)
+    dates.posixct = parse.date(dates)
     ## ## generated with:
     ## sprintf("c('%s')", paste(
     ##     strftime(sample(
-    ##         seq.POSIXt(as.POSIXct("2000-01-01"), as.POSIXct("2000-02-01"), by = "1 days"),
+    ##         seq.POSIXt(parse.date("2000-01-01"), parse.date("2000-02-01"), by = "1 days"),
     ##         length.dates,
     ##         replace = FALSE
     ##     )), collapse = "', '"))
@@ -1342,7 +1343,7 @@ test_that("Check consistency of data and network time-based splitting.", {
 test_that("Check and correct duplicate range names during network activity-based splitting.", {
 
     ## define dates for edges and the resulting changes
-    dates = as.POSIXct(c(
+    dates = parse.date(c(
         "2000-01-01 01:00:00", "2001-01-01 12:00:00",
 
         "2001-01-01 12:00:00", "2001-01-01 12:00:00",
@@ -1453,4 +1454,55 @@ test_that("Check and correct duplicate range names during network activity-based
     )
     expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
+})
+
+
+##
+## Test splitting data by network names.
+##
+test_that("Test splitting data by networks", {
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## retrieve project data and network builder
+    project.data = ProjectData$new(proj.conf)
+
+    ## split data
+    mybins = parse.date(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+    input.data = split.data.time.based(project.data, bins = mybins)
+    input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
+
+    aggregation.level = c("range", "cumulative", "project")
+    ## split data by networks
+    results = lapply(aggregation.level, function(level)
+        split.data.by.networks(input.data.network, project.data, level)
+    )
+    names(results) = aggregation.level
+
+    expected.ranges = list("range" = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                                       "2016-07-12 16:00:00-2016-07-12 16:05:00",
+                                       "2016-07-12 16:05:00-2030-01-01 00:00:00"),
+                           "cumulative" = c("1970-01-01 00:00:00-2016-07-12 16:00:00",
+                                            "1970-01-01 00:00:00-2016-07-12 16:05:00",
+                                            "1970-01-01 00:00:00-2030-01-01 00:00:00"),
+                           "project" = c("1970-01-01 00:00:00-9999-01-01 00:00:00",
+                                         "1970-01-01 00:00:00-9999-01-01 00:00:00",
+                                         "1970-01-01 00:00:00-9999-01-01 00:00:00"))
+
+    test.each.network = function(aggregation.level) {
+        result.data = results[[aggregation.level]]
+        expected.range.names = expected.ranges[[aggregation.level]]
+
+        lapply(seq_along(result.data), function(i) {
+            result.entry = result.data[[i]]
+
+            expect_true(igraph::identical_graphs(result.entry[["network"]], input.data.network[[i]]))
+            expect_equal(result.entry[["data"]]$get.range(), expected.range.names[[i]])
+        })
+    }
+
+    lapply(names(results), test.each.network)
 })

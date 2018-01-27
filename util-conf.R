@@ -4,6 +4,8 @@
 ## noemmer@fim.uni-passau.de
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -510,7 +512,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 stop("Stopped due to missing revisions.")
             }
             ## convert columns accordingly
-            revisions.cols = c(revision = "as.character", date = "as.POSIXct")
+            revisions.cols = c(revision = "as.character", date = "parse.date")
             for (i in 1:ncol(revisions.df)) {
                 revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
                 colnames(revisions.df)[i] = names(revisions.cols)[i]

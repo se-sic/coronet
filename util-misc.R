@@ -90,6 +90,9 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 }
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Parsing data ------------------------------------------------------------
+
 #' Calculate the bounds of a range from its name.
 #' @param range The range name
 #'
@@ -121,4 +124,32 @@ get.range.bounds = function(range) {
     }
 
     return (range)
+}
+
+#' Parse a date with optional time
+#' @param input The date string, a vector of date strings or a list of date strings
+#' @return The parsed date
+parse.date = function(input) {
+    text.to.date = function(text) {
+        date = lubridate::ymd_hms(text, truncated = 3)
+        return(date)
+    }
+
+    ## Handle list manually as lubridate would
+    ## emit warnings on lists containing NA
+    if(is.list(input)) {
+        result = lapply(input, text.to.date)
+    } else {
+        result = text.to.date(input)
+    }
+
+    return(result)
+}
+
+#' Convert unix timestamp to POSIXct
+#' @param timestmap The timestamp
+#' @return The parsed date
+timestamp.to.date = function(timestamp) {
+    date = as.POSIXct(timestamp, origin = "1970-01-01")
+    return(date)
 }

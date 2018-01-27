@@ -1,6 +1,7 @@
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
-
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 context("Cutting functionality on NetworkBuilder side.")
 
@@ -30,12 +31,12 @@ test_that("Cut commit and mail data to same date range.", {
     x = NetworkBuilder$new(x.data, net.conf)
 
     commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713)),
-                                      date=as.POSIXct(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
+                                      date=parse.date(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45")),
                                       author.name=c("Claus Hunsen","Claus Hunsen","Olaf","Olaf"),
                                       author.email=c("hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org",
                                                      "olaf@example.org"),
-                                      committer.date=as.POSIXct(NA),
+                                      committer.date=parse.date(NA),
                                       committer.name=NA,
                                       committer.email=NA,
                                       hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0","72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -52,7 +53,7 @@ test_that("Cut commit and mail data to same date range.", {
     mail.data.expected = data.frame(author.name=c("Thomas"),
                                     author.email=c("thomas@example.org"),
                                     message.id=c("<65a1sf31sagd684dfv31@mail.gmail.com>"),
-                                    date=as.POSIXct(c("2016-07-12 16:04:40")),
+                                    date=parse.date(c("2016-07-12 16:04:40")),
                                     date.offset=as.integer(c(100)),
                                     subject=c("Re: Fw: busybox 2 tab"),
                                     thread=sprintf("<thread-%s>", c(9)))
