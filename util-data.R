@@ -548,7 +548,12 @@ ProjectData = R6::R6Class("ProjectData",
             }
             private$extract.timestamps(source = "issues")
 
-            return(private$issues)
+            if(private$project.conf$get.value("issues.only.comments")) {
+                df = private$issues[private$issues[["event.name"]] == "commented",]
+                return(df)
+            } else {
+                return(private$issues)
+            }
         },
 
         #' Set the issue data to the given new data.
