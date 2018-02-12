@@ -45,9 +45,6 @@ test_that("Construction of the bipartite network for the feature artifact with a
     network.expected = igraph::disjoint_union(author.net, artifact.net)
 
     vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
-    names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.A", "Karl.Karl", "Karl.Base_Feature",
-                                         "Olaf.Olaf", "Olaf.A", "Olaf.Olaf", "Olaf.Base_Feature", "Thomas.Thomas",
-                                         "Thomas.Base_Feature", "Thomas.Thomas", "Thomas.foo")
 
     extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                      "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
@@ -93,8 +90,6 @@ test_that("Construction of the bipartite network for the file artifact with auth
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.test.c", "Olaf.Olaf", "Olaf.test.c",
-                                                   "Olaf.Olaf", "Olaf.test2.c", "Thomas.Thomas", "Thomas.test2.c")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -139,8 +134,6 @@ test_that("Construction of the bipartite network for the function artifact with 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.File_Level", "Olaf.Olaf", "Olaf.File_Level",
-                                                   "Olaf.Olaf", "Olaf.File_Level", "Thomas.Thomas", "Thomas.File_Level")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -184,8 +177,6 @@ test_that("Construction of the bipartite network for the featureexpression artif
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,3,2,3,2,4)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.defined(A)", "Olaf.Olaf", "Olaf.defined(A)",
-                                                   "Olaf.Olaf", "Olaf.Base_Feature")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41")),
@@ -218,7 +209,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Karl", "Max", "Olaf", "Thomas", "udo")
+              authors = c("Claus Hunsen", "Karl", "Max", "Olaf", "Thomas")
               author.net = create.empty.network(directed = FALSE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -228,64 +219,20 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,7,1,7,1,7,1,8,1,8,1,8,1,8,1,8,1,7,1,7,1,7,1,7,1,9,1,9,1,9,2,10,2,10,2,10,2,10,3,9,
-                                            3,9,3,9,4,10,4,10,4,8,4,7,4,7,4,7,4,7,5,7,5,7,5,8,5,8,5,10,6,8,6,8)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-48>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-48>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-48>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-48>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-48>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-51>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-57>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-57>",
-                                                   "Claus Hunsen.Claus Hunsen", "Claus Hunsen.<issue-57>",
-                                                   "Karl.Karl", "Karl.<issue-2>","Karl.Karl", "Karl.<issue-2>","Karl.Karl",
-                                                   "Karl.<issue-2>","Karl.Karl", "Karl.<issue-2>","Max.Max","Max.<issue-57>",
-                                                   "Max.Max","Max.<issue-57>","Max.Max","Max.<issue-57>", "Olaf.Olaf",
-                                                   "Olaf.<issue-2>","Olaf.Olaf", "Olaf.<issue-2>","Olaf.Olaf", "Olaf.<issue-48>",
-                                                   "Olaf.Olaf", "Olaf.<issue-51>","Olaf.Olaf", "Olaf.<issue-51>","Olaf.Olaf",
-                                                   "Olaf.<issue-51>","Olaf.Olaf", "Olaf.<issue-51>","Thomas.Thomas",
-                                                   "Thomas.<issue-51>","Thomas.Thomas","Thomas.<issue-51>",
-                                                   "Thomas.Thomas","Thomas.<issue-48>","Thomas.Thomas","Thomas.<issue-48>",
-                                                   "Thomas.Thomas","Thomas.<issue-2>","udo.udo", "udo.<issue-48>","udo.udo",
-                                                   "udo.<issue-48>")
+              vertex.sequence.for.edges = c(1,6,1,7,1,6,1,6,1,6,1,6,1,8,1,8,2,9,3,8,4,7,4,6,4,6,5,7,5,7)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:59:25", "2016-07-12 16:03:23", "2016-07-12 16:05:47",
-                                                               "2016-07-14 17:42:52", "2016-07-15 08:37:57",
-                                                               "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25",
-                                                               "2016-08-31 18:21:48", "2016-10-13 15:33:56",
-                                                               "2016-12-06 14:03:42", "2016-12-07 15:53:02", "2016-12-07 15:53:02",
-                                                               "2017-02-20 22:25:41", "2017-03-02 17:30:10",
-                                                               "2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57",
-                                                               "2013-06-01 22:37:03", "2017-05-23 12:32:21",
-                                                               "2017-05-23 12:32:21", "2017-05-23 12:32:39", "2013-05-25 20:02:08",
-                                                               "2013-05-25 20:02:08", "2016-07-27 22:25:25",
-                                                               "2016-10-05 01:07:46", "2016-12-07 15:37:02", "2016-12-07 15:37:02",
-                                                               "2016-12-07 15:37:21", "2016-07-12 15:59:25",
-                                                               "2016-07-12 15:59:25", "2016-07-14 02:03:14", "2016-07-15 08:37:57",
-                                                               "2016-07-19 10:47:25", "2016-04-17 02:07:37",
-                                                               "2016-04-17 02:07:37")),
-                                           issue.id = c("<issue-51>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>",
-                                                        "<issue-48>", "<issue-48>", "<issue-48>", "<issue-51>", "<issue-51>",
-                                                        "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>",
-                                                        "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-57>",
-                                                        "<issue-57>", "<issue-57>", "<issue-2>",  "<issue-2>", "<issue-48>",
-                                                        "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                                        "<issue-51>", "<issue-48>", "<issue-48>", "<issue-2>", "<issue-48>",
-                                                        "<issue-48>"),
-                                           event.name = c("created", "renamed", "commented", "commented", "mentioned", "subscribed",
-                                                          "mentioned", "subscribed", "commented", "commented", "commented", "commented",
-                                                          "created", "commented", "commented", "created", "commented", "referenced",
-                                                          "head_ref_deleted", "merged", "closed", "commented", "merged", "closed",
-                                                          "commented", "commented", "merged", "closed", "commented", "mentioned",
-                                                          "subscribed", "commented", "commented", "referenced", "mentioned", "subscribed"),
-                                           weight = c(1, 1, 1, 1, 1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48",
+                                                               "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
+                                                               "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
+                                                               "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
+                                                               "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
+                                           issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                                        "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
+                                                        "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
+                                           event.name = c("commented","commented","commented","commented","commented",
+                                                          "commented","commented","commented","commented","commented",
+                                                          "commented","commented","commented","commented","commented"),
+                                           weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
                                            type = c(4))
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
@@ -321,9 +268,6 @@ test_that("Construction of the directed bipartite network for the feature artifa
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.A", "Karl.Karl", "Karl.Base_Feature",
-                                                   "Olaf.Olaf", "Olaf.A", "Olaf.Olaf", "Olaf.Base_Feature", "Thomas.Thomas",
-                                                   "Thomas.Base_Feature", "Thomas.Thomas", "Thomas.foo")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
@@ -369,8 +313,6 @@ test_that("Construction of the directed bipartite network for the file artifact 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.test.c", "Olaf.Olaf", "Olaf.test.c",
-                                                   "Olaf.Olaf", "Olaf.test2.c", "Thomas.Thomas", "Thomas.test2.c")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -416,8 +358,6 @@ test_that("Construction of the directed bipartite network for the function artif
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.File_Level", "Olaf.Olaf", "Olaf.File_Level",
-                                                   "Olaf.Olaf", "Olaf.File_Level", "Thomas.Thomas", "Thomas.File_Level")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -462,8 +402,6 @@ test_that("Construction of the directed bipartite network for the featureexpress
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
               vertex.sequence.for.edges = c(1,3,2,3,2,4)
-              names(vertex.sequence.for.edges) = c("Claus Hunsen.Claus Hunsen", "Claus Hunsen.defined(A)", "Olaf.Olaf", "Olaf.defined(A)",
-                                                   "Olaf.Olaf", "Olaf.Base_Feature")
 
               extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41")),

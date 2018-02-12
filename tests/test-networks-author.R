@@ -30,7 +30,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
     ## author sets
     authors.committing = c("Claus Hunsen", "Olaf", "Thomas", "Karl")
     authors.mailing = c("Claus Hunsen", "Olaf", "Thomas", "georg", "Hans", "udo", "Fritz fritz@example.org")
-    authors.issue = c("Karl", "Olaf", "Thomas", "Claus Hunsen", "udo", "Max")
+    authors.issue = c("Karl", "Olaf", "Thomas", "Claus Hunsen", "Max")
 
     authors.all = union(union(authors.committing, authors.mailing), authors.issue)
 
