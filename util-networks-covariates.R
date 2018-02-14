@@ -302,9 +302,9 @@ add.vertex.attribute.author.role = function(list.of.networks, project.data, clas
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                                    function(range.data, net) {
                                        author.class = classification.function(net, range.data)
-                                       author.class = plyr::ldply(author.class, .id = "type")
+                                       author.class = plyr::ldply(author.class, .id = NA)
 
-                                       author.to.role = structure(author.class[["type"]], names= author.class[["author.name"]])
+                                       author.to.role = structure(author.class[[".id"]], names= author.class[["author.name"]])
                                        return(author.to.role)
                                    })
     return(nets.with.attr)
