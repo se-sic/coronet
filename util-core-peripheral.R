@@ -13,7 +13,6 @@
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Libraries ---------------------------------------------------------------
 
@@ -453,10 +452,12 @@ get.commit.count.threshold = function(range.data) {
     return(threshold)
 }
 
-#' Get the commit count per comitter in the given range data
+#' Get the commit count per comitter in the given range data, where the committer
+#' does not match the author of the respective commits
 #'
 #' @param range.data The data to count on
-#' @return A data frame in descending order by the commit count.
+#'
+#' @return A data frame in descending order by the commit count
 get.committer.not.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.not.author.commit.count: starting.")
 
@@ -469,18 +470,23 @@ get.committer.not.author.commit.count = function(range.data) {
     }
 
     ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) As `freq` FROM `commits.df` WHERE committer.name <> author.name GROUP BY `committer.name`,`author.name` ORDER BY `freq` DESC")
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       WHERE committer.name <> author.name
+                       GROUP BY `committer.name`,`author.name`
+                       ORDER BY `freq` DESC")
 
     logging::logdebug("get.committer.not.author.commit.count: finished.")
     return(res)
 }
 
-#' Get the commit count per comitter in the given range data
+#' Get the commit count per comitter in the given range data, where the committer
+#' may match the author of the respective commits
 #'
 #' @param range.data The data to count on
+#'
 #' @return A data frame in descending order by the commit count.
 get.committer.commit.count = function(range.data) {
-    logging::logdebug("get.contributer.commit.count: starting.")
+    logging::logdebug("get.committer.commit.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(range.data, columns = c("committer.name", "committer.email"))[[1]]
@@ -491,9 +497,10 @@ get.committer.commit.count = function(range.data) {
     }
 
     ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `committer.name` order by `freq` desc")
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       GROUP BY `committer.name` ORDER BY `freq` DESC")
 
-    logging::logdebug("get.author.commit.count: finished.")
+    logging::logdebug("get.committer.commit.count: finished.")
     return(res)
 }
 
@@ -511,7 +518,8 @@ get.author.commit.count = function(range.data) {
     }
 
     ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       GROUP BY `author.name` ORDER BY `freq` DESC")
 
     logging::logdebug("get.author.commit.count: finished.")
     return(res)
@@ -554,8 +562,10 @@ get.author.loc.count = function(range.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data,
-                                 columns = c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
+    commits.df = get.commit.data(
+        range.data,
+        columns = c("author.name", "author.email", "added.lines", "deleted.lines")
+    )[[1]]
 
     ## Return NA in case no commit data is available
     if(all(is.na(commits.df))) {
@@ -563,8 +573,10 @@ get.author.loc.count = function(range.data) {
     }
 
     ## Execute a query to get the changed lines per author
-    res = sqldf::sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
-               from `commits.df` group by `author.name` order by `loc` desc")
+    res = sqldf::sqldf("SELECT `author.name`, `author.email`,
+                            SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
+                        FROM `commits.df`
+                        GROUP BY `author.name` ORDER BY `loc` DESC")
 
     logging::logdebug("get.author.loc.count: finished.")
     return(res)
@@ -611,8 +623,10 @@ get.author.class.activity = function(range.data = NULL,
                                    split = split)
 
     ## Build the query string to group commits by the author name
-    commits.query = "select `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc.count`,
-    COUNT(*) as `commit.count` from `commits.df` group by `author.name`"
+    commits.query = "SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc.count`,
+                        COUNT(*) AS `commit.count`
+                     FROM `commits.df`
+                     GROUP BY `author.name`"
 
     ## Get the authors with their commit count and corresponding class for each splitted range
     commits.dev.list = list()
@@ -1036,7 +1050,7 @@ get.commit.data = function(range.data, columns = c("author.name", "author.email"
     commits.df = commits.df[cut.columns]
 
     ## Group by hash to get a line per commit
-    commits.df = sqldf::sqldf("select * from `commits.df` group by `hash`")
+    commits.df = sqldf::sqldf("SELECT * FROM `commits.df` GROUP BY `hash`")
 
     ## Remove hash column if not wanted as it now contains nonsensical data
     if (!("hash" %in% columns)) {
