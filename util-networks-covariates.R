@@ -194,7 +194,7 @@ add.vertex.attribute.commit.count = function(list.of.networks, project.data, nam
     return(nets.with.attr)
 }
 
-## * Meta-data ----------------------------------------------------------
+## * Meta-data -------------------------------------------------------------
 
 #' Add author email attribute
 #'
@@ -244,7 +244,7 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
     return(nets.with.attr)
 }
 
-## * Activity -----------------------------------------------------------
+## * Activity --------------------------------------------------------------
 
 #' Add first activity attribute
 #'
@@ -444,7 +444,7 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
     return(nets.with.attr)
 }
 
-## * Activity -----------------------------------------------------------
+## * Activity --------------------------------------------------------------
 
 #' Add the first occurrence of the artifact
 #'

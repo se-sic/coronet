@@ -145,7 +145,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
-        ## * * pasta data -------------------------------------------
+        ## * * pasta data --------------------------------------------------
 
         #' Add the pasta data to the given data.frame for further analysis.
         #'
@@ -173,7 +173,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(data)
         },
 
-        ## * * timestamps -------------------------------------------
+        ## * * timestamps --------------------------------------------------
 
         #' Call the getters of the specified data sources in order to
         #' initialize the sources and extract the timestamps.
@@ -611,7 +611,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## * * data cutting -----------------------------------------
+        ## * * data cutting ------------------------------------------------
 
         #' Get the timestamps (earliest and latest date) of the specified data sources.
         #' If 'simple' is TRUE, return the overall latest start and earliest end date
