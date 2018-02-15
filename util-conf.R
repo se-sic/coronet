@@ -679,7 +679,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 type = "character",
                 allowed = c(
                     # the date
-                    "date",
+                    "date", "date.offset",
                     # author information
                     "author.name", "author.email",
                     # committer information
