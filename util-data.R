@@ -565,6 +565,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the list of artifacts
         get.artifacts = function() {
             ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.author2artifact)
             logging::loginfo("Getting artifact data.")
 
             ## if artifacts are not read already, do this
@@ -692,6 +693,8 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts for every author
         get.author2artifact = function() {
+            ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.artifacts)
             logging::loginfo("Getting author--artifact data.")
 
             ## store the authors per artifact
