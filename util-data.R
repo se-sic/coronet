@@ -614,18 +614,26 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * data cutting ------------------------------------------------
 
-        #' Get the timestamps (earliest and latest date) of the specified data sources.
-        #' If 'simple' is TRUE, return the overall latest start and earliest end date
-        #' in order to cut the specified data sources to the same date ranges.
+        #' Get the timestamps (earliest and latest date of activity) of the specified
+        #' data sources.
         #'
-        #' If there are no actual data available for a data source, the result indicates NA
+        #' If there are no data available for a data source, the result indicates NA.
         #'
-        #' @param data.sources the specified data sources
-        #' @param simple whether or not the timestamps get simplified
+        #' @param data.sources The specified data sources. One of \code{"mails"},
+        #'                     \code{"commits"}, and \code{"issues"}.
+        #' @param simple If TRUE, return the overall latest start and earliest end date
+        #'               across all data sources in a one-row data.frame; otherwise, return
+        #'               the first and last activities of all data sources individually.
+        #'               Can be overridden by \code{outermost}.
+        #' @param outermost Whether the very first and the very last activity across all data
+        #'                  sources is to be returned in a one-row data.frame; ignored otherwise.
+        #'                  This overrides any value given via \code{simple}.
         #'
-        #' @return a data.frame with the timestamps of each data source as columns "start" and "end",
-        #'         with the data source as corresponding row name
-        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
+        #' @return A data.frame with the timestamps of each data source as columns "start" and "end",
+        #'         possibly with the data source as corresponding row name
+        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE,
+                                       outermost = FALSE) {
+
             ## check arguments
             data.sources = match.arg(arg = data.sources, several.ok = TRUE)
 
@@ -636,8 +644,14 @@ ProjectData = R6::R6Class("ProjectData",
             subset.timestamps = private$data.timestamps[data.sources, ]
 
             ## get the proper subset of timestamps for returning
-            if(simple) {
-                ## get minima and maxima across data sources (rows)
+            if (outermost) {
+                ## get minimum start date and maximum end date across data sources
+                timestamps = data.frame(
+                    start = min(subset.timestamps[, "start"], na.rm = TRUE),
+                    end = max(subset.timestamps[, "end"], na.rm = TRUE)
+                )
+            } else if(simple) {
+                ## get maximum start date and minimum end date across data sources
                 timestamps = data.frame(
                     start = max(subset.timestamps[, "start"], na.rm = TRUE),
                     end = min(subset.timestamps[, "end"], na.rm = TRUE)
