@@ -45,28 +45,32 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr) {
-    nets.with.attr = lapply(net.to.range.list, function(net.to.range) {
 
-        current.network = net.to.range[["network"]]
-        range.data = net.to.range[["data"]]
+    nets.with.attr = mapply(
+        names(net.to.range.list), net.to.range.list,
+        SIMPLIFY = FALSE, FUN = function(range, net.to.range) {
 
-        attr.df = compute.attr(range.data, current.network)
+            current.network = net.to.range[["network"]]
+            range.data = net.to.range[["data"]]
 
-        get.or.default = function(name, data, default) {
-            if(name %in% names(data)) {
-                return(data[[name]])
-            } else {
-                return(default)
+            attr.df = compute.attr(range, range.data, current.network)
+
+            get.or.default = function(name, data, default) {
+                if(name %in% names(data)) {
+                    return(data[[name]])
+                } else {
+                    return(default)
+                }
             }
+
+            attributes = lapply(igraph::V(current.network)$name,
+                                function(x) get.or.default(x, attr.df, default.value))
+
+            net.with.attr = igraph::set.vertex.attribute(current.network, attr.name, value = attributes)
+
+            return(net.with.attr)
         }
-
-        attributes = lapply(igraph::V(current.network)$name,
-                            function(x) get.or.default(x, attr.df, default.value))
-
-        net.with.attr = igraph::set.vertex.attribute(current.network, attr.name, value = attributes)
-
-        return(net.with.attr)
-    })
+    )
 
     return (nets.with.attr)
 }
@@ -208,7 +212,7 @@ add.vertex.attribute.commit.count = function(list.of.networks, project.data, nam
                                              default.value = 0, commit.count.method, name.column) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             commit.count.df = commit.count.method(range.data)[c(name.column, "freq")]
 
             if(!is.data.frame(commit.count.df)) {
@@ -237,7 +241,7 @@ add.vertex.attribute.commit.count = function(list.of.networks, project.data, nam
 add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", default.value = NA) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, "complete", default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             authors = range.data$get.authors()
             author.to.mail = structure(names = authors[["author.name"]],
                                        authors[["author.email"]])
@@ -269,7 +273,7 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
                                                default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             lapply(range.data$get.author2artifact(), function(x) {
                 length(unique(x[["artifact"]]))
             })
@@ -309,7 +313,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             lapply(range.data[[activity.type.function]](),
                    function(x) min(x[["date"]])
             )
@@ -358,7 +362,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 
     nets.with.attr = add.vertex.attribute(
         net.to.range.list, name, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             active.ranges
         }
     )
@@ -396,9 +400,10 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
         return(classification)
     }
 
-    nets.with.attr = add.vertex.attribute.author.role(list.of.networks, project.data,
-                                                      classification.function, name,
-                                                      aggregation.level, default.value)
+    nets.with.attr = add.vertex.attribute.author.role.function(
+        list.of.networks, project.data,classification.function, name,
+        aggregation.level, default.value
+    )
 
     return(nets.with.attr)
 }
@@ -407,8 +412,9 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param classification.function Function taking a network and it's corresponding range data as parameters.
-#'                                Must return a tuple of two lists containing the authors named "core" and "peripheral"
+#' @param classification.result A name of an author-classification function. Must return a tuple
+#'                              of two lists containing the authors named "core" and "peripheral".
+#'                              See the functions \code{get.author.class.*}.
 #' @param name The attribute name to add [default: "author.role"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
@@ -418,17 +424,71 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.author.role = function(list.of.networks, project.data, classification.function,
+add.vertex.attribute.author.role.function = function(list.of.networks, project.data, classification.function,
+                                                     name = "author.role",
+                                                     aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                          "project.cumulative", "project.all.ranges",
+                                                                          "complete"),
+                                                     default.value = NA) {
+
+    net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
+
+    classification.results = lapply(
+        net.to.range.list,
+        function(net.to.range) {
+            author.class = classification.function(net.to.range[["network"]], net.to.range[["data"]])
+            return(author.class)
+        }
+    )
+
+    nets.with.attr = add.vertex.attribute.author.role(
+        list.of.networks, project.data, classification.results, name,
+        aggregation.level, default.value
+    )
+
+    return(nets.with.attr)
+}
+
+#' Add author role attribute by classification result
+#'
+#' Important: The lists \code{list.of.networks} and \code{classification.results} needs to be of the same
+#' length and use the same names.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param classification.results A list of author-classification results. Each item needs to contain
+#'                               a tuple of two lists containing the authors named "core" and "peripheral"
+#'                               (see the functions \code{get.author.class.*}).
+#'                               The list needs to be of the same length as \code{list.of.networks} and use
+#'                               the same names.
+#' @param name The attribute name to add [default: "author.role"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.author.role = function(list.of.networks, project.data, classification.results,
                                             name = "author.role",
                                             aggregation.level = c("range", "cumulative", "all.ranges",
                                                                   "project.cumulative", "project.all.ranges",
                                                                   "complete"),
                                             default.value = NA) {
+
+    if (length(list.of.networks) != length(classification.results) ||
+        !identical(names(list.of.networks), names(classification.results))) {
+        logging::logwarn(paste("Adding author-classification vertex attribute: The classification",
+                               "results do not match with the list of networks. Please see the",
+                               "documentation of the function 'add.vertex.attribute.author.role'."))
+    }
+
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
-            author.class = classification.function(net, range.data)
-            author.class = plyr::ldply(author.class, .id = NA)
+        function(range, range.data, net) {
+            classification = classification.results[[range]]
+            author.class = plyr::ldply(classification, .id = NA)
 
             author.to.role = structure(author.class[[".id"]], names = author.class[["author.name"]])
             return(author.to.role)
@@ -462,9 +522,10 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
                                                                             "project.cumulative", "project.all.ranges",
                                                                             "complete"),
                                                       default.value = 0) {
+
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             lapply(range.data$get.artifact2author(), function(x) {
                 length(unique(x[["author.name"]]))
             })
@@ -494,7 +555,7 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
                                                       default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             artifact.to.commit = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "hash")
             artifact.change.count = lapply(artifact.to.commit, function(x) {
                 length(unique(x[["hash"]]))
@@ -529,7 +590,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
                                                           default.value = NA) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range.data, net) {
+        function(range, range.data, net) {
             artifact.to.dates = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "date")
             artifact.to.first = lapply(artifact.to.dates, function(a) {
                 min(a[["date"]])

@@ -65,11 +65,12 @@ get.network.covariates.test.networks.data = function(network.type = c("author", 
 
 #' Sample computation callback
 #'
+#' @param range The range identifier
 #' @param range.data The current range data
 #' @param current.network The current network
 #'
 #' @return A list containing the value 1 for each author except "Olaf"
-test.compute.attr = function(range.data, current.network) {
+test.compute.attr = function(range, range.data, current.network) {
     authors = range.data$get.authors()[["author.name"]]
 
     ## Olaf should get default value
