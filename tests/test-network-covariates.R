@@ -9,7 +9,7 @@ CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
 ARTIFACT = "feature"
-AGGREGATION.LEVELS = c("range", "cumulative", "project")
+AGGREGATION.LEVELS = c("range", "cumulative", "all.ranges", "project.cumulative", "project.all.ranges", "complete")
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
@@ -18,7 +18,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Global information ------------------------------------------------------
 
-mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-31 18:00:00"))
 myranges = construct.ranges(mybins, sliding.window = FALSE)
 
 
@@ -108,6 +108,7 @@ posixList = function(...) {
 
 #' Test the add.vertex.attribute method
 test_that("Test add.vertex.attribute", {
+
     ## Test setup
 
     test.networks = get.network.covariates.test.networks.data()
@@ -147,15 +148,16 @@ test_that("Test split.and.add.vertex.attribute", {
 
 #' Test the add.vertex.attribute.commit.count.author method
 test_that("Test add.vertex.attribute.commit.count.author", {
-
     ## Test setup
-
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
         range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 1L)),
         cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L,  1L)),
-        project = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L))
+        all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L,  1L)),
+        project.all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L))
     )
 
     ## Test
@@ -170,7 +172,6 @@ test_that("Test add.vertex.attribute.commit.count.author", {
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
 })
-
 
 #' Test the add.vertex.attribute.author.email method
 test_that("Test add.vertex.attribute.author.email", {
@@ -206,7 +207,10 @@ test_that("Test add.vertex.attribute.artifact.count", {
     expected.attributes = list(
         range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 1L)),
         cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 1L)),
-        project = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L))
+        all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L))
     )
 
     ## Test
@@ -231,66 +235,124 @@ test_that("Test add.vertex.attribute.first.activity", {
 
     expected.attributes = list(
         range = list(
-            mail = network.covariates.test.build.expected(
+            mails = network.covariates.test.build.expected(
                 list("2016-07-12 15:58:40"),
                 list(NA),
                 list("2016-07-12 16:05:37", NA, NA)
             ),
-            commit = network.covariates.test.build.expected(
+            commits = network.covariates.test.build.expected(
                 list("2016-07-12 15:58:59"),
                 list("2016-07-12 16:00:45"),
                 list("2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
             ),
-            issue = network.covariates.test.build.expected(
+            issues = network.covariates.test.build.expected(
                 list("2016-07-12 15:59:25"),
                 list(NA),
                 list("2016-07-27 22:25:25", NA, "2016-07-14 02:03:14")
             )
         ),
-        cumulative = list(mail = network.covariates.test.build.expected(
-            list("2004-10-09 18:38:13"),
-            list("2016-07-12 15:58:50"),
-            list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        cumulative = list(
+            mails = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:40"),
+                list("2016-07-12 15:58:50"),
+                list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+            ),
+            commits = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:59"),
+                list("2016-07-12 16:00:45"),
+                list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            ),
+            issues = network.covariates.test.build.expected(
+                list("2016-07-12 15:59:25"),
+                list(NA),
+                list("2016-07-27 22:25:25", NA, "2016-07-12 15:59:25")
+            )
         ),
-        commit = network.covariates.test.build.expected(
-            list("2016-07-12 15:58:59"),
-            list("2016-07-12 16:00:45"),
-            list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+        all.ranges = list(
+            mails = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:40"),
+                list("2016-07-12 15:58:50"),
+                list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+            ),
+            commits = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:59"),
+                list("2016-07-12 16:00:45"),
+                list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            ),
+            issues = network.covariates.test.build.expected(
+                list("2016-07-12 15:59:25"),
+                list("2016-07-27 22:25:25"),
+                list("2016-07-27 22:25:25", NA, "2016-07-12 15:59:25")
+            )
         ),
-        issue = network.covariates.test.build.expected(
-            list("2016-07-12 15:59:25"),
-            list("2013-05-25 20:02:08"),
-            list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
-        )
+        project.cumulative = list(
+            mails = network.covariates.test.build.expected(
+                list("2004-10-09 18:38:13"),
+                list("2016-07-12 15:58:50"),
+                list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+            ),
+            commits = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:59"),
+                list("2016-07-12 16:00:45"),
+                list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            ),
+            issues = network.covariates.test.build.expected(
+                list("2016-07-12 15:59:25"),
+                list("2013-05-25 20:02:08"),
+                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            )
         ),
-        project = list(mail = network.covariates.test.build.expected(
-            list("2004-10-09 18:38:13"),
-            list("2016-07-12 15:58:50"),
-            list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        project.all.ranges = list(
+            mails = network.covariates.test.build.expected(
+                list("2004-10-09 18:38:13"),
+                list("2016-07-12 15:58:50"),
+                list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+            ),
+            commits = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:59"),
+                list("2016-07-12 16:00:45"),
+                list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            ),
+            issues = network.covariates.test.build.expected(
+                list("2016-07-12 15:59:25"),
+                list("2013-05-25 20:02:08"),
+                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            )
         ),
-        commit = network.covariates.test.build.expected(
-            list("2016-07-12 15:58:59"),
-            list("2016-07-12 16:00:45"),
-            list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
-        ),
-        issue = network.covariates.test.build.expected(
-            list("2016-07-12 15:59:25"),
-            list("2013-05-25 20:02:08"),
-            list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
-        )
+        complete = list(
+            mails = network.covariates.test.build.expected(
+                list("2004-10-09 18:38:13"),
+                list("2016-07-12 15:58:50"),
+                list("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+            ),
+            commits = network.covariates.test.build.expected(
+                list("2016-07-12 15:58:59"),
+                list("2016-07-12 16:00:45"),
+                list("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            ),
+            issues = network.covariates.test.build.expected(
+                list("2016-07-12 15:59:25"),
+                list("2013-05-25 20:02:08"),
+                list("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            )
         )
     )
 
-    ## convert date strings to posix
-    expected.attributes = lapply(expected.attributes, function(types)
-        lapply(types, function(times) lapply(times, function(date.list) lapply(date.list, function(date)
-                                                                               as.POSIXct(date))))
-    )
+    ## convert date strings to POSIXct
+    expected.attributes = lapply(expected.attributes, function(types) {
+        lapply(types, function(times) {
+            lapply(times, function(date.list) {
+                lapply(date.list, function(date) {
+                    as.POSIXct(date)
+                })
+            })
+        })
+    })
 
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        attr = lapply(c("mail", "commit", "issue"), function(type) {
+        attr = lapply(c("mails", "commits", "issues"), function(type) {
 
             networks.with.attr = add.vertex.attribute.first.activity(
                 networks.and.data[["networks"]], networks.and.data[["project.data"]],
@@ -304,7 +366,6 @@ test_that("Test add.vertex.attribute.first.activity", {
     })
 })
 
-
 #' Test the add.vertex.attribute.active.ranges method
 test_that("Test add.vertex.attribute.active.ranges", {
 
@@ -312,29 +373,19 @@ test_that("Test add.vertex.attribute.active.ranges", {
 
     networks.and.data = get.network.covariates.test.networks()
 
-    expected.attributes = list(
-        range = network.covariates.test.build.expected(
-            list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
-        ),
-        cumulative = network.covariates.test.build.expected(
-            list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
-        ),
-        project = network.covariates.test.build.expected(
-            list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
-        )
+    expected.attributes = network.covariates.test.build.expected(
+        list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
     )
 
     ## Test
 
-    lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.active.ranges(
-            networks.and.data[["networks"]], networks.and.data[["project.data"]]
-        )
+    networks.with.attr = add.vertex.attribute.active.ranges(
+        networks.and.data[["networks"]], networks.and.data[["project.data"]]
+    )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
+    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
 
-        expect_identical(expected.attributes[[level]], actual.attributes)
-    })
+    expect_identical(expected.attributes, actual.attributes)
 })
 
 #' Test the add.vertex.attribute.author.role.simple method
@@ -361,7 +412,31 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 list("core"), list("peripheral"), list("core", "core", "peripheral")
             )
         ),
-        project = list(
+        all.ranges = list(
+            commit.count = network.covariates.test.build.expected(
+                list("core"), list("core"), list("core", "core", "peripheral")
+            ),
+            loc.count = network.covariates.test.build.expected(
+                list("core"), list("core"), list("core", "core", "peripheral")
+            )
+        ),
+        project.cumulative = list(
+            commit.count = network.covariates.test.build.expected(
+                list("core"), list("core"), list("core", "core", "peripheral")
+            ),
+            loc.count = network.covariates.test.build.expected(
+                list("core"), list("peripheral"), list("core", "core", "peripheral")
+            )
+        ),
+        project.all.ranges = list(
+            commit.count = network.covariates.test.build.expected(
+                list("core"), list("core"), list("core", "core", "peripheral")
+            ),
+            loc.count = network.covariates.test.build.expected(
+                list("core"), list("core"), list("core", "core", "peripheral")
+            )
+        ),
+        complete = list(
             commit.count = network.covariates.test.build.expected(
                 list("core"), list("core"), list("core", "core", "peripheral")
             ),

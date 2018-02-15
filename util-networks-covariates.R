@@ -15,14 +15,19 @@
 #' @param project.data The entire project data
 #' @param attr.name The name of the attribute to add
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value
 #' @param compute.attr The function to compute the attribute to add. Must return a named list
 #'                     with the names being the name of the vertex.
 #'
 #' @return A list of networks with the added attribute
 split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.name,
-                                          aggregation.level = c("range", "cumulative", "project"),
+                                          aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                "project.cumulative", "project.all.ranges",
+                                                                "complete"),
                                           default.value, compute.attr) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
 
@@ -78,12 +83,17 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "commit.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.author = function(list.of.networks, project.data, name = "commit.count",
-                                                    aggregation.level = c("range", "cumulative", "project"),
+                                                    aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                          "project.cumulative", "project.all.ranges",
+                                                                          "complete"),
                                                     default.value = 0) {
     nets.with.attr = add.vertex.attribute.commit.count(
         list.of.networks, project.data, name, aggregation.level,
@@ -99,13 +109,18 @@ add.vertex.attribute.commit.count.author = function(list.of.networks, project.da
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "commit.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.author.not.committer = function(list.of.networks, project.data,
                                                                   name = "commit.count.author.not.committer",
-                                                                  aggregation.level = c("range", "cumulative", "project"),
+                                                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                        "project.cumulative", "project.all.ranges",
+                                                                                        "complete"),
                                                                   default.value = 0) {
     nets.with.attr = add.vertex.attribute.commit.count(
         list.of.networks, project.data, name, aggregation.level,
@@ -121,12 +136,17 @@ add.vertex.attribute.commit.count.author.not.committer = function(list.of.networ
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "commit.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer = function(list.of.networks, project.data, name = "commit.count",
-                                                       aggregation.level = c("range", "cumulative", "project"),
+                                                       aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                             "project.cumulative", "project.all.ranges",
+                                                                             "complete"),
                                                        default.value = 0) {
     nets.with.attr = add.vertex.attribute.commit.count(
         list.of.networks, project.data, name, aggregation.level,
@@ -142,13 +162,18 @@ add.vertex.attribute.commit.count.committer = function(list.of.networks, project
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "commit.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer.not.author = function(list.of.networks, project.data,
                                                                   name = "commit.count.committer.not.author",
-                                                                  aggregation.level = c("range", "cumulative", "project"),
+                                                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                        "project.cumulative", "project.all.ranges",
+                                                                                        "complete"),
                                                                   default.value = 0) {
     nets.with.attr = add.vertex.attribute.commit.count(
         list.of.networks, project.data, name, aggregation.level,
@@ -167,14 +192,19 @@ add.vertex.attribute.commit.count.committer.not.author = function(list.of.networ
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "commit.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #' @param commit.count.method The method reference for counting the commits
 #' @param name.column The name of the author or committer column
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count = function(list.of.networks, project.data, name = "commit.count",
-                                             aggregation.level = c("range", "cumulative", "project"),
+                                             aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                   "project.cumulative", "project.all.ranges",
+                                                                   "complete"),
                                              default.value = 0, commit.count.method, name.column) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -206,7 +236,7 @@ add.vertex.attribute.commit.count = function(list.of.networks, project.data, nam
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", default.value = NA) {
     nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, "project", default.value,
+        list.of.networks, project.data, name, "complete", default.value,
         function(range.data, net) {
             authors = range.data$get.authors()
             author.to.mail = structure(names = authors[["author.name"]],
@@ -225,12 +255,17 @@ add.vertex.attribute.author.email = function(list.of.networks, project.data, nam
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "artifact.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.count = function(list.of.networks, project.data, name = "artifact.count",
-                                               aggregation.level = c("range", "cumulative", "project"),
+                                               aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                     "project.cumulative", "project.all.ranges",
+                                                                     "complete"),
                                                default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -254,14 +289,19 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 #'                      One of \code{mails}, \code{commits}, and \code{issues}.
 #' @param name The attribute name to add [default: "first.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                activity.type = c("mails", "commits", "issues"),
                                                name = "first.activity",
-                                               aggregation.level = c("range", "cumulative", "project"),
+                                               aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                     "project.cumulative", "project.all.ranges",
+                                                                     "complete"),
                                                default.value = NA) {
     activity.type = match.arg(activity.type)
     function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
@@ -275,6 +315,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
             )
         }
     )
+
     return(nets.with.attr)
 }
 
@@ -333,14 +374,21 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "author.role"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
-#' @param type The type of classification
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
+#' @param type The type of author classification. One of \code{"network.degree"},
+#'             \code{"network.eigen"}, \code{"commit.count"}, and \code{"loc.count"}.
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.role.simple = function(list.of.networks, project.data, name = "author.role",
-                                                   aggregation.level = c("range", "cumulative", "project"),
-                                                   type = c("network.degree", "network.eigen", "commit.count", "loc.count"),
+                                                   aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                         "project.cumulative", "project.all.ranges",
+                                                                         "complete"),
+                                                   type = c("network.degree", "network.eigen",
+                                                            "commit.count", "loc.count"),
                                                    default.value = NA) {
 
     classification.function = function(network, range.data) {
@@ -363,13 +411,18 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
 #'                                Must return a tuple of two lists containing the authors named "core" and "peripheral"
 #' @param name The attribute name to add [default: "author.role"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.role = function(list.of.networks, project.data, classification.function,
                                             name = "author.role",
-                                            aggregation.level = c("range", "cumulative", "project"),
+                                            aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                  "project.cumulative", "project.all.ranges",
+                                                                  "complete"),
                                             default.value = NA) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -377,7 +430,7 @@ add.vertex.attribute.author.role = function(list.of.networks, project.data, clas
             author.class = classification.function(net, range.data)
             author.class = plyr::ldply(author.class, .id = NA)
 
-            author.to.role = structure(author.class[[".id"]], names= author.class[["author.name"]])
+            author.to.role = structure(author.class[[".id"]], names = author.class[["author.name"]])
             return(author.to.role)
         }
     )
@@ -397,12 +450,17 @@ add.vertex.attribute.author.role = function(list.of.networks, project.data, clas
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "editor.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.data, name = "editor.count",
-                                                      aggregation.level = c("range", "cumulative", "project"),
+                                                      aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                            "project.cumulative", "project.all.ranges",
+                                                                            "complete"),
                                                       default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -422,12 +480,17 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "change.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.change.count = function(list.of.networks, project.data, name = "change.count",
-                                                      aggregation.level = c("range", "cumulative", "project"),
+                                                      aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                            "project.cumulative", "project.all.ranges",
+                                                                            "complete"),
                                                       default.value = 0) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -452,13 +515,18 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "first.occurrence"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{range}, \code{cumulative}, or \code{project}.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See a\code{split.data.by.networks} for
+#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, project.data, name = "first.occurrence",
-                                                      aggregation.level = c("range", "cumulative", "project"),
-                                                      default.value = NA) {
+                                                          aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                "project.cumulative", "project.all.ranges",
+                                                                                "complete"),
+                                                          default.value = NA) {
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range.data, net) {

@@ -1471,27 +1471,42 @@ test_that("Test splitting data by networks", {
     project.data = ProjectData$new(proj.conf)
 
     ## split data
-    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2030-01-01 00:00:00"))
+    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-10-05 09:00:00"))
     input.data = split.data.time.based(project.data, bins = mybins)
     input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
 
-    aggregation.level = c("range", "cumulative", "project")
     ## split data by networks
+    aggregation.level = c("range", "cumulative", "all.ranges",
+                          "project.cumulative", "project.all.ranges",
+                          "complete")
     results = lapply(aggregation.level, function(level)
         split.data.by.networks(input.data.network, project.data, level)
     )
     names(results) = aggregation.level
 
-    expected.ranges = list("range" = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
-                                       "2016-07-12 16:00:00-2016-07-12 16:05:00",
-                                       "2016-07-12 16:05:00-2030-01-01 00:00:00"),
-                           "cumulative" = c("1970-01-01 00:00:00-2016-07-12 16:00:00",
-                                            "1970-01-01 00:00:00-2016-07-12 16:05:00",
-                                            "1970-01-01 00:00:00-2030-01-01 00:00:00"),
-                           "project" = c("1970-01-01 00:00:00-9999-01-01 00:00:00",
-                                         "1970-01-01 00:00:00-9999-01-01 00:00:00",
-                                         "1970-01-01 00:00:00-9999-01-01 00:00:00"))
+    ## construct expected ranges
+    expected.ranges = list(
+        range = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                  "2016-07-12 16:00:00-2016-07-12 16:05:00",
+                  "2016-07-12 16:05:00-2016-10-05 09:00:00"),
+        cumulative = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                       "2016-07-12 15:00:00-2016-07-12 16:05:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        all.ranges = c("2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        project.cumulative = c("2004-10-09 18:38:13-2016-07-12 16:00:00",
+                               "2004-10-09 18:38:13-2016-07-12 16:05:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        project.all.ranges = c("2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        complete = c("2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39")
+    )
 
+    ## test the ranges
     test.each.network = function(aggregation.level) {
         result.data = results[[aggregation.level]]
         expected.range.names = expected.ranges[[aggregation.level]]
@@ -1503,6 +1518,5 @@ test_that("Test splitting data by networks", {
             expect_equal(result.entry[["data"]]$get.range(), expected.range.names[[i]])
         })
     }
-
-    lapply(names(results), test.each.network)
+    lapply(aggregation.level, test.each.network)
 })
