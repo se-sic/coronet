@@ -1041,9 +1041,8 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
     date.split = c(date.last)
     if (!is.null(split)) {
         for (i in 1:length(split)) {
-            ## substract split[i] number of weeks (i.e., split[i] * 7 days)
-            ## TODO use lubridate package here to substract a week from POSIXct?
-            date.calc = date.split[i] - (split[i] * 7)
+            ## subtract split[i] number of weeks
+            date.calc = date.split[i] - lubridate::weeks(split[i])
 
             ## Check if calculated date is still after the first commit date of the range
             if (date.calc > date.first) {

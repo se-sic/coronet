@@ -18,7 +18,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Global information ------------------------------------------------------
 
-mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-31 18:00:00"))
+mybins = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-31 18:00:00")
 myranges = construct.ranges(mybins, sliding.window = FALSE)
 
 
@@ -100,8 +100,8 @@ network.covariates.test.build.expected = function(x, y, z) {
 #' @param ... a bunch of arguments to convert
 #'
 #' @return The list containing the arguments as POSIXct
-posixList = function(...) {
-    return(lapply(list(...), as.POSIXct))
+dateList = function(...) {
+    return(get.date.from.string(list(...)))
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -339,12 +339,12 @@ test_that("Test add.vertex.attribute.first.activity", {
         )
     )
 
-    ## convert date strings to POSIXct
+    ## convert UNIX timestamps to POSIXct
     expected.attributes = lapply(expected.attributes, function(types) {
         lapply(types, function(times) {
             lapply(times, function(date.list) {
                 lapply(date.list, function(date) {
-                    as.POSIXct(date)
+                    get.date.from.unix.timestamp(date)
                 })
             })
         })
@@ -353,7 +353,7 @@ test_that("Test add.vertex.attribute.first.activity", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        attr = lapply(c("mails", "commits", "issues"), function(type) {
+        lapply(c("mails", "commits", "issues"), function(type) {
 
             networks.with.attr = add.vertex.attribute.first.activity(
                 networks.and.data[["networks"]], networks.and.data[["project.data"]],
@@ -493,7 +493,7 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
     networks.and.data = get.network.covariates.test.networks("artifact")
 
     expected.attributes = network.covariates.test.build.expected(
-        posixList("2016-07-12 15:58:59 UTC"), posixList("2016-07-12 16:00:45 UTC"), posixList("2016-07-12 16:05:41 UTC")
+        dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 16:00:45 UTC"), dateList("2016-07-12 16:05:41 UTC")
     )
 
     ## Test

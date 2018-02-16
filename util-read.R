@@ -4,6 +4,8 @@
 ## noemmer@fim.uni-passau.de
 ## (c) Christian Hechtl, 2017
 ## hechtl@fim.uni-passau.de
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -97,8 +99,8 @@ read.commits = function(data.path, artifact) {
     }
 
     ## convert dates and sort by them
-    commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
-    commit.data[["committer.date"]] = as.POSIXct(commit.data[["committer.date"]])
+    commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
+    commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for thread ID for better recognition
@@ -210,11 +212,11 @@ read.mails = function(data.path) {
         mail.data = mail.data[-empty.dates, ]
 
     ## convert dates and sort by them
-    mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
+    mail.data[["date"]] = get.date.from.string(mail.data[["date"]])
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## remove all mails with dates before 1990-01-01 00:00:00
-    break.date = as.POSIXct("1970-01-01 00:00:00")
+    break.date = get.date.from.string("1970-01-01 00:00:00")
     break.to.cut = mail.data[["date"]] < break.date
     mail.data = mail.data[!break.to.cut, ]
     if (sum(break.to.cut) > 0) {
@@ -372,10 +374,10 @@ read.issues = function(data.path) {
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
 
     ## convert dates and sort by 'date' column
-    issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
-    issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
+    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
+    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
-    issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
+    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## generate a unique event ID from issue ID, author, and date

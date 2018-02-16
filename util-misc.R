@@ -90,7 +90,69 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 }
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Date handling -----------------------------------------------------------
+
+#' Parse a date with optional time
+#'
+#' @param input The date string, a vector of date strings, or a list of date strings
+#'
+#' @return The parsed date(s) as POSIXct object, without changing the underlying data structure
+get.date.from.string = function(input) {
+
+    ## re-usable function to parse date strings with lubridate
+    convert.text.to.date = function(text) {
+        date = lubridate::ymd_hms(text, truncated = 3)
+        return(date)
+    }
+
+    ## Handle list manually as lubridate would
+    ## emit warnings on lists containing NA
+    if(is.list(input)) {
+        result = lapply(input, convert.text.to.date)
+    } else {
+        result = convert.text.to.date(input)
+    }
+
+    return(result)
+}
+
+#' Convert unix timestamp to POSIXct
+#'
+#' @param timestmap The timestamp
+#'
+#' @return The parsed date as POSIXct object
+get.date.from.unix.timestamp = function(timestamp) {
+    date = lubridate::as_datetime(timestamp)
+    return(date)
+}
+
+#' Formats a given date as string using the format "%Y-%m-%d %H:%M:%S"
+#'
+#' @param input The POSIXct object, a vector of such, or a list of such
+#'
+#' @return The formatted date(s), without changing the underlying data structure
+get.date.string = function(input) {
+
+    ## re-usable function to parse date strings with lubridate
+    convert.date.to.text = function(date) {
+        text = strftime(date, format = "%Y-%m-%d %H:%M:%S")
+        return(text)
+    }
+
+    ## Handle list manually to not change the underlying
+    ## data structure
+    if(is.list(input)) {
+        result = lapply(input, convert.date.to.text)
+    } else {
+        result = convert.date.to.text(input)
+    }
+
+    return(result)
+}
+
 #' Calculate the bounds of a range from its name.
+#'
 #' @param range The range name
 #'
 #' @return Returns a vector with two entries (start, end) of type POSIXct if input was a date;
@@ -101,9 +163,7 @@ get.range.bounds = function(range) {
     ## the patterns to test with appropriate conversions (if any)
     tests = list(
         ## date format (assuming dates are GMT)
-        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", function(x) {
-            lubridate::ymd_hms(x, truncated = 3)
-        }),
+        c("\\d{4}-\\d{2}-\\d{2}(\\s\\d{2}:\\d{2}:\\d{2})?", get.date.from.string),
 
         ## commit format
         c("[A-F0-9a-f]{40}", identity),
