@@ -1,4 +1,4 @@
-## (c) Claus Hunsen, 2016, 2017
+## (c) Claus Hunsen, 2016-2018
 ## hunsen@fim.uni-passau.de
 ## (c) Raphael Nömmer, 2017
 ## noemmer@fim.uni-passau.de
@@ -13,6 +13,7 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
+requireNamespace("sqldf") # for SQL-selections on data.frames
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -66,8 +67,10 @@ read.commits = function(data.path, artifact) {
     ## (we have proximity-based data as foundation)
     if (artifact == "file") {
         ## aggregate diff size by hash and file
-        commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
-                                   group by hash, file order by `date`, `author.name`, `commit.id`, `file`, `artifact`")
+        commit.data = sqldf::sqldf("SELECT *, SUM(`artifact.diff.size`) AS diffsum
+                                    FROM `commit.data`
+                                    GROUP BY `hash`, `file`
+                                    ORDER BY `date`, `author.name`, `commit.id`, `file`, `artifact`")
 
         ## fix column class for diffsum
         commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
