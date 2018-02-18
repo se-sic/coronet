@@ -301,3 +301,139 @@ test_that("Network construction of the undirected simplified author-cochange net
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
+
+
+test_that("Network construction of the undirected author-issue network with all issue data", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "issue"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
+                          id = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
+                          type = c(1,1,1,1,1,1))
+
+    edges = data.frame(from = c("Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl",
+                                "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo",
+                                "udo", "udo", "udo", "udo", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas",
+                                "Thomas", "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
+                                "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas",
+                                "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
+                                "Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf", "Björn", "Björn","Björn",
+                                "Björn","Björn","Björn"),
+                       to = c( "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas",
+                               "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo", "udo", "Björn", "Björn", "Björn",
+                               "Björn", "Björn", "Björn", "Björn", "udo", "udo", "udo", "Björn", "Björn", "Björn", "Björn",
+                               "Björn", "Björn", "Björn", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
+                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
+                               "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
+                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max", "Max", "Max",
+                               "Max" ),
+                       date = as.POSIXct(c( "2013-04-2123:52:09", "2013-05-0523:28:57", "2013-05-0523:28:57", "2013-05-2520:02:08",
+                                            "2013-05-2520:02:08", "2013-06-0122:37:03", "2013-04-2123:52:09", "2013-05-0523:28:57",
+                                            "2013-05-0523:28:57", "2013-06-0122:37:03", "2016-07-1910:47:25", "2013-05-2520:02:08",
+                                            "2013-05-2520:02:08", "2016-07-1910:47:25", "2016-04-1702:07:37", "2016-04-1702:07:37",
+                                            "2016-07-1402:03:14", "2016-07-1508:37:57", "2016-04-1702:07:37", "2016-04-1702:07:37",
+                                            "2016-07-1417:42:52", "2016-07-1508:37:57", "2016-07-1508:37:57", "2016-07-2722:25:25",
+                                            "2016-07-2722:25:25", "2016-04-1702:07:37", "2016-04-1702:07:37", "2016-07-2722:25:25",
+                                            "2016-07-1402:03:14", "2016-07-1417:42:52", "2016-07-1508:37:57", "2016-07-1508:37:57",
+                                            "2016-07-1508:37:57", "2016-07-2722:25:25", "2016-07-2722:25:25", "2016-07-1402:03:14",
+                                            "2016-07-1508:37:57", "2016-07-2722:25:25", "2016-07-1417:42:52", "2016-07-1508:37:57",
+                                            "2016-07-1508:37:57", "2016-07-2722:25:25", "2016-07-2722:25:25", "2016-07-2722:25:25",
+                                            "2016-07-1215:59:25", "2016-07-1215:59:25", "2016-07-1215:59:25", "2016-07-1216:03:23",
+                                            "2016-07-1216:05:47", "2016-08-3118:21:48", "2016-10-1315:33:56", "2016-12-0614:03:42",
+                                            "2016-12-0715:53:02", "2016-07-1215:59:25", "2016-07-1215:59:25", "2016-10-0501:07:46",
+                                            "2016-12-0715:37:02", "2016-12-0715:37:02", "2016-12-0715:37:21", "2016-07-1215:59:25",
+                                            "2016-07-1216:03:23", "2016-07-1216:05:47", "2016-08-3118:21:48", "2016-10-0501:07:46",
+                                            "2016-10-1315:33:56", "2016-12-0614:03:42", "2016-12-0715:37:02", "2016-12-0715:37:02",
+                                            "2016-12-0715:37:21", "2016-12-0715:53:02", "2016-12-0715:53:02", "2017-02-2022:25:41",
+                                            "2017-03-0217:30:10", "2017-05-2312:32:21", "2017-05-2312:32:21", "2017-05-2312:32:39" )),
+                       issue.id = c( "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
+                                     "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
+                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                     "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>", "<issue-57>",
+                                     "<issue-57>", "<issue-57>" ),
+                       event.name = c( "created", "commented", "referenced", "merged", "closed", "head_ref_deleted", "created",
+                                       "commented", "referenced", "head_ref_deleted", "referenced", "merged", "closed",
+                                       "referenced", "mentioned", "subscribed", "commented", "commented", "mentioned",
+                                       "subscribed", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
+                                       "mentioned", "subscribed", "commented", "commented", "commented", "mentioned",
+                                       "subscribed", "commented", "mentioned", "subscribed", "commented", "commented",
+                                       "commented", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
+                                       "commented", "mentioned", "subscribed", "created", "renamed", "commented", "commented",
+                                       "commented", "commented", "commented", "mentioned", "subscribed", "commented", "merged",
+                                       "closed", "commented", "created", "renamed", "commented", "commented", "commented",
+                                       "commented", "commented", "merged", "closed", "commented", "commented", "created",
+                                       "commented", "commented", "merged", "closed", "commented" ),
+                       weight = c( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                   1, 1, 1, 1 ),
+                       type = c(3))
+
+    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+test_that("Network construction of the undirected author-issue network with just comment events", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "issue"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    vertices = data.frame(name = c("Karl", "Thomas", "Björn","Olaf", "Max"),
+                          id = c("Karl", "Thomas", "Björn","Olaf", "Max"),
+                          type = c(1,1,1,1,1))
+
+    edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
+                                 "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn" ),
+                       to = c( "Björn", "Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
+                               "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Max", "Max", "Max" ),
+                       date = as.POSIXct(c( "2016-07-1402:03:14", "2016-07-1417:42:52", "2016-07-1508:37:57",
+                                            "2016-07-1402:03:14", "2016-07-1508:37:57", "2016-07-2722:25:25",
+                                            "2016-07-1417:42:52", "2016-07-2722:25:25", "2016-07-1216:05:47",
+                                            "2016-08-3118:21:48", "2016-10-0501:07:46", "2016-10-1315:33:56",
+                                            "2016-12-0614:03:42", "2016-12-0715:37:21", "2016-12-0715:53:02",
+                                            "2017-02-2022:25:41", "2017-03-0217:30:10", "2017-05-2312:32:39" )),
+                       issue.id = c( "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
+                                     "<issue-48>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
+                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>" ),
+                       event.name = c( "commented", "commented", "commented", "commented", "commented", "commented",
+                                       "commented", "commented", "commented", "commented", "commented", "commented",
+                                       "commented", "commented", "commented", "commented", "commented", "commented" ),
+                       weight = c(1),
+                       type = c(3))
+
+    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
