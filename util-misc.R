@@ -170,7 +170,8 @@ get.date.string = function(input) {
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
-#' @return the constructed ranges, either formatted or raw
+#' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
+#'         for which the formatted ranges are the names
 construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
@@ -198,6 +199,86 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     if (raw) {
         ## compose tuples of range start and range end
         ranges.raw = mapply(seq1, seq2, FUN = c, SIMPLIFY = FALSE)
+        ## add formatted ranges as names
+        names(ranges.raw) = ranges
+        ## set as return value
+        ranges = ranges.raw
+    }
+
+    return(ranges)
+}
+
+#' Construct ranges based on the given start time, end time, time period, and overlap.
+#'
+#' With this function, it is possible to construct ranges like this:
+#' > ++++
+#' > .++++
+#' > ..++++
+#'
+#' With \code{overlap} being the half of \code{time.period}, we basically obtain half-
+#' overlapping ranges as in the function \code{construct.ranges} when \code{sliding.window}
+#' is set to \code{TRUE}.
+#'
+#' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
+#' function here.
+#'
+#' @param start The start time as string or POSIXct object
+#' @param end The start time as string or POSIXct object
+#' @param time.period The time period describing the length of the ranges, a character
+#'                    string, e.g., "3 mins" or "15 days"
+#' @param overlap The time period describing the length of the overlap, a character string
+#'                (e.g., "3 mins" or "15 days") or a numeric indication the percentage of
+#'                overlap (e.g., 1/4). Should be more than 0 seconds and must not be larger
+#'                than the given \code{time.period}.
+#' @param raw whether to return pairs of POSIXct objects or strings rather than
+#'            formatted strings [default: FALSE]
+#'
+#' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
+#'         for which the formatted ranges are the names
+construct.overlapping.ranges = function(start, end, time.period, overlap, raw = FALSE) {
+
+    ## convert given periods to lubridate stuff:
+    ## 1) time period
+    time.period = lubridate::duration(time.period)
+    ## 2) overlap as character string or percent of time.period
+    if (is.character(overlap)) {
+        overlap = lubridate::duration(overlap)
+    } else {
+        overlap = time.period * overlap
+    }
+    ## 3) the dates for theirselves
+    start.date = get.date.from.string(start)
+    end.date = get.date.from.string(end)
+
+    ## compute overall duration
+    bins.duration = lubridate::as.duration(lubridate::interval(start.date, end.date))
+    ## compute negative overlap
+    overlap.negative = time.period - overlap
+
+    ## construct the raw ranges from existing information:
+    bins.number = bins.duration / overlap.negative
+    ranges.raw = lapply(seq_len(bins.number), function(x) {
+        ## 1) start of bin x is at (x - 1) * overlap.neg + start.date
+        current.offset.start = (x - 1) * overlap.negative
+        bin.start = start.date + current.offset.start
+        ## 2) end of bin x is at (x) * overlap.neg + overlap + start.date
+        current.offset.end = x * overlap.negative + overlap
+        bin.end = start.date + current.offset.end
+        ## check if we hit the end already
+        if (bin.end > end.date) {
+            bin.end = end.date
+        }
+
+        ## return the tuple of bin start and bin end
+        return(c(bin.start, bin.end))
+    })
+
+    ## construct actual range strings (without names)
+    ranges = sapply(ranges.raw, construct.ranges, sliding.window = FALSE, raw = FALSE)
+    ranges = unname(ranges)
+
+    ## if raw is enabled, we need to attach proper names
+    if (raw) {
         ## add formatted ranges as names
         names(ranges.raw) = ranges
         ## set as return value
