@@ -136,6 +136,12 @@ get.date.string = function(input) {
 
     ## re-usable function to parse date strings with lubridate
     convert.date.to.text = function(date) {
+
+        ## if we do not have a POSIXct object here, do not convert
+        if (!lubridate::is.POSIXct(date)) {
+            return(date)
+        }
+
         text = strftime(date, format = "%Y-%m-%d %H:%M:%S")
         return(text)
     }
@@ -164,7 +170,7 @@ get.date.string = function(input) {
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
-#' @return the ranges as strings
+#' @return the constructed ranges, either formatted or raw
 construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
@@ -179,7 +185,13 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     seq2 = revs[ (offset + 1):length(revs) ]
 
     ## construct ranges
-    ranges = paste(seq1, seq2, sep = "-")
+    ranges = mapply(seq1, seq2, SIMPLIFY = FALSE, FUN = function(start, end) {
+        start.string = get.date.string(start)
+        end.string = get.date.string(end)
+        range = paste(start.string, end.string, sep = "-")
+        return(range)
+    })
+    ranges = unlist(ranges, use.names = FALSE)
 
     ## if raw is enabled, we need to compose seq1 and
     ## seq2 to appropriate tuples
