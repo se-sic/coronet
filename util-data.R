@@ -145,7 +145,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
-        ## * * pasta data -------------------------------------------
+        ## * * pasta data --------------------------------------------------
 
         #' Add the pasta data to the given data.frame for further analysis.
         #'
@@ -173,7 +173,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(data)
         },
 
-        ## * * timestamps -------------------------------------------
+        ## * * timestamps --------------------------------------------------
 
         #' Call the getters of the specified data sources in order to
         #' initialize the sources and extract the timestamps.
@@ -565,6 +565,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the list of artifacts
         get.artifacts = function() {
             ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.author2artifact)
             logging::loginfo("Getting artifact data.")
 
             ## if artifacts are not read already, do this
@@ -611,20 +612,28 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## * * data cutting -----------------------------------------
+        ## * * data cutting ------------------------------------------------
 
-        #' Get the timestamps (earliest and latest date) of the specified data sources.
-        #' If 'simple' is TRUE, return the overall latest start and earliest end date
-        #' in order to cut the specified data sources to the same date ranges.
+        #' Get the timestamps (earliest and latest date of activity) of the specified
+        #' data sources.
         #'
-        #' If there are no actual data available for a data source, the result indicates NA
+        #' If there are no data available for a data source, the result indicates NA.
         #'
-        #' @param data.sources the specified data sources
-        #' @param simple whether or not the timestamps get simplified
+        #' @param data.sources The specified data sources. One of \code{"mails"},
+        #'                     \code{"commits"}, and \code{"issues"}.
+        #' @param simple If TRUE, return the overall latest start and earliest end date
+        #'               across all data sources in a one-row data.frame; otherwise, return
+        #'               the first and last activities of all data sources individually.
+        #'               Can be overridden by \code{outermost}.
+        #' @param outermost Whether the very first and the very last activity across all data
+        #'                  sources is to be returned in a one-row data.frame; ignored otherwise.
+        #'                  This overrides any value given via \code{simple}.
         #'
-        #' @return a data.frame with the timestamps of each data source as columns "start" and "end",
-        #'         with the data source as corresponding row name
-        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
+        #' @return A data.frame with the timestamps of each data source as columns "start" and "end",
+        #'         possibly with the data source as corresponding row name
+        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE,
+                                       outermost = FALSE) {
+
             ## check arguments
             data.sources = match.arg(arg = data.sources, several.ok = TRUE)
 
@@ -635,8 +644,14 @@ ProjectData = R6::R6Class("ProjectData",
             subset.timestamps = private$data.timestamps[data.sources, ]
 
             ## get the proper subset of timestamps for returning
-            if(simple) {
-                ## get minima and maxima across data sources (rows)
+            if (outermost) {
+                ## get minimum start date and maximum end date across data sources
+                timestamps = data.frame(
+                    start = min(subset.timestamps[, "start"], na.rm = TRUE),
+                    end = max(subset.timestamps[, "end"], na.rm = TRUE)
+                )
+            } else if(simple) {
+                ## get maximum start date and minimum end date across data sources
                 timestamps = data.frame(
                     start = max(subset.timestamps[, "start"], na.rm = TRUE),
                     end = min(subset.timestamps[, "end"], na.rm = TRUE)
@@ -692,6 +707,8 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts for every author
         get.author2artifact = function() {
+            ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.artifacts)
             logging::loginfo("Getting author--artifact data.")
 
             ## store the authors per artifact
@@ -967,3 +984,99 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
 
     return(mylist)
 }
+
+#' Get the commit data with the specified columns for the specified project-data instance
+#' as a data frame for each specified split range.
+#'
+#' A split interval can be set by defining the number of weeks for each requested range as a vector.
+#'
+#' @param project.data The project data as source for the commits
+#' @param columns The commit-data columns to select and return
+#' @param split A list of numerics, indicating numbers of weeks into which the selected data
+#'              is to be split
+#'
+#' @return A data.frame indicating the selected \code{columns}, split into the given numbers
+#'         of weeks (\code{split})
+get.commit.data = function(project.data, columns = c("author.name", "author.email"), split = c()) {
+    logging::logdebug("get.commit.data: starting.")
+
+    ## Get commit data
+    commits.df = project.data$get.commits()
+
+    ## In case no commit data is available, return NA
+    if(nrow(commits.df) == 0) {
+        return(NA)
+    }
+
+    ## Make sure the hash is included in the cut columns vector for grouping
+    cut.columns = columns
+    if (!("hash" %in% cut.columns)) {
+        cut.columns = c(cut.columns, "hash")
+    }
+
+    ## Make sure the date is included in the cut columns vector for splitting
+    if (!("date" %in% cut.columns)) {
+        cut.columns = c(cut.columns, "date")
+    }
+
+    ## Cut down data to needed minimum
+    commits.df = commits.df[cut.columns]
+
+    ## Group by hash to get a line per commit
+    commits.df = sqldf::sqldf("SELECT * FROM `commits.df` GROUP BY `hash`")
+
+    ## Remove hash column if not wanted as it now contains nonsensical data
+    if (!("hash" %in% columns)) {
+        commits.df["hash"] = NULL
+    }
+
+    ## Order commits by date column
+    commits.df = commits.df[order(commits.df$date),]
+
+    ## Fetch the date range info
+    date.first = as.Date(commits.df$date[1])
+    date.last = as.Date(commits.df$date[nrow(commits.df)]) + 1 # +1 since findInterval is right-exclusive
+
+    ## Calc the split dates depending on the specified intervals
+    date.split = c(date.last)
+    if (!is.null(split)) {
+        for (i in 1:length(split)) {
+            ## substract split[i] number of weeks (i.e., split[i] * 7 days)
+            ## TODO use lubridate package here to substract a week from POSIXct?
+            date.calc = date.split[i] - (split[i] * 7)
+
+            ## Check if calculated date is still after the first commit date of the range
+            if (date.calc > date.first) {
+                date.split = c(date.split, date.calc)
+            } else {
+                date.split = c(date.split, date.first)
+                break
+            }
+        }
+    } else {
+        date.split = c(date.split, date.first)
+    }
+
+    date.split = rev(date.split)
+
+    ## Only keep the commits which were made within the specified split ranges
+    ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
+    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1],]
+
+    ## Calc group numbers for the commits by the split dates
+    intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
+
+    ## Remove date column if not wanted
+    if (!("date" %in% columns)) {
+        commits.df["date"] = NULL
+    }
+
+    ## Split the commits by the calculated groups
+    res = split.data.by.bins(commits.df, intervals)
+    names(res) = construct.ranges(date.split)
+    attr(res, "bins") = date.split
+
+    logging::logdebug("get.commit.data: finished.")
+    return(res)
+}
+

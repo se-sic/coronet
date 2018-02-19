@@ -1,6 +1,7 @@
 ## (c) Claus Hunsen, 2017
 ## hunsen@fim.uni-passau.de
-
+## (c) Felix Prasse, 2017
+## prassefe@fim.uni-passau.de
 
 context("Splitting functionality.")
 
@@ -1453,4 +1454,69 @@ test_that("Check and correct duplicate range names during network activity-based
     )
     expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
+})
+
+
+##
+## Test splitting data by network names.
+##
+test_that("Test splitting data by networks", {
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## construct project data
+    project.data = ProjectData$new(proj.conf)
+
+    ## split data
+    mybins = as.POSIXct(c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-10-05 09:00:00"))
+    input.data = split.data.time.based(project.data, bins = mybins)
+    input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
+
+    ## split data by networks
+    aggregation.level = c("range", "cumulative", "all.ranges",
+                          "project.cumulative", "project.all.ranges",
+                          "complete")
+    results = lapply(aggregation.level, function(level)
+        split.data.by.networks(input.data.network, project.data, level)
+    )
+    names(results) = aggregation.level
+
+    ## construct expected ranges
+    expected.ranges = list(
+        range = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                  "2016-07-12 16:00:00-2016-07-12 16:05:00",
+                  "2016-07-12 16:05:00-2016-10-05 09:00:00"),
+        cumulative = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                       "2016-07-12 15:00:00-2016-07-12 16:05:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        all.ranges = c("2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        project.cumulative = c("2004-10-09 18:38:13-2016-07-12 16:00:00",
+                               "2004-10-09 18:38:13-2016-07-12 16:05:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        project.all.ranges = c("2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        complete = c("2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39")
+    )
+
+    ## test the ranges
+    test.each.network = function(aggregation.level) {
+        result.data = results[[aggregation.level]]
+        expected.range.names = expected.ranges[[aggregation.level]]
+
+        lapply(seq_along(result.data), function(i) {
+            result.entry = result.data[[i]]
+
+            expect_true(igraph::identical_graphs(result.entry[["network"]], input.data.network[[i]]))
+            expect_equal(result.entry[["data"]]$get.range(), expected.range.names[[i]])
+        })
+    }
+    lapply(aggregation.level, test.each.network)
 })

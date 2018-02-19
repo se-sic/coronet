@@ -141,6 +141,29 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vertex attributes -------------------------------------------------------
+
+# ## define bins for network construction
+# mybins = c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30")
+# ## split data into ranges
+# cf.data = split.data.time.based(x.data, bins = mybins)
+# ## construct (author) networks from range data
+# my.networks = lapply(cf.data, function(range.data) {
+#     y = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
+#     return (y$get.author.network())
+# })
+# ## add commit-count vertex attributes
+# sample = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "range")
+# sample.cumulative = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "cumulative")
+# ## add email-address vertex attribute
+# sample.mail = add.vertex.attribute.author.email(my.networks, x.data, "author.email")
+
+# ## add vertex attributes for the project-level network
+# x.net.as.list = list("1970-01-01 00:00:00-2030-01-01 00:00:00" = x$get.author.network())
+# sample.entire = add.vertex.attribute.commit.count.author(x.net.as.list, x.data, aggregation.level = "complete")
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Bulk methods for Codeface ranges ----------------------------------------
 
 # net.conf = NetworkConf$new()

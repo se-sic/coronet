@@ -325,6 +325,119 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(cf.data)
 }
 
+#' Map a list of networks to their corresponding range data, after splitting the
+#' given project data (\code{project.data}) to the time ranges given by the networks'
+#' names. The splitting can be more specifically configured with the parameter
+#' \code{aggregation.level}, see below for more details.
+#'
+#' For this function to work properly, the list of networks needs to be named with
+#' timestamp-ranges, which can be splitted using \code{get.range.bounds}. The easiest
+#' way to achieve this is to use one of the \code{split.*} functions in this very file.
+#' For example, the time ranges have a format like this:
+#' "2017-01-01 23:57:01-2017-02-15 12:19:37", which can be split by the utility
+#' function \code{get.range.bounds}, obtaining the range bounds as timestamps.
+#'
+#' Using different aggregation levels given by the parameter \code{aggregation.level},
+#' it is possible to configure the exact treatment of range bounds and, thus, the
+#' splitting of the given project data. The various aggregation levels work as follows:
+#' - \code{"range"}: The project data will be split exactly to the time ranges specified
+#'                   by the networks' names.
+#' - \code{"cumulative"}: The project data will be split exactly to the time ranges
+#'                   specified by the networks' names, but in a cumulative manner.
+#' - \code{"all.ranges"}: The project data will be split exactly to the time range
+#'                   specified by the start of the first network and end of the last
+#'                   network. All data instances will contain the same data.
+#' - \code{"project.cumulative"}: The same splitting as for \code{"cumulative"}, but all
+#'                   data will start at the beginning of the project data and *not* at
+#'                   the beginning of the first network.
+#' - \code{"project.all.ranges"}: The same splitting as for \code{"all.ranges"}, but all
+#'                   data will start at the beginning of the project data and *not* at
+#'                   the beginning of the first network. All data instances will contain
+#'                   the same data.
+#' - \code{"complete"}: The same splitting as for \code{"all.ranges"}, but all data will
+#'                   start at the beginning of the project data and end at the end of
+#'                   the project data. All data instances will contain the same data.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The entire project data
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See above for more details.
+#'
+#' @return A list containing tuples with the keys "network" and "data", where, under "network", are
+#'         the respective networks passed via \code{list.of.networks} and, under "data", are the
+#'         split data instances of type \code{RangeData}.
+split.data.by.networks = function(list.of.networks, project.data,
+                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                        "project.cumulative", "project.all.ranges",
+                                                        "complete")) {
+    ## get the chosen aggregation level
+    aggregation.level = match.arg(aggregation.level)
+
+    ## get the timestamp data from the project data (needed for some aggr. levels)
+    project.timestamps = project.data$get.data.timestamps(outermost = TRUE)
+
+    ## loop over all ranges and split the data for each range accordingly:
+    list.of.ranges = names(list.of.networks)
+    list.of.range.bounds = lapply(list.of.ranges, get.range.bounds)
+    net.to.range.list = lapply(list.of.ranges, function(range) {
+        ## 1) get the range bounds to work with
+        start.end = get.range.bounds(range)
+
+        ## 2) adjust the range bounds for the respective aggregation levels
+        ##    (if nothing else is stated below, the respective range bounds stay unchanged)
+        switch(aggregation.level,
+
+               range = {
+                   ## use the exact range bounds
+               },
+               cumulative = {
+                   ## the start is always at the first network's start bound
+                   start.end[1] = list.of.range.bounds[[1]][1]
+               },
+               all.ranges = {
+                   ## the start is always at the first network's start bound
+                   start.end[1] =list.of.range.bounds[[1]][1]
+                   ## the end is always at the last network's ending bound
+                   start.end[2] = list.of.range.bounds[[length(list.of.ranges)]][2]
+               },
+               project.cumulative = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.timestamps[["start"]]
+               },
+               project.all.ranges = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.timestamps[["start"]]
+                   ## the end is always at the last network's ending bound
+                   start.end[2] = list.of.range.bounds[[length(list.of.ranges)]][2]
+               },
+               complete = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.timestamps[["start"]]
+                   ## the start is always at the project data's ending
+                   start.end[2] = project.timestamps[["end"]]
+               }
+        )
+
+        ## 3) split the data to the ranges
+        range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+
+        ## 4) construct return value
+        net.to.range.entry = list(
+            "network" = list.of.networks[[range]],
+            "data" = range.data
+        )
+
+        return (net.to.range.entry)
+    })
+
+    ## properly set names for the result list
+    names(net.to.range.list) = names(list.of.networks)
+
+    return(net.to.range.list)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
