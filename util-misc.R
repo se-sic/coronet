@@ -155,14 +155,17 @@ get.date.string = function(input) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range construction and handling -----------------------------------------
 
-#' Construct the range strings.
+#' Construct ranges from the given list/vector of revisions. If \code{raw} is *not*
+#' \code{FALSE}, the ranges are construction in the format "rev[n]-rev[n+1]".
 #'
 #' @param revs the revisions
 #' @param sliding.window whether sliding window splitting is enabled or not
-#'                       default: 'FALSE'
+#'                       [default: FALSE]
+#' @param raw whether to return pairs of POSIXct objects or strings rather than
+#'            formatted strings [default: FALSE]
 #'
 #' @return the ranges as strings
-construct.ranges = function(revs, sliding.window = FALSE) {
+construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
     offset = 1
@@ -177,6 +180,17 @@ construct.ranges = function(revs, sliding.window = FALSE) {
 
     ## construct ranges
     ranges = paste(seq1, seq2, sep = "-")
+
+    ## if raw is enabled, we need to compose seq1 and
+    ## seq2 to appropriate tuples
+    if (raw) {
+        ## compose tuples of range start and range end
+        ranges.raw = mapply(seq1, seq2, FUN = c, SIMPLIFY = FALSE)
+        ## add formatted ranges as names
+        names(ranges.raw) = ranges
+        ## set as return value
+        ranges = ranges.raw
+    }
 
     return(ranges)
 }
