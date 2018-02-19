@@ -151,6 +151,36 @@ get.date.string = function(input) {
     return(result)
 }
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Range construction and handling -----------------------------------------
+
+#' Construct the range strings.
+#'
+#' @param revs the revisions
+#' @param sliding.window whether sliding window splitting is enabled or not
+#'                       default: 'FALSE'
+#'
+#' @return the ranges as strings
+construct.ranges = function(revs, sliding.window = FALSE) {
+    ## setting offset to construct ranges, i.e.,
+    ## combine each $offset revisions
+    offset = 1
+
+    ## with sliding window, we combine each second revision
+    if (sliding.window)
+        offset = 2
+
+    ## extract sequences of revisions
+    seq1 = revs[ 1:(length(revs) - offset) ]
+    seq2 = revs[ (offset + 1):length(revs) ]
+
+    ## construct ranges
+    ranges = paste(seq1, seq2, sep = "-")
+
+    return(ranges)
+}
+
 #' Calculate the bounds of a range from its name.
 #'
 #' @param range The range name
