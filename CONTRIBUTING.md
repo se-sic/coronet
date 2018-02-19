@@ -171,6 +171,7 @@ The current build status is as follows:
     * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`, and
     * **return statements**: always use the function `return()` to return a value from a function; do not use one when you intend to not return anything.
 * To **include packages**, always use `requireNamespace` (and *not* `library`). Consequently, you need to use package prefixes (e.g., `igraph::`) when calling a package's functions.
+* To handle dates and date objects (i.e. mainly, `POSIXct` objects in R), always use the functions `get.date.from.string`, `get.date.from.unix.timestamp`, and `get.date.string`. This ensures proper date handling in all parts of the code. If you need to modify dates (e.g., to add a week), always use the `lubridate` package.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
     * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details).
