@@ -1467,7 +1467,7 @@ test_that("Test splitting data by networks", {
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
-    ## retrieve project data and network builder
+    ## construct project data
     project.data = ProjectData$new(proj.conf)
 
     ## split data

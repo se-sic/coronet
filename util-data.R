@@ -995,7 +995,7 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
 #' @param split A list of numerics, indicating numbers of weeks into which the selected data
 #'              is to be split
 #'
-#' @return A data.frame indicating the slected \code{columns}, split into the given numbers
+#' @return A data.frame indicating the selected \code{columns}, split into the given numbers
 #'         of weeks (\code{split})
 get.commit.data = function(project.data, columns = c("author.name", "author.email"), split = c()) {
     logging::logdebug("get.commit.data: starting.")
