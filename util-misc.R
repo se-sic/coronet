@@ -337,6 +337,118 @@ construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
     return(ranges)
 }
 
+#' Aggregate a given list/vector of ranges to specific levels, configurable through the
+#' the parameter \code{aggregation.level} (see below for more details).
+#'
+#' Using different aggregation levels given by the parameter \code{aggregation.level},
+#' it is possible to configure the exact treatment of range bounds and, thus, the
+#' re-arrangement of the given list of ranges. The various aggregation levels work
+#' as follows:
+#' - \code{"range"}: The ranges will be kept exactly as given.
+#' - \code{"cumulative"}: The ranges will be re-arranged in a cumulative manner.
+#' - \code{"all.ranges"}: The ranges will be re-arranged to exactly to the time range
+#'                   specified by the start of the first range and end of the last
+#'                   range. All ranges will be exactly the same.
+#' - \code{"project.cumulative"}: The same re-arrangement as for \code{"cumulative"}, but
+#'                   all ranges will start at \code{project.start} and *not* at the
+#'                   beginning of the first range.
+#' - \code{"project.all.ranges"}: The same re-arrangement as for \code{"all.ranges"}, but
+#'                   all ranges will start at \code{project.start} and *not* at
+#'                   the beginning of the first range. All ranges will be exactly the same.
+#' - \code{"complete"}: The same re-arrangement as for \code{"all.ranges"}, but all ranges
+#'                   will start at \code{project.start} and end at \code{project.end}. All
+#'                   ranges will be exactly the same.
+#'
+#' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
+#' function here, to pass proper values for \code{project.start} and \code{project.end}.
+#'
+#' @param ranges the list or vector of ranges to aggregate
+#' @param project.start the project start time as string or POSIXct object
+#' @param project.end the project end time as string or POSIXct object
+#' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. S7ee above for more details.
+#' @param raw whether to return pairs of POSIXct objects or strings rather than
+#'            formatted strings [default: FALSE]
+#'
+#' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
+#'         for which the ranges from \code{ranges} are the names
+aggregate.ranges = function(ranges, project.start, project.end,
+                            aggregation.level = c("range", "cumulative", "all.ranges",
+                                                  "project.cumulative", "project.all.ranges",
+                                                  "complete"),
+                            raw = FALSE) {
+
+    ## get the chosen aggregation level
+    aggregation.level = match.arg(aggregation.level)
+
+    ## get the timestamp data from the project data (needed for some aggr. levels)
+    project.start = get.date.from.string(project.start)
+    project.end = get.date.from.string(project.end)
+
+    ## loop over all ranges and split the data for each range accordingly:
+    list.of.range.bounds = lapply(ranges, get.range.bounds)
+    ranges.raw = lapply(ranges, function(range) {
+        ## 1) get the range bounds to work with
+        start.end = get.range.bounds(range)
+
+        ## 2) adjust the range bounds for the respective aggregation levels
+        ##    (if nothing else is stated below, the respective range bounds stay unchanged)
+        switch(aggregation.level,
+
+               range = {
+                   ## use the exact range bounds
+               },
+               cumulative = {
+                   ## the start is always at the first network's start bound
+                   start.end[1] = list.of.range.bounds[[1]][1]
+               },
+               all.ranges = {
+                   ## the start is always at the first network's start bound
+                   start.end[1] =list.of.range.bounds[[1]][1]
+                   ## the end is always at the last network's ending bound
+                   start.end[2] = list.of.range.bounds[[length(ranges)]][2]
+               },
+               project.cumulative = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.start
+               },
+               project.all.ranges = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.start
+                   ## the end is always at the last network's ending bound
+                   start.end[2] = list.of.range.bounds[[length(ranges)]][2]
+               },
+               complete = {
+                   ## the start is always at the project data's start
+                   start.end[1] = project.start
+                   ## the start is always at the project data's ending
+                   start.end[2] = project.end
+               }
+        )
+
+        return(start.end)
+    })
+
+    ## construct actual range strings (without names)
+    ranges.new = sapply(ranges.raw, construct.ranges, sliding.window = FALSE, raw = FALSE)
+    ranges.new = unname(ranges.new)
+
+    ## if raw is enabled, we need to attach proper names
+    if (raw) {
+        ## add formatted original(!) ranges as names
+        if (is.list(ranges)) {
+            names(ranges.raw) = names(ranges)
+        } else {
+            names(ranges.raw) = ranges
+        }
+        ## set as return value
+        ranges.new = ranges.raw
+    }
+
+    return(ranges.new)
+}
+
 #' Calculate the bounds of a range from its name.
 #'
 #' @param range The range name

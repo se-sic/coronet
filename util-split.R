@@ -360,8 +360,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #'
 #' @param list.of.networks The network list
 #' @param project.data The entire project data
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See above for more details.
 #'
