@@ -288,6 +288,55 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     return(ranges)
 }
 
+#' Construct cumulative ranges based on the given start time, end time, and time period.
+#' Each range starts at \code{start}; the first range lasts exactly \code{time.period}-long,
+#' the second two times as long, etc.
+#'
+#' With this function, it is possible to construct ranges like this:
+#' > +...
+#' > ++..
+#' > +++.
+#' > ++++
+#'
+#' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
+#' function here.
+#'
+#' @param start The start time as string or POSIXct object
+#' @param end The start time as string or POSIXct object
+#' @param time.period The time period describing the length of the ranges, a character
+#'                    string, e.g., "3 mins" or "15 days"
+#' @param raw whether to return pairs of POSIXct objects or strings rather than
+#'            formatted strings [default: FALSE]
+#'
+#' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
+#'         for which the formatted ranges are the names
+construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
+
+    ## get the consecutive ranges to alter them afterwards
+    ranges.consecutive = construct.overlapping.ranges(start, end, time.period, overlap = 0, raw = TRUE)
+
+    ## set the start of each range to global start date
+    ranges.raw = lapply(ranges.consecutive, function(range.bounds) {
+        ## start of each range is the global start date
+        range.bounds[1] = start
+        return(range.bounds)
+    })
+
+    ## construct actual range strings (without names)
+    ranges = sapply(ranges.raw, construct.ranges, sliding.window = FALSE, raw = FALSE)
+    ranges = unname(ranges)
+
+    ## if raw is enabled, we need to attach proper names
+    if (raw) {
+        ## add formatted ranges as names
+        names(ranges.raw) = ranges
+        ## set as return value
+        ranges = ranges.raw
+    }
+
+    return(ranges)
+}
+
 #' Calculate the bounds of a range from its name.
 #'
 #' @param range The range name
