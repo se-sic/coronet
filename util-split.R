@@ -64,15 +64,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     else {
         ## get bins based on parameter
         split.basis = NULL
-        bins = lubridate::ymd_hms(bins, truncated = 3)
-        bins = strftime(bins, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.from.string(bins)
+        bins = get.date.string(bins)
         bins.labels = head(bins, -1)
         split.by.bins = TRUE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
     }
-    bins.date = as.POSIXct(bins)
+    bins.date = get.date.from.string(bins)
 
     ## construct ranges
     bins.ranges = construct.ranges(bins)
@@ -136,7 +136,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             bins.date[2:length(bins.date)],
             FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
         )
-        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
 
         ## split data for sliding windows
         cf.data.sliding = split.data.time.based(project.data, bins = bins.date.middle,
@@ -151,7 +151,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(bins.date)
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -247,7 +247,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
                                               activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
-    bins.date = lubridate::ymd_hms(bins, truncated = 3)
+    bins.date = get.date.from.string(bins)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
@@ -299,7 +299,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(bins.date)
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -463,11 +463,11 @@ split.data.by.networks = function(list.of.networks, project.data,
 split.network.time.based = function(network, time.period = "3 months", bins = NULL,
                                     sliding.window = FALSE) {
     ## extract date attributes from edges
-    dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
+    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
 
     ## get bin information for all edges
     if (!is.null(bins)) {
-        bins.date = lubridate::ymd_hms(bins, truncated = 3)
+        bins.date = get.date.from.string(bins)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
@@ -475,7 +475,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     } else {
         bins.info = split.get.bins.time.based(dates, time.period)
         bins.vector = bins.info[["vector"]]
-        bins.date = as.POSIXct(bins.info[["bins"]])
+        bins.date = get.date.from.string(bins.info[["bins"]])
         bins = head(bins.info[["bins"]], -1)
         ## logging
         logging::loginfo("Splitting network into time ranges [%s].",
@@ -492,7 +492,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
             bins.date[2:length(bins.date)],
             FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
         )
-        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
 
         ## order edges by date
         edges.all = igraph::E(network)
@@ -524,7 +524,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     attr(nets, "bins") = bins.date
 
     ## set ranges as names
-    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    revs = get.date.string(bins.date)
     names(nets) = construct.ranges(revs, sliding.window = sliding.window)
 
     return(nets)
@@ -567,9 +567,9 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 
     ## 2) get bin information
     base = networks[[net.idx]]
-    dates = as.POSIXct(igraph::get.edge.attribute(base, "date"), origin = "1970-01-01")
+    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(base, "date"))
     bins.info = split.get.bins.time.based(dates, time.period)
-    bins.date = as.POSIXct(bins.info[["bins"]])
+    bins.date = get.date.from.string(bins.info[["bins"]])
 
     ## 3) split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
@@ -631,9 +631,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## get dates in a data.frame for splitting purposes
     df = data.frame(
-        date = as.POSIXct( # use POSIXct as other functions need it
-            igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
-        my.unique.id = 1:edge.count # as a unique identifier only
+        date = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date")),
+        my.unique.id = seq_len(edge.count) # as a unique identifier only
     )
     ## sort by date
     df = df[ with(df, order(date)), ]
@@ -689,7 +688,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     attr(networks, "bins") = bins.date
 
     ## set ranges as names
-    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    revs = get.date.string(bins.date)
     names(networks) = construct.ranges(revs, sliding.window = sliding.window)
 
     ## issue warning if ranges are not unique
@@ -804,7 +803,7 @@ split.get.bins.time.based = function(dates, time.period) {
         ## add last bin
         max(dates) + 1
     )
-    dates.breaks.chr = strftime(head(dates.breaks, -1), format = "%Y-%m-%d %H:%M:%S")
+    dates.breaks.chr = get.date.string(head(dates.breaks, -1))
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
@@ -820,7 +819,7 @@ split.get.bins.time.based = function(dates, time.period) {
     ## return properly
     return(list(
         vector = dates.bins,
-        bins = strftime(dates.breaks, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(dates.breaks)
     ))
 }
 
@@ -882,7 +881,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## unlist bins
     bins.date = do.call(c, bins.date)
     ## convert to character strings
-    bins.date.char = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    bins.date.char = get.date.string(bins.date)
 
     ## if we have a duplicate bin border, merge the two things
     if (remove.duplicate.bins && any(duplicated(bins.date))) {

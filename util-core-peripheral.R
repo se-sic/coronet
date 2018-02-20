@@ -471,7 +471,7 @@ get.committer.not.author.commit.count = function(range.data) {
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       WHERE committer.name <> author.name
+                       WHERE `committer.name` <> `author.name`
                        GROUP BY `committer.name`,`author.name`
                        ORDER BY `freq` DESC")
 
