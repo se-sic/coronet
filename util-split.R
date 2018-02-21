@@ -410,6 +410,36 @@ split.data.by.networks = function(list.of.networks, project.data,
     return(net.to.range.list)
 }
 
+#' Split the given data to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{generate.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param project.data the \code{ProjectData} instance to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of \code{RangeData} instances, each representing one of the
+#'         given ranges; the ranges are used as names for the list
+split.data.time.based.by.ranges = function(project.data, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the data accordingly:
+    data.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the data to the current range
+            range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the data
+            return (range.data)
+        }
+    )
+
+    return(data.split)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
@@ -673,6 +703,36 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     }
 
     return(networks)
+}
+
+#' Split the given network to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{generate.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param network the network to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of networks, each representing one of the given ranges; the
+#'         ranges are used as names for the list
+split.network.time.based.by.ranges = function(network, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the network accordingly:
+    nets.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the network to the current range
+            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the network
+            return (range.net)
+        }
+    )
+
+    return(nets.split)
 }
 
 
