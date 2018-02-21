@@ -336,6 +336,7 @@ test_that("Split a data object time-based (bins == ... ).", {
 ##
 ## Test splitting data by network names.
 ##
+
 test_that("Test splitting data by networks", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -396,6 +397,49 @@ test_that("Test splitting data by networks", {
         })
     }
     lapply(aggregation.level, test.each.network)
+})
+
+##
+## Test splitting data by ranges.
+##
+
+test_that("Test splitting data by ranges", {
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## construct project data
+    project.data = ProjectData$new(proj.conf)
+
+    ## split data
+    my.bins = get.date.from.string(c("2016-07-12 15:00:00", "2016-07-12 16:00:00",
+                                     "2016-07-12 16:05:00", "2016-10-05 09:00:00"))
+    my.ranges = construct.ranges(my.bins, sliding.window = FALSE)
+    expected.results = split.data.time.based(project.data, bins = my.bins)
+    results = split.data.time.based.by.ranges(project.data, my.ranges)
+
+    ## check time ranges
+    expect_equal(names(results), my.ranges, info = "Time ranges.")
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = lapply(expected.results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(expected.results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(expected.results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(expected.results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(expected.results, function(cf.data) cf.data$get.pasta())
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges.")
+
 })
 
 ## * activity-based --------------------------------------------------------
@@ -1108,6 +1152,43 @@ test_that("Split a network time-based (bins = ...).", {
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
+})
+
+## * * ranges --------------------------------------------------------------------
+
+##
+## Test splitting network by ranges.
+##
+
+test_that("Test splitting network by ranges", {
+
+
+    ## bins
+    bins = c("2016-07-12 15:58:00", "2016-07-12 16:00:59", "2016-07-12 16:02:59",
+             "2016-07-12 16:04:59", "2016-07-12 17:21:43")
+    ranges = construct.ranges(bins, sliding.window = FALSE, raw = TRUE)
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
+
+    ## retrieve author network
+    author.net = net.builder$get.author.network()
+    expected.results = split.network.time.based(author.net, bins = bins)
+    results = split.network.time.based.by.ranges(author.net, ranges)
+
+    ## check time ranges
+    expect_equal(names(results), names(ranges), info = "Time ranges.")
+
+    ## check data for all ranges
+    check.identical = mapply(results, expected.results, FUN = function(r, e) {
+        return(igraph::identical_graphs(r, e))
+    })
+    expect_true(all(check.identical), info = "Network equality (split by ranges).")
 })
 
 ## * activity-based ------------------------------------------------------------
