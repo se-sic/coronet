@@ -768,14 +768,14 @@ split.unify.range.names = function(ranges) {
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: starting.")
-    ## find date bins from given dates
-    dates.breaks = c(
-        ## time periods of length 'time.period'
-        seq.POSIXt(from = min(dates), to = max(dates), by = time.period),
-        ## add last bin
-        max(dates) + 1
-    )
+
+    ## generate date bins from given dates
+    dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+    ## as the last bin bound is exclusive, we need to add a second to it
+    dates.breaks[length(dates.breaks)] = max(dates) + 1
+    ## generate charater strings for bins
     dates.breaks.chr = get.date.string(head(dates.breaks, -1))
+
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
