@@ -257,11 +257,16 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 #' > ..++.
 #' > ....+
 #'
+#' Important: As the start of each range is supposed to be inclusive and the end of each range
+#' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
+#' in the last range.
+#'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
 #'
 #' @param start The start time as string or POSIXct object
-#' @param end The start time as string or POSIXct object
+#' @param end The end time as string or POSIXct object; the last time to be *included* in the
+#'            last range (see above)
 #' @param time.period The time period describing the length of the ranges, a character
 #'                    string, e.g., "3 mins" or "15 days"
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
@@ -287,11 +292,16 @@ construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
 #' overlapping ranges as in the function \code{construct.ranges} when \code{sliding.window}
 #' is set to \code{TRUE}.
 #'
+#' Important: As the start of each range is supposed to be inclusive and the end of each range
+#' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
+#' in the last range.
+#'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
 #'
 #' @param start The start time as string or POSIXct object
-#' @param end The start time as string or POSIXct object
+#' @param end The end time as string or POSIXct object; the last time to be *included* in the
+#'            last range (see above)
 #' @param time.period The time period describing the length of the ranges, a character
 #'                    string, e.g., "3 mins" or "15 days"
 #' @param overlap The time period describing the length of the overlap, a character string
@@ -316,7 +326,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     }
     ## 3) the dates for theirselves
     start.date = get.date.from.string(start)
-    end.date = get.date.from.string(end)
+    end.date = get.date.from.string(end) + 1 ## add 1 for inclusion of end.date
 
     ## compute overall duration
     bins.duration = lubridate::as.duration(lubridate::interval(start.date, end.date))
@@ -370,11 +380,16 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
 #' > +++.
 #' > ++++
 #'
+#' Important: As the start of each range is supposed to be inclusive and the end of each range
+#' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
+#' in the last range.
+#'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
 #'
 #' @param start The start time as string or POSIXct object
-#' @param end The start time as string or POSIXct object
+#' @param end The end time as string or POSIXct object; the last time to be *included* in the
+#'            last range (see above)
 #' @param time.period The time period describing the length of the ranges, a character
 #'                    string, e.g., "3 mins" or "15 days"
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
