@@ -322,16 +322,20 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     bins.duration = lubridate::as.duration(lubridate::interval(start.date, end.date))
     ## compute negative overlap
     overlap.negative = time.period - overlap
+    ## compute number of complete bins
+    bins.number = round(bins.duration / overlap.negative)
 
-    ## construct the raw ranges from existing information:
-    bins.number = bins.duration / overlap.negative
-    ranges.raw = lapply(seq_len(bins.number), function(x) {
-        ## 1) start of bin x is at (x - 1) * overlap.neg + start.date
-        current.offset.start = (x - 1) * overlap.negative
-        bin.start = start.date + current.offset.start
-        ## 2) end of bin x is at (x) * overlap.neg + overlap + start.date
-        current.offset.end = x * overlap.negative + overlap
-        bin.end = start.date + current.offset.end
+    ## generate a approximate sequence of dates which can be streamlined later
+    seq.start = start.date + overlap
+    seq.end = seq.start + (bins.number) * overlap.negative
+    ranges.approx = generate.date.sequence(seq.start, seq.end, by = overlap.negative)
+
+    ## construct the raw ranges from the approximate ones
+    ranges.raw = lapply(seq_len(bins.number), function(bin.index) {
+        ## combine start and end dates
+        bin.start = ranges.approx[[bin.index]] - overlap
+        bin.end = ranges.approx[[bin.index + 1]]
+
         ## check if we hit the end already
         if (bin.end > end.date) {
             bin.end = end.date
