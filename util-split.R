@@ -387,20 +387,18 @@ split.data.by.networks = function(list.of.networks, project.data,
         aggregation.level = aggregation.level, raw = TRUE
     )
 
-    ## loop over all ranges and split the data accordingly:
-    net.to.range.list = mapply(
-        list.of.ranges, ranges.bounds, SIMPLIFY = FALSE,
-        FUN = function(range, start.end) {
-            ## 1) split the data to the ranges
-            range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+    ## split the data by the computed (and aggregated) ranges
+    list.of.data = split.data.time.based.by.ranges(project.data, ranges.bounds)
 
-            ## 2) construct return value
+    ## zip networks and range data
+    net.to.range.list = mapply(
+        list.of.networks, list.of.data, SIMPLIFY = FALSE,
+        FUN = function(net, range.data) {
             net.to.range.entry = list(
-                "network" = list.of.networks[[range]],
+                "network" = net,
                 "data" = range.data
             )
-
-            return (net.to.range.entry)
+            return(net.to.range.entry)
         }
     )
 
