@@ -34,6 +34,13 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## - net.conf$update.values(list(pasta = TRUE, synchronicity = TRUE))
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split data --------------------------------------------------------------
+
+## * time-based ------------------------------------------------------------
+
+## * * time period ---------------------------------------------------------
+
 ##
 ## Tests for split.data.time.based(..., split.basis = 'commits')
 ##
@@ -261,6 +268,7 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
 
 })
 
+## * * bins ----------------------------------------------------------------
 
 ##
 ## Tests for split.data.time.based(..., bins = ...)
@@ -323,6 +331,74 @@ test_that("Split a data object time-based (bins == ... ).", {
 
 })
 
+## * * ranges --------------------------------------------------------------
+
+##
+## Test splitting data by network names.
+##
+test_that("Test splitting data by networks", {
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## construct project data
+    project.data = ProjectData$new(proj.conf)
+
+    ## split data
+    mybins = get.date.from.string(c("2016-07-12 15:00:00", "2016-07-12 16:00:00",
+                                    "2016-07-12 16:05:00", "2016-10-05 09:00:00"))
+    input.data = split.data.time.based(project.data, bins = mybins)
+    input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
+
+    ## split data by networks
+    aggregation.level = c("range", "cumulative", "all.ranges",
+                          "project.cumulative", "project.all.ranges",
+                          "complete")
+    results = lapply(aggregation.level, function(level)
+        split.data.by.networks(input.data.network, project.data, level)
+    )
+    names(results) = aggregation.level
+
+    ## construct expected ranges
+    expected.ranges = list(
+        range = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                  "2016-07-12 16:00:00-2016-07-12 16:05:00",
+                  "2016-07-12 16:05:00-2016-10-05 09:00:00"),
+        cumulative = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
+                       "2016-07-12 15:00:00-2016-07-12 16:05:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        all.ranges = c("2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00",
+                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
+        project.cumulative = c("2004-10-09 18:38:13-2016-07-12 16:00:00",
+                               "2004-10-09 18:38:13-2016-07-12 16:05:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        project.all.ranges = c("2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00",
+                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
+        complete = c("2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39",
+                     "2004-10-09 18:38:13-2017-05-23 12:32:39")
+    )
+
+    ## test the ranges
+    test.each.network = function(aggregation.level) {
+        result.data = results[[aggregation.level]]
+        expected.range.names = expected.ranges[[aggregation.level]]
+
+        lapply(seq_along(result.data), function(i) {
+            result.entry = result.data[[i]]
+
+            expect_true(igraph::identical_graphs(result.entry[["network"]], input.data.network[[i]]))
+            expect_equal(result.entry[["data"]]$get.range(), expected.range.names[[i]])
+        })
+    }
+    lapply(aggregation.level, test.each.network)
+})
+
+## * activity-based --------------------------------------------------------
 
 ##
 ## Tests for split.data.activity.based(..., activity.type = 'commits')
@@ -874,6 +950,13 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 })
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split network -----------------------------------------------------------
+
+## * time-based ------------------------------------------------------------
+
+## * * time period ---------------------------------------------------------
+
 ##
 ## Tests for split.network.time.based(..., time.period = ...)
 ##
@@ -930,6 +1013,44 @@ test_that("Split a network time-based (time.period = ...).", {
 
 })
 
+##
+## Tests for split.networks.time.based(..., time.period = ...)
+##
+
+test_that("Split a list of networks time-based.", {
+
+    ## time period
+    time.period = "2 years"
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
+    project.data = ProjectData$new(proj.conf)
+    net.builder = NetworkBuilder$new(project.data, net.conf)
+
+    ## obtain networks:
+    ## 1) co-change network
+    net.builder$update.network.conf(list(author.relation = "cochange"))
+    net.cochange = net.builder$get.author.network()
+    ## 2) mail network
+    net.builder$update.network.conf(list(author.relation = "mail"))
+    net.mail = net.builder$get.author.network()
+
+    ## split networks
+    net.split = split.networks.time.based(
+        networks = list(net.cochange, net.mail),
+        time.period = time.period,
+        sliding.window = FALSE
+    )
+
+    ## check whether the splitting information of the two split networks are identical
+    expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
+
+})
+
+## * * bins ----------------------------------------------------------------
 
 ##
 ## Tests for split.network.time.based(..., bins = ...)
@@ -989,44 +1110,7 @@ test_that("Split a network time-based (bins = ...).", {
 
 })
 
-
-##
-## Tests for split.networks.time.based(..., time.period = ...)
-##
-
-test_that("Split a list of networks time-based.", {
-
-    ## time period
-    time.period = "2 years"
-
-    ## configuration and data objects
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
-    net.conf = NetworkConf$new()
-    net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
-    project.data = ProjectData$new(proj.conf)
-    net.builder = NetworkBuilder$new(project.data, net.conf)
-
-    ## obtain networks:
-    ## 1) co-change network
-    net.builder$update.network.conf(list(author.relation = "cochange"))
-    net.cochange = net.builder$get.author.network()
-    ## 2) mail network
-    net.builder$update.network.conf(list(author.relation = "mail"))
-    net.mail = net.builder$get.author.network()
-
-    ## split networks
-    net.split = split.networks.time.based(
-        networks = list(net.cochange, net.mail),
-        time.period = time.period,
-        sliding.window = FALSE
-    )
-
-    ## check whether the splitting information of the two split networks are identical
-    expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
-
-})
-
+## * activity-based ------------------------------------------------------------
 
 ##
 ## Tests for split.network.activity.based(...)
@@ -1119,6 +1203,9 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
 })
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Split raw data (data and networks by bins) ------------------------------
+
 ##
 ## Tests for split.data.by.bins and split.network.by.bins
 ##
@@ -1202,6 +1289,9 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
 
 })
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Bin identification ------------------------------------------------------
 
 ##
 ## Tests for split.get.bins.time.based and split.get.bins.activity.based
@@ -1296,6 +1386,9 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
 })
 
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Consistency tests -------------------------------------------------------
+
 ##
 ## Tests for consistency of data and network time-based splitting
 ##
@@ -1342,6 +1435,9 @@ test_that("Check consistency of data and network time-based splitting.", {
 
 })
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unification of range names ----------------------------------------------
 
 ##
 ## Tests for duplicate range names
@@ -1461,70 +1557,4 @@ test_that("Check and correct duplicate range names during network activity-based
     )
     expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
-})
-
-
-##
-## Test splitting data by network names.
-##
-test_that("Test splitting data by networks", {
-    ## configuration and data objects
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
-    net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
-
-    ## construct project data
-    project.data = ProjectData$new(proj.conf)
-
-    ## split data
-    mybins = get.date.from.string(c("2016-07-12 15:00:00", "2016-07-12 16:00:00",
-                                    "2016-07-12 16:05:00", "2016-10-05 09:00:00"))
-    input.data = split.data.time.based(project.data, bins = mybins)
-    input.data.network = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)$get.author.network())
-
-    ## split data by networks
-    aggregation.level = c("range", "cumulative", "all.ranges",
-                          "project.cumulative", "project.all.ranges",
-                          "complete")
-    results = lapply(aggregation.level, function(level)
-        split.data.by.networks(input.data.network, project.data, level)
-    )
-    names(results) = aggregation.level
-
-    ## construct expected ranges
-    expected.ranges = list(
-        range = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
-                  "2016-07-12 16:00:00-2016-07-12 16:05:00",
-                  "2016-07-12 16:05:00-2016-10-05 09:00:00"),
-        cumulative = c("2016-07-12 15:00:00-2016-07-12 16:00:00",
-                       "2016-07-12 15:00:00-2016-07-12 16:05:00",
-                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
-        all.ranges = c("2016-07-12 15:00:00-2016-10-05 09:00:00",
-                       "2016-07-12 15:00:00-2016-10-05 09:00:00",
-                       "2016-07-12 15:00:00-2016-10-05 09:00:00"),
-        project.cumulative = c("2004-10-09 18:38:13-2016-07-12 16:00:00",
-                               "2004-10-09 18:38:13-2016-07-12 16:05:00",
-                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
-        project.all.ranges = c("2004-10-09 18:38:13-2016-10-05 09:00:00",
-                               "2004-10-09 18:38:13-2016-10-05 09:00:00",
-                               "2004-10-09 18:38:13-2016-10-05 09:00:00"),
-        complete = c("2004-10-09 18:38:13-2017-05-23 12:32:39",
-                     "2004-10-09 18:38:13-2017-05-23 12:32:39",
-                     "2004-10-09 18:38:13-2017-05-23 12:32:39")
-    )
-
-    ## test the ranges
-    test.each.network = function(aggregation.level) {
-        result.data = results[[aggregation.level]]
-        expected.range.names = expected.ranges[[aggregation.level]]
-
-        lapply(seq_along(result.data), function(i) {
-            result.entry = result.data[[i]]
-
-            expect_true(igraph::identical_graphs(result.entry[["network"]], input.data.network[[i]]))
-            expect_equal(result.entry[["data"]]$get.range(), expected.range.names[[i]])
-        })
-    }
-    lapply(aggregation.level, test.each.network)
 })
