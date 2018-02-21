@@ -208,6 +208,33 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     return(ranges)
 }
 
+#' Construct consecutive ranges based on the given start time, end time, and time period for
+#' each range. The ranges do not overlap, i.e., the end of any range is the start of the next one.
+#'
+#' With this function, it is possible to construct ranges like this:
+#' > ++...
+#' > ..++.
+#' > ....+
+#'
+#' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
+#' function here.
+#'
+#' @param start The start time as string or POSIXct object
+#' @param end The start time as string or POSIXct object
+#' @param time.period The time period describing the length of the ranges, a character
+#'                    string, e.g., "3 mins" or "15 days"
+#' @param raw whether to return pairs of POSIXct objects or strings rather than
+#'            formatted strings [default: FALSE]
+#'
+#' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
+#'         for which the formatted ranges are the names
+construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
+
+    ## just construct overlapping ranges without any overlap ;)
+    ranges = construct.overlapping.ranges(start, end, time.period, overlap = 0, raw)
+    return(ranges)
+}
+
 #' Construct ranges based on the given start time, end time, time period, and overlap.
 #'
 #' With this function, it is possible to construct ranges like this:
