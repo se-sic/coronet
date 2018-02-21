@@ -340,6 +340,12 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     seq.end = seq.start + (bins.number) * overlap.negative
     ranges.approx = generate.date.sequence(seq.start, seq.end, by = overlap.negative)
 
+    ## handle end date properly
+    if (end.date > seq.end) {
+        bins.number = bins.number + 1
+        ranges.approx = c(ranges.approx, end.date)
+    }
+
     ## construct the raw ranges from the approximate ones
     ranges.raw = lapply(seq_len(bins.number), function(bin.index) {
         ## combine start and end dates
