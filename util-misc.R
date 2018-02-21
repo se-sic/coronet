@@ -157,6 +157,47 @@ get.date.string = function(input) {
     return(result)
 }
 
+#' Construct a date sequence on the given start time, end time, and time period between the
+#' sequentially generated dates.
+#'
+#' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
+#' function here.
+#'
+#' @param start The start time as string or POSIXct object
+#' @param end The start time as string or POSIXct object
+#' @param time.period The time period describing the length of time between dates, a character
+#'                    string, e.g., "3 mins" or "15 days"
+#'
+#' @return the sequential dates as a vector
+generate.date.sequence = function(start.date, end.date, by) {
+
+    ## convert time.period to duration
+    time.period = lubridate::duration(by)
+
+    ## convenience function for next step
+    get.next.step = function(date) {
+        return(date + time.period)
+    }
+
+    ## generate dates before end date:
+    ## 1) initialize date sequence with first date
+    dates = c(start.date)
+    ## 2) current date
+    current.date = start.date
+    ## 3) iterate while smaller than end date
+    while (get.next.step(current.date) < end.date) {
+        ## get next step
+        next.step = get.next.step(current.date)
+        ## add next-step date to sequence
+        dates = c(dates, next.step)
+        current.date = next.step
+    }
+    ## 4) add end date to sequence
+    dates = c(dates, end.date)
+
+    return(dates)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range construction and handling -----------------------------------------
