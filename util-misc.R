@@ -328,6 +328,13 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     start.date = get.date.from.string(start)
     end.date = get.date.from.string(end) + 1 ## add 1 for inclusion of end.date
 
+    ## check the breaking case
+    if (overlap >= time.period) {
+        logging::logerror("The overlap (%s) is exceeding the given time period (%s).",
+                          overlap, time.period)
+        stop("Stopping due to illegally specified overlap for overlapping ranges.")
+    }
+
     ## compute overall duration
     bins.duration = lubridate::as.duration(lubridate::interval(start.date, end.date))
     ## compute negative overlap
