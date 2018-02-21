@@ -462,6 +462,13 @@ construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here, to pass proper values for \code{project.start} and \code{project.end}.
 #'
+#' Important: As the start of each range is supposed to be inclusive and the end of each range
+#' exclusive, 1 second is added to \code{project.end}. All other range bounds are supposed to
+#' be correctly constructed upfront, but if \code{project.end} comes from the function
+#' \code{ProjectData$get.data.timestamps}, this is not respected directly. This way, the date
+#' \code{project.end} will be *included* in the last range for the aggregation level
+#' \code{"complete"}.
+#'
 #' @param ranges the list or vector of ranges to aggregate
 #' @param project.start the project start time as string or POSIXct object
 #' @param project.end the project end time as string or POSIXct object
@@ -484,7 +491,8 @@ aggregate.ranges = function(ranges, project.start, project.end,
 
     ## get the timestamp data from the project data (needed for some aggr. levels)
     project.start = get.date.from.string(project.start)
-    project.end = get.date.from.string(project.end)
+    project.end = get.date.from.string(project.end) + 1 ## add 1 for inclusion of project.end
+                                                        ## with aggregation level "complete"
 
     ## loop over all ranges and split the data for each range accordingly:
     list.of.range.bounds = lapply(ranges, get.range.bounds)
