@@ -9,6 +9,131 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------
 
+##
+## Parse date from a string.
+##
+
+test_that("Parse date from a string.", {
+
+    ## full date:
+    date.string = "2018-02-22 10:44:27"
+    date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H:%M:%S"))
+    ## 1) from string
+    expect_equal(get.date.from.string(date.string), date.posixct, info = "From string.")
+    ## 2) from POSIXct
+    expect_equal(get.date.from.string(date.posixct), date.posixct, info = "From POSIXct.")
+
+    ## partial date:
+    ## 1) no seconds
+    date.string = "2018-02-22 10:22"
+    date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H:%M"))
+    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds).")
+    ## 2) no seconds, no minutes
+    date.string = "2018-02-22 10"
+    date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H"))
+    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds, no minutes).")
+    ## 3) no time
+    date.string = "2018-02-22"
+    date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d"))
+    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no time).")
+
+})
+
+##
+## Parse date from a UNIX timestamp.
+##
+
+test_that("Parse date from a UNIX timestamp.", {
+
+    date.numeric = 1519296267
+    date.string = "2018-02-22 10:44:27"
+    date.posixct = get.date.from.string(date.string)
+
+    expect_equal(get.date.from.unix.timestamp(date.numeric), date.posixct, info = "From string.")
+
+})
+
+##
+## Format a POSIXct object.
+##
+
+test_that("Format a POSIXct object.", {
+
+    ## full date:
+    date.string = "2018-02-22 10:44:27"
+    date.posixct = get.date.from.string(date.string)
+    ## 1) from string
+    expect_identical(get.date.string(date.string), date.string, info = "From string.")
+    ## 2) from POSIXct
+    expect_identical(get.date.string(date.posixct), date.string, info = "From POSIXct.")
+
+    ## partial date:
+    ## 1) no seconds
+    date.string = "2018-02-22 10:44"
+    date.string.formatted = "2018-02-22 10:44:00"
+    date.posixct = get.date.from.string(date.string)
+    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds).")
+    ## 2) no seconds, no minutes
+    date.string = "2018-02-22 10"
+    date.string.formatted = "2018-02-22 10:00:00"
+    date.posixct = get.date.from.string(date.string)
+    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds, no minutes).")
+    ## 3) no time
+    date.string = "2018-02-22"
+    date.string.formatted = "2018-02-22 00:00:00"
+    date.posixct = get.date.from.string(date.string)
+    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no time).")
+
+})
+
+##
+## Generate a date sequence.
+##
+
+test_that("Generate a date sequence.", {
+
+    ## parameter configuration
+    time.period = "2 hours"
+    time.period.duration = lubridate::duration(time.period)
+
+    start.date = "2018-02-22 00:00:00"
+    start.date.posixct = get.date.from.string(start.date)
+
+    ## short last range:
+    end.date.short = "2018-02-22 06:05:01"
+    end.date.short.posixct = get.date.from.string(end.date.short)
+    ## 1) expected results
+    expected = get.date.from.string(c("2018-02-22 00:00:00", "2018-02-22 02:00:00",
+                                      "2018-02-22 04:00:00", "2018-02-22 06:00:00",
+                                      "2018-02-22 06:05:01"))
+    ## 2) From string.
+    result = generate.date.sequence(start.date, end.date.short, time.period)
+    expect_equal(result, expected, info = "Date sequence from strings.")
+    ## 3) From POSIXct.
+    result = generate.date.sequence(start.date.posixct, end.date.short.posixct, time.period)
+    expect_equal(result, expected, info = "Date sequence from dates.")
+    ## 4) With lubridate::duration.
+    result = generate.date.sequence(start.date.posixct, end.date.short.posixct, time.period.duration)
+    expect_equal(result, expected, info = "Date sequence with lubridate::duration")
+
+    ## precise last range:
+    end.date.precise = "2018-02-22 06:00:00"
+    end.date.precise.posixct = get.date.from.string(end.date.precise)
+    ## 1) expected results
+    expected = get.date.from.string(c("2018-02-22 00:00:00", "2018-02-22 02:00:00",
+                                      "2018-02-22 04:00:00", "2018-02-22 06:00:00"))
+    ## 2) From string.
+    result = generate.date.sequence(start.date, end.date.precise, time.period)
+    expect_equal(result, expected, info = "Date sequence from strings.")
+    ## 3) From POSIXct.
+    result = generate.date.sequence(start.date.posixct, end.date.precise.posixct, time.period)
+    expect_equal(result, expected, info = "Date sequence from dates.")
+    ## 4) With lubridate::duration.
+    result = generate.date.sequence(start.date.posixct, end.date.precise.posixct, time.period.duration)
+    expect_equal(result, expected, info = "Date sequence with lubridate::duration")
+
+})
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range construction and handling -----------------------------------------
