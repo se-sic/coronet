@@ -117,7 +117,7 @@ get.date.from.string = function(input) {
     return(result)
 }
 
-#' Convert unix timestamp to POSIXct
+#' Convert UNIX timestamp to POSIXct
 #'
 #' @param timestmap The timestamp
 #'
@@ -170,6 +170,10 @@ get.date.string = function(input) {
 #'
 #' @return the sequential dates as a vector
 generate.date.sequence = function(start.date, end.date, by) {
+
+    ## convert dates
+    start.date = get.date.from.string(start.date)
+    end.date = get.date.from.string(end.date)
 
     ## convert time.period to duration
     time.period = lubridate::duration(by)
