@@ -36,20 +36,20 @@ test_that("Construction of the multi network for the feature artifact with autho
 
 
               ## build expected network
-              vertices = data.frame(name = c("Claus Hunsen", "Olaf", "Karl", "Thomas",
+              vertices = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas",
                                              "Base_Feature", "foo", "A"),
-                                    id = c("Claus Hunsen", "Olaf", "Karl", "Thomas",
+                                    id = c("Björn", "Olaf", "Karl", "Thomas",
                                            "Base_Feature", "foo", "A"),
                                     type = c(1,1,1,1,2,2,2))
-              row.names(vertices) = c("Claus Hunsen", "Olaf", "Karl", "Thomas",
+              row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")
 
-              edges = data.frame(from= c("Claus Hunsen", "Claus Hunsen", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl",
-                                         "Base_Feature", "Base_Feature", "Claus Hunsen", "Olaf", "Olaf", "Karl", "Thomas",
+              edges = data.frame(from= c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl",
+                                         "Base_Feature", "Base_Feature", "Björn", "Olaf", "Olaf", "Karl", "Thomas",
                                          "Thomas"),
                                  to = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas", "foo",
                                         "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo"),
-                                 date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                 date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                           "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
                                           "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
                                           "2016-07-12 16:06:32", "2016-07-12 15:58:59", "2016-07-12 16:00:45",

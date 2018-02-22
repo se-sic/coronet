@@ -28,9 +28,9 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
     ## author sets
-    authors.committing = c("Claus Hunsen", "Olaf", "Thomas", "Karl")
-    authors.mailing = c("Claus Hunsen", "Olaf", "Thomas", "georg", "Hans", "udo", "Fritz fritz@example.org")
-    authors.issue = c("Karl", "Olaf", "Thomas", "Claus Hunsen", "Max")
+    authors.committing = c("Björn", "Olaf", "Thomas", "Karl")
+    authors.mailing = c("Björn", "Olaf", "Thomas", "georg", "Hans", "udo", "Fritz fritz@example.org")
+    authors.issue = c("Karl", "Olaf", "Thomas", "Björn", "Max")
 
     authors.all = union(union(authors.committing, authors.mailing), authors.issue)
 
@@ -197,10 +197,10 @@ test_that("Network construction of the undirected author-cochange network", {
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
+    authors = c("Björn", "Olaf", "Karl", "Thomas")
 
     ## edge attributes
-    data = data.frame(comb.1. = c("Claus Hunsen", "Claus Hunsen", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
+    data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
                       comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
                       date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:06:10",
                                           "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
@@ -238,11 +238,11 @@ test_that("Network construction of the directed author-cochange network", {
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
+    authors = c("Björn", "Olaf", "Karl", "Thomas")
 
     ## edge attributes
     data = data.frame(from = c("Olaf", "Karl", "Thomas", "Thomas"),
-                      to = c("Claus Hunsen", "Olaf", "Olaf", "Karl"),
+                      to = c("Björn", "Olaf", "Olaf", "Karl"),
                       date = as.POSIXct(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32",
                                           "2016-07-12 16:06:32")),
                       hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
@@ -278,10 +278,10 @@ test_that("Network construction of the undirected simplified author-cochange net
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Claus Hunsen", "Olaf", "Karl", "Thomas")
+    authors = c("Björn", "Olaf", "Karl", "Thomas")
 
     ## edge attributes
-    data = data.frame(from = c("Claus Hunsen", "Olaf", "Olaf", "Karl"),
+    data = data.frame(from = c("Björn", "Olaf", "Olaf", "Karl"),
                       to = c("Olaf", "Karl", "Thomas", "Thomas"),
                       date = I(list(c(1468339139, 1468339245), c(1468339541, 1468339570), c(1468339541, 1468339592), c(1468339570, 1468339592))),
                       hash = I(list(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"), c("3a0ed78458b3976243db6829f63eba3eead26774",

@@ -34,7 +34,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
     ## build network
     network.built = network.builder$get.bipartite.network()
 
-    authors = c("Claus Hunsen", "Karl", "Olaf", "Thomas")
+    authors = c("Björn", "Karl", "Olaf", "Thomas")
     author.net = create.empty.network(directed = FALSE) +
         igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -79,7 +79,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf", "Thomas")
+              authors = c("Björn", "Olaf", "Thomas")
               author.net = create.empty.network(directed = FALSE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -123,7 +123,7 @@ test_that("Construction of the bipartite network for the function artifact with 
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf", "Thomas")
+              authors = c("Björn", "Olaf", "Thomas")
               author.net = create.empty.network(directed = FALSE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -166,7 +166,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf")
+              authors = c("Björn", "Olaf")
               author.net = create.empty.network(directed = FALSE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -209,7 +209,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Karl", "Max", "Olaf", "Thomas")
+              authors = c("Björn", "Karl", "Max", "Olaf", "Thomas")
               author.net = create.empty.network(directed = FALSE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -257,7 +257,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Karl", "Olaf", "Thomas")
+              authors = c("Björn", "Karl", "Olaf", "Thomas")
               author.net = create.empty.network(directed = TRUE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -302,7 +302,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf", "Thomas")
+              authors = c("Björn", "Olaf", "Thomas")
               author.net = create.empty.network(directed = TRUE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -347,7 +347,7 @@ test_that("Construction of the directed bipartite network for the function artif
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf", "Thomas")
+              authors = c("Björn", "Olaf", "Thomas")
               author.net = create.empty.network(directed = TRUE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
@@ -391,7 +391,7 @@ test_that("Construction of the directed bipartite network for the featureexpress
               ## build network
               network.built = network.builder$get.bipartite.network()
 
-              authors = c("Claus Hunsen", "Olaf")
+              authors = c("Björn", "Olaf")
               author.net = create.empty.network(directed = TRUE) +
                   igraph::vertex(authors, name  = authors, type = TYPE.AUTHOR)
 
