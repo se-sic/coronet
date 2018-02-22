@@ -183,7 +183,7 @@ test_that("Test add.vertex.attribute.author.email", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = network.covariates.test.build.expected(
-        list("björn@example.org"),
+        list("bjoern@example.org"),
         list("olaf@example.org"),
         list("olaf@example.org", "karl@example.org", "thomas@example.org")
     )

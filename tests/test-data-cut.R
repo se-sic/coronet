@@ -35,7 +35,7 @@ test_that("Cut commit and mail data to same date range.", {
                                       date=get.date.from.string(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
                                                                   "2016-07-12 16:00:45")),
                                       author.name=c("Björn","Björn","Olaf","Olaf"),
-                                      author.email=c("björn@example.org","björn@example.org","olaf@example.org",
+                                      author.email=c("bjoern@example.org","bjoern@example.org","olaf@example.org",
                                                      "olaf@example.org"),
                                       committer.date=get.date.from.string(NA),
                                       committer.name=NA,

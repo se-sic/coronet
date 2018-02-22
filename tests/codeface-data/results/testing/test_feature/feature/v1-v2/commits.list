@@ -1,4 +1,4 @@
-32712;"2016-07-12 15:58:59";"Björn";"björn@example.org";"72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0";1;1;1;2;"test.c";"A";"Feature";1
-32712;"2016-07-12 15:58:59";"Björn";"björn@example.org";"72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0";1;1;1;2;"test.c";"defined(A)";"FeatureExpression";1
+32712;"2016-07-12 15:58:59";"Björn";"bjoern@example.org";"72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0";1;1;1;2;"test.c";"A";"Feature";1
+32712;"2016-07-12 15:58:59";"Björn";"bjoern@example.org";"72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0";1;1;1;2;"test.c";"defined(A)";"FeatureExpression";1
 32713;"2016-07-12 16:00:45";"Olaf";"olaf@example.org";"5a5ec9675e98187e1e92561e1888aa6f04faa338";1;1;0;1;"test.c";"A";"Feature";1
 32713;"2016-07-12 16:00:45";"Olaf";"olaf@example.org";"5a5ec9675e98187e1e92561e1888aa6f04faa338";1;1;0;1;"test.c";"defined(A)";"FeatureExpression";1
