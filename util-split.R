@@ -28,8 +28,9 @@ requireNamespace("lubridate") # for date conversion
 #' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does
+#'             not make sense then either.
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -454,8 +455,8 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
