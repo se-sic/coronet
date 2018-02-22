@@ -39,7 +39,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
 
     data = data.frame(from = c("Base_Feature", "Base_Feature"),
                       to = c("foo", "foo"),
-                      date = as.POSIXct(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                      date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
                       hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
                       file = c("test2.c", "test2.c"),
                       artifact.type = c("Feature", "Feature"),

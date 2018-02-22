@@ -46,8 +46,8 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
     vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
 
-    extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                     "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+    extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
+                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
                                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
                                           "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
@@ -91,8 +91,8 @@ test_that("Construction of the bipartite network for the file artifact with auth
 
               vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                                            file = c("test.c", "test.c", "test2.c", "test2.c"),
@@ -135,8 +135,8 @@ test_that("Construction of the bipartite network for the function artifact with 
 
               vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                                            file = c("test.c", "test.c", "test2.c", "test2.c"),
@@ -178,8 +178,8 @@ test_that("Construction of the bipartite network for the featureexpression artif
 
               vertex.sequence.for.edges = c(1,3,2,3,2,4)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774"),
                                            file = c("test.c", "test.c", "test2.c"),
@@ -221,11 +221,11 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               vertex.sequence.for.edges = c(1,6,1,7,1,6,1,6,1,6,1,6,1,8,1,8,2,9,3,8,4,7,4,6,4,6,5,7,5,7)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48",
-                                                               "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
-                                                               "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
-                                                               "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
-                                                               "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48",
+                                                                         "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
+                                                                         "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
+                                                                         "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
+                                                                         "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
                                            issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
                                                         "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                                         "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
@@ -269,8 +269,8 @@ test_that("Construction of the directed bipartite network for the feature artifa
 
               vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                                     "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
                                                     "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
@@ -314,8 +314,8 @@ test_that("Construction of the directed bipartite network for the file artifact 
 
               vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                                            file = c("test.c", "test.c", "test2.c", "test2.c"),
@@ -359,8 +359,8 @@ test_that("Construction of the directed bipartite network for the function artif
 
               vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                                            file = c("test.c", "test.c", "test2.c", "test2.c"),
@@ -403,8 +403,8 @@ test_that("Construction of the directed bipartite network for the featureexpress
 
               vertex.sequence.for.edges = c(1,3,2,3,2,4)
 
-              extra.edge.attributes = list(date = as.POSIXct(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                               "2016-07-12 16:05:41")),
+              extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                                                                         "2016-07-12 16:05:41")),
                                            hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774"),
                                            file = c("test.c", "test.c", "test2.c"),
