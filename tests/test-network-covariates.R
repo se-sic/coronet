@@ -35,6 +35,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
@@ -182,7 +183,7 @@ test_that("Test add.vertex.attribute.author.email", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = network.covariates.test.build.expected(
-        list("hunsen@fim.uni-passau.de"),
+        list("bjoern@example.org"),
         list("olaf@example.org"),
         list("olaf@example.org", "karl@example.org", "thomas@example.org")
     )
@@ -206,12 +207,12 @@ test_that("Test add.vertex.attribute.artifact.count", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 1L)),
-        cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 1L)),
-        all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 1L))
+        range = network.covariates.test.build.expected(list(1L), list(1L), list(1L, 1L, 2L)),
+        cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 2L)),
+        all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 2L)),
+        project.cumulative = network.covariates.test.build.expected(list(1L), list(1L), list(2L, 1L, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 2L)),
+        complete = network.covariates.test.build.expected(list(1L), list(2L), list(2L, 1L, 2L))
     )
 
     ## Test
@@ -473,7 +474,7 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L))
+    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
 
     ## Test
 
@@ -493,7 +494,8 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
     networks.and.data = get.network.covariates.test.networks("artifact")
 
     expected.attributes = network.covariates.test.build.expected(
-        dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 16:00:45 UTC"), dateList("2016-07-12 16:05:41 UTC")
+        dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 16:00:45 UTC"),
+        dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
     )
 
     ## Test
@@ -514,7 +516,7 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L))
+    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
 
     ## Test
 

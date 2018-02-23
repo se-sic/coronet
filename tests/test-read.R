@@ -20,7 +20,7 @@ ARTIFACT = "feature"
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
-test_that("Read the raw commit data.", {
+test_that("Read the raw commit data with the feature artifact.", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -33,8 +33,8 @@ test_that("Read the raw commit data.", {
                                       date=get.date.from.string(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45","2016-07-12 16:05:41","2016-07-12 16:05:41",
                                                         "2016-07-12 16:06:10","2016-07-12 16:06:32","2016-07-12 16:06:32")),
-                                      author.name=c("Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Olaf","Karl","Thomas","Thomas"),
-                                      author.email=c("hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org",
+                                      author.name=c("Björn","Björn","Olaf","Olaf","Olaf","Olaf","Karl","Thomas","Thomas"),
+                                      author.email=c("bjoern@example.org","bjoern@example.org","olaf@example.org",
                                                      "olaf@example.org","olaf@example.org","olaf@example.org","karl@example.org",
                                                      "thomas@example.org","thomas@example.org"),
                                       committer.date=get.date.from.string(NA),
@@ -51,10 +51,49 @@ test_that("Read the raw commit data.", {
                                       diff.size=as.integer(c(2,2,1,1,1,1,1,1,1)),
                                       file=c("test.c","test.c","test.c","test.c","test2.c","test2.c","test3.c","test2.c","test2.c"),
                                       artifact=c("A","defined(A)","A","defined(A)","Base_Feature","Base_Feature","Base_Feature",
-                                                 "Base_Feature","Base_Feature"),
+                                                 "Base_Feature","foo"),
                                       artifact.type=c("Feature","FeatureExpression","Feature","FeatureExpression","Feature",
-                                                      "FeatureExpression","Feature","Feature","FeatureExpression"),
+                                                      "FeatureExpression","Feature","Feature","Feature"),
                                       artifact.diff.size=as.integer(c(1,1,1,1,1,1,1,1,1)))
+
+    ## check the results
+    expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
+
+    ## check order of commits (ordered by date?)
+    dates = order(commit.data.read[["date"]])
+    dates.expected = seq_len(nrow(commit.data.expected))
+    expect_identical(dates, dates.expected, info = "Ordering by date.")
+})
+
+
+test_that("Read the raw commit data with the file artifact.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+
+    ## read the actual data
+    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+
+    ## build the expected data.frame
+    commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32716,32717,32714,32715)),
+                                      date=get.date.from.string(c("2016-07-12 15:58:59","2016-07-12 16:00:45",
+                                                                  "2016-07-12 16:05:41","2016-07-12 16:06:32")),
+                                      author.name=c("Björn","Olaf","Olaf","Thomas"),
+                                      author.email=c("bjoern@example.org","olaf@example.org",
+                                                     "olaf@example.org","thomas@example.org"),
+                                      committer.date=get.date.from.string(NA),
+                                      committer.name=NA,
+                                      committer.email=NA,
+                                      hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                             "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      changed.files=as.integer(c(1,1,1,1)),
+                                      added.lines=as.integer(c(1,1,1,1)),
+                                      deleted.lines=as.integer(c(1,0,0,0)),
+                                      diff.size=as.integer(c(2,1,1,1)),
+                                      file=c("test.c","test.c","test2.c","test2.c"),
+                                      artifact=c("test.c","test.c","test2.c","test2.c"),
+                                      artifact.type=c("File", "File", "File", "File"),
+                                      artifact.diff.size=c(1,1,1,1))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
@@ -92,13 +131,13 @@ test_that("Read the mail data.", {
 
     ## build the expected data.frame
     ## NOTE: the empty date is set to a real date here in order to build the data.frame without problems
-    mail.data.expected = data.frame(author.name=c("Claus Hunsen","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans",
-                                                  "Hans","Hans","Hans","Hans","Hans","Hans","Thomas","Claus Hunsen","Olaf",
+    mail.data.expected = data.frame(author.name=c("Björn","Björn","udo","Fritz fritz@example.org","georg","Hans",
+                                                  "Hans","Hans","Hans","Hans","Hans","Hans","Thomas","Björn","Olaf",
                                                   "Thomas","Olaf"),
-                                    author.email=c("hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","udo@example.org",
+                                    author.email=c("bjoern@example.org","bjoern@example.org","udo@example.org",
                                                    "asd@sample.org","heinz@example.org","hans1@example.org","hans1@example.org",
                                                    "hans1@example.org","hans1@example.org","hans1@example.org","hans1@example.org",
-                                                   "hans1@example.org","thomas@example.org","hunsen@fim.uni-passau.de","olaf@example.org",
+                                                   "hans1@example.org","thomas@example.org","bjoern@example.org","olaf@example.org",
                                                    "thomas@example.org","olaf@example.org"),
                                     message.id=c("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>","<1107974989.17910.6.camel@jmcmullan>",
                                                  "<asddghdswqeasdasd@mail.gmail.com>","<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>",
@@ -147,8 +186,9 @@ test_that("Read the author data.", {
     ## build the expected data.frame
     author.data.expected = data.frame(
         author.id = as.integer(c(4936,4937,4938,4939,4940,4941,4942,4943,4944)),
-        author.name = c("Thomas","Olaf","Claus Hunsen","udo","Fritz fritz@example.org","georg","Hans","Karl","Max"),
-        author.email = c("thomas@example.org", "olaf@example.org", "hunsen@fim.uni-passau.de", "udo@example.org", "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
+        author.name = c("Thomas","Olaf","Björn","udo","Fritz fritz@example.org","georg","Hans","Karl","Max"),
+        author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
+                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
     )
 
     ## check the results
@@ -191,10 +231,10 @@ test_that("Read and parse the issue data.", {
                                      creation.date=get.date.from.string(rep(c("2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-04-17 02:06:38","2013-04-21 23:52:09","2016-04-17 02:06:38","2016-07-12 15:59:25","2016-12-07 15:53:02"), c(6,2,5,5,1,3,8,6))),
                                      closing.date=get.date.from.string(rep(c("2013-05-25 20:02:08",NA,"2016-12-07 15:37:02",NA,"2014-05-25 20:02:08",NA,"2016-12-07 15:37:02","2017-05-23 12:32:21"), c(6,2,5,5,1,3,8,6))),
                                      is.pull.request=rep(c(TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE), c(6,2,5,5,1,3,8,6)),
-                                     author.name=c("Karl","Karl","Karl","Olaf","Olaf","Karl","udo","udo","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Claus Hunsen","Claus Hunsen","Claus Hunsen","Thomas","Thomas","Claus Hunsen","Claus Hunsen","Olaf","Claus Hunsen","Olaf","Claus Hunsen","Claus Hunsen","Olaf","Olaf","Olaf","Claus Hunsen","Claus Hunsen","Claus Hunsen","Claus Hunsen","Max","Max","Max"),
-                                     author.email=c("karl@example.org","karl@example.org","karl@example.org","olaf@example.org","olaf@example.org","karl@example.org","udo@example.org","udo@example.org","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","thomas@example.org","thomas@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","olaf@example.org","olaf@example.org","olaf@example.org","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","hunsen@fim.uni-passau.de","max@example.org","max@example.org","max@example.org"),
+                                     author.name=c("Karl","Karl","Karl","Olaf","Olaf","Karl","udo","udo","Thomas","Thomas","Björn","Björn","Björn","Thomas","Björn","Björn","Björn","Thomas","Thomas","Björn","Björn","Olaf","Björn","Olaf","Björn","Björn","Olaf","Olaf","Olaf","Björn","Björn","Björn","Björn","Max","Max","Max"),
+                                     author.email=c("karl@example.org","karl@example.org","karl@example.org","olaf@example.org","olaf@example.org","karl@example.org","udo@example.org","udo@example.org","thomas@example.org","thomas@example.org","bjoern@example.org","bjoern@example.org","bjoern@example.org","thomas@example.org","bjoern@example.org","bjoern@example.org","bjoern@example.org","thomas@example.org","thomas@example.org","bjoern@example.org","bjoern@example.org","olaf@example.org","bjoern@example.org","olaf@example.org","bjoern@example.org","bjoern@example.org","olaf@example.org","olaf@example.org","olaf@example.org","bjoern@example.org","bjoern@example.org","bjoern@example.org","bjoern@example.org","max@example.org","max@example.org","max@example.org"),
                                      date=get.date.from.string(c("2013-04-21 23:52:09","2013-05-05 23:28:57","2013-05-05 23:28:57","2013-05-25 20:02:08","2013-05-25 20:02:08","2013-06-01 22:37:03","2016-04-17 02:07:37","2016-04-17 02:07:37","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 15:59:25","2016-07-12 16:03:23","2016-07-12 16:05:47","2016-07-14 02:03:14","2016-07-14 17:42:52","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-15 08:37:57","2016-07-19 10:47:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-07-27 22:25:25","2016-08-31 18:21:48","2016-10-05 01:07:46","2016-10-13 15:33:56","2016-12-06 14:03:42","2016-12-07 15:37:02","2016-12-07 15:37:02","2016-12-07 15:37:21","2016-12-07 15:53:02","2016-12-07 15:53:02","2017-02-20 22:25:41","2017-03-02 17:30:10","2017-05-23 12:32:21","2017-05-23 12:32:21","2017-05-23 12:32:39")),
-                                     ref.name=c(rep("", 6), rep("Karl", 2), rep("Claus Hunsen", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
+                                     ref.name=c(rep("", 6), rep("Karl", 2), rep("Björn", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
                                      event.name=c("created","commented","referenced","merged","closed","head_ref_deleted","mentioned","subscribed","mentioned","subscribed","created","renamed","commented","commented","commented","mentioned","subscribed","commented","referenced","mentioned","subscribed","commented","commented","commented","commented","commented","merged","closed","commented","commented","created","commented","commented","merged","closed","commented"))
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(

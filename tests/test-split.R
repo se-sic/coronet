@@ -42,6 +42,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -115,6 +116,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -194,6 +196,7 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -267,6 +270,7 @@ test_that("Split a data object time-based (bins == ... ).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -328,6 +332,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -503,6 +508,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
@@ -695,6 +701,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
 
     ## data object
