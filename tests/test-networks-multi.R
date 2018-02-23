@@ -34,13 +34,12 @@ test_that("Construction of the multi network for the feature artifact with autho
               ## build network
               network.built = network.builder$get.multi.network()
 
-
               ## build expected network
               vertices = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas",
                                              "Base_Feature", "foo", "A"),
                                     id = c("Björn", "Olaf", "Karl", "Thomas",
                                            "Base_Feature", "foo", "A"),
-                                    type = c(1,1,1,1,2,2,2))
+                                    type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3)))
               row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")
 
@@ -72,7 +71,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                               "Base_Feature", "Base_Feature", "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
                                               "foo"),
                                  weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
-                                 type = c(3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4))
+                                 type = c(rep(TYPE.EDGES.INTRA, 10), rep(TYPE.EDGES.INTER, 6)))
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
@@ -84,12 +83,6 @@ test_that("Construction of the multi network for the feature artifact with autho
 
               expect_identical(expected.edges, built.edges, info = "Multi network edges")
               expect_identical(expected.vertices, built.vertices, info = "Multi network vertices")
-
-              ##
-              ## TODO
-              ##
-
-              ## as soon as the bug in igraph is fixed switch to the expect_true function below
-
+              ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
               # expect_true(igraph::identical_graphs(network.expected, network.built))
           })

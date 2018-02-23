@@ -45,7 +45,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
                       artifact.type = c("Feature", "Feature"),
                       artifact = c("Base_Feature", "foo"),
                       weight = c(1, 1),
-                      type = c(3, 3))
+                      type = TYPE.EDGES.INTRA)
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)

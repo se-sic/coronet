@@ -55,7 +55,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                  artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                                  artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
                                  weight = c(1, 1, 1, 1, 1, 1),
-                                 type = c(4))
+                                 type = TYPE.EDGES.INTER)
 
     network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -99,7 +99,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
                                            artifact.type = c("File", "File", "File", "File"),
                                            artifact = c("test.c", "test.c", "test2.c", "test2.c"),
                                            weight = c(1, 1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -143,7 +143,7 @@ test_that("Construction of the bipartite network for the function artifact with 
                                            artifact.type = c("Function", "Function", "Function", "Function"),
                                            artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
                                            weight = c(1, 1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -186,7 +186,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
                                            artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                                            artifact = c("defined(A)", "defined(A)", "Base_Feature"),
                                            weight = c(1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -233,7 +233,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                           "commented","commented","commented","commented","commented",
                                                           "commented","commented","commented","commented","commented"),
                                            weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -278,7 +278,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
                                            artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                                            artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
                                            weight = c(1, 1, 1, 1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -322,7 +322,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
                                            artifact.type = c("File", "File", "File", "File"),
                                            artifact = c("test.c", "test.c", "test2.c", "test2.c"),
                                            weight = c(1, 1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -367,7 +367,7 @@ test_that("Construction of the directed bipartite network for the function artif
                                            artifact.type = c("Function", "Function", "Function", "Function"),
                                            artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
                                            weight = c(1, 1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 
@@ -411,7 +411,7 @@ test_that("Construction of the directed bipartite network for the featureexpress
                                            artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                                            artifact = c("defined(A)", "defined(A)", "Base_Feature"),
                                            weight = c(1, 1, 1),
-                                           type = c(4))
+                                           type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
 

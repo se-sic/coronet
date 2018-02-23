@@ -211,7 +211,7 @@ test_that("Network construction of the undirected author-cochange network", {
                       artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
                       weight = c(1,1,1,1,1,1,1,1),
-                      type = c(3,3,3,3,3,3,3,3)
+                      type = TYPE.EDGES.INTRA
     )
 
     ## build expected network
@@ -251,7 +251,7 @@ test_that("Network construction of the directed author-cochange network", {
                       artifact.type = c("Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
                       weight = c(1, 1, 1, 1),
-                      type = c(3, 3, 3, 3)
+                      type = TYPE.EDGES.INTRA
     )
 
     ## build expected network
@@ -291,7 +291,7 @@ test_that("Network construction of the undirected simplified author-cochange net
                       artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"))),
                       artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"))),
                       weight = c(2,2,2,2),
-                      type = c(3,3,3,3)
+                      type = TYPE.EDGES.INTRA
     )
 
     ## build expected network
@@ -321,7 +321,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
                           id = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
-                          type = c(1,1,1,1,1,1))
+                          type = TYPE.AUTHOR)
 
     edges = data.frame(from = c("Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl",
                                 "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo",
@@ -388,7 +388,7 @@ test_that("Network construction of the undirected author-issue network with all 
                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                    1, 1, 1, 1 ),
-                       type = c(3))
+                       type = TYPE.EDGES.INTRA)
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
@@ -412,7 +412,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     vertices = data.frame(name = c("Karl", "Thomas", "Björn","Olaf", "Max"),
                           id = c("Karl", "Thomas", "Björn","Olaf", "Max"),
-                          type = c(1,1,1,1,1))
+                          type = TYPE.AUTHOR)
 
     edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
                                  "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn" ),
@@ -431,7 +431,7 @@ test_that("Network construction of the undirected author-issue network with just
                                        "commented", "commented", "commented", "commented", "commented", "commented",
                                        "commented", "commented", "commented", "commented", "commented", "commented" ),
                        weight = c(1),
-                       type = c(3))
+                       type = TYPE.EDGES.INTRA)
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
