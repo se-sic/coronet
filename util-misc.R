@@ -43,6 +43,45 @@ get.edgelist.with.timestamps = function(net) {
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Parameter verification --------------------------------------------------
+
+#' Verify the actual arguments given for parameters, checking for two things:
+#' - Is the argument missing?
+#' - Does the argument inherit from the wrong class?
+#'
+#' If the checks fail for any reason, the program is stopped with an error message.
+#'
+#' @param argument the actual argument given to a function
+#' @param allowed.classes the allowed classes of the argument
+#' @param reference the reference string where this function is called from
+#'                  (e.g., a function or class name)
+#'
+#' @return the argument if all checks are passed
+verify.argument.for.parameter = function(argument, allowed.classes, reference) {
+
+    ## get variable name of 'argument'
+    argument.variable = as.character(match.call())[2]
+
+    ## check argument if it is missing
+    if (missing(argument)) {
+        logging::logerror(paste("The parameter '%s' is missing in %s constructor ('%s' wanted)."),
+                          argument.variable, reference, allowed.classes)
+        stop(sprintf("Parameter '%s' missing in %s constructor.", argument.variable, reference))
+    }
+
+    ## check argument if it is not allowed
+    if (!inherits(argument, allowed.classes)) {
+        logging::logerror(paste("The given parameter '%s' inherits from the wrong class in %s constructor",
+                                "(actual class is '%s', '%s' wanted)."),
+                          argument.variable, reference, class(argument), allowed.classes)
+        stop(sprintf("Parameter '%s' inherits from wrong class in %s constructor.", argument.variable, reference))
+    }
+
+    return(argument)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
 
 #' Get the stacktrace.

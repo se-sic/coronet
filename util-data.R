@@ -232,12 +232,15 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param project.conf the given 'project.conf' for this instance of the class
         initialize = function(project.conf) {
-            if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
-                private$project.conf = project.conf
-            }
 
-            if (class(self)[1] == "ProjectData")
+            ## check arguments
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+
+            ## if we have a direct subclass of ProjectData here,
+            ## log this accordingly
+            if (class(self)[1] == "ProjectData") {
                 logging::loginfo("Initialized data object %s", self$get.class.name())
+            }
         },
 
         ## * * printing ----------------------------------------------------
@@ -856,15 +859,18 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @param project.conf the project configuration for the new instance
                   #' @param range the range for the new instance
                   #' @param revision.callgraph the revision callgraph for the new instance
+                  #'                           [default: ""]
         initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
             super$initialize(project.conf)
 
-            if (!missing(range) && is.character(range)) {
-                private$range = range
-            }
-            if (!missing(revision.callgraph) && is.character(revision.callgraph) && revision.callgraph != "") {
-                private$revision.callgraph = revision.callgraph
+            ## check arguments
+            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+
+            ## correct revision.callgraph variable
+            if (revision.callgraph == "") {
+                private$revision.callgraph = NA
             }
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
