@@ -411,7 +411,7 @@ split.data.by.networks = function(list.of.networks, project.data,
 
 #' Split the given data to the given ranges and return the resulting list.
 #'
-#' Note: You may want to use any function \code{generate.*.ranges} to obtain
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
 #' an appropriate sequence of ranges to pass to this function.
 #'
 #' @param project.data the \code{ProjectData} instance to be split
@@ -706,7 +706,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
 #' Split the given network to the given ranges and return the resulting list.
 #'
-#' Note: You may want to use any function \code{generate.*.ranges} to obtain
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
 #' an appropriate sequence of ranges to pass to this function.
 #'
 #' @param network the network to be split

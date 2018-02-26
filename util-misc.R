@@ -164,9 +164,9 @@ get.date.string = function(input) {
 #' function here.
 #'
 #' @param start The start time as string or POSIXct object
-#' @param end The start time as string or POSIXct object
-#' @param time.period The time period describing the length of time between dates, a character
-#'                    string, e.g., "3 mins" or "15 days"
+#' @param end The end time as string or POSIXct object
+#' @param by The time period describing the length of time between dates, a character
+#'           string, e.g., "3 mins" or "15 days"
 #'
 #' @return the sequential dates as a vector
 generate.date.sequence = function(start.date, end.date, by) {
@@ -206,8 +206,9 @@ generate.date.sequence = function(start.date, end.date, by) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range construction and handling -----------------------------------------
 
-#' Construct ranges from the given list/vector of revisions. If \code{raw} is *not*
-#' \code{FALSE}, the ranges are construction in the format "rev[n]-rev[n+1]".
+#' Construct ranges from the given list/vector of revisions. If \code{raw} is
+#' \code{FALSE} (the default), the ranges are constructed in the format "rev[n]-rev[n+1]".
+#' Otherwise, pairs of range bounds are returned in list.
 #'
 #' @param revs the revisions
 #' @param sliding.window whether sliding window splitting is enabled or not
@@ -478,7 +479,7 @@ construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
 #' @param project.end the project end time as string or POSIXct object
 #' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. S7ee above for more details.
+#'                          \code{"complete"}. See above for more details.
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
