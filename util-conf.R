@@ -759,32 +759,6 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
 
-#' Construct the range strings.
-#'
-#' @param revs the revisions
-#' @param sliding.window whether sliding window splitting is enabled or not
-#'                       default: 'FALSE'
-#'
-#' @return the ranges as strings
-construct.ranges = function(revs, sliding.window = FALSE) {
-    ## setting offset to construct ranges, i.e.,
-    ## combine each $offset revisions
-    offset = 1
-
-    ## with sliding window, we combine each second revision
-    if (sliding.window)
-        offset = 2
-
-    ## extract sequences of revisions
-    seq1 = revs[ 1:(length(revs) - offset) ]
-    seq2 = revs[ (offset + 1):length(revs) ]
-
-    ## construct ranges
-    ranges = paste(seq1, seq2, sep = "-")
-
-    return(ranges)
-}
-
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string

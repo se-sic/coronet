@@ -28,8 +28,9 @@ requireNamespace("lubridate") # for date conversion
 #' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does
+#'             not make sense then either.
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -360,14 +361,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #'
 #' @param list.of.networks The network list
 #' @param project.data The entire project data
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See above for more details.
 #'
 #' @return A list containing tuples with the keys "network" and "data", where, under "network", are
 #'         the respective networks passed via \code{list.of.networks} and, under "data", are the
 #'         split data instances of type \code{RangeData}.
+#'
+#' @seealso \code{aggregate.ranges}
 split.data.by.networks = function(list.of.networks, project.data,
                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                         "project.cumulative", "project.all.ranges",
@@ -378,64 +380,63 @@ split.data.by.networks = function(list.of.networks, project.data,
     ## get the timestamp data from the project data (needed for some aggr. levels)
     project.timestamps = project.data$get.data.timestamps(outermost = TRUE)
 
-    ## loop over all ranges and split the data for each range accordingly:
+    ## get the list of ranges
     list.of.ranges = names(list.of.networks)
-    list.of.range.bounds = lapply(list.of.ranges, get.range.bounds)
-    net.to.range.list = lapply(list.of.ranges, function(range) {
-        ## 1) get the range bounds to work with
-        start.end = get.range.bounds(range)
+    ## aggregate ranges
+    ranges.bounds = aggregate.ranges(
+        list.of.ranges, project.start = project.timestamps[["start"]], project.end = project.timestamps[["end"]],
+        aggregation.level = aggregation.level, raw = TRUE
+    )
 
-        ## 2) adjust the range bounds for the respective aggregation levels
-        ##    (if nothing else is stated below, the respective range bounds stay unchanged)
-        switch(aggregation.level,
+    ## split the data by the computed (and aggregated) ranges
+    list.of.data = split.data.time.based.by.ranges(project.data, ranges.bounds)
 
-               range = {
-                   ## use the exact range bounds
-               },
-               cumulative = {
-                   ## the start is always at the first network's start bound
-                   start.end[1] = list.of.range.bounds[[1]][1]
-               },
-               all.ranges = {
-                   ## the start is always at the first network's start bound
-                   start.end[1] =list.of.range.bounds[[1]][1]
-                   ## the end is always at the last network's ending bound
-                   start.end[2] = list.of.range.bounds[[length(list.of.ranges)]][2]
-               },
-               project.cumulative = {
-                   ## the start is always at the project data's start
-                   start.end[1] = project.timestamps[["start"]]
-               },
-               project.all.ranges = {
-                   ## the start is always at the project data's start
-                   start.end[1] = project.timestamps[["start"]]
-                   ## the end is always at the last network's ending bound
-                   start.end[2] = list.of.range.bounds[[length(list.of.ranges)]][2]
-               },
-               complete = {
-                   ## the start is always at the project data's start
-                   start.end[1] = project.timestamps[["start"]]
-                   ## the start is always at the project data's ending
-                   start.end[2] = project.timestamps[["end"]]
-               }
-        )
-
-        ## 3) split the data to the ranges
-        range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
-
-        ## 4) construct return value
-        net.to.range.entry = list(
-            "network" = list.of.networks[[range]],
-            "data" = range.data
-        )
-
-        return (net.to.range.entry)
-    })
+    ## zip networks and range data
+    net.to.range.list = mapply(
+        list.of.networks, list.of.data, SIMPLIFY = FALSE,
+        FUN = function(net, range.data) {
+            net.to.range.entry = list(
+                "network" = net,
+                "data" = range.data
+            )
+            return(net.to.range.entry)
+        }
+    )
 
     ## properly set names for the result list
-    names(net.to.range.list) = names(list.of.networks)
+    names(net.to.range.list) = list.of.ranges
 
     return(net.to.range.list)
+}
+
+#' Split the given data to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param project.data the \code{ProjectData} instance to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of \code{RangeData} instances, each representing one of the
+#'         given ranges; the ranges are used as names for the list
+split.data.time.based.by.ranges = function(project.data, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the data accordingly:
+    data.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the data to the current range
+            range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the data
+            return (range.data)
+        }
+    )
+
+    return(data.split)
 }
 
 
@@ -454,8 +455,8 @@ split.data.by.networks = function(list.of.networks, project.data,
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
@@ -703,6 +704,36 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     return(networks)
 }
 
+#' Split the given network to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param network the network to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of networks, each representing one of the given ranges; the
+#'         ranges are used as names for the list
+split.network.time.based.by.ranges = function(network, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the network accordingly:
+    nets.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the network to the current range
+            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the network
+            return (range.net)
+        }
+    )
+
+    return(nets.split)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split raw data ----------------------------------------------------------
@@ -796,14 +827,14 @@ split.unify.range.names = function(ranges) {
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: starting.")
-    ## find date bins from given dates
-    dates.breaks = c(
-        ## time periods of length 'time.period'
-        seq.POSIXt(from = min(dates), to = max(dates), by = time.period),
-        ## add last bin
-        max(dates) + 1
-    )
+
+    ## generate date bins from given dates
+    dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+    ## as the last bin bound is exclusive, we need to add a second to it
+    dates.breaks[length(dates.breaks)] = max(dates) + 1
+    ## generate charater strings for bins
     dates.breaks.chr = get.date.string(head(dates.breaks, -1))
+
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
