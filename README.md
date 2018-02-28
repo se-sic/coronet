@@ -1,5 +1,7 @@
 # codeface-extraction-r - The network library
 
+Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
+
 The network library `codeface-extraction-r` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 
@@ -25,6 +27,7 @@ When selecting a version to work with, you should consider the following points:
 - Each version (i.e., a tag) contains a major and a minor version in the form `v{major}.{minor}`.
 - On the branch `master`, there is always the most recent and complete version.
 - You should always work with the current version (e.g., `v3.0`) on the `master` branch, *unless* there is a branch called `{your_version}-fixes` (e.g., `v3.0-fixes`), then select this one as it contains backported bugfixes for this version.
+- If you are confident enough, you can use the `dev` branch.
 
 ### Needed R packages
 
@@ -182,9 +185,12 @@ There is no way to update the entries, except for the revision-based parameters.
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
 - `artifact.filter.base`
-  - Remove all artifact information regarding the base artifact
+  * Remove all artifact information regarding the base artifact
     (`"Base_Feature"` or `"File_Level"` for features and functions, respectively, as artifacts)
-  - [*`TRUE`*, `FALSE`]
+  * [*`TRUE`*, `FALSE`]
+- `issues.only.comments`
+  * Read only comments from the issue data on disk and no further events such as references and label changes
+  * [*`TRUE`*, `FALSE`]
 - `synchronicity`
   * Read and add synchronicity data to commits and co-change-based networks
   * [`TRUE`, *`FALSE`*]
@@ -261,7 +267,7 @@ You can also update the object at any time, but as soon as you do so, all cached
 For more examples, please look in the file `showcase.R`.
 
 
-## File overview
+## File/Module overview
 
 - `util-init.R`
   * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
@@ -275,16 +281,18 @@ For more examples, please look in the file `showcase.R`.
   * The `NetworkBuilder` class and all corresponding helper functions to construct networks
 - `util-split.R`
   * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
-- `util-motifs.R`
-  * Functionality for the identifaction of network motifs (subgraph patterns)
 - `util-bulk.R`
-  * Collection functionality for the different network types (using Codeface revision ranges)
-- `util-plot.R`
-  * Everything needed for plotting networks
-- `util-core-peripheral.R`
-  * Author classification (core and peripheral) and related functions
+  * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
+- `util-networks-covariates.R`
+  * The helper functions to add vertex attributes to existing networks
 - `util-networks-metrics.R`
   * A set of network-metric functions
+- `util-core-peripheral.R`
+  * Author classification (core and peripheral) and related functions
+- `util-motifs.R`
+  * Functionality for the identifaction of network motifs (subgraph patterns)
+- `util-plot.R`
+  * Everything needed for plotting networks
 - `util-misc.R`
   * Helper functions and also legacy functions, both needed in the other files
 - `showcase.R`
