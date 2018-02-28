@@ -1,14 +1,23 @@
-## (c) Ferdinand Frank, 2017
-## frankfer@fim.uni-passau.de
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Mitchell Joblin, 2017
-## mitchell.joblin@uni-passau.de
-## (c) Sofie Kemper, 2017
-## kemperso@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
-
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
+## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## All Rights Reserved.
+##
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 

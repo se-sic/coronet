@@ -119,6 +119,7 @@ The current build status is as follows:
 * Follow the [style conventions](#style-conventions).
 * Document new code and provide proper tests.
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
+* Add yourself to the copyright headers in the files you changed/added.
 * End all files with a newline.
 * Merge policy:
   * Tests must run successfully.
