@@ -358,7 +358,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         #' Get the list of commits without empty artifacts.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without empty artifacts
         get.commits.filtered.empty = function() {
@@ -373,7 +373,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the list of commits without the base artifact.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without the base artifact
         get.commits.filtered = function() {
@@ -388,7 +388,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -407,7 +407,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
         #'
@@ -435,7 +435,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the synchronicity data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
@@ -462,7 +462,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the pasta data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the pasta data
         get.pasta = function() {
@@ -485,7 +485,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the mail data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #' Add pasta data if it is configured.
         #'
         #' @return the mail data
@@ -516,7 +516,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the author data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the author data
         get.authors = function() {
@@ -539,7 +539,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the issue data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the issue data
         get.issues = function() {
@@ -552,7 +552,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$extract.timestamps(source = "issues")
 
             if(private$project.conf$get.value("issues.only.comments")) {
-                df = private$issues[private$issues[["event.name"]] == "commented",]
+                df = private$issues[private$issues[["event.name"]] == "commented", ]
                 return(df)
             } else {
                 return(private$issues)
@@ -946,8 +946,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 #'  - use value as first column in sublist items
 #'  - append all other existing columns (including key and value)
 #'  - each item in the results list gets attributes:
-#'   - group.type (=value) and
-#'   - group.name (=unique(item[[key]]))
+#'   - group.type (i.e., value) and
+#'   - group.name (i.e., unique(item[[key]]))
 #'
 #' @param base.data the base data for the method
 #' @param key the key for the result
@@ -1042,7 +1042,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
     }
 
     ## Order commits by date column
-    commits.df = commits.df[order(commits.df$date),]
+    commits.df = commits.df[order(commits.df$date), ]
 
     ## Fetch the date range info
     date.first = as.Date(commits.df$date[1])
@@ -1071,7 +1071,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
 
     ## Only keep the commits which were made within the specified split ranges
     ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
-    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1],]
+    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1], ]
 
     ## Calc group numbers for the commits by the split dates
     intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)

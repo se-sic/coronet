@@ -19,7 +19,7 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 test_that("Construction of the multi network for the feature artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -70,7 +70,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                  artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
                                               "Base_Feature", "Base_Feature", "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
                                               "foo"),
-                                 weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+                                 weight = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
                                  type = c(rep(TYPE.EDGES.INTRA, 10), rep(TYPE.EDGES.INTER, 6)))
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)

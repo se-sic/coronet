@@ -166,8 +166,8 @@ metrics.scale.freeness = function(network) {
     res[param.names] = p.fit[param.names]
 
     ## Check percent of vertices under power-law
-    res$num.power.law = length(which(v.degree >= res$xmin))
-    res$percent.power.law = 100 * (res$num.power.law / length(v.degree))
+    res["num.power.law"] = length(which(v.degree >= res[["xmin"]]))
+    res["percent.power.law"] = 100 * (res[["num.power.law"]] / length(v.degree))
     df = as.data.frame(res, row.names = "scale.freeness")
     return(df)
 }

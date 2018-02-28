@@ -361,12 +361,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'
         #' @return the postprocessed ranges
         postprocess.revision.list = function(ranges) {
-            # remove names ,e.g. "version", from release cycle names
+            # remove names, e.g. "version", from release cycle names
             casestudy = private$casestudy
             to.remove = c(
-                "version-", "v-","version_", "v_","version", "v",
-                paste0(casestudy, "-"), paste0(casestudy,"-"),
-                paste0(casestudy, "_"), paste0(casestudy,"_"),
+                "version-", "v-", "version_", "v_", "version", "v",
+                paste0(casestudy, "-"), paste0(casestudy, "-"),
+                paste0(casestudy, "_"), paste0(casestudy, "_"),
                 casestudy, casestudy
             )
 
@@ -509,7 +509,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             revisions.df = try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
                                            encoding = "UTF-8"), silent = TRUE)
             ## break if the list of revisions is empty or any other error occurs
-            if (inherits(revisions.df, 'try-error')) {
+            if (inherits(revisions.df, "try-error")) {
                 logging::logerror("There are no revisions available for the current casestudy.")
                 logging::logerror("Attempted to load following file: %s", revisions.file)
                 stop("Stopped due to missing revisions.")
@@ -764,7 +764,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 #' @return a string representing the status of \code{conf}, including newline characters and
 #'         pretty-printed list style
 get.configuration.string = function(conf, title = deparse(substitute(conf))) {
-    fill="↳ "
+    fill = "↳ "
     front = "- "
     indentation.item = "  "
 
@@ -802,7 +802,7 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
                 entries = paste0(indentation, indentation.item, indentation.item, struct)
                 field = paste0(
                     " = [\n",
-                    paste(entries, collapse = ",\n"),
+                    paste(entries, collapse = ", \n"),
                     "\n",
                     if (depth > 0) indentation,
                     if (depth > 0) indentation.item,

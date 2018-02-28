@@ -210,7 +210,7 @@ test_that("Network construction of the undirected author-cochange network", {
                       file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                       artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
-                      weight = c(1,1,1,1,1,1,1,1),
+                      weight = c(1, 1, 1, 1, 1, 1, 1, 1),
                       type = TYPE.EDGES.INTRA
     )
 
@@ -290,7 +290,7 @@ test_that("Network construction of the undirected simplified author-cochange net
                       file = I(list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"))),
                       artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"))),
                       artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"))),
-                      weight = c(2,2,2,2),
+                      weight = c(2, 2, 2, 2),
                       type = TYPE.EDGES.INTRA
     )
 
@@ -329,8 +329,8 @@ test_that("Network construction of the undirected author-issue network with all 
                                 "Thomas", "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
                                 "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas",
                                 "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf", "Björn", "Björn","Björn",
-                                "Björn","Björn","Björn"),
+                                "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn",
+                                "Björn", "Björn", "Björn"),
                        to = c( "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas",
                                "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo", "udo", "Björn", "Björn", "Björn",
                                "Björn", "Björn", "Björn", "Björn", "udo", "udo", "udo", "Björn", "Björn", "Björn", "Björn",
@@ -410,8 +410,8 @@ test_that("Network construction of the undirected author-issue network with just
     ## build network
     network.built = network.builder$get.author.network()
 
-    vertices = data.frame(name = c("Karl", "Thomas", "Björn","Olaf", "Max"),
-                          id = c("Karl", "Thomas", "Björn","Olaf", "Max"),
+    vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
+                          id = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           type = TYPE.AUTHOR)
 
     edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",

@@ -402,7 +402,7 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
     }
 
     nets.with.attr = add.vertex.attribute.author.role.function(
-        list.of.networks, project.data,classification.function, name,
+        list.of.networks, project.data, classification.function, name,
         aggregation.level, default.value
     )
 

@@ -17,7 +17,7 @@ requireNamespace("igraph") # graphs, baby!
 
 MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", type = c(TYPE.AUTHOR, TYPE.AUTHOR)) +
-    igraph::edges("D1","D2", type = c(TYPE.EDGES.INTRA))
+    igraph::edges("D1", "D2", type = c(TYPE.EDGES.INTRA))
 
 ## * Triangle motif --------------------------------------------------------
 ## (two authors are connected to one artifact)
@@ -26,13 +26,13 @@ MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
 MOTIFS.TRIANGLE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A" , "D2","A", "D1","D2",
+    igraph::edges("D1", "A" , "D2", "A", "D1", "D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 ## negative triangle motif (excluding communication)
 MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A", type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A" , "D2","A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
+    igraph::edges("D1", "A" , "D2", "A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
 
 
 ## * Square motif ----------------------------------------------------------
@@ -42,14 +42,14 @@ MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 MOTIFS.SQUARE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A1" , "D2","A2", "A1","A2", "D1","D2",
+    igraph::edges("D1", "A1" , "D2", "A2", "A1", "A2", "D1", "D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA))
 
 ## negative square motif (excluding communication)
 MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A1" , "D2","A2", "A1","A2",
+    igraph::edges("D1", "A1" , "D2", "A2", "A1", "A2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 

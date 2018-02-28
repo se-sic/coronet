@@ -894,7 +894,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## get the start (and end) date for all bins
     bins.date = parallel::mclapply(1:bins.number, function(bin) {
         ## get the ids in the bin
-        ids = bins.mapping[ bins.mapping$bin == bin, "id"]
+        ids = bins.mapping[ bins.mapping[["bin"]] == bin, "id"]
         ## grab dates for the ids
         dates = df[df[[id]] %in% ids, "date"]
 

@@ -96,7 +96,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
         network = create.empty.network(directed = igraph::is.directed(network)) +
-            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1,2), type = TYPE.EDGES.INTER)
+            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1, 2), type = TYPE.EDGES.INTER)
         VERTEX.SIZE = 0
     }
 
@@ -111,8 +111,8 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         p = p +
             ggraph::geom_edge_fan(
                 mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
-                end_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
-                start_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
+                end_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
+                start_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
                         ggplot2::arrow(length = ggplot2::unit(VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
                     } else {
@@ -149,16 +149,16 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         ) +
         ggplot2::theme(
             legend.position = "bottom",
-            axis.line=ggplot2::element_blank(),
-            axis.text.x=ggplot2::element_blank(),
-            axis.text.y=ggplot2::element_blank(),
-            axis.ticks=ggplot2::element_blank(),
-            axis.title.x=ggplot2::element_blank(),
-            axis.title.y=ggplot2::element_blank(),
-            panel.background=ggplot2::element_blank(),
-            panel.grid.major=ggplot2::element_blank(),
-            panel.grid.minor=ggplot2::element_blank(),
-            plot.background=ggplot2::element_blank()
+            axis.line = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_blank(),
+            axis.ticks = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.title.y = ggplot2::element_blank(),
+            panel.background = ggplot2::element_blank(),
+            panel.grid.major = ggplot2::element_blank(),
+            panel.grid.minor = ggplot2::element_blank(),
+            plot.background = ggplot2::element_blank()
         )
 
     return(p)

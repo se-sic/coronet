@@ -96,7 +96,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * author networks ---------------------------------------------
 
         #' Get the co-change-based author relation as network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the author network with cochange relation
         get.author.network.cochange = function() {
@@ -123,7 +123,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the thread-based author relation as network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the author network with mail relation
         get.author.network.mail = function() {
@@ -173,7 +173,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * artifact networks -------------------------------------------
 
         #' Get the co-change-based artifact network,
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with cochange realtion
         get.artifact.network.cochange = function() {
@@ -200,7 +200,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the call-graph-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #' IMPORTANT: This only works for range-level analyses!
         #'
         #' @return the artifact network with callgraph relation
@@ -275,7 +275,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the mail-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with mail relation
         get.artifact.network.mail = function() {
@@ -308,7 +308,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the issue-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with issue relation
         get.artifact.network.issue = function() {
@@ -575,7 +575,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
             ## 2) artifact network
             artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
-                return(df$data.vertices)
+                return(df[["data.vertices"]])
             })))
             artifact.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifact.vertices, name = artifact.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
@@ -763,7 +763,7 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
+            number.edges = sum(table(set[, 1]) * (dim(table(set[, 1])) - 1))
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -799,7 +799,7 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
                 edge = data.frame(comb[1], comb[2])
 
                 ## get edge attibutes
-                edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
+                edge.attrs = set[ set[, 1] %in% comb, ] # get data for current combination
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
                 edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
@@ -923,7 +923,7 @@ add.edges.for.bipartite.relation = function(net, net1.to.net2, network.conf) {
     return(new.net)
 }
 
-#' Create an empty network that doesn´t break the algorithms.
+#' Create an empty network that does not break the algorithms.
 #'
 #' @param directed whether or not the network should be directed
 #'

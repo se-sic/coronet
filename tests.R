@@ -26,13 +26,13 @@ requireNamespace("testthat")
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Run tests in subfolder 'tests' ------------------------------------------
 
-do.tests <- function(dir) {
-    res <- testthat::test_dir(dir, reporter = "check")
-    if (length(res$failures) > 0) {
+do.tests = function(dir) {
+    res = testthat::test_dir(dir, reporter = "check")
+    if (length(res[["failures"]]) > 0) {
         cat(str_c("Some R tests failed for directory '", dir, "'"))
 
-        for (i in 1:length(res$failures)) {
-            cat(str_c("Failing test ", i, ": ", res$failures[[i]], "\n"))
+        for (i in 1:length(res[["failures"]])) {
+            cat(str_c("Failing test ", i, ": ", res[["failures"]][[i]], "\n"))
         }
 
         return(FALSE)
@@ -40,7 +40,7 @@ do.tests <- function(dir) {
     return(TRUE)
 }
 
-res <- sapply(c("./tests"), function(dir) {
+res = sapply(c("./tests"), function(dir) {
     do.tests(dir)
 })
 

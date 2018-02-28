@@ -733,7 +733,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
         ),
         issues = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6,8:9,18:21), ]
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6, 8:9, 18:21), ]
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$synchronicity
@@ -779,7 +779,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         ),
         issues = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data.frame(),
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6,8:9,18:21), ]
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:6, 8:9, 18:21), ]
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$synchronicity,
@@ -1297,22 +1297,22 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
     length.bins = 5
 
     ## generate dates
-    dates = c('2000-01-25', '2000-01-23', '2000-01-15', '2000-01-27', '2000-01-13',
-              '2000-01-03', '2000-01-05', '2000-01-29', '2000-01-19', '2000-01-01',
-              '2000-01-11', '2000-01-07', '2000-01-21', '2000-01-09', '2000-01-17')
-    ## ## generated with:
-    sprintf("c('%s')", paste(
-        get.date.string(sample(
-            seq.POSIXt(get.date.from.string("2000-01-01"), get.date.from.string("2000-02-01"), by = "1 days"),
-            length.dates,
-            replace = FALSE
-        )), collapse = "', '"))
+    dates = c("2000-01-25", "2000-01-23", "2000-01-15", "2000-01-27", "2000-01-13",
+              "2000-01-03", "2000-01-05", "2000-01-29", "2000-01-19", "2000-01-01",
+              "2000-01-11", "2000-01-07", "2000-01-21", "2000-01-09", "2000-01-17")
+    # ## ## generated with:
+    # sprintf("c(\"%s\")", paste(
+    #     get.date.string(sample(
+    #         seq.POSIXt(get.date.from.string("2000-01-01"), get.date.from.string("2000-02-01"), by = "1 days"),
+    #         length.dates,
+    #         replace = FALSE
+    #     )), collapse = "\", \""))
 
     ## generate bins
     bins = seq_len(length.bins)
-    bins.vector = c('1', '3', '5', '4', '1', '3', '1', '3', '2', '5', '4', '2', '4', '3', '5')
+    bins.vector = c("1", "3", "5", "4", "1", "3", "1", "3", "2", "5", "4", "2", "4", "3", "5")
     ## ## generated with:
-    ## sprintf("c('%s')", paste( sample(bins, size = length.dates, replace = TRUE), collapse = "', '") )
+    ## sprintf("c(\"%s\")", paste( sample(bins, size = length.dates, replace = TRUE), collapse = "', '") )
 
     ##
     ## split.data.by.bins
@@ -1384,24 +1384,24 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     length.bins = 5
 
     ## generate dates
-    dates = c('2000-01-25', '2000-01-23', '2000-01-15', '2000-01-27', '2000-01-13',
-              '2000-01-03', '2000-01-05', '2000-01-29', '2000-01-19', '2000-01-01',
-              '2000-01-11', '2000-01-07', '2000-01-21', '2000-01-09', '2000-01-17')
+    dates = c("2000-01-25", "2000-01-23", "2000-01-15", "2000-01-27", "2000-01-13",
+              "2000-01-03", "2000-01-05", "2000-01-29", "2000-01-19", "2000-01-01",
+              "2000-01-11", "2000-01-07", "2000-01-21", "2000-01-09", "2000-01-17")
     dates.posixct = get.date.from.string(dates)
     ## ## generated with:
-    ## sprintf("c('%s')", paste(
+    ## sprintf("c(\"%s\")", paste(
     ##     get.date.string(sample(
     ##         seq.POSIXt(get.date.from.string("2000-01-01"), get.date.from.string("2000-02-01"), by = "1 days"),
     ##         length.dates,
     ##         replace = FALSE
-    ##     )), collapse = "', '"))
+    ##     )), collapse = "\", \""))
 
     ##
     ## split.get.bins.time.based (1)
     ##
 
     ## results
-    expected.bins  = c('2000-01-01 00:00:00', '2000-01-11 00:00:00', '2000-01-21 00:00:00', '2000-01-29 00:00:01')
+    expected.bins  = c("2000-01-01 00:00:00", "2000-01-11 00:00:00", "2000-01-21 00:00:00", "2000-01-29 00:00:01")
     expected = list(
         vector = factor(head(expected.bins, -1))[c(3, 3, 2, 3, 2,
                                                    1, 1, 3, 2, 1,
@@ -1418,7 +1418,7 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ##
 
     ## results
-    expected.bins  = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
+    expected.bins  = c("2000-01-01 00:00:00", "2000-01-29 00:00:01")
     expected = list(
         vector = factor(head(expected.bins, -1))[ rep(1, length.dates) ],
         bins = expected.bins
@@ -1439,7 +1439,7 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ## results
     expected = list(
         vector = c(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4),
-        bins = c('2000-01-01 00:00:00', '2000-01-09 00:00:00', '2000-01-17 00:00:00', '2000-01-25 00:00:00', '2000-01-29 00:00:01')
+        bins = c("2000-01-01 00:00:00", "2000-01-09 00:00:00", "2000-01-17 00:00:00", "2000-01-25 00:00:00", "2000-01-29 00:00:01")
     )
     results = split.get.bins.activity.based(df, "id", 4)
 
@@ -1457,7 +1457,7 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     ## results
     expected = list(
         vector = rep(1, length.out = length.dates),
-        bins = c('2000-01-01 00:00:00', '2000-01-29 00:00:01')
+        bins = c("2000-01-01 00:00:00", "2000-01-29 00:00:01")
     )
     results = split.get.bins.activity.based(df, "id", nrow(df) + 10)
 

@@ -21,17 +21,17 @@ pacakges = c(
 )
 
 
-filter.installed.packages <- function(packageList)  {
+filter.installed.packages = function(packageList)  {
     if("-f" %in% commandArgs(trailingOnly = TRUE)) {
         return(packageList)
     } else {
-        return(packageList[which(packageList %in% installed.packages()[,1] == FALSE)])
+        return(packageList[which(packageList %in% installed.packages()[, 1] == FALSE)])
     }
 }
 
 
-p <- filter.installed.packages(pacakges)
+p = filter.installed.packages(pacakges)
 if(length(p) > 0) {
     print(sprintf("Installing package '%s'.", p))
-    install.packages(p, dependencies=T, verbose=F, quiet=F)
+    install.packages(p, dependencies = TRUE, verbose = FALSE, quiet = FALSE)
 }
