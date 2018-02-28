@@ -454,22 +454,19 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param data the path to the codeface-data folder
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
-        #' @param artifact the artifact to study ('feature','function','file')
-        initialize = function(data, selection.process, casestudy, artifact = "feature") {
+        #' @param artifact the artifact to study (one of \code{feature}, \code{function}, \code{file},
+        #'                 and \code{featureexpression})
+        initialize = function(data, selection.process, casestudy, artifact = c("feature", "file",
+                                                                               "function", "featureexpression")) {
             super$initialize()
 
-            if (!missing(data) && is.character(data)) {
-                private$data <- data
-            }
-            if (!missing(selection.process) && is.character(selection.process)) {
-                private$selection.process <- selection.process
-            }
-            if (!missing(casestudy) && is.character(casestudy)) {
-                private$casestudy <- casestudy
-            }
-            if (!missing(artifact) && is.character(artifact)) {
-                private$artifact <- artifact
-            }
+            ## verify arguments using match.arg
+            artifact = match.arg(artifact)
+            ## verify arguments
+            private$data = verify.argument.for.parameter(data, "character", class(self)[1])
+            private$selection.process = verify.argument.for.parameter(selection.process, "character", class(self)[1])
+            private$casestudy = verify.argument.for.parameter(casestudy, "character", class(self)[1])
+            private$artifact = verify.argument.for.parameter(artifact, "character", class(self)[1])
 
             logging::loginfo("Construct project configuration: starting.")
 
@@ -509,7 +506,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 
             ## read revisions file
             revisions.file = file.path(conf$datapath, "revisions.list")
-            revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
+            revisions.df = try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
                                            encoding = "UTF-8"), silent = TRUE)
             ## break if the list of revisions is empty or any other error occurs
             if (inherits(revisions.df, 'try-error')) {

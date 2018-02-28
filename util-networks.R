@@ -392,18 +392,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' @param project.data the given data object
                   #' @param network.conf the network configuration
         initialize = function(project.data, network.conf) {
-            private$proj.data = project.data
+
+            ## check arguments
+            private$proj.data = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
             private$proj.data.original = project.data
+            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
 
-            if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
-                private$network.conf = network.conf
-            }
-
-            if (class(self)[1] == "ProjectData")
-                logging::loginfo("Initialized data object %s", self$get.class.name())
-
+            ## cut data if needed
             if(private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
+            }
+
+            if (class(self)[1] == "NetworkBuilder") {
+                logging::loginfo("Initialized network builder for data %s.",
+                                 private$proj.data$get.class.name())
             }
         },
 

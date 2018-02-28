@@ -459,10 +459,11 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 #'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period = "3 months", bins = NULL,
-                                    sliding.window = FALSE) {
+                                    sliding.window = FALSE, remove.isolates = TRUE) {
     ## extract date attributes from edges
     dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
 
@@ -483,7 +484,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
                          paste(bins.info[["bins"]], collapse = ", "))
     }
 
-    nets = split.network.by.bins(network, bins, bins.vector)
+    nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     if (sliding.window) {
@@ -598,10 +599,11 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 #' @param sliding.window logical indicating whether the splitting should be performed using
 #'                       a sliding-window approach (increases 'number.windows' accordingly)
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
 split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL,
-                                        sliding.window = FALSE) {
+                                        sliding.window = FALSE, remove.isolates = TRUE) {
     ## get total edge count
     edge.count = igraph::ecount(network)
 
@@ -647,7 +649,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
     bins = sort(unique(bins.vector))
     ## split network by bins
-    networks = split.network.by.bins(network, bins, bins.vector)
+    networks = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     ## for activity-based sliding-window bins to work, we need to crop edges appropriately and,
@@ -756,9 +758,10 @@ split.data.by.bins = function(df, bins) {
 #' @param network a network
 #' @param bins a vector with the unique bin identifiers, describing the order in which the bins are created
 #' @param bins.vector a vector of length 'ecount(network)' assigning a bin for each edge of 'network'
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, with the length of 'unique(bins.vector)'
-split.network.by.bins = function(network, bins, bins.vector) {
+split.network.by.bins = function(network, bins, bins.vector, remove.isolates = TRUE) {
     logging::logdebug("split.data.time.based: starting.")
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
@@ -766,7 +769,7 @@ split.network.by.bins = function(network, bins, bins.vector) {
         ## identify edges in the current bin
         edges = igraph::E(network)[ bins.vector == bin ]
         ## create network based on the current set of edges
-        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
+        g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
     logging::logdebug("split.data.time.based: finished.")
