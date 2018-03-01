@@ -1,9 +1,22 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -13,6 +26,7 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
+requireNamespace("sqldf") # for SQL-selections on data.frames
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -30,11 +44,11 @@ read.commits = function(data.path, artifact) {
     file = file.path(data.path, "commits.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                  encoding = "UTF-8"), silent = TRUE)
+    commit.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                 encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.data, 'try-error')) {
+    if (inherits(commit.data, "try-error")) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -66,8 +80,10 @@ read.commits = function(data.path, artifact) {
     ## (we have proximity-based data as foundation)
     if (artifact == "file") {
         ## aggregate diff size by hash and file
-        commit.data = sqldf::sqldf("select *, sum(`artifact.diff.size`) as diffsum from `commit.data`
-                                   group by hash, file order by `date`, `author.name`, `commit.id`, `file`, `artifact`")
+        commit.data = sqldf::sqldf("SELECT *, SUM(`artifact.diff.size`) AS diffsum
+                                    FROM `commit.data`
+                                    GROUP BY `hash`, `file`
+                                    ORDER BY `date`, `author.name`, `commit.id`, `file`, `artifact`")
 
         ## fix column class for diffsum
         commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
@@ -94,8 +110,8 @@ read.commits = function(data.path, artifact) {
     }
 
     ## convert dates and sort by them
-    commit.data[["date"]] = as.POSIXct(commit.data[["date"]])
-    commit.data[["committer.date"]] = as.POSIXct(commit.data[["committer.date"]])
+    commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
+    commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for thread ID for better recognition
@@ -178,11 +194,11 @@ read.mails = function(data.path) {
     file = file.path(data.path, "emails.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
+    mail.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                               encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
-    if (inherits(mail.data, 'try-error')) {
+    if (inherits(mail.data, "try-error")) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -207,11 +223,11 @@ read.mails = function(data.path) {
         mail.data = mail.data[-empty.dates, ]
 
     ## convert dates and sort by them
-    mail.data[["date"]] = as.POSIXct(mail.data[["date"]])
+    mail.data[["date"]] = get.date.from.string(mail.data[["date"]])
     mail.data = mail.data[order(mail.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## remove all mails with dates before 1990-01-01 00:00:00
-    break.date = as.POSIXct("1970-01-01 00:00:00")
+    break.date = get.date.from.string("1970-01-01 00:00:00")
     break.to.cut = mail.data[["date"]] < break.date
     mail.data = mail.data[!break.to.cut, ]
     if (sum(break.to.cut) > 0) {
@@ -242,11 +258,11 @@ read.authors = function(data.path) {
     file = file.path(data.path, "authors.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 encoding = "UTF-8"), silent = TRUE)
+    authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                encoding = "UTF-8"), silent = TRUE)
 
     ## break if the list of authors is empty
-    if (inherits(authors.df, 'try-error')) {
+    if (inherits(authors.df, "try-error")) {
         logging::logerror("There are no authors available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         stop("Stopped due to missing authors.")
@@ -290,7 +306,7 @@ read.pasta = function(data.path) {
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of pasta items is empty
-    if (inherits(lines, 'try-error')) {
+    if (inherits(lines, "try-error")) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -348,7 +364,7 @@ read.issues = function(data.path) {
                                 encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(issue.data, 'try-error')) {
+    if (inherits(issue.data, "try-error")) {
         logging::logwarn("There are no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -369,10 +385,10 @@ read.issues = function(data.path) {
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
 
     ## convert dates and sort by 'date' column
-    issue.data[["date"]] = as.POSIXct(issue.data[["date"]])
-    issue.data[["creation.date"]] = as.POSIXct(issue.data[["creation.date"]])
+    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
+    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
-    issue.data[["closing.date"]] = as.POSIXct(issue.data[["closing.date"]])
+    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## generate a unique event ID from issue ID, author, and date

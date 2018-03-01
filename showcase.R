@@ -1,9 +1,22 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -138,6 +151,29 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # plot.network(h)
 # g = y$get.multi.network()
 # plot.network(g)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vertex attributes -------------------------------------------------------
+
+# ## define bins for network construction
+# mybins = c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30")
+# ## split data into ranges
+# cf.data = split.data.time.based(x.data, bins = mybins)
+# ## construct (author) networks from range data
+# my.networks = lapply(cf.data, function(range.data) {
+#     y = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
+#     return (y$get.author.network())
+# })
+# ## add commit-count vertex attributes
+# sample = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "range")
+# sample.cumulative = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "cumulative")
+# ## add email-address vertex attribute
+# sample.mail = add.vertex.attribute.author.email(my.networks, x.data, "author.email")
+
+# ## add vertex attributes for the project-level network
+# x.net.as.list = list("1970-01-01 00:00:00-2030-01-01 00:00:00" = x$get.author.network())
+# sample.entire = add.vertex.attribute.commit.count.author(x.net.as.list, x.data, aggregation.level = "complete")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

@@ -1,9 +1,22 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -342,6 +355,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
+            ),
+            issues.only.comments = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
             )
         ),
 
@@ -353,12 +372,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'
         #' @return the postprocessed ranges
         postprocess.revision.list = function(ranges) {
-            # remove names ,e.g. "version", from release cycle names
+            # remove names, e.g. "version", from release cycle names
             casestudy = private$casestudy
             to.remove = c(
-                "version-", "v-","version_", "v_","version", "v",
-                paste0(casestudy, "-"), paste0(casestudy,"-"),
-                paste0(casestudy, "_"), paste0(casestudy,"_"),
+                "version-", "v-", "version_", "v_", "version", "v",
+                paste0(casestudy, "-"), paste0(casestudy, "-"),
+                paste0(casestudy, "_"), paste0(casestudy, "_"),
                 casestudy, casestudy
             )
 
@@ -446,22 +465,19 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param data the path to the codeface-data folder
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
-        #' @param artifact the artifact to study ('feature','function','file')
-        initialize = function(data, selection.process, casestudy, artifact = "feature") {
+        #' @param artifact the artifact to study (one of \code{feature}, \code{function}, \code{file},
+        #'                 and \code{featureexpression}) [default: "feature"]
+        initialize = function(data, selection.process, casestudy, artifact = c("feature", "file",
+                                                                               "function", "featureexpression")) {
             super$initialize()
 
-            if (!missing(data) && is.character(data)) {
-                private$data <- data
-            }
-            if (!missing(selection.process) && is.character(selection.process)) {
-                private$selection.process <- selection.process
-            }
-            if (!missing(casestudy) && is.character(casestudy)) {
-                private$casestudy <- casestudy
-            }
-            if (!missing(artifact) && is.character(artifact)) {
-                private$artifact <- artifact
-            }
+            ## verify arguments using match.arg
+            artifact = match.arg(artifact)
+            ## verify arguments
+            private$data = verify.argument.for.parameter(data, "character", class(self)[1])
+            private$selection.process = verify.argument.for.parameter(selection.process, "character", class(self)[1])
+            private$casestudy = verify.argument.for.parameter(casestudy, "character", class(self)[1])
+            private$artifact = verify.argument.for.parameter(artifact, "character", class(self)[1])
 
             logging::loginfo("Construct project configuration: starting.")
 
@@ -501,16 +517,16 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 
             ## read revisions file
             revisions.file = file.path(conf$datapath, "revisions.list")
-            revisions.df <- try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
+            revisions.df = try(read.table(revisions.file, header = FALSE, sep = ";", strip.white = TRUE,
                                            encoding = "UTF-8"), silent = TRUE)
             ## break if the list of revisions is empty or any other error occurs
-            if (inherits(revisions.df, 'try-error')) {
+            if (inherits(revisions.df, "try-error")) {
                 logging::logerror("There are no revisions available for the current casestudy.")
                 logging::logerror("Attempted to load following file: %s", revisions.file)
                 stop("Stopped due to missing revisions.")
             }
             ## convert columns accordingly
-            revisions.cols = c(revision = "as.character", date = "as.POSIXct")
+            revisions.cols = c(revision = "as.character", date = "get.date.from.string")
             for (i in 1:ncol(revisions.df)) {
                 revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
                 colnames(revisions.df)[i] = names(revisions.cols)[i]
@@ -679,7 +695,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 type = "character",
                 allowed = c(
                     # the date
-                    "date",
+                    "date", "date.offset",
                     # author information
                     "author.name", "author.email",
                     # committer information
@@ -751,32 +767,6 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
 
-#' Construct the range strings.
-#'
-#' @param revs the revisions
-#' @param sliding.window whether sliding window splitting is enabled or not
-#'                       default: 'FALSE'
-#'
-#' @return the ranges as strings
-construct.ranges = function(revs, sliding.window = FALSE) {
-    ## setting offset to construct ranges, i.e.,
-    ## combine each $offset revisions
-    offset = 1
-
-    ## with sliding window, we combine each second revision
-    if (sliding.window)
-        offset = 2
-
-    ## extract sequences of revisions
-    seq1 = revs[ 1:(length(revs) - offset) ]
-    seq2 = revs[ (offset + 1):length(revs) ]
-
-    ## construct ranges
-    ranges = paste(seq1, seq2, sep = "-")
-
-    return(ranges)
-}
-
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string
@@ -785,7 +775,7 @@ construct.ranges = function(revs, sliding.window = FALSE) {
 #' @return a string representing the status of \code{conf}, including newline characters and
 #'         pretty-printed list style
 get.configuration.string = function(conf, title = deparse(substitute(conf))) {
-    fill="↳ "
+    fill = "↳ "
     front = "- "
     indentation.item = "  "
 
@@ -823,7 +813,7 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
                 entries = paste0(indentation, indentation.item, indentation.item, struct)
                 field = paste0(
                     " = [\n",
-                    paste(entries, collapse = ",\n"),
+                    paste(entries, collapse = ", \n"),
                     "\n",
                     if (depth > 0) indentation,
                     if (depth > 0) indentation.item,

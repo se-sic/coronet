@@ -1,11 +1,23 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -145,7 +157,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
-        ## * * pasta data -------------------------------------------
+        ## * * pasta data --------------------------------------------------
 
         #' Add the pasta data to the given data.frame for further analysis.
         #'
@@ -173,7 +185,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(data)
         },
 
-        ## * * timestamps -------------------------------------------
+        ## * * timestamps --------------------------------------------------
 
         #' Call the getters of the specified data sources in order to
         #' initialize the sources and extract the timestamps.
@@ -232,12 +244,15 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param project.conf the given 'project.conf' for this instance of the class
         initialize = function(project.conf) {
-            if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
-                private$project.conf = project.conf
-            }
 
-            if (class(self)[1] == "ProjectData")
+            ## check arguments
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+
+            ## if we have a direct subclass of ProjectData here,
+            ## log this accordingly
+            if (class(self)[1] == "ProjectData") {
                 logging::loginfo("Initialized data object %s", self$get.class.name())
+            }
         },
 
         ## * * printing ----------------------------------------------------
@@ -355,7 +370,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         #' Get the list of commits without empty artifacts.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without empty artifacts
         get.commits.filtered.empty = function() {
@@ -370,7 +385,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the list of commits without the base artifact.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without the base artifact
         get.commits.filtered = function() {
@@ -385,7 +400,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -404,7 +419,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
         #'
@@ -432,7 +447,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the synchronicity data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
@@ -459,7 +474,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the pasta data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the pasta data
         get.pasta = function() {
@@ -482,7 +497,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the mail data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #' Add pasta data if it is configured.
         #'
         #' @return the mail data
@@ -513,7 +528,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the author data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the author data
         get.authors = function() {
@@ -536,7 +551,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the issue data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the issue data
         get.issues = function() {
@@ -548,7 +563,12 @@ ProjectData = R6::R6Class("ProjectData",
             }
             private$extract.timestamps(source = "issues")
 
-            return(private$issues)
+            if(private$project.conf$get.value("issues.only.comments")) {
+                df = private$issues[private$issues[["event.name"]] == "commented", ]
+                return(df)
+            } else {
+                return(private$issues)
+            }
         },
 
         #' Set the issue data to the given new data.
@@ -565,6 +585,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the list of artifacts
         get.artifacts = function() {
             ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.author2artifact)
             logging::loginfo("Getting artifact data.")
 
             ## if artifacts are not read already, do this
@@ -611,20 +632,28 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        ## * * data cutting -----------------------------------------
+        ## * * data cutting ------------------------------------------------
 
-        #' Get the timestamps (earliest and latest date) of the specified data sources.
-        #' If 'simple' is TRUE, return the overall latest start and earliest end date
-        #' in order to cut the specified data sources to the same date ranges.
+        #' Get the timestamps (earliest and latest date of activity) of the specified
+        #' data sources.
         #'
-        #' If there are no actual data available for a data source, the result indicates NA
+        #' If there are no data available for a data source, the result indicates NA.
         #'
-        #' @param data.sources the specified data sources
-        #' @param simple whether or not the timestamps get simplified
+        #' @param data.sources The specified data sources. One of \code{"mails"},
+        #'                     \code{"commits"}, and \code{"issues"}.
+        #' @param simple If TRUE, return the overall latest start and earliest end date
+        #'               across all data sources in a one-row data.frame; otherwise, return
+        #'               the first and last activities of all data sources individually.
+        #'               Can be overridden by \code{outermost}.
+        #' @param outermost Whether the very first and the very last activity across all data
+        #'                  sources is to be returned in a one-row data.frame; ignored otherwise.
+        #'                  This overrides any value given via \code{simple}.
         #'
-        #' @return a data.frame with the timestamps of each data source as columns "start" and "end",
-        #'         with the data source as corresponding row name
-        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE) {
+        #' @return A data.frame with the timestamps of each data source as columns "start" and "end",
+        #'         possibly with the data source as corresponding row name
+        get.data.timestamps = function(data.sources = c("mails", "commits", "issues"), simple = FALSE,
+                                       outermost = FALSE) {
+
             ## check arguments
             data.sources = match.arg(arg = data.sources, several.ok = TRUE)
 
@@ -635,8 +664,14 @@ ProjectData = R6::R6Class("ProjectData",
             subset.timestamps = private$data.timestamps[data.sources, ]
 
             ## get the proper subset of timestamps for returning
-            if(simple) {
-                ## get minima and maxima across data sources (rows)
+            if (outermost) {
+                ## get minimum start date and maximum end date across data sources
+                timestamps = data.frame(
+                    start = min(subset.timestamps[, "start"], na.rm = TRUE),
+                    end = max(subset.timestamps[, "end"], na.rm = TRUE)
+                )
+            } else if(simple) {
+                ## get maximum start date and minimum end date across data sources
                 timestamps = data.frame(
                     start = max(subset.timestamps[, "start"], na.rm = TRUE),
                     end = min(subset.timestamps[, "end"], na.rm = TRUE)
@@ -692,6 +727,8 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts for every author
         get.author2artifact = function() {
+            ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## (see also get.artifacts)
             logging::loginfo("Getting author--artifact data.")
 
             ## store the authors per artifact
@@ -832,17 +869,20 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' if they exist.
         #'
         #' @param project.conf the project configuration for the new instance
-                  #' @param range the range for the new instance
-                  #' @param revision.callgraph the revision callgraph for the new instance
+        #' @param range the range for the new instance
+        #' @param revision.callgraph the revision callgraph for the new instance
+        #'                           [default: ""]
         initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
             super$initialize(project.conf)
 
-            if (!missing(range) && is.character(range)) {
-                private$range = range
-            }
-            if (!missing(revision.callgraph) && is.character(revision.callgraph) && revision.callgraph != "") {
-                private$revision.callgraph = revision.callgraph
+            ## check arguments
+            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+
+            ## correct revision.callgraph variable
+            if (revision.callgraph == "") {
+                private$revision.callgraph = NA
             }
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
@@ -918,8 +958,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 #'  - use value as first column in sublist items
 #'  - append all other existing columns (including key and value)
 #'  - each item in the results list gets attributes:
-#'   - group.type (=value) and
-#'   - group.name (=unique(item[[key]]))
+#'   - group.type (i.e., value) and
+#'   - group.name (i.e., unique(item[[key]]))
 #'
 #' @param base.data the base data for the method
 #' @param key the key for the result
@@ -967,3 +1007,98 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
 
     return(mylist)
 }
+
+#' Get the commit data with the specified columns for the specified project-data instance
+#' as a data frame for each specified split range.
+#'
+#' A split interval can be set by defining the number of weeks for each requested range as a vector.
+#'
+#' @param project.data The project data as source for the commits
+#' @param columns The commit-data columns to select and return
+#' @param split A list of numerics, indicating numbers of weeks into which the selected data
+#'              is to be split
+#'
+#' @return A data.frame indicating the selected \code{columns}, split into the given numbers
+#'         of weeks (\code{split})
+get.commit.data = function(project.data, columns = c("author.name", "author.email"), split = c()) {
+    logging::logdebug("get.commit.data: starting.")
+
+    ## Get commit data
+    commits.df = project.data$get.commits()
+
+    ## In case no commit data is available, return NA
+    if(nrow(commits.df) == 0) {
+        return(NA)
+    }
+
+    ## Make sure the hash is included in the cut columns vector for grouping
+    cut.columns = columns
+    if (!("hash" %in% cut.columns)) {
+        cut.columns = c(cut.columns, "hash")
+    }
+
+    ## Make sure the date is included in the cut columns vector for splitting
+    if (!("date" %in% cut.columns)) {
+        cut.columns = c(cut.columns, "date")
+    }
+
+    ## Cut down data to needed minimum
+    commits.df = commits.df[cut.columns]
+
+    ## Group by hash to get a line per commit
+    commits.df = sqldf::sqldf("SELECT * FROM `commits.df` GROUP BY `hash`")
+
+    ## Remove hash column if not wanted as it now contains nonsensical data
+    if (!("hash" %in% columns)) {
+        commits.df["hash"] = NULL
+    }
+
+    ## Order commits by date column
+    commits.df = commits.df[order(commits.df$date), ]
+
+    ## Fetch the date range info
+    date.first = as.Date(commits.df$date[1])
+    date.last = as.Date(commits.df$date[nrow(commits.df)]) + 1 # +1 since findInterval is right-exclusive
+
+    ## Calc the split dates depending on the specified intervals
+    date.split = c(date.last)
+    if (!is.null(split)) {
+        for (i in 1:length(split)) {
+            ## subtract split[i] number of weeks
+            date.calc = date.split[i] - lubridate::weeks(split[i])
+
+            ## Check if calculated date is still after the first commit date of the range
+            if (date.calc > date.first) {
+                date.split = c(date.split, date.calc)
+            } else {
+                date.split = c(date.split, date.first)
+                break
+            }
+        }
+    } else {
+        date.split = c(date.split, date.first)
+    }
+
+    date.split = rev(date.split)
+
+    ## Only keep the commits which were made within the specified split ranges
+    ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
+    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1], ]
+
+    ## Calc group numbers for the commits by the split dates
+    intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
+
+    ## Remove date column if not wanted
+    if (!("date" %in% columns)) {
+        commits.df["date"] = NULL
+    }
+
+    ## Split the commits by the calculated groups
+    res = split.data.by.bins(commits.df, intervals)
+    names(res) = construct.ranges(date.split)
+    attr(res, "bins") = date.split
+
+    logging::logdebug("get.commit.data: finished.")
+    return(res)
+}
+

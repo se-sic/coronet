@@ -1,15 +1,28 @@
-## (c) Ferdinand Frank, 2017
-## frankfer@fim.uni-passau.de
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Mitchell Joblin, 2017
-## mitchell.joblin@uni-passau.de
-## (c) Sofie Kemper, 2017
-## kemperso@fim.uni-passau.de
-
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
+## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## All Rights Reserved.
+##
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 
+## TODO see https://github.com/se-passau/codeface-extraction-r/issues/70
+## TODO adjust coding style regarding bracket notation
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -97,7 +110,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
             if(!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
-                res <- c(res, list(range.class))
+                res = c(res, list(range.class))
             }
         }
     } else { # use network list as data
@@ -113,7 +126,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
             if(!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
-                res <- c(res, list(range.class))
+                res = c(res, list(range.class))
             }
         }
     }
@@ -451,6 +464,58 @@ get.commit.count.threshold = function(range.data) {
     return(threshold)
 }
 
+#' Get the commit count per comitter in the given range data, where the committer
+#' does not match the author of the respective commits
+#'
+#' @param range.data The data to count on
+#'
+#' @return A data frame in descending order by the commit count
+get.committer.not.author.commit.count = function(range.data) {
+    logging::logdebug("get.committer.not.author.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute a query to get the commit count per author
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       WHERE `committer.name` <> `author.name`
+                       GROUP BY `committer.name`, `author.name`
+                       ORDER BY `freq` DESC")
+
+    logging::logdebug("get.committer.not.author.commit.count: finished.")
+    return(res)
+}
+
+#' Get the commit count per comitter in the given range data, where the committer
+#' may match the author of the respective commits
+#'
+#' @param range.data The data to count on
+#'
+#' @return A data frame in descending order by the commit count.
+get.committer.commit.count = function(range.data) {
+    logging::logdebug("get.committer.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "committer.email"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if(all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute a query to get the commit count per author
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       GROUP BY `committer.name` ORDER BY `freq` DESC")
+
+    logging::logdebug("get.committer.commit.count: finished.")
+    return(res)
+}
+
 ## Get the commit count per author of the specified version range
 ## as a data frame ordered by the commit count.
 get.author.commit.count = function(range.data) {
@@ -465,7 +530,8 @@ get.author.commit.count = function(range.data) {
     }
 
     ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("select *, COUNT(*) as `freq` from `commits.df` group by `author.name` order by `freq` desc")
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       GROUP BY `author.name` ORDER BY `freq` DESC")
 
     logging::logdebug("get.author.commit.count: finished.")
     return(res)
@@ -508,8 +574,10 @@ get.author.loc.count = function(range.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data,
-                                 columns = c("author.name", "author.email", "added.lines", "deleted.lines"))[[1]]
+    commits.df = get.commit.data(
+        range.data,
+        columns = c("author.name", "author.email", "added.lines", "deleted.lines")
+    )[[1]]
 
     ## Return NA in case no commit data is available
     if(all(is.na(commits.df))) {
@@ -517,8 +585,10 @@ get.author.loc.count = function(range.data) {
     }
 
     ## Execute a query to get the changed lines per author
-    res = sqldf::sqldf("select `author.name`, `author.email`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc`
-               from `commits.df` group by `author.name` order by `loc` desc")
+    res = sqldf::sqldf("SELECT `author.name`, `author.email`,
+                            SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
+                        FROM `commits.df`
+                        GROUP BY `author.name` ORDER BY `loc` DESC")
 
     logging::logdebug("get.author.loc.count: finished.")
     return(res)
@@ -565,8 +635,10 @@ get.author.class.activity = function(range.data = NULL,
                                    split = split)
 
     ## Build the query string to group commits by the author name
-    commits.query = "select `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) as `loc.count`,
-    COUNT(*) as `commit.count` from `commits.df` group by `author.name`"
+    commits.query = "SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc.count`,
+                        COUNT(*) AS `commit.count`
+                     FROM `commits.df`
+                     GROUP BY `author.name`"
 
     ## Get the authors with their commit count and corresponding class for each splitted range
     commits.dev.list = list()
@@ -576,8 +648,8 @@ get.author.class.activity = function(range.data = NULL,
 
         ## Classify authors in splitted range according to the overall classification
         core.test = commits.dev.list[[names(commits.data)[i]]]$author.name %in% author.core
-        commits.dev.core = commits.dev.list[[names(commits.data)[i]]][core.test,]
-        commits.dev.peripheral = commits.dev.list[[names(commits.data)[i]]][!core.test,]
+        commits.dev.core = commits.dev.list[[names(commits.data)[i]]][core.test, ]
+        commits.dev.peripheral = commits.dev.list[[names(commits.data)[i]]][!core.test, ]
 
         commits.dev.list[[names(commits.data)[i]]] = list(core = commits.dev.core, peripheral = commits.dev.peripheral)
     }
@@ -617,8 +689,8 @@ get.author.class.activity = function(range.data = NULL,
         res.activity.count.avg.peripheral[i] = res.activity.count.peripheral[i] / num.peripheral.dev
 
         ## Get median activity count
-        activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activity.measure]]),][[activity.measure]]
-        activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activity.measure]]),][[activity.measure]]
+        activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activity.measure]]), ][[activity.measure]]
+        activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activity.measure]]), ][[activity.measure]]
         res.activity.count.med.core[i] = ifelse(length(activity.count.core.ordered) > 0, median(activity.count.core.ordered), 0)
         res.activity.count.med.peripheral[i] = ifelse(length(activity.count.peripheral.ordered) > 0, median(activity.count.peripheral.ordered), 0)
 
@@ -689,7 +761,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         } else {
 
             ## skip range in case no classification for the given class is available
-            if(nrow(author.class.overview[[i]][[class]])==0) {
+            if(nrow(author.class.overview[[i]][[class]]) == 0) {
                 next
             }
 
@@ -721,7 +793,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     )
 
     ## Sort the authors by occurence count
-    data = data[order(data$freq, decreasing = TRUE),]
+    data = data[order(data$freq, decreasing = TRUE), ]
 
     logging::logdebug("get.recurring.authors: finished.")
     return(data)
@@ -745,7 +817,7 @@ get.longterm.core.authors = function(author.class = NULL) {
     longterm.threshold = length(author.class) * LONGTERM.CORE.THRESHOLD
 
     ## Get the longterm core authors
-    longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold,]$author.name
+    longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold, ]$author.name
 
     logging::logdebug("get.longterm.core.authors: finished.")
     return(longterm.core)
@@ -892,8 +964,8 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     if(all(is.na(author.data.frame))) {
         logging::logwarn("There is no data to use for the classification. Returning empty classification...")
 
-        empty.df <- data.frame(character(0), numeric(0))
-        names(empty.df) <- c("author.name", calc.base.name)
+        empty.df = data.frame(character(0), numeric(0))
+        names(empty.df) = c("author.name", calc.base.name)
         return(list("core" = empty.df,
                     "peripheral" = empty.df))
     }
@@ -959,90 +1031,4 @@ get.threshold = function(data.list) {
 
     logging::logdebug("get.threshold: finished.")
     return(data.threshold)
-}
-
-## Get the commit data with the specified columns for the specified version range as a data frame
-## for each specified split range.
-## A split interval can be set by defining the number of weeks for each requested range as a vector.
-get.commit.data = function(range.data, columns = c("author.name", "author.email"), split = c()) {
-    logging::logdebug("get.commit.data: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits()
-
-    ## In case no commit data is available, return NA
-    if(nrow(commits.df) == 0) {
-        return(NA)
-    }
-
-    ## Make sure the hash is included in the cut columns vector for grouping
-    cut.columns = columns
-    if (!("hash" %in% cut.columns)) {
-        cut.columns = c(cut.columns, "hash")
-    }
-
-    ## Make sure the date is included in the cut columns vector for splitting
-    if (!("date" %in% cut.columns)) {
-        cut.columns = c(cut.columns, "date")
-    }
-
-    ## Cut down data to needed minimum
-    commits.df = commits.df[cut.columns]
-
-    ## Group by hash to get a line per commit
-    commits.df = sqldf::sqldf("select * from `commits.df` group by `hash`")
-
-    ## Remove hash column if not wanted as it now contains nonsensical data
-    if (!("hash" %in% columns)) {
-        commits.df["hash"] = NULL
-    }
-
-    ## Order commits by date column
-    commits.df = commits.df[order(commits.df$date),]
-
-    ## Fetch the date range info
-    date.first = as.Date(commits.df$date[1])
-    date.last = as.Date(commits.df$date[nrow(commits.df)]) + 1 # +1 since findInterval is right-exclusive
-
-    ## Calc the split dates depending on the specified intervals
-    date.split = c(date.last)
-    if (!is.null(split)) {
-        for (i in 1:length(split)) {
-            ## substract split[i] number of weeks (i.e., split[i] * 7 days)
-            ## TODO use lubridate package here to substract a week from POSIXct?
-            date.calc = date.split[i] - (split[i] * 7)
-
-            ## Check if calculated date is still after the first commit date of the range
-            if (date.calc > date.first) {
-                date.split = c(date.split, date.calc)
-            } else {
-                date.split = c(date.split, date.first)
-                break
-            }
-        }
-    } else {
-        date.split = c(date.split, date.first)
-    }
-
-    date.split = rev(date.split)
-
-    ## Only keep the commits which were made within the specified split ranges
-    ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
-    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1],]
-
-    ## Calc group numbers for the commits by the split dates
-    intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
-
-    ## Remove date column if not wanted
-    if (!("date" %in% columns)) {
-        commits.df["date"] = NULL
-    }
-
-    ## Split the commits by the calculated groups
-    res = split.data.by.bins(commits.df, intervals)
-    names(res) = construct.ranges(date.split)
-    attr(res, "bins") = date.split
-
-    logging::logdebug("get.commit.data: finished.")
-    return(res)
 }

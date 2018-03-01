@@ -1,11 +1,23 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Sofie Kemper, 2017
-## kemperso@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -28,8 +40,9 @@ requireNamespace("lubridate") # for date conversion
 #' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does not make sense then.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does
+#'             not make sense then either.
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -64,15 +77,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     else {
         ## get bins based on parameter
         split.basis = NULL
-        bins = lubridate::ymd_hms(bins, truncated = 3)
-        bins = strftime(bins, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.from.string(bins)
+        bins = get.date.string(bins)
         bins.labels = head(bins, -1)
         split.by.bins = TRUE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
     }
-    bins.date = as.POSIXct(bins)
+    bins.date = get.date.from.string(bins)
 
     ## construct ranges
     bins.ranges = construct.ranges(bins)
@@ -136,7 +149,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             bins.date[2:length(bins.date)],
             FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
         )
-        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
 
         ## split data for sliding windows
         cf.data.sliding = split.data.time.based(project.data, bins = bins.date.middle,
@@ -151,7 +164,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(bins.date)
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -247,7 +260,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
                                               activity.amount, remove.duplicate.bins = TRUE)
     bins = bins.data[["bins"]]
-    bins.date = lubridate::ymd_hms(bins, truncated = 3)
+    bins.date = get.date.from.string(bins)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
@@ -299,7 +312,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
-        bins = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(bins.date)
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
@@ -325,6 +338,119 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     return(cf.data)
 }
 
+#' Map a list of networks to their corresponding range data, after splitting the
+#' given project data (\code{project.data}) to the time ranges given by the networks'
+#' names. The splitting can be more specifically configured with the parameter
+#' \code{aggregation.level}, see below for more details.
+#'
+#' For this function to work properly, the list of networks needs to be named with
+#' timestamp-ranges, which can be splitted using \code{get.range.bounds}. The easiest
+#' way to achieve this is to use one of the \code{split.*} functions in this very file.
+#' For example, the time ranges have a format like this:
+#' "2017-01-01 23:57:01-2017-02-15 12:19:37", which can be split by the utility
+#' function \code{get.range.bounds}, obtaining the range bounds as timestamps.
+#'
+#' Using different aggregation levels given by the parameter \code{aggregation.level},
+#' it is possible to configure the exact treatment of range bounds and, thus, the
+#' splitting of the given project data. The various aggregation levels work as follows:
+#' - \code{"range"}: The project data will be split exactly to the time ranges specified
+#'                   by the networks' names.
+#' - \code{"cumulative"}: The project data will be split exactly to the time ranges
+#'                   specified by the networks' names, but in a cumulative manner.
+#' - \code{"all.ranges"}: The project data will be split exactly to the time range
+#'                   specified by the start of the first network and end of the last
+#'                   network. All data instances will contain the same data.
+#' - \code{"project.cumulative"}: The same splitting as for \code{"cumulative"}, but all
+#'                   data will start at the beginning of the project data and *not* at
+#'                   the beginning of the first network.
+#' - \code{"project.all.ranges"}: The same splitting as for \code{"all.ranges"}, but all
+#'                   data will start at the beginning of the project data and *not* at
+#'                   the beginning of the first network. All data instances will contain
+#'                   the same data.
+#' - \code{"complete"}: The same splitting as for \code{"all.ranges"}, but all data will
+#'                   start at the beginning of the project data and end at the end of
+#'                   the project data. All data instances will contain the same data.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The entire project data
+#' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See above for more details.
+#'
+#' @return A list containing tuples with the keys "network" and "data", where, under "network", are
+#'         the respective networks passed via \code{list.of.networks} and, under "data", are the
+#'         split data instances of type \code{RangeData}.
+#'
+#' @seealso \code{aggregate.ranges}
+split.data.by.networks = function(list.of.networks, project.data,
+                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                        "project.cumulative", "project.all.ranges",
+                                                        "complete")) {
+    ## get the chosen aggregation level
+    aggregation.level = match.arg(aggregation.level)
+
+    ## get the timestamp data from the project data (needed for some aggr. levels)
+    project.timestamps = project.data$get.data.timestamps(outermost = TRUE)
+
+    ## get the list of ranges
+    list.of.ranges = names(list.of.networks)
+    ## aggregate ranges
+    ranges.bounds = aggregate.ranges(
+        list.of.ranges, project.start = project.timestamps[["start"]], project.end = project.timestamps[["end"]],
+        aggregation.level = aggregation.level, raw = TRUE
+    )
+
+    ## split the data by the computed (and aggregated) ranges
+    list.of.data = split.data.time.based.by.ranges(project.data, ranges.bounds)
+
+    ## zip networks and range data
+    net.to.range.list = mapply(
+        list.of.networks, list.of.data, SIMPLIFY = FALSE,
+        FUN = function(net, range.data) {
+            net.to.range.entry = list(
+                "network" = net,
+                "data" = range.data
+            )
+            return(net.to.range.entry)
+        }
+    )
+
+    ## properly set names for the result list
+    names(net.to.range.list) = list.of.ranges
+
+    return(net.to.range.list)
+}
+
+#' Split the given data to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param project.data the \code{ProjectData} instance to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of \code{RangeData} instances, each representing one of the
+#'         given ranges; the ranges are used as names for the list
+split.data.time.based.by.ranges = function(project.data, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the data accordingly:
+    data.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the data to the current range
+            range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the data
+            return (range.data)
+        }
+    )
+
+    return(data.split)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
@@ -341,20 +467,21 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range).
-#'             If set, the 'time.period' parameter is ignored.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period = "3 months", bins = NULL,
-                                    sliding.window = FALSE) {
+                                    sliding.window = FALSE, remove.isolates = TRUE) {
     ## extract date attributes from edges
-    dates = as.POSIXct(igraph::get.edge.attribute(network, "date"), origin="1970-01-01")
+    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
 
     ## get bin information for all edges
     if (!is.null(bins)) {
-        bins.date = lubridate::ymd_hms(bins, truncated = 3)
+        bins.date = get.date.from.string(bins)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
         ## logging
@@ -362,14 +489,14 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     } else {
         bins.info = split.get.bins.time.based(dates, time.period)
         bins.vector = bins.info[["vector"]]
-        bins.date = as.POSIXct(bins.info[["bins"]])
+        bins.date = get.date.from.string(bins.info[["bins"]])
         bins = head(bins.info[["bins"]], -1)
         ## logging
         logging::loginfo("Splitting network into time ranges [%s].",
                          paste(bins.info[["bins"]], collapse = ", "))
     }
 
-    nets = split.network.by.bins(network, bins, bins.vector)
+    nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     if (sliding.window) {
@@ -379,7 +506,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
             bins.date[2:length(bins.date)],
             FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
         )
-        bins.date.middle = as.POSIXct(bins.date.middle, origin = "1970-01-01")
+        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
 
         ## order edges by date
         edges.all = igraph::E(network)
@@ -411,7 +538,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     attr(nets, "bins") = bins.date
 
     ## set ranges as names
-    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    revs = get.date.string(bins.date)
     names(nets) = construct.ranges(revs, sliding.window = sliding.window)
 
     return(nets)
@@ -454,9 +581,9 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 
     ## 2) get bin information
     base = networks[[net.idx]]
-    dates = as.POSIXct(igraph::get.edge.attribute(base, "date"), origin = "1970-01-01")
+    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(base, "date"))
     bins.info = split.get.bins.time.based(dates, time.period)
-    bins.date = as.POSIXct(bins.info[["bins"]])
+    bins.date = get.date.from.string(bins.info[["bins"]])
 
     ## 3) split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
@@ -484,10 +611,11 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 #' @param sliding.window logical indicating whether the splitting should be performed using
 #'                       a sliding-window approach (increases 'number.windows' accordingly)
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
 split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL,
-                                        sliding.window = FALSE) {
+                                        sliding.window = FALSE, remove.isolates = TRUE) {
     ## get total edge count
     edge.count = igraph::ecount(network)
 
@@ -518,9 +646,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## get dates in a data.frame for splitting purposes
     df = data.frame(
-        date = as.POSIXct( # use POSIXct as other functions need it
-            igraph::get.edge.attribute(network, "date"), origin = "1970-01-01"),
-        my.unique.id = 1:edge.count # as a unique identifier only
+        date = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date")),
+        my.unique.id = seq_len(edge.count) # as a unique identifier only
     )
     ## sort by date
     df = df[ with(df, order(date)), ]
@@ -534,7 +661,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
     bins = sort(unique(bins.vector))
     ## split network by bins
-    networks = split.network.by.bins(network, bins, bins.vector)
+    networks = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     ## for activity-based sliding-window bins to work, we need to crop edges appropriately and,
@@ -576,7 +703,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     attr(networks, "bins") = bins.date
 
     ## set ranges as names
-    revs = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    revs = get.date.string(bins.date)
     names(networks) = construct.ranges(revs, sliding.window = sliding.window)
 
     ## issue warning if ranges are not unique
@@ -589,6 +716,36 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     }
 
     return(networks)
+}
+
+#' Split the given network to the given ranges and return the resulting list.
+#'
+#' Note: You may want to use any function \code{construct.*.ranges} to obtain
+#' an appropriate sequence of ranges to pass to this function.
+#'
+#' @param network the network to be split
+#' @param ranges the ranges to be used for splitting
+#'
+#' @return a list of networks, each representing one of the given ranges; the
+#'         ranges are used as names for the list
+split.network.time.based.by.ranges = function(network, ranges) {
+
+    ## aggregate ranges
+    ranges.bounds = lapply(ranges, get.range.bounds)
+
+    ## loop over all ranges and split the network accordingly:
+    nets.split = mapply(
+        ranges, ranges.bounds, SIMPLIFY = FALSE,
+        FUN = function(range, start.end) {
+            ## 1) split the network to the current range
+            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE)[[1]]
+
+            ## 2) return the network
+            return (range.net)
+        }
+    )
+
+    return(nets.split)
 }
 
 
@@ -613,9 +770,10 @@ split.data.by.bins = function(df, bins) {
 #' @param network a network
 #' @param bins a vector with the unique bin identifiers, describing the order in which the bins are created
 #' @param bins.vector a vector of length 'ecount(network)' assigning a bin for each edge of 'network'
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, with the length of 'unique(bins.vector)'
-split.network.by.bins = function(network, bins, bins.vector) {
+split.network.by.bins = function(network, bins, bins.vector, remove.isolates = TRUE) {
     logging::logdebug("split.data.time.based: starting.")
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
@@ -623,7 +781,7 @@ split.network.by.bins = function(network, bins, bins.vector) {
         ## identify edges in the current bin
         edges = igraph::E(network)[ bins.vector == bin ]
         ## create network based on the current set of edges
-        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
+        g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
     logging::logdebug("split.data.time.based: finished.")
@@ -684,14 +842,14 @@ split.unify.range.names = function(ranges) {
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period) {
     logging::logdebug("split.get.bins.time.based: starting.")
-    ## find date bins from given dates
-    dates.breaks = c(
-        ## time periods of length 'time.period'
-        seq.POSIXt(from = min(dates), to = max(dates), by = time.period),
-        ## add last bin
-        max(dates) + 1
-    )
-    dates.breaks.chr = strftime(head(dates.breaks, -1), format = "%Y-%m-%d %H:%M:%S")
+
+    ## generate date bins from given dates
+    dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+    ## as the last bin bound is exclusive, we need to add a second to it
+    dates.breaks[length(dates.breaks)] = max(dates) + 1
+    ## generate charater strings for bins
+    dates.breaks.chr = get.date.string(head(dates.breaks, -1))
+
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
     dates.bins = factor(dates.bins)
@@ -707,7 +865,7 @@ split.get.bins.time.based = function(dates, time.period) {
     ## return properly
     return(list(
         vector = dates.bins,
-        bins = strftime(dates.breaks, format = "%Y-%m-%d %H:%M:%S")
+        bins = get.date.string(dates.breaks)
     ))
 }
 
@@ -748,7 +906,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## get the start (and end) date for all bins
     bins.date = parallel::mclapply(1:bins.number, function(bin) {
         ## get the ids in the bin
-        ids = bins.mapping[ bins.mapping$bin == bin, "id"]
+        ids = bins.mapping[ bins.mapping[["bin"]] == bin, "id"]
         ## grab dates for the ids
         dates = df[df[[id]] %in% ids, "date"]
 
@@ -769,7 +927,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## unlist bins
     bins.date = do.call(c, bins.date)
     ## convert to character strings
-    bins.date.char = strftime(bins.date, format = "%Y-%m-%d %H:%M:%S")
+    bins.date.char = get.date.string(bins.date)
 
     ## if we have a duplicate bin border, merge the two things
     if (remove.duplicate.bins && any(duplicated(bins.date))) {

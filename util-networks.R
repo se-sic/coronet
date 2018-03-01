@@ -1,9 +1,21 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -96,7 +108,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * author networks ---------------------------------------------
 
         #' Get the co-change-based author relation as network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the author network with cochange relation
         get.author.network.cochange = function() {
@@ -123,7 +135,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the thread-based author relation as network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the author network with mail relation
         get.author.network.mail = function() {
@@ -173,7 +185,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * artifact networks -------------------------------------------
 
         #' Get the co-change-based artifact network,
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with cochange realtion
         get.artifact.network.cochange = function() {
@@ -200,7 +212,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the call-graph-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #' IMPORTANT: This only works for range-level analyses!
         #'
         #' @return the artifact network with callgraph relation
@@ -275,7 +287,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the mail-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with mail relation
         get.artifact.network.mail = function() {
@@ -308,7 +320,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         #' Get the issue-based artifact network.
-        #' If it doesn´t already exist build it first.
+        #' If it does not already exist build it first.
         #'
         #' @return the artifact network with issue relation
         get.artifact.network.issue = function() {
@@ -392,18 +404,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' @param project.data the given data object
                   #' @param network.conf the network configuration
         initialize = function(project.data, network.conf) {
-            private$proj.data = project.data
+
+            ## check arguments
+            private$proj.data = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
             private$proj.data.original = project.data
+            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
 
-            if(!missing(network.conf) && "NetworkConf" %in% class(network.conf)) {
-                private$network.conf = network.conf
-            }
-
-            if (class(self)[1] == "ProjectData")
-                logging::loginfo("Initialized data object %s", self$get.class.name())
-
+            ## cut data if needed
             if(private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
+            }
+
+            if (class(self)[1] == "NetworkBuilder") {
+                logging::loginfo("Initialized network builder for data %s.",
+                                 private$proj.data$get.class.name())
             }
         },
 
@@ -573,7 +587,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
             ## 2) artifact network
             artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
-                return(df$data.vertices)
+                return(df[["data.vertices"]])
             })))
             artifact.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifact.vertices, name = artifact.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
@@ -761,7 +775,7 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(table(set[,1]) * (dim(table(set[,1])) - 1))
+            number.edges = sum(table(set[, 1]) * (dim(table(set[, 1])) - 1))
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -797,7 +811,7 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
                 edge = data.frame(comb[1], comb[2])
 
                 ## get edge attibutes
-                edge.attrs = set[ set[,1] %in% comb, ] # get data for current combination
+                edge.attrs = set[ set[, 1] %in% comb, ] # get data for current combination
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
                 edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
@@ -921,7 +935,7 @@ add.edges.for.bipartite.relation = function(net, net1.to.net2, network.conf) {
     return(new.net)
 }
 
-#' Create an empty network that doesn´t break the algorithms.
+#' Create an empty network that does not break the algorithms.
 #'
 #' @param directed whether or not the network should be directed
 #'
