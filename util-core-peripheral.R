@@ -1,16 +1,28 @@
-## (c) Ferdinand Frank, 2017
-## frankfer@fim.uni-passau.de
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Mitchell Joblin, 2017
-## mitchell.joblin@uni-passau.de
-## (c) Sofie Kemper, 2017
-## kemperso@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
-
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
+## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## All Rights Reserved.
+##
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
+
+## TODO see https://github.com/se-passau/codeface-extraction-r/issues/70
+## TODO adjust coding style regarding bracket notation
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -98,7 +110,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
             if(!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
-                res <- c(res, list(range.class))
+                res = c(res, list(range.class))
             }
         }
     } else { # use network list as data
@@ -114,7 +126,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
             if(!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
-                res <- c(res, list(range.class))
+                res = c(res, list(range.class))
             }
         }
     }
@@ -472,7 +484,7 @@ get.committer.not.author.commit.count = function(range.data) {
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
                        WHERE `committer.name` <> `author.name`
-                       GROUP BY `committer.name`,`author.name`
+                       GROUP BY `committer.name`, `author.name`
                        ORDER BY `freq` DESC")
 
     logging::logdebug("get.committer.not.author.commit.count: finished.")
@@ -636,8 +648,8 @@ get.author.class.activity = function(range.data = NULL,
 
         ## Classify authors in splitted range according to the overall classification
         core.test = commits.dev.list[[names(commits.data)[i]]]$author.name %in% author.core
-        commits.dev.core = commits.dev.list[[names(commits.data)[i]]][core.test,]
-        commits.dev.peripheral = commits.dev.list[[names(commits.data)[i]]][!core.test,]
+        commits.dev.core = commits.dev.list[[names(commits.data)[i]]][core.test, ]
+        commits.dev.peripheral = commits.dev.list[[names(commits.data)[i]]][!core.test, ]
 
         commits.dev.list[[names(commits.data)[i]]] = list(core = commits.dev.core, peripheral = commits.dev.peripheral)
     }
@@ -677,8 +689,8 @@ get.author.class.activity = function(range.data = NULL,
         res.activity.count.avg.peripheral[i] = res.activity.count.peripheral[i] / num.peripheral.dev
 
         ## Get median activity count
-        activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activity.measure]]),][[activity.measure]]
-        activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activity.measure]]),][[activity.measure]]
+        activity.count.core.ordered = commits.dev$core[order(commits.dev$core[[activity.measure]]), ][[activity.measure]]
+        activity.count.peripheral.ordered = commits.dev$peripheral[order(commits.dev$peripheral[[activity.measure]]), ][[activity.measure]]
         res.activity.count.med.core[i] = ifelse(length(activity.count.core.ordered) > 0, median(activity.count.core.ordered), 0)
         res.activity.count.med.peripheral[i] = ifelse(length(activity.count.peripheral.ordered) > 0, median(activity.count.peripheral.ordered), 0)
 
@@ -749,7 +761,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         } else {
 
             ## skip range in case no classification for the given class is available
-            if(nrow(author.class.overview[[i]][[class]])==0) {
+            if(nrow(author.class.overview[[i]][[class]]) == 0) {
                 next
             }
 
@@ -781,7 +793,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     )
 
     ## Sort the authors by occurence count
-    data = data[order(data$freq, decreasing = TRUE),]
+    data = data[order(data$freq, decreasing = TRUE), ]
 
     logging::logdebug("get.recurring.authors: finished.")
     return(data)
@@ -805,7 +817,7 @@ get.longterm.core.authors = function(author.class = NULL) {
     longterm.threshold = length(author.class) * LONGTERM.CORE.THRESHOLD
 
     ## Get the longterm core authors
-    longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold,]$author.name
+    longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold, ]$author.name
 
     logging::logdebug("get.longterm.core.authors: finished.")
     return(longterm.core)
@@ -952,8 +964,8 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     if(all(is.na(author.data.frame))) {
         logging::logwarn("There is no data to use for the classification. Returning empty classification...")
 
-        empty.df <- data.frame(character(0), numeric(0))
-        names(empty.df) <- c("author.name", calc.base.name)
+        empty.df = data.frame(character(0), numeric(0))
+        names(empty.df) = c("author.name", calc.base.name)
         return(list("core" = empty.df,
                     "peripheral" = empty.df))
     }

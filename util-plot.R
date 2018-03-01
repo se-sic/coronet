@@ -1,5 +1,18 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -96,7 +109,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
         network = create.empty.network(directed = igraph::is.directed(network)) +
-            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1,2), type = TYPE.EDGES.INTER)
+            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1, 2), type = TYPE.EDGES.INTER)
         VERTEX.SIZE = 0
     }
 
@@ -111,8 +124,8 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         p = p +
             ggraph::geom_edge_fan(
                 mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
-                end_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
-                start_cap = ggraph::circle(VERTEX.SIZE + 3, 'pt'),
+                end_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
+                start_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
                         ggplot2::arrow(length = ggplot2::unit(VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
                     } else {
@@ -149,16 +162,16 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         ) +
         ggplot2::theme(
             legend.position = "bottom",
-            axis.line=ggplot2::element_blank(),
-            axis.text.x=ggplot2::element_blank(),
-            axis.text.y=ggplot2::element_blank(),
-            axis.ticks=ggplot2::element_blank(),
-            axis.title.x=ggplot2::element_blank(),
-            axis.title.y=ggplot2::element_blank(),
-            panel.background=ggplot2::element_blank(),
-            panel.grid.major=ggplot2::element_blank(),
-            panel.grid.minor=ggplot2::element_blank(),
-            plot.background=ggplot2::element_blank()
+            axis.line = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_blank(),
+            axis.text.y = ggplot2::element_blank(),
+            axis.ticks = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.title.y = ggplot2::element_blank(),
+            panel.background = ggplot2::element_blank(),
+            panel.grid.major = ggplot2::element_blank(),
+            panel.grid.minor = ggplot2::element_blank(),
+            plot.background = ggplot2::element_blank()
         )
 
     return(p)

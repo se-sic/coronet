@@ -1,9 +1,20 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 context("Network-building functionality.")
@@ -210,7 +221,7 @@ test_that("Network construction of the undirected author-cochange network", {
                       file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                       artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
-                      weight = c(1,1,1,1,1,1,1,1),
+                      weight = c(1, 1, 1, 1, 1, 1, 1, 1),
                       type = TYPE.EDGES.INTRA
     )
 
@@ -290,7 +301,7 @@ test_that("Network construction of the undirected simplified author-cochange net
                       file = I(list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"))),
                       artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"))),
                       artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"))),
-                      weight = c(2,2,2,2),
+                      weight = c(2, 2, 2, 2),
                       type = TYPE.EDGES.INTRA
     )
 
@@ -329,8 +340,8 @@ test_that("Network construction of the undirected author-issue network with all 
                                 "Thomas", "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
                                 "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas",
                                 "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf","Olaf", "Björn", "Björn","Björn",
-                                "Björn","Björn","Björn"),
+                                "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn",
+                                "Björn", "Björn", "Björn"),
                        to = c( "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas",
                                "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo", "udo", "Björn", "Björn", "Björn",
                                "Björn", "Björn", "Björn", "Björn", "udo", "udo", "udo", "Björn", "Björn", "Björn", "Björn",
@@ -410,8 +421,8 @@ test_that("Network construction of the undirected author-issue network with just
     ## build network
     network.built = network.builder$get.author.network()
 
-    vertices = data.frame(name = c("Karl", "Thomas", "Björn","Olaf", "Max"),
-                          id = c("Karl", "Thomas", "Björn","Olaf", "Max"),
+    vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
+                          id = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           type = TYPE.AUTHOR)
 
     edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",

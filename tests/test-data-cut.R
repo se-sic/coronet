@@ -1,9 +1,20 @@
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
-## (c) Claus Hunsen, 2018
-## hunsen@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 context("Cutting functionality on ProjectData side.")
@@ -31,33 +42,33 @@ test_that("Cut commit and mail data to same date range.", {
 
     x.data = ProjectData$new(proj.conf)
 
-    commit.data.expected = data.frame(commit.id=sprintf("<commit-%s>", c(32712,32712,32713,32713)),
-                                      date=get.date.from.string(c("2016-07-12 15:58:59","2016-07-12 15:58:59","2016-07-12 16:00:45",
+    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32712, 32713, 32713)),
+                                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                   "2016-07-12 16:00:45")),
-                                      author.name=c("Björn","Björn","Olaf","Olaf"),
-                                      author.email=c("bjoern@example.org","bjoern@example.org","olaf@example.org",
+                                      author.name = c("Björn", "Björn", "Olaf", "Olaf"),
+                                      author.email = c("bjoern@example.org", "bjoern@example.org", "olaf@example.org",
                                                      "olaf@example.org"),
-                                      committer.date=get.date.from.string(NA),
-                                      committer.name=NA,
-                                      committer.email=NA,
-                                      hash=c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0","72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
-                                             "5a5ec9675e98187e1e92561e1888aa6f04faa338","5a5ec9675e98187e1e92561e1888aa6f04faa338"),
-                                      changed.files=as.integer(c(1,1,1,1)),
-                                      added.lines=as.integer(c(1,1,1,1)),
-                                      deleted.lines=as.integer(c(1,1,0,0)),
-                                      diff.size=as.integer(c(2,2,1,1)),
-                                      file=c("test.c","test.c","test.c","test.c"),
-                                      artifact=c("A","defined(A)","A","defined(A)"),
-                                      artifact.type=c("Feature","FeatureExpression","Feature","FeatureExpression"),
-                                      artifact.diff.size=as.integer(c(1,1,1,1)))
+                                      committer.date = get.date.from.string(NA),
+                                      committer.name = NA,
+                                      committer.email = NA,
+                                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                             "5a5ec9675e98187e1e92561e1888aa6f04faa338", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                                      changed.files = as.integer(c(1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 1, 0, 0)),
+                                      diff.size = as.integer(c(2, 2, 1, 1)),
+                                      file = c("test.c", "test.c", "test.c", "test.c"),
+                                      artifact = c("A", "defined(A)", "A", "defined(A)"),
+                                      artifact.type = c("Feature", "FeatureExpression", "Feature", "FeatureExpression"),
+                                      artifact.diff.size = as.integer(c(1, 1, 1, 1)))
 
-    mail.data.expected = data.frame(author.name=c("Thomas"),
-                                    author.email=c("thomas@example.org"),
-                                    message.id=c("<65a1sf31sagd684dfv31@mail.gmail.com>"),
-                                    date=get.date.from.string("2016-07-12 16:04:40"),
-                                    date.offset=as.integer(c(100)),
-                                    subject=c("Re: Fw: busybox 2 tab"),
-                                    thread=sprintf("<thread-%s>", c(9)))
+    mail.data.expected = data.frame(author.name = c("Thomas"),
+                                    author.email = c("thomas@example.org"),
+                                    message.id = c("<65a1sf31sagd684dfv31@mail.gmail.com>"),
+                                    date = get.date.from.string("2016-07-12 16:04:40"),
+                                    date.offset = as.integer(c(100)),
+                                    subject = c("Re: Fw: busybox 2 tab"),
+                                    thread = sprintf("<thread-%s>", c(9)))
 
     commit.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.commits()
     rownames(commit.data) = 1:nrow(commit.data)

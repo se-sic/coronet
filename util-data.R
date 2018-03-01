@@ -1,11 +1,23 @@
-## (c) Claus Hunsen, 2016, 2017
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -232,12 +244,15 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param project.conf the given 'project.conf' for this instance of the class
         initialize = function(project.conf) {
-            if (!missing(project.conf) && "ProjectConf" %in% class(project.conf)) {
-                private$project.conf = project.conf
-            }
 
-            if (class(self)[1] == "ProjectData")
+            ## check arguments
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+
+            ## if we have a direct subclass of ProjectData here,
+            ## log this accordingly
+            if (class(self)[1] == "ProjectData") {
                 logging::loginfo("Initialized data object %s", self$get.class.name())
+            }
         },
 
         ## * * printing ----------------------------------------------------
@@ -355,7 +370,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         #' Get the list of commits without empty artifacts.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without empty artifacts
         get.commits.filtered.empty = function() {
@@ -370,7 +385,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the list of commits without the base artifact.
-        #' If it doesn´t already exist call the filter method.
+        #' If it does not already exist call the filter method.
         #'
         #' @return the commit list without the base artifact
         get.commits.filtered = function() {
@@ -385,7 +400,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -404,7 +419,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it doesn´t already exist call the read method first.
+        #' If it does not already exist call the read method first.
         #'
         #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
         #'
@@ -432,7 +447,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the synchronicity data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
@@ -459,7 +474,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the pasta data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the pasta data
         get.pasta = function() {
@@ -482,7 +497,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the mail data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #' Add pasta data if it is configured.
         #'
         #' @return the mail data
@@ -513,7 +528,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the author data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the author data
         get.authors = function() {
@@ -536,7 +551,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the issue data.
-        #' If it doesn´t already exist call the read method.
+        #' If it does not already exist call the read method.
         #'
         #' @return the issue data
         get.issues = function() {
@@ -549,7 +564,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$extract.timestamps(source = "issues")
 
             if(private$project.conf$get.value("issues.only.comments")) {
-                df = private$issues[private$issues[["event.name"]] == "commented",]
+                df = private$issues[private$issues[["event.name"]] == "commented", ]
                 return(df)
             } else {
                 return(private$issues)
@@ -854,17 +869,20 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' if they exist.
         #'
         #' @param project.conf the project configuration for the new instance
-                  #' @param range the range for the new instance
-                  #' @param revision.callgraph the revision callgraph for the new instance
+        #' @param range the range for the new instance
+        #' @param revision.callgraph the revision callgraph for the new instance
+        #'                           [default: ""]
         initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
             super$initialize(project.conf)
 
-            if (!missing(range) && is.character(range)) {
-                private$range = range
-            }
-            if (!missing(revision.callgraph) && is.character(revision.callgraph) && revision.callgraph != "") {
-                private$revision.callgraph = revision.callgraph
+            ## check arguments
+            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+
+            ## correct revision.callgraph variable
+            if (revision.callgraph == "") {
+                private$revision.callgraph = NA
             }
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
@@ -940,8 +958,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 #'  - use value as first column in sublist items
 #'  - append all other existing columns (including key and value)
 #'  - each item in the results list gets attributes:
-#'   - group.type (=value) and
-#'   - group.name (=unique(item[[key]]))
+#'   - group.type (i.e., value) and
+#'   - group.name (i.e., unique(item[[key]]))
 #'
 #' @param base.data the base data for the method
 #' @param key the key for the result
@@ -1036,7 +1054,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
     }
 
     ## Order commits by date column
-    commits.df = commits.df[order(commits.df$date),]
+    commits.df = commits.df[order(commits.df$date), ]
 
     ## Fetch the date range info
     date.first = as.Date(commits.df$date[1])
@@ -1065,7 +1083,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
 
     ## Only keep the commits which were made within the specified split ranges
     ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
-    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1],]
+    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1], ]
 
     ## Calc group numbers for the commits by the split dates
     intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)

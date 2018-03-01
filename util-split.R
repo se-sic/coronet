@@ -1,11 +1,23 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Sofie Kemper, 2017
-## kemperso@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -459,10 +471,11 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 #'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period = "3 months", bins = NULL,
-                                    sliding.window = FALSE) {
+                                    sliding.window = FALSE, remove.isolates = TRUE) {
     ## extract date attributes from edges
     dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
 
@@ -483,7 +496,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
                          paste(bins.info[["bins"]], collapse = ", "))
     }
 
-    nets = split.network.by.bins(network, bins, bins.vector)
+    nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     if (sliding.window) {
@@ -598,10 +611,11 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 #' @param sliding.window logical indicating whether the splitting should be performed using
 #'                       a sliding-window approach (increases 'number.windows' accordingly)
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
 split.network.activity.based = function(network, number.edges = 5000, number.windows = NULL,
-                                        sliding.window = FALSE) {
+                                        sliding.window = FALSE, remove.isolates = TRUE) {
     ## get total edge count
     edge.count = igraph::ecount(network)
 
@@ -647,7 +661,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
     bins = sort(unique(bins.vector))
     ## split network by bins
-    networks = split.network.by.bins(network, bins, bins.vector)
+    networks = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     ## for activity-based sliding-window bins to work, we need to crop edges appropriately and,
@@ -756,9 +770,10 @@ split.data.by.bins = function(df, bins) {
 #' @param network a network
 #' @param bins a vector with the unique bin identifiers, describing the order in which the bins are created
 #' @param bins.vector a vector of length 'ecount(network)' assigning a bin for each edge of 'network'
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, with the length of 'unique(bins.vector)'
-split.network.by.bins = function(network, bins, bins.vector) {
+split.network.by.bins = function(network, bins, bins.vector, remove.isolates = TRUE) {
     logging::logdebug("split.data.time.based: starting.")
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
@@ -766,7 +781,7 @@ split.network.by.bins = function(network, bins, bins.vector) {
         ## identify edges in the current bin
         edges = igraph::E(network)[ bins.vector == bin ]
         ## create network based on the current set of edges
-        g = igraph::subgraph.edges(network, edges, delete.vertices = TRUE)
+        g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
     logging::logdebug("split.data.time.based: finished.")
@@ -891,7 +906,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     ## get the start (and end) date for all bins
     bins.date = parallel::mclapply(1:bins.number, function(bin) {
         ## get the ids in the bin
-        ids = bins.mapping[ bins.mapping$bin == bin, "id"]
+        ids = bins.mapping[ bins.mapping[["bin"]] == bin, "id"]
         ## grab dates for the ids
         dates = df[df[[id]] %in% ids, "date"]
 

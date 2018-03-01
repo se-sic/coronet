@@ -1,6 +1,18 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Initialization ----------------------------------------------------------
@@ -26,13 +38,13 @@ requireNamespace("testthat")
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Run tests in subfolder 'tests' ------------------------------------------
 
-do.tests <- function(dir) {
-    res <- testthat::test_dir(dir, reporter = "check")
-    if (length(res$failures) > 0) {
+do.tests = function(dir) {
+    res = testthat::test_dir(dir, reporter = "check")
+    if (length(res[["failures"]]) > 0) {
         cat(str_c("Some R tests failed for directory '", dir, "'"))
 
-        for (i in 1:length(res$failures)) {
-            cat(str_c("Failing test ", i, ": ", res$failures[[i]], "\n"))
+        for (i in 1:length(res[["failures"]])) {
+            cat(str_c("Failing test ", i, ": ", res[["failures"]][[i]], "\n"))
         }
 
         return(FALSE)
@@ -40,7 +52,7 @@ do.tests <- function(dir) {
     return(TRUE)
 }
 
-res <- sapply(c("./tests"), function(dir) {
+res = sapply(c("./tests"), function(dir) {
     do.tests(dir)
 })
 

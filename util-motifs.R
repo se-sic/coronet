@@ -1,5 +1,18 @@
-## Claus Hunsen, 2015, 2017
-## hunsen@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2015+2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -17,7 +30,7 @@ requireNamespace("igraph") # graphs, baby!
 
 MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", type = c(TYPE.AUTHOR, TYPE.AUTHOR)) +
-    igraph::edges("D1","D2", type = c(TYPE.EDGES.INTRA))
+    igraph::edges("D1", "D2", type = c(TYPE.EDGES.INTRA))
 
 ## * Triangle motif --------------------------------------------------------
 ## (two authors are connected to one artifact)
@@ -26,13 +39,13 @@ MOTIFS.LINE = igraph::make_empty_graph(directed = FALSE) +
 MOTIFS.TRIANGLE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A" , "D2","A", "D1","D2",
+    igraph::edges("D1", "A" , "D2", "A", "D1", "D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 ## negative triangle motif (excluding communication)
 MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A", type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A" , "D2","A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
+    igraph::edges("D1", "A" , "D2", "A", type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER))
 
 
 ## * Square motif ----------------------------------------------------------
@@ -42,14 +55,14 @@ MOTIFS.TRIANGLE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 MOTIFS.SQUARE.POSITIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A1" , "D2","A2", "A1","A2", "D1","D2",
+    igraph::edges("D1", "A1" , "D2", "A2", "A1", "A2", "D1", "D2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA))
 
 ## negative square motif (excluding communication)
 MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
     igraph::vertices("D1", "D2", "A1", "A2",
              type = c(TYPE.AUTHOR, TYPE.AUTHOR, TYPE.ARTIFACT, TYPE.ARTIFACT)) +
-    igraph::edges("D1","A1" , "D2","A2", "A1","A2",
+    igraph::edges("D1", "A1" , "D2", "A2", "A1", "A2",
           type = c(TYPE.EDGES.INTER, TYPE.EDGES.INTER, TYPE.EDGES.INTRA))
 
 

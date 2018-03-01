@@ -1,7 +1,19 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 context("Network-building functionality.")
@@ -19,7 +31,7 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 test_that("Construction of the bipartite network for the feature artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -44,7 +56,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
     network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-    vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
+    vertex.sequence.for.edges = c(1, 5, 2, 6, 3, 5, 3, 6, 4, 6, 4, 7)
 
     extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
@@ -64,7 +76,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
 
 test_that("Construction of the bipartite network for the file artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
@@ -89,7 +101,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
+              vertex.sequence.for.edges = c(1, 4, 2, 4, 2, 5, 3, 5)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -108,7 +120,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
 
 
 test_that("Construction of the bipartite network for the function artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
@@ -133,7 +145,7 @@ test_that("Construction of the bipartite network for the function artifact with 
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
+              vertex.sequence.for.edges = c(1, 4, 2, 4, 2, 4, 3, 4)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -151,7 +163,7 @@ test_that("Construction of the bipartite network for the function artifact with 
           })
 
 test_that("Construction of the bipartite network for the featureexpression artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "featureexpression")
@@ -176,7 +188,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,3,2,3,2,4)
+              vertex.sequence.for.edges = c(1, 3, 2, 3, 2, 4)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41")),
@@ -194,7 +206,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
           })
 
 test_that("Construction of the bipartite network for the feature artifact with author.relation = 'cochange' and artifact.
-          relation = 'issue'.",{
+          relation = 'issue'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -219,7 +231,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,6,1,7,1,6,1,6,1,6,1,6,1,8,1,8,2,9,3,8,4,7,4,6,4,6,5,7,5,7)
+              vertex.sequence.for.edges = c(1, 6, 1, 7, 1, 6, 1, 6, 1, 6, 1, 6, 1, 8, 1, 8, 2, 9, 3, 8, 4, 7, 4, 6, 4, 6, 5, 7, 5, 7)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48",
                                                                          "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
@@ -229,10 +241,10 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                            issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
                                                         "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                                         "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
-                                           event.name = c("commented","commented","commented","commented","commented",
-                                                          "commented","commented","commented","commented","commented",
-                                                          "commented","commented","commented","commented","commented"),
-                                           weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+                                           event.name = c("commented", "commented", "commented", "commented", "commented",
+                                                          "commented", "commented", "commented", "commented", "commented",
+                                                          "commented", "commented", "commented", "commented", "commented"),
+                                           weight = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
                                            type = TYPE.EDGES.INTER)
 
               network.expected = igraph::add_edges(network.expected, vertex.sequence.for.edges, attr = extra.edge.attributes)
@@ -241,7 +253,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
           })
 
 test_that("Construction of the directed bipartite network for the feature artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -267,7 +279,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,5,2,6,3,5,3,6,4,6,4,7)
+              vertex.sequence.for.edges = c(1, 5, 2, 6, 3, 5, 3, 6, 4, 6, 4, 7)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
@@ -286,7 +298,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
           })
 
 test_that("Construction of the directed bipartite network for the file artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
@@ -312,7 +324,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,4,2,4,2,5,3,5)
+              vertex.sequence.for.edges = c(1, 4, 2, 4, 2, 5, 3, 5)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -331,7 +343,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
 
 
 test_that("Construction of the directed bipartite network for the function artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
@@ -357,7 +369,7 @@ test_that("Construction of the directed bipartite network for the function artif
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,4,2,4,2,4,3,4)
+              vertex.sequence.for.edges = c(1, 4, 2, 4, 2, 4, 3, 4)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
@@ -375,7 +387,7 @@ test_that("Construction of the directed bipartite network for the function artif
               })
 
 test_that("Construction of the directed bipartite network for the featureexpression artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "featureexpression")
@@ -401,7 +413,7 @@ test_that("Construction of the directed bipartite network for the featureexpress
 
               network.expected = igraph::disjoint_union(author.net, artifact.net)
 
-              vertex.sequence.for.edges = c(1,3,2,3,2,4)
+              vertex.sequence.for.edges = c(1, 3, 2, 3, 2, 4)
 
               extra.edge.attributes = list(date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                                          "2016-07-12 16:05:41")),

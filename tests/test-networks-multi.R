@@ -1,7 +1,19 @@
-## (c) Claus Hunsen, 2017
-## hunsen@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 context("Network-building functionality.")
@@ -19,7 +31,7 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 test_that("Construction of the multi network for the feature artifact with author.relation = 'cochange' and artifact.
-          relation = 'cochange'.",{
+          relation = 'cochange'.", {
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -70,7 +82,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                  artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
                                               "Base_Feature", "Base_Feature", "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
                                               "foo"),
-                                 weight = c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1),
+                                 weight = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
                                  type = c(rep(TYPE.EDGES.INTRA, 10), rep(TYPE.EDGES.INTER, 6)))
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)

@@ -1,11 +1,22 @@
-## (c) Claus Hunsen, 2016-2018
-## hunsen@fim.uni-passau.de
-## (c) Raphael Nömmer, 2017
-## noemmer@fim.uni-passau.de
-## (c) Christian Hechtl, 2017
-## hechtl@fim.uni-passau.de
-## (c) Felix Prasse, 2017
-## prassefe@fim.uni-passau.de
+## This file is part of codeface-extraction-r, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
+## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## All Rights Reserved.
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -33,11 +44,11 @@ read.commits = function(data.path, artifact) {
     file = file.path(data.path, "commits.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    commit.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                  encoding = "UTF-8"), silent = TRUE)
+    commit.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                 encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.data, 'try-error')) {
+    if (inherits(commit.data, "try-error")) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -183,11 +194,11 @@ read.mails = function(data.path) {
     file = file.path(data.path, "emails.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    mail.data <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
+    mail.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                               encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
-    if (inherits(mail.data, 'try-error')) {
+    if (inherits(mail.data, "try-error")) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -247,11 +258,11 @@ read.authors = function(data.path) {
     file = file.path(data.path, "authors.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    authors.df <- try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 encoding = "UTF-8"), silent = TRUE)
+    authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                encoding = "UTF-8"), silent = TRUE)
 
     ## break if the list of authors is empty
-    if (inherits(authors.df, 'try-error')) {
+    if (inherits(authors.df, "try-error")) {
         logging::logerror("There are no authors available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         stop("Stopped due to missing authors.")
@@ -295,7 +306,7 @@ read.pasta = function(data.path) {
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of pasta items is empty
-    if (inherits(lines, 'try-error')) {
+    if (inherits(lines, "try-error")) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -353,7 +364,7 @@ read.issues = function(data.path) {
                                 encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(issue.data, 'try-error')) {
+    if (inherits(issue.data, "try-error")) {
         logging::logwarn("There are no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
