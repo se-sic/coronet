@@ -24,9 +24,9 @@ It may lead to unpredictable behavior, when you do not do this, as we need to se
 ### Selecting the correct version
 
 When selecting a version to work with, you should consider the following points:
-- Each version (i.e., a tag) contains a major and a minor version in the form `v{major}.{minor}`.
+- Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
 - On the branch `master`, there is always the most recent and complete version.
-- You should always work with the current version (e.g., `v3.0`) on the `master` branch, *unless* there is a branch called `{your_version}-fixes` (e.g., `v3.0-fixes`), then select this one as it contains backported bugfixes for this version.
+- You should always work with the current version on the `master` branch, *unless* there is a branch called `{your_version}-fixes` (e.g., `v3.0-fixes`), then select this one as it contains backported bugfixes for this version. Sometimes, we will annotate such branches with continuous version numbers indicating bugfix releases (e.g., `v3.0.2`).
 - If you are confident enough, you can use the `dev` branch.
 
 ### Needed R packages
@@ -189,7 +189,7 @@ There is no way to update the entries, except for the revision-based parameters.
     (`"Base_Feature"` or `"File_Level"` for features and functions, respectively, as artifacts)
   * [*`TRUE`*, `FALSE`]
 - `issues.only.comments`
-  * Read only comments from the issue data on disk and no further events such as references and label changes
+  * Only use comments from the issue data on disk and no further events such as references and label changes
   * [*`TRUE`*, `FALSE`]
 - `synchronicity`
   * Read and add synchronicity data to commits and co-change-based networks
@@ -284,7 +284,7 @@ For more examples, please look in the file `showcase.R`.
 - `util-bulk.R`
   * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
 - `util-networks-covariates.R`
-  * The helper functions to add vertex attributes to existing networks
+  * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
   * A set of network-metric functions
 - `util-core-peripheral.R`

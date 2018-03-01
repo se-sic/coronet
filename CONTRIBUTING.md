@@ -103,9 +103,9 @@ Install the library using the guide in our [README](README.md) file. Start imple
 #### Our branching and tagging system
 
 In our development process, we pursue the following idea:
-- Each version (i.e., a tag) contains a major and a minor version in the form `v{major}.{minor}`.
+- Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
 - The branch `master` should always contain the most recent and complete version.
-- For each version, we maintain a stable branch `v{major}.{minor}-fixes` (e.g., `v2.3-fixes`) containing backported fixes for this particular version.
+- For each version, we maintain a stable branch `v{major}.{minor}-fixes` (e.g., `v3.0-fixes`) containing backported fixes for this particular version. Sometimes, we will annotate such branches with continuous version numbers indicating bugfix releases (e.g., `v3.0.2`).
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
@@ -142,7 +142,7 @@ The current build status is as follows:
     * Then follows an empty line.
     * Then follows the signed-off tags.
 * Configure git to use your **complete name**, not your username.
-* **Do not commit incremental development**, that is, half-baked, really not working code. Please work until a change is complete, and then make one commit. Naturally, you will need to fix bugs in later commits, this is no problem. This means also that you do not need to commit all your changes to, for example, address an issue does not need to be squashed in one single commit.
+* **Do not commit incremental development**, that is, half-baked, really not working code. Please work until a change is complete, and then make one commit. Naturally, you will need to fix bugs in later commits, this is no problem. This means also that you do not need to squash all your changes to address an issue into one single commit.
 * When you introduce new files, please make sure they have a correct copyright headers and stick to the current naming scheme.
 * Reference GitHub issues by adding their identifier (e.g., #11) in the commit message.
 * Here's an example commit message in the expected form:

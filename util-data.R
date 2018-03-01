@@ -869,9 +869,9 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' if they exist.
         #'
         #' @param project.conf the project configuration for the new instance
-                  #' @param range the range for the new instance
-                  #' @param revision.callgraph the revision callgraph for the new instance
-                  #'                           [default: ""]
+        #' @param range the range for the new instance
+        #' @param revision.callgraph the revision callgraph for the new instance
+        #'                           [default: ""]
         initialize = function(project.conf, range, revision.callgraph = "") {
             ## call super constructor
             super$initialize(project.conf)

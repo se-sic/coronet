@@ -466,7 +466,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
         #' @param artifact the artifact to study (one of \code{feature}, \code{function}, \code{file},
-        #'                 and \code{featureexpression})
+        #'                 and \code{featureexpression}) [default: "feature"]
         initialize = function(data, selection.process, casestudy, artifact = c("feature", "file",
                                                                                "function", "featureexpression")) {
             super$initialize()
