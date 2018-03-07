@@ -261,8 +261,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * **Note**: This parameter does not affect the original data object, but rather creates a clone.
   * [`TRUE`, *`FALSE`*]
 
-The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
-You can also update the object at any time, but as soon as you do so, all cached data of the data object are reset and have to be rebuilt.
+The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pass the object as parameter to the constructor.
+You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
 For more examples, please look in the file `showcase.R`.
 
