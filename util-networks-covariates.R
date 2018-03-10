@@ -458,8 +458,7 @@ add.vertex.attribute.author.role.function = function(list.of.networks, project.d
     )
 
     nets.with.attr = add.vertex.attribute.author.role(
-        list.of.networks, project.data, classification.results, name,
-        aggregation.level, default.value
+        list.of.networks, classification.results, name, default.value
     )
 
     return(nets.with.attr)
@@ -471,27 +470,17 @@ add.vertex.attribute.author.role.function = function(list.of.networks, project.d
 #' length for this to work properly.
 #'
 #' @param list.of.networks The network list
-#' @param project.data The project data
 #' @param classification.results A list of author-classification results. Each item needs to contain
 #'                               a tuple of two lists containing the authors named "core" and "peripheral"
 #'                               (see the functions \code{get.author.class.*}).
 #'                               The list needs to be of the same length as \code{list.of.networks} and use
 #'                               the same names.
 #' @param name The attribute name to add [default: "author.role"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details.
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.author.role = function(list.of.networks, project.data, classification.results,
-                                            name = "author.role",
-                                            aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                  "project.cumulative", "project.all.ranges",
-                                                                  "complete"),
-                                            default.value = NA) {
+add.vertex.attribute.author.role = function(list.of.networks, classification.results,
+                                            name = "author.role", default.value = NA) {
 
     if (length(list.of.networks) != length(classification.results) ||
         !identical(names(list.of.networks), names(classification.results))) {
@@ -500,8 +489,15 @@ add.vertex.attribute.author.role = function(list.of.networks, project.data, clas
                                "documentation of the function 'add.vertex.attribute.author.role'."))
     }
 
-    nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, aggregation.level, default.value,
+    ## provide a list whose elements only contain the network as no data is needed here
+    net.list = lapply(list.of.networks, function(net) {
+        n = list()
+        n[["network"]] = net
+        return(n)
+    })
+
+    nets.with.attr = add.vertex.attribute(
+        net.list, name, default.value,
         function(range, range.data, net) {
             classification = classification.results[[range]]
             author.class = plyr::ldply(classification, .id = NA)
