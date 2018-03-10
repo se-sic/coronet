@@ -565,10 +565,12 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #'                    e.g., "3 mins" or "15 days"
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
 #'         of networks, each itself referring to one time period
-split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE) {
+split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE,
+                                     remove.isolates = TRUE) {
 
     ## get base network and obtain splitting information:
 
@@ -587,7 +589,8 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 
     ## 3) split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
-        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window)
+        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
+                                 remove.isolates = remove.isolates)
     })
 
     ## 4) return the split networks
@@ -725,10 +728,11 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 #'
 #' @param network the network to be split
 #' @param ranges the ranges to be used for splitting
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, each representing one of the given ranges; the
 #'         ranges are used as names for the list
-split.network.time.based.by.ranges = function(network, ranges) {
+split.network.time.based.by.ranges = function(network, ranges, remove.isolates = TRUE) {
 
     ## aggregate ranges
     ranges.bounds = lapply(ranges, get.range.bounds)
@@ -738,7 +742,8 @@ split.network.time.based.by.ranges = function(network, ranges) {
         ranges, ranges.bounds, SIMPLIFY = FALSE,
         FUN = function(range, start.end) {
             ## 1) split the network to the current range
-            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE)[[1]]
+            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE,
+                                                 remove.isolates = remove.isolates)[[1]]
 
             ## 2) return the network
             return (range.net)
