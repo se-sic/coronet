@@ -11,11 +11,11 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -312,6 +312,9 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 #' > ..++.
 #' > ....+
 #'
+#' When the time difference between \code{start} and \code{end} is smaller than
+#' \code{time.period}, just one range from \code{start} to \code{end} is constructed.
+#'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
 #' in the last range.
@@ -346,6 +349,9 @@ construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
 #' With \code{overlap} being the half of \code{time.period}, we basically obtain half-
 #' overlapping ranges as in the function \code{construct.ranges} when \code{sliding.window}
 #' is set to \code{TRUE}.
+#'
+#' When the time difference between \code{start} and \code{end} is smaller than
+#' \code{time.period}, just one range from \code{start} to \code{end} is constructed.
 #'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
@@ -405,7 +411,12 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     ## handle end date properly
     if (end.date > seq.end) {
         bins.number = bins.number + 1
-        ranges.approx = c(ranges.approx, end.date)
+
+        if (seq.end == seq.start) {
+            ranges.approx = c(seq.start, end.date)
+        } else {
+            ranges.approx = c(ranges.approx, end.date)
+        }
     }
 
     ## construct the raw ranges from the approximate ones
@@ -447,6 +458,9 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
 #' > ++..
 #' > +++.
 #' > ++++
+#'
+#' When the time difference between \code{start} and \code{end} is smaller than
+#' \code{time.period}, just one range from \code{start} to \code{end} is constructed.
 #'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
