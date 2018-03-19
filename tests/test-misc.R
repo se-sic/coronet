@@ -13,7 +13,7 @@
 ##
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -235,6 +235,53 @@ test_that("Construct cumulative ranges.", {
     ## 3) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours", raw = TRUE)
     expect_equal(result.raw, expected.raw, info = "Cumulative ranges (raw).")
+    ## TODO use expect_identical here? why failing?
+})
+
+##
+## Construct ranges when difference between start and end is smaller than time period.
+##
+
+test_that("Construct ranges when difference between start and end is smaller than time period.", {
+
+    start = ("2015-05-01 01:01:01")
+    start.date = get.date.from.string(start)
+    end = ("2015-05-02 02:02:02")
+    end.date = get.date.from.string(end)
+    end.including = end.date + 1
+
+    ## expected results (equal for consecutive, cumulative, and overlapping range construction)
+    expected.formatted = c("2015-05-01 01:01:01-2015-05-02 02:02:03")
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+
+    ## consecutive
+    ## 1) formatted
+    result.formatted = construct.consecutive.ranges(start, end, time.period = "1 week", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Consecutive range (formatted).")
+    ## 2) raw
+    result.raw = construct.consecutive.ranges(start, end, time.period = "1 week", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Consecutive range (raw).")
+    ## TODO use expect_identical here? why failing?
+
+    ## cumulative
+    ## 1) formatted
+    result.formatted = construct.cumulative.ranges(start, end, time.period = "1 week", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Cumulative range (formatted).")
+    ## 2) raw
+    result.raw = construct.cumulative.ranges(start, end, time.period = "1 week", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Cumulative range (raw).")
+    ## TODO use expect_identical here? why failing?
+
+    ## overlapping
+    ## 1) formatted
+    result.formatted = construct.overlapping.ranges(start, end, time.period = "1 week",
+                                                    overlap = "1 day", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Overlapping range (formatted).")
+    ## 2) raw
+    result.raw = construct.overlapping.ranges(start, end, time.period = "1 week",
+                                              overlap = "5 days", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Overlapping range (raw).")
     ## TODO use expect_identical here? why failing?
 })
 
