@@ -73,7 +73,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
             attr.df = compute.attr(range, range.data, current.network)
 
             get.or.default = function(name, data, default) {
-                if(name %in% names(data)) {
+                if (name %in% names(data)) {
                     return(data[[name]])
                 } else {
                     return(default)
@@ -234,7 +234,7 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
         function(range, range.data, net) {
             commit.count.df = commit.count.method(range.data)[c(name.column, "freq")]
 
-            if(!is.data.frame(commit.count.df)) {
+            if (!is.data.frame(commit.count.df)) {
                 return(list())
             }
 

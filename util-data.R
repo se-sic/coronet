@@ -166,17 +166,17 @@ ProjectData = R6::R6Class("ProjectData",
         add.pasta.data = function(data) {
             logging::loginfo("Adding pasta data.")
             data[, "pasta"] = NA
-            if("message.id" %in% colnames(data)) {
-                for(i in 1:nrow(data)) {
+            if ("message.id" %in% colnames(data)) {
+                for (i in 1:nrow(data)) {
                     pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
-                    if(!length(pasta.item) == 0) {
+                    if (!length(pasta.item) == 0) {
                         data$pasta[i] = I(list(pasta.item))
                     }
                 }
-            } else if("hash" %in% colnames(data)) {
-                for(i in 1:nrow(data)) {
+            } else if ("hash" %in% colnames(data)) {
+                for (i in 1:nrow(data)) {
                     pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
-                    if(!length(pasta.item) == 0) {
+                    if (!length(pasta.item) == 0) {
                         data$pasta[i] = I(list(pasta.item))
                     }
                 }
@@ -191,7 +191,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param data.sources the data sources to be prepated
         prepare.timestamps = function(data.sources) {
-            for(source in data.sources) {
+            for (source in data.sources) {
                 self[[ paste0("get.", source) ]]()
             }
         },
@@ -202,7 +202,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param source the specified data source
         extract.timestamps = function(source) {
             ## initialize data structure for timestamp
-            if(is.null(private$data.timestamps)) {
+            if (is.null(private$data.timestamps)) {
                 private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
             }
 
@@ -508,7 +508,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails = read.mails(self$get.data.path())
 
                 ## add pasta data if wanted
-                if(private$project.conf$get.value("pasta")) {
+                if (private$project.conf$get.value("pasta")) {
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
@@ -557,12 +557,12 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
-            if(is.null(private$issues)) {
+            if (is.null(private$issues)) {
                 private$issues = read.issues(self$get.data.path.issues())
             }
             private$extract.timestamps(source = "issues")
 
-            if(private$project.conf$get.value("issues.only.comments")) {
+            if (private$project.conf$get.value("issues.only.comments")) {
                 df = private$issues[private$issues[["event.name"]] == "commented", ]
                 return(df)
             } else {
@@ -607,7 +607,7 @@ ProjectData = R6::R6Class("ProjectData",
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
             logging::loginfo("Getting pasta items started.")
             #if neither message.id nor commit.hash are specified break the code
-            if(is.null(message.id) && is.null(commit.hash)) {
+            if (is.null(message.id) && is.null(commit.hash)) {
                 logging::logwarn("Neither message.id nor commit.hash specified.")
                 return()
             }
@@ -617,7 +617,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if a message.id is given just return the attached list of commit hashes
             ## else gather all message.ids which contain the given commit.hash and return them
-            if(!is.null(message.id)) {
+            if (!is.null(message.id)) {
                 result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
                 return(result)
             } else {
@@ -664,7 +664,7 @@ ProjectData = R6::R6Class("ProjectData",
                     start = min(subset.timestamps[, "start"], na.rm = TRUE),
                     end = max(subset.timestamps[, "end"], na.rm = TRUE)
                 )
-            } else if(simple) {
+            } else if (simple) {
                 ## get maximum start date and minimum end date across data sources
                 timestamps = data.frame(
                     start = max(subset.timestamps[, "start"], na.rm = TRUE),
@@ -693,7 +693,7 @@ ProjectData = R6::R6Class("ProjectData",
             timestamps = c(start = timestamps.df[, "start"], end = timestamps.df[, "end"])
 
             ## check consistency
-            if(timestamps["start"] > timestamps["end"]) {
+            if (timestamps["start"] > timestamps["end"]) {
                 logging::logwarn("The datasources don't overlap. The result will be empty!")
             }
 
@@ -1021,7 +1021,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
     commits.df = project.data$get.commits()
 
     ## In case no commit data is available, return NA
-    if(nrow(commits.df) == 0) {
+    if (nrow(commits.df) == 0) {
         return(NA)
     }
 

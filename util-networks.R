@@ -165,7 +165,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.author.network.issue = function() {
             logging::logdebug("get.author.network.issue: starting.")
 
-            if(!is.null(private$authors.network.issue)) {
+            if (!is.null(private$authors.network.issue)) {
                 logging::logdebug("get.author.network.issue: finished. (already existing)")
                 return(private$authors.network.issue)
             }
@@ -411,7 +411,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
 
             ## cut data if needed
-            if(private$network.conf$get.value("unify.date.ranges")) {
+            if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
             }
 
@@ -432,7 +432,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
             private$proj.data = private$proj.data.original
-            if(private$network.conf$get.value("unify.date.ranges")) {
+            if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
             }
         },
@@ -977,7 +977,7 @@ simplify.network = function(network) {
 #' @param networks the list of networks
 #'
 #' @return the simplified networks
-simplify.networks = function(networks){
+simplify.networks = function(networks) {
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
         "Simplifying networks (names = [%s]).",

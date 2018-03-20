@@ -199,7 +199,7 @@ get.date.from.string = function(input) {
 
     ## Handle list manually as lubridate would
     ## emit warnings on lists containing NA
-    if(is.list(input)) {
+    if (is.list(input)) {
         result = lapply(input, convert.text.to.date)
     } else {
         result = convert.text.to.date(input)
@@ -239,7 +239,7 @@ get.date.string = function(input) {
 
     ## Handle list manually to not change the underlying
     ## data structure
-    if(is.list(input)) {
+    if (is.list(input)) {
         result = lapply(input, convert.date.to.text)
     } else {
         result = convert.date.to.text(input)
@@ -688,7 +688,7 @@ get.range.bounds = function(range) {
         c("([A-Za-z0-9]+[\\._]?)+", identity)
     )
 
-    for(pattern in tests) {
+    for (pattern in tests) {
         start.end = regmatches(range, gregexpr(pattern = pattern[[1]], range))[[1]]
 
         if (length(start.end) == 2) {
