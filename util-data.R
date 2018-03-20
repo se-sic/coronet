@@ -59,13 +59,12 @@ ProjectData = R6::R6Class("ProjectData",
         commits.filtered = NULL, # data.frame
         commits.filtered.empty = NULL, #data.frame
         commits = NULL, # data.frame
-        artifacts = NULL, # list
         synchronicity = NULL, # data.frame
         pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         ## authors
-        authors = NULL, # list
+        authors = NULL, # data.frame
         ## issues
         issues = NULL, #data.frame
         ## timestamps of mail, issue and commit data
@@ -584,22 +583,17 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts
         get.artifacts = function() {
-            ## FIXME the artifacts determination should be dependent on the artifact.relation
+            ## FIXME the artifacts determination should be dependent on the artifact.relation (which is in the net.conf which itself is not available here!)
             ## (see also get.author2artifact)
             logging::loginfo("Getting artifact data.")
 
-            ## if artifacts are not read already, do this
-            if (is.null(private$artifacts)) {
-                commits = self$get.commits.filtered.empty()
+            commits = self$get.commits.filtered.empty()
 
-                ## get artifacts (empty list if no commits exist)
-                artifacts = unique(commits[["artifact"]])
-                if (is.null(artifacts)) artifacts = list()
+            ## get artifacts (empty list if no commits exist)
+            artifacts = unique(commits[["artifact"]])
+            if (is.null(artifacts)) artifacts = list()
 
-                private$artifacts = artifacts
-            }
-
-            return(private$artifacts)
+            return(artifacts)
         },
 
         #' Get single pasta items.
