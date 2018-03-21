@@ -1,5 +1,20 @@
 # codeface-extraction-r - Changelog
 
+## unversioned
+
+### Added
+
+
+### Changed/Improved
+- Improve performance of several functions used for adding vertex attributes (#102, PR #105)
+- Change default values for aggregation levels for some functions (#102, PR #105)
+- Add missing `remove.isolates` parameter to some more network-splitting functions (011328e881b09bd736dc83475ba7e6cab663bebe)
+- Some minor improvements to the test suite
+
+### Fixed
+- Fix outdated statements in README.md (PR #105)
+- Fix range construction when difference between `start` and `end` is smaller than `time.period` (#103, PR #105, 975ae4d2e1b954d92f945c5853959ff2b3e47083)
+
 
 ## 3.1
 
@@ -33,7 +48,7 @@
 
 ## 3.0.1
 
-## Added
+### Added
 - Add committer data to commit data source (#35, 251cfdbac0ab31584a7fab8bbaf8398a53ae8d11)
 - Add function to delete isolate vertices from a network (5d91ddd89a488212eabf2ce110ec7210fc3c971d)
 
