@@ -18,6 +18,96 @@
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Parameter verification --------------------------------------------------
+
+##
+## Match argument or take default.
+##
+
+test_that("Match argument or take default.", {
+
+    ## 1) tests for single choice without default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = "choice1"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, one choice")
+
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with default, two choices")
+
+    ## 2) tests for single choice with default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "choice2")
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = "choice2"
+    expect_equal(actual.result, expected.result, info = "Single choice with default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Single choice with default, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = "choice2"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, two choices")
+
+    ## 3) tests for single choice with illegal default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "c2")
+        return(param)
+    }
+
+    expect_error(test.function(), info = "Single choice with illegal default, no choice")
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with illegal default, one choice")
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with illegal default, two choices")
+
+    ## 4) tests for multiple choices
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, several.ok = TRUE)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = c("choice1", "choice2", "choice3")
+    expect_equal(actual.result, expected.result, info = "Multiple choices, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Multiple choices, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = c("choice3", "choice1")
+    expect_equal(actual.result, expected.result, info = "Multiple choices, two choices")
+
+    ## 5) tests for multiple choices with ignored default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "choice2", several.ok = TRUE)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = c("choice1", "choice2", "choice3")
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = c("choice3", "choice1")
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, two choices")
+})
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------
 
 ##
