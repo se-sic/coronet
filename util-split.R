@@ -375,7 +375,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param project.data The entire project data
 #' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See above for more details.
+#'                          \code{"complete"}. See above for more details. [default: "range"]
 #'
 #' @return A list containing tuples with the keys "network" and "data", where, under "network", are
 #'         the respective networks passed via \code{list.of.networks} and, under "data", are the
@@ -387,7 +387,7 @@ split.data.by.networks = function(list.of.networks, project.data,
                                                         "project.cumulative", "project.all.ranges",
                                                         "complete")) {
     ## get the chosen aggregation level
-    aggregation.level = match.arg(aggregation.level)
+    aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     ## get the timestamp data from the project data (needed for some aggr. levels)
     project.timestamps = project.data$get.data.timestamps(outermost = TRUE)

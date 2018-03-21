@@ -584,7 +584,7 @@ construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
 #' @param project.end the project end time as string or POSIXct object
 #' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See above for more details.
+#'                          \code{"complete"}. See above for more details. [default: "range"]
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
