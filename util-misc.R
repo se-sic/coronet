@@ -91,6 +91,47 @@ verify.argument.for.parameter = function(argument, allowed.classes, reference) {
     return(argument)
 }
 
+#' Check whether an argument passed to a function partially matches the specified candidate values of this function.
+#' If no argument is passed to that function or the passed argument consists of too many elements, a specified
+#' \code{default} value for the argument is returned.
+#' If \code{several.ok} is \code{TRUE}, then multiple elements are allowed and the \code{default} value is ignored.
+#'
+#' Notice: If *no* \code{default} value is specified, this function simply calls the \code{match.arg} function of
+#' R-base. See further details in the documentation of \code{match.arg}: \code{?match.arg}
+#'
+#' @param arg the argument to check (has to be a character vector or \code{NULL})
+#' @param choices the candidate values for \code{arg} (has to be a character vector)
+#'                (if this parameter is not passed, the candidate values are retrieved from the parent function)
+#' @param default a valid default value for \code{arg} (used if \code{arg} is not passed to this function or
+#'                \code{arg} contains more than one element, unless \code{several.ok} is \code{TRUE})
+#'                or \code{NULL} (in case of \code{NULL}, the first element of \code{choices} is chosen)
+#'                [default: NULL]
+#' @param several.ok logical indicating whether \code{arg} is allowed to have more than one element [default: FALSE]
+#'
+#' @return the unabbreviated match(es) out of \code{choices} or the \code{default} value
+match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE) {
+
+    ## retrieve possible choices from the parent function
+    ## (the following if-block is taken from https://svn.r-project.org/R/trunk/src/library/base/R/match.R,
+    ##  which is also licensed under GPLv2 (or later))
+    if (missing(choices)) {
+        formal.args <- formals(sys.function(sys.parent()))
+        choices <- eval(formal.args[[as.character(substitute(arg))]])
+    }
+
+    ## check whether default value is a valid choice
+    if (!is.null(default) && (length(default) != 1 || !default %in% choices)) {
+        stop(paste("'default' is not a valid choice. Valid choices: ", paste(dQuote(choices), collapse = ", ")))
+    }
+
+    ## check whether to return the default value
+    if (length(arg) != 1 && !several.ok && !is.null(default)){
+        return(default)
+    } else {
+        return(match.arg(arg, choices, several.ok))
+    }
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
@@ -119,7 +160,7 @@ get.stacktrace = function(calls) {
 #' @param variable a character naming the data variable to be saved to disk
 #' @param dump.path the path where the data is to be saved
 #' @param if.not.found if the data does not exist on disk, run this function ('variable' must be a variable there!)
-#' @param skip re-save although data exists on the disk?
+#' @param skip re-save although data exists on the disk? [default: FALSE]
 #'
 #' @return the data computed by 'if.not.found' or loaded from 'dump.path'
 save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
