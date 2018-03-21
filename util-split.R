@@ -433,21 +433,30 @@ split.data.by.networks = function(list.of.networks, project.data,
 #'         given ranges; the ranges are used as names for the list
 split.data.time.based.by.ranges = function(project.data, ranges) {
 
-    ## aggregate ranges
-    ranges.bounds = lapply(ranges, get.range.bounds)
+    ## check whether all ranges are identical (then we only need to split the data once)
+    if (length(ranges) > 1 && length(unique(ranges)) == 1) {
+        ## aggregate range
+        range.bounds = get.range.bounds(ranges[[1]])
 
-    ## loop over all ranges and split the data accordingly:
-    data.split = mapply(
-        ranges, ranges.bounds, SIMPLIFY = FALSE,
-        FUN = function(range, start.end) {
+        ## split data accordingly
+        range.data = split.data.time.based(project.data, bins = range.bounds, sliding.window = FALSE)[[1]]
+
+        ## clone range data objects (as all ranges are identical)
+        data.split = lapply(ranges, function(x) range.data$clone())
+
+    } else {
+        ## aggregate ranges
+        ranges.bounds = lapply(ranges, get.range.bounds)
+
+        ## loop over all ranges and split the data accordingly:
+        data.split = mapply(ranges, ranges.bounds, SIMPLIFY = FALSE, FUN = function(range, start.end) {
             ## 1) split the data to the current range
             range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
 
             ## 2) return the data
             return (range.data)
-        }
-    )
-
+        })
+    }
     return(data.split)
 }
 
