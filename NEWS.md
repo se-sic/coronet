@@ -1,9 +1,7 @@
 # codeface-extraction-r - Changelog
 
-## unversioned
 
-### Added
-
+## 3.1.1
 
 ### Changed/Improved
 - Improve performance of several functions used for adding vertex attributes (#102, PR #105)
@@ -77,7 +75,7 @@
 - Use `ggraph` for plotting of networks, incorporating `ggplot2`-like plotting functionality (615928473b843587b85854c6819c1cced5c5a759)
 - Give progess during edge construction (65650f6)
 - Streamline data-source configuration options in network configuration and data columns after reading data (e.g., 5a58ad4, 50693da5dd04bbbcf8fbeea973e2d5e2f469f446, fe6dbb8b3e0eb66547803f8ea1418ff3b9da7ae0)
-- New class structure for `ProjectConf` and `NetworkConf`, incorporating better and more transparent handling of parameters (e.g., 
+- New class structure for `ProjectConf` and `NetworkConf`, incorporating better and more transparent handling of parameters (e.g.,
 629d108 and 605ab871a93df2fe69b377e6f250b63e92124ffd)
 - The sample network is now built from sample project data (45218e6)
 - Improvements to motif search (1c4a390)
