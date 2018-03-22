@@ -26,7 +26,7 @@ It may lead to unpredictable behavior, when you do not do this, as we need to se
 When selecting a version to work with, you should consider the following points:
 - Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
 - On the branch `master`, there is always the most recent and complete version.
-- You should always work with the current version on the `master` branch, *unless* there is a branch called `{your_version}-fixes` (e.g., `v3.0-fixes`), then select this one as it contains backported bugfixes for this version. Sometimes, we will annotate such branches with continuous version numbers indicating bugfix releases (e.g., `v3.0.2`).
+- You should always work with the current version on the `master` branch. If you, nentheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bugfixes only in special cases and only for the last minor version of the second last major version.
 - If you are confident enough, you can use the `dev` branch.
 
 ### Needed R packages
@@ -261,8 +261,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * **Note**: This parameter does not affect the original data object, but rather creates a clone.
   * [`TRUE`, *`FALSE`*]
 
-The classes `ProjectData` and `RangeData` hold instances of  the `NetworkConf` class, just pass the object as parameter to the constructor.
-You can also update the object at any time, but as soon as you do so, all cached data of the data object are reset and have to be rebuilt.
+The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pass the object as parameter to the constructor.
+You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
 For more examples, please look in the file `showcase.R`.
 

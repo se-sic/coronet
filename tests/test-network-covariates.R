@@ -491,16 +491,33 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            list(1L), list(1L), list(3L, 1L)),
+        cumulative = network.covariates.test.build.expected(
+            list(1L), list(2L), list(3L, 1L)),
+        all.ranges = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(
+            list(1L), list(2L), list(3L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L)),
+        complete = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L))
+    )
 
     ## Test
 
-    networks.with.attr = add.vertex.attribute.artifact.editor.count(networks.and.data[["networks"]],
-                                                                    networks.and.data[["project.data"]])
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.artifact.editor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
 
-    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "editor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "editor.count")
 
-    expect_identical(expected.attributes, actual.attributes)
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
 })
 
 #' Test the add.vertex.attribute.artifact.first.occurrence method
@@ -510,20 +527,45 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(
-        dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 16:00:45 UTC"),
-        dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 16:00:45 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        cumulative = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 15:58:59 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 15:58:59 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 15:58:59 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 15:58:59 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        complete = network.covariates.test.build.expected(
+            dateList("2016-07-12 15:58:59 UTC"), dateList("2016-07-12 15:58:59 UTC"),
+            dateList("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+        )
     )
 
     ## Test
 
-    networks.with.attr = add.vertex.attribute.artifact.first.occurrence(
-        networks.and.data[["networks"]], networks.and.data[["project.data"]]
-    )
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.artifact.first.occurrence(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
 
-    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "first.occurrence")
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "first.occurrence")
 
-    expect_equal(expected.attributes, actual.attributes)
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
 })
 
 #' Test the add.vertex.attribute.artifact.change.count method
@@ -533,15 +575,31 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            list(1L), list(1L), list(3L, 1L)),
+        cumulative = network.covariates.test.build.expected(
+            list(1L), list(2L), list(3L, 1L)),
+        all.ranges = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(
+            list(1L), list(2L), list(3L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L)),
+        complete = network.covariates.test.build.expected(
+            list(2L), list(2L), list(3L, 1L))
+    )
 
     ## Test
 
-    networks.with.attr = add.vertex.attribute.artifact.change.count(
-        networks.and.data[["networks"]], networks.and.data[["project.data"]]
-    )
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.artifact.change.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
 
-    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "change.count")
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "change.count")
 
-    expect_identical(expected.attributes, actual.attributes)
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
 })

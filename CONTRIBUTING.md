@@ -105,7 +105,8 @@ Install the library using the guide in our [README](README.md) file. Start imple
 In our development process, we pursue the following idea:
 - Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
 - The branch `master` should always contain the most recent and complete version.
-- For each version, we maintain a stable branch `v{major}.{minor}-fixes` (e.g., `v3.0-fixes`) containing backported fixes for this particular version. Sometimes, we will annotate such branches with continuous version numbers indicating bugfix releases (e.g., `v3.0.2`).
+- Usually, we release a new version (i.e., a tag) after bugfixes to the most recent version (e.g., when fixing some bugs after release `v3.1`, we introduce a new version `v3.1.1` containing the bugfixes.
+- When fixing some extreme bugs, we maintain a stable branch `v{major}.{minor}-fixes` (e.g., `v2.0-fixes`) for the second last major version containing backported fixes for this particular version (e.g., when we fix a extreme bug in version `v3.1` by introducing version `v3.1.1`, we might backport the fix to major version 2 by maintaining a branch `v2.x-fixes` where `x` denotes the last minor version belonging to major version 2.)
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
