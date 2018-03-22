@@ -1,6 +1,22 @@
 # codeface-extraction-r - Changelog
 
 
+## 3.1.1
+
+### Changed/Improved
+- Improve performance of several functions used for adding vertex attributes (#102, PR #105)
+- Change default values for aggregation levels for some functions (#102, PR #105)
+- Add missing `remove.isolates` parameter to some more network-splitting functions (011328e881b09bd736dc83475ba7e6cab663bebe)
+- Removed caching of artifacts in data objects (1bed431bf21d78936391a5e7278de5f762922eac)
+- Some minor improvements to the test suite
+
+### Fixed
+- Fix outdated statements in README.md (PR #105)
+- Fix range construction when difference between `start` and `end` is smaller than `time.period` (#103, PR #105, 975ae4d2e1b954d92f945c5853959ff2b3e47083)
+- Fix caching of data objects in network builders (2b327a969427eb8ba5e4e20af33b09e243987a21)
+- Fix activity-based splitting with sliding window of data objects (9860d7d0c80f9373b2887e0058a1941e2be277f2)
+
+
 ## 3.1
 
 ### Added
@@ -33,7 +49,7 @@
 
 ## 3.0.1
 
-## Added
+### Added
 - Add committer data to commit data source (#35, 251cfdbac0ab31584a7fab8bbaf8398a53ae8d11)
 - Add function to delete isolate vertices from a network (5d91ddd89a488212eabf2ce110ec7210fc3c971d)
 
@@ -59,7 +75,7 @@
 - Use `ggraph` for plotting of networks, incorporating `ggplot2`-like plotting functionality (615928473b843587b85854c6819c1cced5c5a759)
 - Give progess during edge construction (65650f6)
 - Streamline data-source configuration options in network configuration and data columns after reading data (e.g., 5a58ad4, 50693da5dd04bbbcf8fbeea973e2d5e2f469f446, fe6dbb8b3e0eb66547803f8ea1418ff3b9da7ae0)
-- New class structure for `ProjectConf` and `NetworkConf`, incorporating better and more transparent handling of parameters (e.g., 
+- New class structure for `ProjectConf` and `NetworkConf`, incorporating better and more transparent handling of parameters (e.g.,
 629d108 and 605ab871a93df2fe69b377e6f250b63e92124ffd)
 - The sample network is now built from sample project data (45218e6)
 - Improvements to motif search (1c4a390)

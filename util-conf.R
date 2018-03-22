@@ -805,7 +805,7 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
             }
         }
 
-        if(is.atomic(struct) && len > 0) {
+        if (is.atomic(struct) && len > 0) {
             if (len == 1) {
                 field = paste0(" = ", paste(struct, collapse = ", "), "\n")
             } else if (len > 7) {
@@ -827,7 +827,7 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
 
         if (mode(struct) == "list" && len > 0) {
             structnames = names(struct)
-            if(is.null(structnames)) structnames = rep("", len)
+            if (is.null(structnames)) structnames = rep("", len)
 
             noname = structnames == ""
             structnames[noname] = sprintf("[[%s]]", seq_len(len)[noname])

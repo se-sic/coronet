@@ -62,7 +62,7 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
 #'
 #' @return A dataframe containing the nodes and their respective degrees.
 metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
-    if(sort) {
+    if (sort) {
         degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
     } else {
         degrees = igraph::degree(network, mode = "total")

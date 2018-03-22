@@ -61,7 +61,7 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 
     type = match.arg(type)
 
-    if(is.null(network) && is.null(data)) {
+    if (is.null(network) && is.null(data)) {
         logging::logerror("Neither network nor raw data were given.")
         stop("Either network or raw data needs to be given.")
     }
@@ -87,17 +87,17 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
 
     type = match.arg(type)
 
-    if(is.null(range.data.list) && (type == "commit.count" || type == "loc.count")) {
+    if (is.null(range.data.list) && (type == "commit.count" || type == "loc.count")) {
         logging::logerror("For count-based metric evolution, a list of RangeData objects is needed.")
         stop("For the count-based metrics, the raw data has to be given.")
 
-    } else if(is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
+    } else if (is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
         logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
         stop("For the network-based metrics, the network list has to be given.")
     }
 
     res = list()
-    if(!is.null(range.data.list)) {
+    if (!is.null(range.data.list)) {
         for (i in 1:length(range.data.list)) {
             range.data = range.data.list[[i]]
             range.name = names(range.data.list)[[i]]
@@ -107,7 +107,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
                 get.author.class.by.type(data = range.data, type = type)
 
             ## Save in list of classifications
-            if(!is.null(range.name)) {
+            if (!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
                 res = c(res, list(range.class))
@@ -123,7 +123,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
                 get.author.class.by.type(network = range.network, type = type)
 
             ## save in list of clasifications
-            if(!is.null(range.name)) {
+            if (!is.null(range.name)) {
                 res[[range.name]] = range.class
             } else {
                 res = c(res, list(range.class))
@@ -151,17 +151,17 @@ get.author.class.activity.overview = function(range.data.list = NULL,
 
     activity.measure = match.arg(activity.measure)
 
-    if(is.null(range.data.list)) {
+    if (is.null(range.data.list)) {
         logging::logerror("A list of RangeData objects is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
 
-    if(is.null(author.class.overview)) {
+    if (is.null(author.class.overview)) {
         logging::logerror("An author.class.overview has to be given for the activity overview analysis.")
         stop("Author classification has to be given.")
     }
 
-    if(length(range.data.list) != length(author.class.overview)) {
+    if (length(range.data.list) != length(author.class.overview)) {
         logging::logerror("The raw data and the author classification use a different number of ranges.")
         stop("Raw data and author classification have to match.")
     }
@@ -205,7 +205,7 @@ get.author.class.activity.overview = function(range.data.list = NULL,
 get.class.turnover.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.class.turnover.overview: starting.")
 
-    if(!is.null(names(author.class.overview))) {
+    if (!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     } else {
         versions = 1:length(author.class.overview)
@@ -283,7 +283,7 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1) {
 get.unstable.authors.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.unstable.authors.overview: starting.")
 
-    if(!is.null(names(author.class.overview))) {
+    if (!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     } else {
         versions = 1:length(author.class.overview)
@@ -371,10 +371,10 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
 get.author.class.network.degree = function(network = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.degree: starting.")
 
-    if(is.null(network)) {
+    if (is.null(network)) {
         logging::logerror("For the network-based degree-centrality analysis, the network is needed.")
         stop("The network has to be given for this analysis.")
-    } else if(igraph::vcount(network) == 0) {
+    } else if (igraph::vcount(network) == 0) {
         logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
@@ -402,11 +402,11 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
 get.author.class.network.eigen = function(network = NULL, range.data = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
-    if(is.null(network)) {
+    if (is.null(network)) {
         logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
         stop("The network has to be given for this analysis.")
 
-    } else if(igraph::vcount(network) == 0) {
+    } else if (igraph::vcount(network) == 0) {
         logging::logwarn("The given network is empty. Returning empty classification...")
         ## return an empty classification
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
@@ -417,7 +417,7 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
     centrality.vec = sort(igraph::eigen_centrality(network)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
-    if(igraph::ecount(network) == 0) {
+    if (igraph::ecount(network) == 0) {
         centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
     }
     centrality.df = data.frame(author.name = names(centrality.vec),
@@ -477,7 +477,7 @@ get.committer.not.author.commit.count = function(range.data) {
     commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
 
     ## Return NA in case no commit data is available
-    if(all(is.na(commits.df))) {
+    if (all(is.na(commits.df))) {
         return(NA)
     }
 
@@ -504,7 +504,7 @@ get.committer.commit.count = function(range.data) {
     commits.df = get.commit.data(range.data, columns = c("committer.name", "committer.email"))[[1]]
 
     ## Return NA in case no commit data is available
-    if(all(is.na(commits.df))) {
+    if (all(is.na(commits.df))) {
         return(NA)
     }
 
@@ -525,7 +525,7 @@ get.author.commit.count = function(range.data) {
     commits.df = get.commit.data(range.data)[[1]]
 
     ## Return NA in case no commit data is available
-    if(all(is.na(commits.df))) {
+    if (all(is.na(commits.df))) {
         return(NA)
     }
 
@@ -580,7 +580,7 @@ get.author.loc.count = function(range.data) {
     )[[1]]
 
     ## Return NA in case no commit data is available
-    if(all(is.na(commits.df))) {
+    if (all(is.na(commits.df))) {
         return(NA)
     }
 
@@ -612,17 +612,17 @@ get.author.class.activity = function(range.data = NULL,
 
     activity.measure = match.arg(activity.measure)
 
-    if(is.null(range.data)) {
+    if (is.null(range.data)) {
         logging::logerror("A RangeData object is needed for the activity analysis.")
         stop("Raw data is needed for the activity analysis.")
     }
-    if(is.null(author.class)) {
+    if (is.null(author.class)) {
         logging::logerror("An author classification is needed for the activity analysis.")
         stop("Author classification has to be given by the user")
     }
 
     ## Return NA in case no classification information is available
-    if(all(is.na(author.class))
+    if (all(is.na(author.class))
        || (nrow(author.class$core) + nrow(author.class$peripheral) == 0)) {
         return(NA)
     }
@@ -741,17 +741,17 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     freq = c()
 
     ## Iterate over each version development range
-    for(i in 1:length(author.class.overview)) {
+    for (i in 1:length(author.class.overview)) {
 
         ## skip range in case no classification is available
-        if(all(is.na(author.class.overview[[i]]))) {
+        if (all(is.na(author.class.overview[[i]]))) {
             next
         }
 
         if (class == "both") {
 
             ## skip range in case no classification is available
-            if(nrow(author.class.overview[[i]]$core) == 0
+            if (nrow(author.class.overview[[i]]$core) == 0
                && nrow(author.class.overview[[i]]$peripheral) == 0) {
                 next
             }
@@ -761,7 +761,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         } else {
 
             ## skip range in case no classification for the given class is available
-            if(nrow(author.class.overview[[i]][[class]]) == 0) {
+            if (nrow(author.class.overview[[i]][[class]]) == 0) {
                 next
             }
 
@@ -769,7 +769,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         }
 
         ## Iterate over each author in the specified class and increase his occurence count
-        for(j in 1:length(author.class.authors)) {
+        for (j in 1:length(author.class.authors)) {
             author.class.author.name = author.class.authors[j]
 
             ## Check if the author already exists in previous ranges
@@ -805,7 +805,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
 get.longterm.core.authors = function(author.class = NULL) {
     logging::logdebug("get.longterm.core.authors: starting.")
 
-    if(is.null(author.class)) {
+    if (is.null(author.class)) {
         logging::logerror("For the analysis of longterm-core authors, the author classification has to be given.")
         stop("The author classification has to be given.")
     }
@@ -916,7 +916,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
     num.peripheral.peripheral = 0 # peripheral in first, peripheral in second
 
     ## Calculate the sums of equal classifications
-    for(i in 1:length(author.classification.list)) {
+    for (i in 1:length(author.classification.list)) {
         author.class = author.classification.list[[i]]
         author.class.compare = other.author.classification.list[[i]]
 
@@ -961,7 +961,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     logging::logdebug("get.author.class: starting.")
 
     ## Return empty classification in case no data is available
-    if(all(is.na(author.data.frame))) {
+    if (all(is.na(author.data.frame))) {
         logging::logwarn("There is no data to use for the classification. Returning empty classification...")
 
         empty.df = data.frame(character(0), numeric(0))
@@ -974,7 +974,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
 
     ## Remove rows with invalid calculation base values
-    if(any(is.na(author.data[[calc.base.name]]))) {
+    if (any(is.na(author.data[[calc.base.name]]))) {
         logging::logwarn("Some authors' activity indicator (%s) is NA. Setting the activity to 0...", calc.base.name)
         author.data[is.na(author.data[[calc.base.name]]), calc.base.name, drop = FALSE] = 0
     }
@@ -1001,7 +1001,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     core.classification[1:author.class.threshold.idx] = TRUE
 
     ## With no activity/collaboration occurring, all authors are classified as peripheral.
-    if(author.class.threshold == 0) {
+    if (author.class.threshold == 0) {
         logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
         core.classification = rep(FALSE, length(core.classification))
         # ## old code: if we found no core author (should not happen anymore)

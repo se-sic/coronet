@@ -13,9 +13,99 @@
 ##
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Parameter verification --------------------------------------------------
+
+##
+## Match argument or take default.
+##
+
+test_that("Match argument or take default.", {
+
+    ## 1) tests for single choice without default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = "choice1"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, one choice")
+
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with default, two choices")
+
+    ## 2) tests for single choice with default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "choice2")
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = "choice2"
+    expect_equal(actual.result, expected.result, info = "Single choice with default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Single choice with default, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = "choice2"
+    expect_equal(actual.result, expected.result, info = "Single choice without default, two choices")
+
+    ## 3) tests for single choice with illegal default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "c2")
+        return(param)
+    }
+
+    expect_error(test.function(), info = "Single choice with illegal default, no choice")
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with illegal default, one choice")
+    expect_error(test.function(c("choice3", "choice1")), info = "Single choice with illegal default, two choices")
+
+    ## 4) tests for multiple choices
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, several.ok = TRUE)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = c("choice1", "choice2", "choice3")
+    expect_equal(actual.result, expected.result, info = "Multiple choices, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Multiple choices, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = c("choice3", "choice1")
+    expect_equal(actual.result, expected.result, info = "Multiple choices, two choices")
+
+    ## 5) tests for multiple choices with ignored default
+    test.function = function(param = c("choice1", "choice2", "choice3")) {
+        param = match.arg.or.default(param, default = "choice2", several.ok = TRUE)
+        return(param)
+    }
+
+    actual.result = test.function()
+    expected.result = c("choice1", "choice2", "choice3")
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, no choice")
+
+    actual.result = test.function("choice3")
+    expected.result = "choice3"
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, one choice")
+
+    actual.result = test.function(c("choice3", "choice1"))
+    expected.result = c("choice3", "choice1")
+    expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, two choices")
+})
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------
@@ -235,6 +325,53 @@ test_that("Construct cumulative ranges.", {
     ## 3) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours", raw = TRUE)
     expect_equal(result.raw, expected.raw, info = "Cumulative ranges (raw).")
+    ## TODO use expect_identical here? why failing?
+})
+
+##
+## Construct ranges when difference between start and end is smaller than time period.
+##
+
+test_that("Construct ranges when difference between start and end is smaller than time period.", {
+
+    start = ("2015-05-01 01:01:01")
+    start.date = get.date.from.string(start)
+    end = ("2015-05-02 02:02:02")
+    end.date = get.date.from.string(end)
+    end.including = end.date + 1
+
+    ## expected results (equal for consecutive, cumulative, and overlapping range construction)
+    expected.formatted = c("2015-05-01 01:01:01-2015-05-02 02:02:03")
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+
+    ## consecutive
+    ## 1) formatted
+    result.formatted = construct.consecutive.ranges(start, end, time.period = "1 week", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Consecutive range (formatted).")
+    ## 2) raw
+    result.raw = construct.consecutive.ranges(start, end, time.period = "1 week", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Consecutive range (raw).")
+    ## TODO use expect_identical here? why failing?
+
+    ## cumulative
+    ## 1) formatted
+    result.formatted = construct.cumulative.ranges(start, end, time.period = "1 week", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Cumulative range (formatted).")
+    ## 2) raw
+    result.raw = construct.cumulative.ranges(start, end, time.period = "1 week", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Cumulative range (raw).")
+    ## TODO use expect_identical here? why failing?
+
+    ## overlapping
+    ## 1) formatted
+    result.formatted = construct.overlapping.ranges(start, end, time.period = "1 week",
+                                                    overlap = "1 day", raw = FALSE)
+    expect_identical(result.formatted, expected.formatted, info = "Overlapping range (formatted).")
+    ## 2) raw
+    result.raw = construct.overlapping.ranges(start, end, time.period = "1 week",
+                                              overlap = "5 days", raw = TRUE)
+    expect_equal(result.raw, expected.raw, info = "Overlapping range (raw).")
     ## TODO use expect_identical here? why failing?
 })
 

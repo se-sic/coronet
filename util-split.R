@@ -295,6 +295,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         project.data.clone = project.data$clone()
         project.data.clone$set.commits(data[["commits"]])
         project.data.clone$set.mails(data[["mails"]])
+        project.data.clone$set.issues(data[["issues"]])
 
         ## split data for sliding windows
         cf.data.sliding = split.data.activity.based(project.data.clone, activity.type = activity.type,
@@ -375,7 +376,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 #' @param project.data The entire project data
 #' @param aggregation.level One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See above for more details.
+#'                          \code{"complete"}. See above for more details. [default: "range"]
 #'
 #' @return A list containing tuples with the keys "network" and "data", where, under "network", are
 #'         the respective networks passed via \code{list.of.networks} and, under "data", are the
@@ -387,7 +388,7 @@ split.data.by.networks = function(list.of.networks, project.data,
                                                         "project.cumulative", "project.all.ranges",
                                                         "complete")) {
     ## get the chosen aggregation level
-    aggregation.level = match.arg(aggregation.level)
+    aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     ## get the timestamp data from the project data (needed for some aggr. levels)
     project.timestamps = project.data$get.data.timestamps(outermost = TRUE)
@@ -433,21 +434,29 @@ split.data.by.networks = function(list.of.networks, project.data,
 #'         given ranges; the ranges are used as names for the list
 split.data.time.based.by.ranges = function(project.data, ranges) {
 
-    ## aggregate ranges
-    ranges.bounds = lapply(ranges, get.range.bounds)
+    ## check whether all ranges are identical (then we only need to split the data once)
+    if (length(ranges) > 1 && length(unique(ranges)) == 1) {
+        ## aggregate range
+        range.bounds = get.range.bounds(ranges[[1]])
 
-    ## loop over all ranges and split the data accordingly:
-    data.split = mapply(
-        ranges, ranges.bounds, SIMPLIFY = FALSE,
-        FUN = function(range, start.end) {
+        ## split data accordingly
+        range.data = split.data.time.based(project.data, bins = range.bounds, sliding.window = FALSE)[[1]]
+
+        ## clone range data objects (as all ranges are identical)
+        data.split = lapply(ranges, function(x) range.data$clone())
+    } else {
+        ## aggregate ranges
+        ranges.bounds = lapply(ranges, get.range.bounds)
+
+        ## loop over all ranges and split the data accordingly:
+        data.split = mapply(ranges, ranges.bounds, SIMPLIFY = FALSE, FUN = function(range, start.end) {
             ## 1) split the data to the current range
             range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
 
             ## 2) return the data
             return (range.data)
-        }
-    )
-
+        })
+    }
     return(data.split)
 }
 
@@ -565,10 +574,12 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #'                    e.g., "3 mins" or "15 days"
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
 #'         of networks, each itself referring to one time period
-split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE) {
+split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE,
+                                     remove.isolates = TRUE) {
 
     ## get base network and obtain splitting information:
 
@@ -587,7 +598,8 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 
     ## 3) split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
-        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window)
+        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
+                                 remove.isolates = remove.isolates)
     })
 
     ## 4) return the split networks
@@ -725,10 +737,11 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 #'
 #' @param network the network to be split
 #' @param ranges the ranges to be used for splitting
+#' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, each representing one of the given ranges; the
 #'         ranges are used as names for the list
-split.network.time.based.by.ranges = function(network, ranges) {
+split.network.time.based.by.ranges = function(network, ranges, remove.isolates = TRUE) {
 
     ## aggregate ranges
     ranges.bounds = lapply(ranges, get.range.bounds)
@@ -738,7 +751,8 @@ split.network.time.based.by.ranges = function(network, ranges) {
         ranges, ranges.bounds, SIMPLIFY = FALSE,
         FUN = function(range, start.end) {
             ## 1) split the network to the current range
-            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE)[[1]]
+            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE,
+                                                 remove.isolates = remove.isolates)[[1]]
 
             ## 2) return the network
             return (range.net)
