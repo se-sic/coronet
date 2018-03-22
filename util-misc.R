@@ -111,8 +111,8 @@ verify.argument.for.parameter = function(argument, allowed.classes, reference) {
 #' @return the unabbreviated match(es) out of \code{choices} or the \code{default} value
 match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE) {
 
-    ## retrieve possible choices from the parent function
-    ## (the following if-block is taken from https://svn.r-project.org/R/trunk/src/library/base/R/match.R,
+    ## if no choices are given, extract them from the formal signature of the parent function
+    ## (the following if-block is taken from https://svn.r-project.org/R/tags/R-3-4-4/src/library/base/R/match.R,
     ##  which is also licensed under GPLv2 (or later))
     if (missing(choices)) {
         formal.args <- formals(sys.function(sys.parent()))
@@ -125,7 +125,7 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
     }
 
     ## check whether to return the default value
-    if (length(arg) != 1 && !several.ok && !is.null(default)){
+    if (length(arg) != 1 && !several.ok && !is.null(default)) {
         return(default)
     } else {
         return(match.arg(arg, choices, several.ok))

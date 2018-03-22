@@ -491,8 +491,6 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
-
     expected.attributes = list(
         range = network.covariates.test.build.expected(
             list(1L), list(1L), list(3L, 1L)),

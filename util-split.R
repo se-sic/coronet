@@ -443,7 +443,6 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 
         ## clone range data objects (as all ranges are identical)
         data.split = lapply(ranges, function(x) range.data$clone())
-
     } else {
         ## aggregate ranges
         ranges.bounds = lapply(ranges, get.range.bounds)
