@@ -295,6 +295,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         project.data.clone = project.data$clone()
         project.data.clone$set.commits(data[["commits"]])
         project.data.clone$set.mails(data[["mails"]])
+        project.data.clone$set.issues(data[["issues"]])
 
         ## split data for sliding windows
         cf.data.sliding = split.data.activity.based(project.data.clone, activity.type = activity.type,

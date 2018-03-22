@@ -39,7 +39,7 @@ pacakges = c(
 
 
 filter.installed.packages = function(packageList)  {
-    if("-f" %in% commandArgs(trailingOnly = TRUE)) {
+    if ("-f" %in% commandArgs(trailingOnly = TRUE)) {
         return(packageList)
     } else {
         return(packageList[which(packageList %in% installed.packages()[, 1] == FALSE)])
@@ -48,7 +48,7 @@ filter.installed.packages = function(packageList)  {
 
 
 p = filter.installed.packages(pacakges)
-if(length(p) > 0) {
+if (length(p) > 0) {
     print(sprintf("Installing package '%s'.", p))
     install.packages(p, dependencies = TRUE, verbose = FALSE, quiet = FALSE)
 }

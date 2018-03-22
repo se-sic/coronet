@@ -168,6 +168,7 @@ The current build status is as follows:
     * **line length**: more than 80 characters are allowed, 120 characters should be the maximum,
     * **identifiers**: substrings in identifiers are separated only with `.` (and *not* camel-casing or `_`),
     * **assignments**: only with `=`,
+    * **spacing**: spaces around all binary operators (`=`, `+`, `-`, etc.); spaces before left parenthesis, except in a function call; spaces before opening curly braces that denote a code block,
     * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
     * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`),
     * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`, and

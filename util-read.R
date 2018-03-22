@@ -159,7 +159,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     file = file.path(data.path, file.name)
 
     ## handle the case that the synchronicity data is empty
-    if(!file.exists(file)) {
+    if (!file.exists(file)) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(data.frame())
@@ -318,7 +318,7 @@ read.pasta = function(data.path) {
             return(NULL)
         }
 
-        if(!grepl(SEPERATOR, line)) {
+        if (!grepl(SEPERATOR, line)) {
             logging::logwarn("Faulty line: %s", line)
             return(NULL)
         }

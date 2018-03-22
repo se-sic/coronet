@@ -11,10 +11,10 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -165,7 +165,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.author.network.issue = function() {
             logging::logdebug("get.author.network.issue: starting.")
 
-            if(!is.null(private$authors.network.issue)) {
+            if (!is.null(private$authors.network.issue)) {
                 logging::logdebug("get.author.network.issue: finished. (already existing)")
                 return(private$authors.network.issue)
             }
@@ -406,12 +406,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         initialize = function(project.data, network.conf) {
 
             ## check arguments
-            private$proj.data = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
-            private$proj.data.original = project.data
+            private$proj.data.original = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
+            private$proj.data = project.data$clone()
             private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
 
             ## cut data if needed
-            if(private$network.conf$get.value("unify.date.ranges")) {
+            if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
             }
 
@@ -432,7 +432,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
             private$proj.data = private$proj.data.original
-            if(private$network.conf$get.value("unify.date.ranges")) {
+            if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
             }
         },
@@ -977,7 +977,7 @@ simplify.network = function(network) {
 #' @param networks the list of networks
 #'
 #' @return the simplified networks
-simplify.networks = function(networks){
+simplify.networks = function(networks) {
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
         "Simplifying networks (names = [%s]).",
