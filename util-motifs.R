@@ -67,6 +67,47 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Mapping of vertex and edge types to numerics ----------------------------
+
+## Map vertex and edge types to numerics
+MOTIF.TYPE.MAPPING = as.data.frame(rbind(
+    c(character = TYPE.AUTHOR, numeric = 1),
+    c(character = TYPE.ARTIFACT, numeric = 2),
+    c(character = TYPE.EDGES.INTRA, numeric = 3),
+    c(character = TYPE.EDGES.INTER, numeric = 4)
+))
+
+
+#' Get numeric vertex types from the given \code{network}.
+#'
+#' For this, the actual vertex types are mapped to numerics using the pre-defined
+#' mapping \code{MOTIF.TYPE.MAPPING}.
+#'
+#' @param network the network from which to get the vertex types
+#' @param index the subset of vertices to consider [default: igraph::V(network)]
+#'
+#' @return the vector of numeric vertex types for the (subset of) vertices in the network
+#'
+#' @seealso \code{MOTIF.TYPE.MAPPING}
+get.vertex.types.as.numeric = function(network, index = igraph::V(network)) {
+
+    ## get the vertex attribute as factor
+    attr.factor = factor(igraph::get.vertex.attribute(network, "type", index))
+
+    ## replace factor levels with corresponding numerics
+    levels(attr.factor) = sapply(levels(attr.factor), function(f) {
+        ## get the numeric from MOTIF.TYPE.MAPPING
+        num = subset(MOTIF.TYPE.MAPPING, character == f, numeric, drop = TRUE)
+        return(num)
+    })
+    ## re-create vertex-attribute vector with the numerics
+    attr.numeric = as.numeric(levels(attr.factor))[attr.factor]
+
+    return(attr.numeric)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Motif-identification functions ------------------------------------------
 
 #' Search for the given \code{motif} in the given \code{network}.
@@ -93,13 +134,13 @@ motifs.search.in.network = function(network, motif, remove.duplicates = TRUE) {
 
     ## find motif in network
     vs = igraph::subgraph_isomorphisms(target = network, pattern = motif, method = "vf2",
-                                       vertex.color1 = igraph::get.vertex.attribute(network, "type"),
-                                       vertex.color2 = igraph::get.vertex.attribute(motif, "type"))
+                                       vertex.color1 = get.vertex.types.as.numeric(network),
+                                       vertex.color2 = get.vertex.types.as.numeric(motif))
 
     ## normalize found vertex sequences (sort vertices)
     vs.cleaned = lapply(vs, function(seq) {
         ## get types and names of vertices
-        types = igraph::get.vertex.attribute(network, "type", index = seq)
+        types = get.vertex.types.as.numeric(network, index = seq)
         names = igraph::get.vertex.attribute(network, "name", index = seq)
 
         ## sort vertex sequence by types and names

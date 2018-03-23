@@ -31,13 +31,13 @@ requireNamespace("igraph") # networks
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Vertex and edge types ---------------------------------------------------
 
-## node types
-TYPE.AUTHOR = 1
-TYPE.ARTIFACT = 2
+## vertex types
+TYPE.AUTHOR = "Author"
+TYPE.ARTIFACT = "Artifact"
 
-# edge types
-TYPE.EDGES.INTRA = 3
-TYPE.EDGES.INTER = 4
+## edge types
+TYPE.EDGES.INTRA = "Unipartite"
+TYPE.EDGES.INTER = "Bipartite"
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
