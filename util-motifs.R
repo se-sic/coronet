@@ -71,33 +71,35 @@ MOTIFS.SQUARE.NEGATIVE = igraph::make_empty_graph(directed = FALSE) +
 
 #' Search for the given \code{motif} in the given \code{network}.
 #'
+#' The vertex attribute *"type"* is used to match the vertices in the \code{motif} with
+#' the ones in the given \code{network}. This means basically that a vertex with
+#' a certain value for its attribute "type" in the \code{motif} is only matched with
+#' vertices in \code{network} that have the same attribute values.
+#'
 #' @param network The network in which the given \code{motif} is searched
 #' @param motif The motif to search for in the given \code{network}
-#' @param color.attr The the vertex and edge attribute that is used to match the vertices
-#'                   and the edges in the \code{motif} with the ones in the given \code{network}.
-#'                   This means that a vertex A with the attribute declared in \code{color.attr}
-#'                   in the \code{motif} is only matched with vertices with the same attribute in
-#'                   the network. The same holds for edges.
 #' @param remove.duplicates If \code{remove.duplicates == TRUE}, any duplicate matched motifs are
 #'                          removed. This logical value basically resembles the idea of respecting
 #'                          the order within a matched motif or not.
 #'
-#' @return A list of vertex sequences denoting the matched motifs, ordered by \code{color.attr}
-#'         and "name" vertex attributes
+#' @return A list of vertex sequences denoting the matched motifs, ordered by "type" and "name"
+#'         vertex attributes
+#'
+#' @seealso \code{igraph::subgraph_isomorphisms} (method "vf2")
 #'
 #' @examples
-#' motifs.search.in.network(get.sample.network(), MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
-motifs.search.in.network = function(network, motif, color.attr = "type", remove.duplicates = TRUE) {
+#' motifs.search.in.network(get.sample.network(), MOTIFS.TRIANGLE.NEGATIVE, remove.duplicates = TRUE)
+motifs.search.in.network = function(network, motif, remove.duplicates = TRUE) {
 
     ## find motif in network
     vs = igraph::subgraph_isomorphisms(target = network, pattern = motif, method = "vf2",
-                                       vertex.color1 = igraph::get.vertex.attribute(network, color.attr),
-                                       vertex.color2 = igraph::get.vertex.attribute(motif, color.attr))
+                                       vertex.color1 = igraph::get.vertex.attribute(network, "type"),
+                                       vertex.color2 = igraph::get.vertex.attribute(motif, "type"))
 
     ## normalize found vertex sequences (sort vertices)
     vs.cleaned = lapply(vs, function(seq) {
         ## get types and names of vertices
-        types = igraph::get.vertex.attribute(network, color.attr, index = seq)
+        types = igraph::get.vertex.attribute(network, "type", index = seq)
         names = igraph::get.vertex.attribute(network, "name", index = seq)
 
         ## sort vertex sequence by types and names
@@ -160,7 +162,6 @@ motifs.count = function(network, motifs, remove.duplicates = TRUE, raw.data = FA
         motifs.search.in.network(
             network = network,
             motif = motif,
-            color.attr = "type",
             remove.duplicates = remove.duplicates
         )
     })
