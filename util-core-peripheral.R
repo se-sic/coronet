@@ -996,13 +996,13 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
             sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
     ))
 
-    ## classify developers according to threshold
+    ## classify authors according to threshold
     core.classification = rep(FALSE, nrow(author.data))
     core.classification[1:author.class.threshold.idx] = TRUE
 
     ## With no activity/collaboration occurring, all authors are classified as peripheral.
     if (author.class.threshold == 0) {
-        logging::logwarn("No collaboration/activity occured, thus, all developer's classification is set to peripheral.")
+        logging::logwarn("No collaboration/activity occured, thus, all authors' classification is set to peripheral.")
         core.classification = rep(FALSE, length(core.classification))
         # ## old code: if we found no core author (should not happen anymore)
         # } else if (!any(core.classification)) {

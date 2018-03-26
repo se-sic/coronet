@@ -790,12 +790,12 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
             ## get vertex data
             nodes = unique(set[, 1])
 
-            ## break if there is no developer
+            ## break if there is no author
             if (length(nodes) < 1) {
                 return(NULL)
             }
 
-            ## if there is only one developer, just create the node, but no edges
+            ## if there is only one author, just create the node, but no edges
             if (length(nodes) == 1) {
                 edges = data.frame()
                 attr(edges, "nodes.processed") = nodes # store set of processed nodes
@@ -803,7 +803,7 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
             }
 
             ## get combinations
-            combinations = combn(nodes, 2) # all unique pairs of developers
+            combinations = combn(nodes, 2) # all unique pairs of authors
 
             ## construct edge list
             edges = apply(combinations, 2, function(comb) {
@@ -911,7 +911,7 @@ add.edges.for.bipartite.relation = function(net, net1.to.net2, network.conf) {
     vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
         a = a.df[["data.vertices"]]
         new.edges = lapply(a, function(vert) {
-            igraph::V(net)[d, vert] # get two vertices from source network:  c(developer, artifact)
+            igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
         })
         return(new.edges)
     }, names(net1.to.net2), net1.to.net2)
