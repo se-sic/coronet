@@ -32,14 +32,14 @@ test_that("Motifs are found in sample network (remove.duplicates = TRUE).", {
         igraph::V(network)[ c("D3", "D4") ],
         igraph::V(network)[ c("D4", "D5") ]
     )
-    matchings = motifs.search.in.network(network, MOTIFS.LINE, color.attr = "type", remove.duplicates = TRUE)
+    matchings = motifs.search.in.network(network, MOTIFS.LINE, remove.duplicates = TRUE)
     expect_equal(matchings, expected, info = "Line motif")
 
     ## Triangle motif (positive)
     expected = list(
         igraph::V(network)[ c("D1", "D2", "A1") ]
     )
-    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.POSITIVE, color.attr = "type", remove.duplicates = TRUE)
+    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.POSITIVE, remove.duplicates = TRUE)
     expect_equal(matchings, expected, info = "Triangle motif (positive)")
 
     ## Triangle motif (negative)
@@ -47,14 +47,14 @@ test_that("Motifs are found in sample network (remove.duplicates = TRUE).", {
         igraph::V(network)[ c("D1", "D2", "A1") ],
         igraph::V(network)[ c("D5", "D6", "A6") ]
     )
-    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
+    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.NEGATIVE, remove.duplicates = TRUE)
     expect_equal(matchings, expected, info = "Triangle motif (negative)")
 
     ## Square motif (positive)
     expected = list(
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ]
     )
-    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.POSITIVE, color.attr = "type", remove.duplicates = TRUE)
+    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.POSITIVE, remove.duplicates = TRUE)
     expect_equal(matchings, expected, info = "Square motif (positive)")
 
     ## Square motif (negative)
@@ -64,7 +64,7 @@ test_that("Motifs are found in sample network (remove.duplicates = TRUE).", {
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ],
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ]
     )
-    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.NEGATIVE, color.attr = "type", remove.duplicates = TRUE)
+    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.NEGATIVE, remove.duplicates = TRUE)
     expect_equal(matchings, expected, info = "Square motif (negative)")
 
 })
@@ -86,7 +86,7 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D3", "D4") ], # unordered: D4, D3
         igraph::V(network)[ c("D4", "D5") ]  # unordered: D5, D4
     )
-    matchings = motifs.search.in.network(network, MOTIFS.LINE, color.attr = "type", remove.duplicates = FALSE)
+    matchings = motifs.search.in.network(network, MOTIFS.LINE, remove.duplicates = FALSE)
     expect_equal(matchings, expected, info = "Line motif")
 
     ## Triangle motif (positive)
@@ -94,7 +94,7 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D1", "D2", "A1") ],
         igraph::V(network)[ c("D1", "D2", "A1") ]  # unordered: D2, D1, A1
     )
-    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.POSITIVE, color.attr = "type", remove.duplicates = FALSE)
+    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.POSITIVE, remove.duplicates = FALSE)
     expect_equal(matchings, expected, info = "Triangle motif (positive)")
 
     ## Triangle motif (negative)
@@ -104,7 +104,7 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D5", "D6", "A6") ],
         igraph::V(network)[ c("D5", "D6", "A6") ]  # unordered: D6, D5, A1
     )
-    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.NEGATIVE, color.attr = "type", remove.duplicates = FALSE)
+    matchings = motifs.search.in.network(network, MOTIFS.TRIANGLE.NEGATIVE, remove.duplicates = FALSE)
     expect_equal(matchings, expected, info = "Triangle motif (negative)")
 
     ## Square motif (positive)
@@ -112,7 +112,7 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ],
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ]  # unordered: D5, D4, A5, A6
     )
-    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.POSITIVE, color.attr = "type", remove.duplicates = FALSE)
+    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.POSITIVE, remove.duplicates = FALSE)
     expect_equal(matchings, expected, info = "Square motif (positive)")
 
     ## Square motif (negative)
@@ -126,7 +126,7 @@ test_that("Motifs are found in sample network (remove.duplicates = FALSE).", {
         igraph::V(network)[ c("D4", "D5", "A5", "A6") ], # unordered: D5, D4, A5, A6
         igraph::V(network)[ c("D4", "D6", "A5", "A6") ]  # unordered: D6, D4, A5, A6
     )
-    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.NEGATIVE, color.attr = "type", remove.duplicates = FALSE)
+    matchings = motifs.search.in.network(network, MOTIFS.SQUARE.NEGATIVE, remove.duplicates = FALSE)
     expect_equal(matchings, expected, info = "Square motif (negative)")
 
 })
