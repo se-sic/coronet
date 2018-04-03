@@ -138,6 +138,11 @@ test_that("Parse date from a string.", {
     date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d"))
     expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no time).")
 
+    ## date string with time zone (which will be ignored as we treat it like UTC anyway)
+    date.string = "2018-02-22 10:02:03 CET"
+    date.posixct = as.POSIXct(strptime("2018-02-22 10:02:03", tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
+    expect_equal(get.date.from.string(date.string), date.posixct, info = "Date with (ignored) time-zone")
+
 })
 
 ##
