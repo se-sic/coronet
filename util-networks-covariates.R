@@ -96,8 +96,9 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
             ## simplify the list of attributes to a vector if all its elements are just vectors (not lists)
             if (length(attributes) > 0 && !any(lapply(attributes, is.list))) {
                 attributes = unlist(attributes)
+            }
             ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
-            } else {
+            else {
                 attributes = unlist(attributes, recursive = FALSE)
             }
 
@@ -403,9 +404,9 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         }
     )
 
-    ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
     names(active.ranges) = author.names
 
+    ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
     list.default.value = list(default.value)
 
     nets.with.attr = add.vertex.attribute(
