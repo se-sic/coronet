@@ -186,6 +186,9 @@ save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
 
 #' Parse a date with optional time
 #'
+#' Notice: Time-zone suffixes are ignored. The \code{input} is expected to be in UTC,
+#' even if the \code{input} contains another time-zone suffix.
+#'
 #' @param input The date string, a vector of date strings, or a list of date strings
 #'
 #' @return The parsed date(s) as POSIXct object, without changing the underlying data structure

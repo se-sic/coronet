@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
@@ -302,8 +302,8 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # plot.print.network(g, labels = TRUE, grayscale = FALSE)
 
 # ## set a layout and print directly
-# lay = matrix(c(  20, 179, 552, 693, 956, 1091, 124, 317, 516, 615, 803, 1038,
-#                 245, 175, 185, 255, 253, 225,   73,   8,  75,   0,  96,   86),
+# lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
+#                 245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
 #              nrow = 12, byrow = FALSE) # for sample graph
 # g = igraph::set.graph.attribute(g, "layout", lay)
 # plot.print.network(g, labels = TRUE, grayscale = FALSE)

@@ -26,6 +26,11 @@
 #'
 #' This method is a wrapper combining the steps of splitting the project data and calculating the attribute.
 #'
+#' Important: If a vertex attribute can have multiple values per vertex, the \code{compute.attr} function
+#' has to wrap all attribute vectors of a single node into a list. In that case, also the
+#' \code{default.value} needs to be put into a list. By that, this function can differentiate between
+#' attributes having multiple values and attributes having, at most, one value.
+#'
 #' @param list.of.networks The list of networks to add vertex attributes to
 #' @param project.data The entire project data
 #' @param attr.name The name of the attribute to add
@@ -53,6 +58,11 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 }
 
 #' Utility function to compute vertex attributes for a list of network-to-range tuples.
+#'
+#' Important: If a vertex attribute can have multiple values per vertex, the \code{compute.attr} function
+#' has to wrap all attribute vectors of a single node into a list. In that case, also the
+#' \code{default.value} needs to be put into a list. By that, this function can differentiate between
+#' attributes having multiple values and attributes having, at most, one value.
 #'
 #' @param net.to.range.list A list containing tuples with networks and corresponding range data.
 #' @param attr.name The name of the attribute to add
@@ -82,6 +92,15 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 
             attributes = lapply(igraph::V(current.network)$name,
                                 function(x) get.or.default(x, attr.df, default.value))
+
+            ## simplify the list of attributes to a vector if all its elements are just vectors (not lists)
+            if (length(attributes) > 0 && !any(lapply(attributes, is.list))) {
+                attributes = unlist(attributes)
+            }
+            ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
+            else {
+                attributes = unlist(attributes, recursive = FALSE)
+            }
 
             net.with.attr = igraph::set.vertex.attribute(current.network, attr.name, value = attributes)
 
@@ -346,7 +365,10 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
     return(nets.with.attr)
 }
 
-#' Add active ranges attribute
+#' Add active-ranges attribute
+#'
+#' Notice: One vertex can be active in multiple ranges, therefore there may be a vector of ranges as
+#' active-ranges attribute.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -377,14 +399,18 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 
             active.ranges.of.author = names(filter.by.author)
 
-            return(active.ranges.of.author)
+            ## vector for one vertex needs to be wrapped into a list due to multiple values per vertex
+            return(list(active.ranges.of.author))
         }
     )
 
     names(active.ranges) = author.names
 
+    ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
+    list.default.value = list(default.value)
+
     nets.with.attr = add.vertex.attribute(
-        net.to.range.list, name, default.value,
+        net.to.range.list, name, list.default.value,
         function(range, range.data, net) {
             active.ranges
         }

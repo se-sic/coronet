@@ -1,4 +1,19 @@
-# codeface-extraction-r - Changelog
+# codeface-extraction-r – Changelog
+
+
+## 3.1.2
+
+### Changed/Improved
+- Vertex and edge types (attribute `"type"`) are now a character string (e.g., "Author" or "Unipartite") (#110, 3ca6ed99cf377200adb94a4b27ed1ea7d3a6981a)
+- Default plotting layout is now `igraph::layout.kamada.kawai` (#109, 909965453c47c26c902612cb0c9aa16a5b56746a)
+- Remove parameter 'color.attr' from 'motifs.search.in.network' (d33f6863aaf05ae1a8acf7f5667784713796b734)
+- Fix and clean-up of both the plotting and the motif modules (3ca6ed99cf377200adb94a4b27ed1ea7d3a6981a, consequence of #110)
+- Use vectors as vertex attributes instead of lists if there is only one value per vertex (#112, abc0dcbe2aa4ae6ff1c8387c3e961b95e57b2af2)
+- Add a notice that the function `get.date.from.string` does ignore time-zone suffixes (9a51877f32a51850259b323c975182f2155b5302)
+
+### Fixed
+- Probably fixed segfaults during plotting by changing the default layout (see above and issue #109)
+- Fix gray-scale plotting of networks (730cc544edbb30ea3aa89a91e123e74b18a942c6)
 
 
 ## 3.1.1

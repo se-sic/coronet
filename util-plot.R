@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -27,8 +27,13 @@ requireNamespace("ggraph") ## plotting networks
 ## Global plot options -----------------------------------------------------
 ## (e.g., vertex size and colors)
 
+## vertex-type names
+PLOT.VERTEX.TYPE.AUTHOR = "Developer" # TYPE.AUTHOR
+PLOT.VERTEX.TYPE.ARTIFACT = TYPE.ARTIFACT # "Artifact"
+
 ## vertex size
-VERTEX.SIZE = 10
+PLOT.VERTEX.SIZE = 10
+PLOT.VERTEX.SIZE.LEGEND = PLOT.VERTEX.SIZE / 2
 
 ## colors for vertices and edges (colored)
 PLOT.COLORS.BY.TYPE.VERTEX = c("#00AEFF", "#FF8B00")
@@ -38,21 +43,30 @@ names(PLOT.COLORS.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
 
 ## colors for vertices and edges (grayscale)
 PLOT.COLORS.BY.TYPE.VERTEX.GRAY = c("gray40", "gray30")
-names(PLOT.COLORS.BY.TYPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
+names(PLOT.COLORS.BY.TYPE.VERTEX.GRAY) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 PLOT.COLORS.BY.TYPE.EDGE.GRAY = c("gray60", "gray40")
-names(PLOT.COLORS.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
+names(PLOT.COLORS.BY.TYPE.EDGE.GRAY) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
 
-## names for vertex and edge types
-PLOT.NAMES.BY.TYPE.VERTEX = c("Developer", "Artifact")
-names(PLOT.NAMES.BY.TYPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
-PLOT.NAMES.BY.TYPE.EDGE = c("unipartite", "bipartite")
-names(PLOT.NAMES.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
+## shapes of vertices and edges
+PLOT.SHAPE.VERTEX = c(16, 15) # (authors, artifacts)
+names(PLOT.SHAPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
+PLOT.SHAPE.EDGE = c("dashed", "solid") # (unipartite, bipartite)
+names(PLOT.SHAPE.EDGE) = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Plot functions ----------------------------------------------------------
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
+#'
+#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
+#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
+#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#'
+#' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
+#' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -68,6 +82,15 @@ plot.network = function(network, labels = TRUE, grayscale = FALSE) {
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
 #'
+#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
+#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
+#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#'
+#' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
+#' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
+#'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
 #' @param grayscale logical indicating whether the plot is to be in grayscale, by default, it is colored
@@ -82,6 +105,15 @@ plot.print.network = function(network, labels = TRUE, grayscale = FALSE) {
 }
 
 #' Construct a ggplot2/ggraph plot object for the given network.
+#'
+#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
+#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
+#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#'
+#' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
+#' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
 #'
 #' @param network the network to plot
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -103,62 +135,63 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         colors.vertex.label = "black"
     }
 
-    ## set size of vertices in legend
-    VERTEX.SIZE.LEGEND = VERTEX.SIZE / 2
-
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
         network = create.empty.network(directed = igraph::is.directed(network)) +
-            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT)) # + igraph::edges(c(1, 2), type = TYPE.EDGES.INTER)
-        VERTEX.SIZE = 0
+            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT))
+        PLOT.VERTEX.SIZE = 0
     }
+
+    ## properly set vertex-type names for legend
+    PLOT.VERTEX.TYPES = c(PLOT.VERTEX.TYPE.AUTHOR, PLOT.VERTEX.TYPE.ARTIFACT)
+    names(PLOT.VERTEX.TYPES) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network, colors.vertex = colors.vertex, colors.edge = colors.edge)
 
+    ## set network layout
+    if (!("layout" %in% igraph::list.graph.attributes(network))) {
+        network = igraph::set.graph.attribute(network, "layout", igraph::layout.kamada.kawai)
+    }
+
     ## create a ggraph object
-    p = ggraph::ggraph(network, layout = "igraph", algorithm = "nicely")
+    p = ggraph::ggraph(network)
 
     ## plot edges if there are any
     if (igraph::ecount(network) > 0) {
         p = p +
             ggraph::geom_edge_fan(
                 mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
-                end_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
-                start_cap = ggraph::circle(VERTEX.SIZE + 3, "pt"),
+                end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
+                start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
-                        ggplot2::arrow(length = ggplot2::unit(VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
+                        ggplot2::arrow(length = ggplot2::unit(PLOT.VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
                     } else {
                         NULL
                     }
             )
     }
 
-    ## vertex and edge types
-    values.vertex.type = c(16, 15)
-    names(values.vertex.type) = names(PLOT.NAMES.BY.TYPE.VERTEX)
-    values.edge.type = c("dashed", "solid")
-    names(values.edge.type) = names(PLOT.NAMES.BY.TYPE.EDGE)
-
+    ## construct plot with proper colors and shapes everywhere
     p = p +
 
         ## plot vertices
-        ggraph::geom_node_point(ggplot2::aes(color = vertex.type, shape = vertex.type), size = VERTEX.SIZE) +
+        ggraph::geom_node_point(ggplot2::aes(color = vertex.type, shape = vertex.type), size = PLOT.VERTEX.SIZE) +
         ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = colors.vertex.label) +
 
         ## scale vertices (colors and styles)
-        ggplot2::scale_shape_manual("Vertices", values = values.vertex.type, labels = PLOT.NAMES.BY.TYPE.VERTEX) +
-        ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.NAMES.BY.TYPE.VERTEX) +
+        ggplot2::scale_shape_manual("Vertices", values = PLOT.SHAPE.VERTEX, labels = PLOT.VERTEX.TYPES) +
+        ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.VERTEX.TYPES) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype_manual("Relations", values = values.edge.type, labels = PLOT.NAMES.BY.TYPE.EDGE) +
-        ggraph::scale_edge_colour_manual("Relations", values = colors.edge, labels = PLOT.NAMES.BY.TYPE.EDGE) +
+        ggraph::scale_edge_linetype_manual("Relations", values = PLOT.SHAPE.EDGE) +
+        ggraph::scale_edge_colour_manual("Relations", values = colors.edge) +
 
         ## theme
         ggplot2::theme_light() +
         ggplot2::guides(
             ## reduce size of symbols in legend
-            shape = ggplot2::guide_legend(override.aes = list(size = VERTEX.SIZE.LEGEND))
+            shape = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND))
         ) +
         ggplot2::theme(
             legend.position = "bottom",
@@ -195,26 +228,20 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
 #' Furthermore, the following attributes are added to either vertices or edges:
 #' - vertex.color = a color code (hex or else) for coloring the vertices (see 'colors.vertex' parameter),
 #' - edge.color = a color code (hex or else) for coloring the edges (see 'colors.edge' parameter),
-#' - vertex.type = the old vertex attribute 'type', but as a character,
-#' - edge.type = the old edge attribute 'type', but as a character,
-#' - vertex.type.char = a word/name describing the vertex type (see PLOT.NAMES.BY.TYPE.VERTEX), and
-#' - edge.type.char = a word/name describing the edge type (see PLOT.NAMES.BY.TYPE.EDGE).
+#' - vertex.type = a copy of the old vertex attribute 'type', and
+#' - edge.type = a copy of the old edge attribute 'type'.
 #'
 #' @param network the igraph object to augment
-#' @param colors.vertex a vector of length 2, the entries named with 'TYPE.AUTHOR' and 'TYPE.ARTIFACT'
+#' @param colors.vertex a vector of length 2, the entries named with the values of 'TYPE.AUTHOR' and 'TYPE.ARTIFACT'
 #'                      [default: PLOT.COLORS.BY.TYPE.VERTEX]
-#' @param colors.edge a vector of length 2, the entries named with 'TYPE.EDGES.INTER' and 'TYPE.EDGES.INTRA'
+#' @param colors.edge a vector of length 2, the entries named with the values of 'TYPE.EDGES.INTER' and 'TYPE.EDGES.INTRA'
 #'                    [default: PLOT.COLORS.BY.TYPE.EDGE]
 #'
 #' @return the old network with the new and changed vertex and edge attributes
 plot.fix.type.attributes = function(network, colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX, colors.edge = PLOT.COLORS.BY.TYPE.EDGE) {
     ## copy type attribute to vertex.type and edge.type
-    network = igraph::set.vertex.attribute(network, "vertex.type", value = as.character(igraph::get.vertex.attribute(network, "type")))
-    network = igraph::set.vertex.attribute(network, "vertex.type.char",
-                                           value = as.character(PLOT.NAMES.BY.TYPE.VERTEX[ igraph::get.vertex.attribute(network, "vertex.type") ]))
-    network = igraph::set.edge.attribute(network, "edge.type", value = as.character(igraph::get.edge.attribute(network, "type")))
-    network = igraph::set.edge.attribute(network, "edge.type.char",
-                                         value = as.character(PLOT.NAMES.BY.TYPE.EDGE[ igraph::get.edge.attribute(network, "edge.type") ]))
+    network = igraph::set.vertex.attribute(network, "vertex.type", value = igraph::get.vertex.attribute(network, "type"))
+    network = igraph::set.edge.attribute(network, "edge.type", value = igraph::get.edge.attribute(network, "type"))
 
     ## add edge and vertex colors
     network = igraph::set.vertex.attribute(network, "vertex.color",
@@ -222,11 +249,11 @@ plot.fix.type.attributes = function(network, colors.vertex = PLOT.COLORS.BY.TYPE
     network = igraph::set.edge.attribute(network, "edge.color",
                                      value = colors.edge[ igraph::get.edge.attribute(network, "edge.type") ])
 
-    ## adjust 'type' attribute for vertices for bipartite plotting
+    ## adjust 'type' attribute for vertices for bipartite plotting (we need Booleans there)
     types = igraph::get.vertex.attribute(network, "type")
     network = igraph::remove.vertex.attribute(network, "type")
     network = igraph::set.vertex.attribute(network, "type", value = sapply(
-        types, function(t) switch(t, FALSE, TRUE)
+        types, function(t) return(t == TYPE.ARTIFACT)
     ))
 
     return(network)
