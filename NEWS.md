@@ -1,10 +1,7 @@
-# codeface-extraction-r - Changelog
+# codeface-extraction-r – Changelog
 
 
-## Unversioned
-
-### Added
-- ...
+## 3.1.2
 
 ### Changed/Improved
 - Vertex and edge types (attribute `"type"`) are now a character string (e.g., "Author" or "Unipartite") (#110, 3ca6ed99cf377200adb94a4b27ed1ea7d3a6981a)
