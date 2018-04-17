@@ -222,7 +222,8 @@ test_that("Network construction of the undirected author-cochange network", {
                       artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
                       weight = c(1, 1, 1, 1, 1, 1, 1, 1),
-                      type = TYPE.EDGES.INTRA
+                      type = TYPE.EDGES.INTRA,
+                      relation = c("cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange")
     )
 
     ## build expected network
@@ -262,7 +263,8 @@ test_that("Network construction of the directed author-cochange network", {
                       artifact.type = c("Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
                       weight = c(1, 1, 1, 1),
-                      type = TYPE.EDGES.INTRA
+                      type = TYPE.EDGES.INTRA,
+                      relation = c("cochange", "cochange", "cochange", "cochange")
     )
 
     ## build expected network
@@ -302,7 +304,8 @@ test_that("Network construction of the undirected simplified author-cochange net
                       artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"))),
                       artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"))),
                       weight = c(2, 2, 2, 2),
-                      type = TYPE.EDGES.INTRA
+                      type = TYPE.EDGES.INTRA,
+                      relation = c("cochange", "cochange", "cochange", "cochange")
     )
 
     ## build expected network
@@ -399,7 +402,17 @@ test_that("Network construction of the undirected author-issue network with all 
                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                    1, 1, 1, 1 ),
-                       type = TYPE.EDGES.INTRA)
+                       type = TYPE.EDGES.INTRA,
+                       relation = c("issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
+                                     "issue", "issue", "issue", "issue")
+            )
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
@@ -442,7 +455,8 @@ test_that("Network construction of the undirected author-issue network with just
                                        "commented", "commented", "commented", "commented", "commented", "commented",
                                        "commented", "commented", "commented", "commented", "commented", "commented" ),
                        weight = c(1),
-                       type = TYPE.EDGES.INTRA)
+                       type = TYPE.EDGES.INTRA,
+                       relation = c("issue"))
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 

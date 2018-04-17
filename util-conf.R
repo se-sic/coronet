@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -89,7 +90,7 @@ Conf = R6::R6Class("Conf",
         #'         - allowed, and
         #'         - allowed.number.
         check.value = function(value, name) {
-            browser(expr = name == "revisions")
+            # browser(expr = name == "revisions")
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
             } else {
@@ -652,7 +653,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 default = "mail",
                 type = "character",
                 allowed = c("mail", "cochange", "issue"),
-                allowed.number = 1
+                allowed.number = Inf
             ),
             author.directed = list(
                 default = FALSE,
@@ -677,7 +678,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 default = "cochange",
                 type = "character",
                 allowed = c("cochange", "callgraph", "mail", "issue"),
-                allowed.number = 1
+                allowed.number = Inf
             ),
             artifact.directed = list(
                 default = FALSE,

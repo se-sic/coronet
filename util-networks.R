@@ -15,6 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -39,6 +40,11 @@ TYPE.ARTIFACT = "Artifact"
 TYPE.EDGES.INTRA = "Unipartite"
 TYPE.EDGES.INTER = "Bipartite"
 
+## intra edge types
+RELATION.EDGES.INTRA.MAIL = "mail"
+RELATION.EDGES.INTRA.ISSUE = "issue"
+RELATION.EDGES.INTRA.COCHANGE = "cochange"
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Edge-attribute handling during simplification ---------------------------
@@ -48,6 +54,7 @@ EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
+    relation = "concat",
 
     ## commit data
     changed.files = "sum",
@@ -121,11 +128,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## construct network based on artifact2author data
-            author.net = construct.network.from.list(
+            author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.artifact2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
+            author.net = construct.network.from.edge.list(
+                author.net.data[["vertices"]],
+                author.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed")
+            )
+
+            igraph::E(author.net)$type = TYPE.EDGES.INTRA
+            igraph::E(author.net)$relation = RELATION.EDGES.INTRA.COCHANGE
 
             ## store network
             private$authors.network.cochange = author.net
@@ -148,11 +164,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-            author.relation = construct.network.from.list(
+            author.relation.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
+            author.relation = construct.network.from.edge.list(
+                author.relation.data[["vertices"]],
+                author.relation.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed")
+            )
+            igraph::E(author.relation)$type = TYPE.EDGES.INTRA
+            igraph::E(author.relation)$relation = RELATION.EDGES.INTRA.MAIL
 
             ## store network
             private$authors.network.mail = author.relation
@@ -170,11 +194,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.issue)
             }
 
-            author.relation = construct.network.from.list(
+            author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.issue2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
+            author.relation = construct.network.from.edge.list(
+                author.net.data[["vertices"]],
+                author.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed")
+            )
+
+            igraph::E(author.relation)$type = TYPE.EDGES.INTRA
+            igraph::E(author.relation)$relation = RELATION.EDGES.INTRA.ISSUE
 
             private$authors.network.issue = author.relation
             logging::logdebug("get.author.network.issue: finished.")
@@ -198,11 +231,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.cochange)
             }
 
-            artifacts.net = construct.network.from.list(
+            artifacts.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.commit2artifact(),
                 network.conf = private$network.conf,
                 directed = FALSE
             )
+            artifacts.net = construct.network.from.edge.list(
+                artifacts.net.data[["vertices"]],
+                artifacts.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = FALSE
+            )
+
+            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.COCHANGE
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -280,6 +321,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net = igraph::set.vertex.attribute(artifacts.net, "id", value = names)
 
             ## store network
+            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.COCHANGE
             private$artifacts.network.callgraph = artifacts.net
             logging::logdebug("get.artifact.network.callgraph: finished.")
 
@@ -311,6 +353,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(private$proj.data$get.thread2author()) # thread IDs
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
+            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.MAIL
 
             ## store network
             private$artifacts.network.mail = artifacts.net
@@ -344,6 +387,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(private$proj.data$get.issue2author()) # thread IDs
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
+            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.ISSUE
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -352,44 +396,52 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
-        ## * * bipartite relation ------------------------------------------
+        ## * * bipartite relations ------------------------------------------
 
-        #' Get the key-value data for the bipartite relation,
-        #' which is implied by the "artifact.relation" from the network configuration.
+        #' Get the key-value data for the bipartite relations,
+        #' which are implied by the "artifact.relation" from the network configuration.
         #'
-        #' @return the data for the bipartite relation, with the attribute
-        #'         'artifact.type' denoting the artifact type for the relation
-        get.bipartite.relation = function() {
-            logging::logdebug("get.bipartite.relation: starting.")
+        #' @return the list of data for the bipartite relations, with the attributes
+        #'         'artifact.type' denoting the artifact type for the relations
+        #'         and 'relation' denoting the respective network-configuration entry
+        get.bipartite.relations = function() {
+            logging::logdebug("get.bipartite.relations: starting.")
 
-            relation = private$network.conf$get.variable("artifact.relation")
-            logging::logdebug("Using bipartite relation '%s'.", relation)
+            relations = private$network.conf$get.variable("artifact.relation")
+            logging::logdebug("Using bipartite relations '%s'.", relations)
 
-            switch(
-                relation,
-                cochange = {
-                    bip.relation = private$proj.data$get.author2artifact()
-                    artifact.type =private$proj.data$get.project.conf.entry("artifact")
-                },
-                callgraph = {
-                    bip.relation = private$proj.data$get.author2artifact()
-                    artifact.type =private$proj.data$get.project.conf.entry("artifact")
-                },
-                mail = {
-                    bip.relation = private$proj.data$get.author2thread()
-                    artifact.type = "thread"
-                },
-                issue = {
-                    bip.relation = private$proj.data$get.author2issue()
-                    artifact.type = "issue.id"
-                }
-            )
+            bip.relations = lapply(relations, function(relation) {
+                ## get the actual relation and the artifact type
+                switch(
+                    relation,
+                    cochange = {
+                        bip.relation = private$proj.data$get.author2artifact()
+                        artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                    },
+                    callgraph = {
+                        bip.relation = private$proj.data$get.author2artifact()
+                        artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                    },
+                    mail = {
+                        bip.relation = private$proj.data$get.author2thread()
+                        artifact.type = "thread"
+                    },
+                    issue = {
+                        bip.relation = private$proj.data$get.author2issue()
+                        artifact.type = "issue"
+                    }
+                )
 
-            ## set artifact.type attribute
-            attr(bip.relation, "artifact.type") = artifact.type
+                ## set artifact.type and relation attributes
+                attr(bip.relation, "artifact.type") = artifact.type
+                attr(bip.relation, "relation") = relation
 
-            logging::logdebug("get.bipartite.relation: finished.")
-            return(bip.relation)
+                return (bip.relation)
+            })
+            names(bip.relations) = relations
+
+            logging::logdebug("get.bipartite.relations: finished.")
+            return(bip.relations)
         }
 
     ),
@@ -497,14 +549,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing author network.")
 
             ## construct network
-            relation = private$network.conf$get.value("author.relation")
-            net = switch(
-                relation,
-                cochange = private$get.author.network.cochange(),
-                mail = private$get.author.network.mail(),
-                issue = private$get.author.network.issue(),
-                stop(sprintf("The author relation '%s' does not exist.", relation))
-            )
+            relations = private$network.conf$get.value("author.relation")
+            networks = lapply(relations, function(relation) {
+                network = switch(
+                    relation,
+                    cochange = private$get.author.network.cochange(),
+                    mail = private$get.author.network.mail(),
+                    issue = private$get.author.network.issue(),
+                    stop(sprintf("The author relation '%s' does not exist.", rel))
+                    ## TODO get edge and vertex data
+                )
+                return(network)
+            })
+            net = merge.networks(networks)
 
             ## add all missing authors to the network if wanted
             if (private$network.conf$get.value("author.all.authors")) {
@@ -517,7 +574,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (private$network.conf$get.value("author.only.committers")) {
                 ## authors-artifact relation
                 authors.from.net = igraph::get.vertex.attribute(net, "name")
-                authors.from.artifacts = names(private$get.bipartite.relation())
+                authors.from.artifacts = lapply(private$get.bipartite.relations(), function(bipartite.relation) {
+                    return(names(bipartite.relation))
+                })
+                authors.from.artifacts = unlist(authors.from.artifacts)
                 if (!is.null(authors.from.artifacts)) {
                     net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
                 }
@@ -542,16 +602,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing artifact network.")
 
             ## construct network
-            relation = private$network.conf$get.value("artifact.relation")
-
-            net = switch(
-                relation,
-                cochange = private$get.artifact.network.cochange(),
-                callgraph = private$get.artifact.network.callgraph(),
-                mail = private$get.artifact.network.mail(),
-                issue = private$get.artifact.network.issue(),
-                stop(sprintf("The artifact relation '%s' does not exist.", relation))
-            )
+            relations = private$network.conf$get.value("artifact.relation")
+            networks = lapply(relations, function(relation){
+                network = switch(
+                    relation,
+                    cochange = private$get.artifact.network.cochange(),
+                    callgraph = private$get.artifact.network.callgraph(),
+                    mail = private$get.artifact.network.mail(),
+                    issue = private$get.artifact.network.issue(),
+                    stop(sprintf("The artifact relation '%s' does not exist.", relation))
+                )
+                return(network)
+            })
+            net = merge.networks(networks)
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
@@ -570,44 +633,60 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' @return the bipartite network
         get.bipartite.network = function() {
             ## get data by the chosen relation
-            net.to.net = private$get.bipartite.relation()
-            artifact.type = attr(net.to.net, "artifact.type")
-
-            ## extract vertices for author network
-            if (private$network.conf$get.value("author.all.authors")) {
-                authors = private$proj.data$get.authors()[[ "author.name" ]]
-            } else {
-                authors = names(net.to.net)
-            }
-
-            ## construct networks from vertices:
+            bipartite.relation.data = private$get.bipartite.relations()
             directed = private$network.conf$get.value("author.directed")
-            ## 1) author network
-            authors.net = create.empty.network(directed = directed) +
-                igraph::vertices(authors, name = authors, type = TYPE.AUTHOR)
-            ## 2) artifact network
-            artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
-                return(df[["data.vertices"]])
-            })))
-            artifact.net = create.empty.network(directed = directed) +
-                igraph::vertices(artifact.vertices, name = artifact.vertices, type = TYPE.ARTIFACT, artifact.type = artifact.type)
-            ## 3) combine both networks and bipartite relation
-            u = combine.networks(authors.net, artifact.net, net.to.net, network.conf = private$network.conf)
+
+            vertex.data = lapply(bipartite.relation.data, function(net.to.net) {
+                artifact.type = attr(net.to.net, "artifact.type")
+
+                ## extract vertices for author network
+                if (private$network.conf$get.value("author.all.authors")) {
+                    author.vertices = private$proj.data$get.authors()[[ "author.name" ]]
+                } else {
+                    author.vertices = names(net.to.net)
+                }
+
+                artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
+                    return(df[["data.vertices"]])
+                })))
+
+                vertices = data.frame(
+                    name = c(author.vertices, artifact.vertices),
+                    type = c(rep(TYPE.AUTHOR, length(author.vertices)), rep(TYPE.ARTIFACT, length(artifact.vertices))),
+                    artifact.type = c(rep(NA, length(author.vertices)), rep(artifact.type, length(artifact.vertices)))
+                )
+                return(vertices)
+            })
+
+            ## Merge network data
+            vertex.data = merge.network.data(vertex.data = vertex.data, edge.data = NULL)[["vertices"]]
+            vertex.network = igraph::graph.data.frame(
+                d = create.empty.edge.list(),
+                vertices = vertex.data,
+                directed = directed
+            )
+
+            ## Add edges to the vertex network
+            network = add.edges.for.bipartite.relation(
+                vertex.network,
+                bipartite.relations = bipartite.relation.data,
+                private$network.conf
+            )
 
             ## remove vertices that are not committers if wanted
             if (private$network.conf$get.value("author.only.committers")) {
                 committers = unique(private$proj.data$get.commits()[["author.name"]])
-                authors = igraph::get.vertex.attribute(u, "name", igraph::V(u)[ type == TYPE.AUTHOR ])
+                authors = igraph::get.vertex.attribute(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
-                u = igraph::delete.vertices(u, authors.to.remove)
+                network = igraph::delete.vertices(network, authors.to.remove)
             }
 
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
-                attr(u, "range") = private$proj.data$get.range()
+                attr(network, "range") = private$proj.data$get.range()
             }
 
-            return(u)
+            return(network)
         },
 
         #' Get all networks as list.
@@ -618,7 +697,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing all networks.")
 
             ## author-artifact relation
-            authors.to.artifacts = private$get.bipartite.relation()
+            authors.to.artifacts = private$get.bipartite.relations()
             ## bipartite network
             bipartite.net = self$get.bipartite.network()
             ## author relation
@@ -653,15 +732,27 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## configured by 'author.only.committers', for example), thus, we need to remove any authors
             ## from the author--artifact relation that are superfluous
             authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
-            authors.from.artifacts = names(authors.to.artifacts)
-            authors.to.artifacts = authors.to.artifacts[ intersect(authors.from.net, authors.from.artifacts) ]
+
+            ## save relation and intersect the author vertices from the author network and the
+            ## bipartite networks
+            authors.to.artifacts = mapply(function(a2a.rel, relation.type) {
+                authors.from.artifacts = names(a2a.rel)
+                a2a = a2a.rel[ intersect(authors.from.net, authors.from.artifacts) ]
+                attr(a2a, "relation") = relation.type
+                return(a2a)
+            }, authors.to.artifacts, names(authors.to.artifacts), SIMPLIFY = FALSE)
+
             ## unify vertices with artifacts from bipartite and artifact relation:
             ## when the source for artifacts is different for the bipartite relation and the artifact relation (e.g.,
             ## "cochange" and "callgraph"), then the vertex names need to be unified so that all vertices are
             ## represented properly and, more important here, all bipartite relations can be added
-            artifacts.all = unique(plyr::rbind.fill(authors.to.artifacts)[[ "data.vertices" ]])
+            artifacts = lapply(authors.to.artifacts, function(a2a.rel) {
+                return(unique(plyr::rbind.fill(a2a.rel)[[ "data.vertices" ]]))
+            })
+            artifacts.all <- unlist(artifacts)
+
             artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
-            browser(expr = length(setdiff(artifacts.all, artifacts.from.net)) > 0)
+            # browser(expr = length(setdiff(artifacts.all, artifacts.from.net)) > 0)
             artifacts.net = artifacts.net + igraph::vertices(setdiff(artifacts.all, artifacts.from.net), type = TYPE.ARTIFACT)
 
             ## check directedness and adapt artifact network if needed
@@ -696,9 +787,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Network and edge construction -------------------------------------------
 
-#' Construct a dependency network from the given list of lists.
+#' Construct a edge list from the given list of lists.
 #' For example for a list of authors per thread, where all authors are connected if they are
 #' in the same thread (sublist).
+#'
+#' Important: The input needs to be compatible with the function \code{get.key.to.value.from.df}.
 #'
 #' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
@@ -707,10 +800,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed
 #'
-#' @return the built network
-construct.network.from.list = function(list, network.conf, directed = FALSE) {
+#' @return the built edge list
+construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE) {
     logging::loginfo("Create edges.")
-    logging::logdebug("construct.network.from.list: starting.")
+    logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
     # initialize an edge list to fill and the set of nodes
     nodes.processed = c()
@@ -833,10 +926,33 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
 
     }
 
+    logging::logdebug("construct.edge.list.from.key.value.list: finished.")
+
+    return(list(
+        vertices = nodes.processed,
+        edges = edge.list
+    ))
+}
+
+#' Construct a network from the given lists of vertices and edges.
+#' For example for a list of authors per thread, where all authors are connected if they are
+#' in the same thread (sublist).
+#'
+#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' vector of possible edge attributes in the given list.
+#'
+#' @param vertices data frame with vertex data
+#' @param edge.list list of edges
+#' @param network.conf the network configuration
+#' @param directed whether or not the network should be directed
+#'
+#' @return the built network
+construct.network.from.edge.list = function(vertices, edge.list, network.conf, directed = TRUE) {
+    logging::logdebug("construct.network.from.edge.list: starting.")
     logging::loginfo("Construct network from edges.")
 
     ## get unique list of vertices to produce
-    nodes.processed = unique(nodes.processed)
+    nodes.processed = unique(vertices)
 
     # if we do not have nodes AND the edge.list is empty, return rightaway
     if (length(nodes.processed) == 0) {
@@ -858,10 +974,11 @@ construct.network.from.list = function(list, network.conf, directed = FALSE) {
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights
-    if (network.conf$get.value("simplify"))
+    if (network.conf$get.value("simplify")) {
         net = simplify.network(net)
+    }
 
-    logging::logdebug("construct.network.from.list: finished.")
+    logging::logdebug("construct.network.from.edge.list: finished.")
 
     return(net)
 }
@@ -898,41 +1015,101 @@ combine.networks = function(net1, net2, net1.to.net2, network.conf) {
     return(u)
 }
 
+#' Merges a list vertex data frame and merges a list of edge
+#' data frames
+#'
+#' @param vertex.data the list of vertex data frames
+#' @param edge.data the list of edge data frames
+#'
+#' @return list containing one edge data frame and one vertex data frame
+merge.network.data = function(vertex.data, edge.data) {
+    logging::logdebug("merge.network.data: starting.")
+
+    vertices = plyr::rbind.fill(vertex.data)
+
+    ## select unique vertices
+    vertices = unique.data.frame(vertices)
+    edges = plyr::rbind.fill(edge.data)
+
+    logging::logdebug("merge.network.data: finished.")
+    return(list(
+        vertices = vertices,
+        edges = edges
+    ))
+}
+
+#' Merges a list of network to one big network
+#'
+#' @param networks the list of networks
+#'
+#' @return the built one network
+merge.networks = function(networks) {
+    logging::logdebug("merge.networks: starting.")
+
+    ## list with all vertex data frames
+    vertex.data = lapply(networks, function(network) {
+        return(igraph::as_data_frame(network, what = "vertices"))
+    })
+
+    ## list of all edge data frames
+    edge.data = lapply(networks, function(network) {
+        return(igraph::as_data_frame(network, what = "edges"))
+    })
+
+    ## merge all edge and vertex data frames
+    new.network.data = merge.network.data(vertex.data, edge.data)
+
+    ## build whole network form edge and vertex data frame
+    whole.network = igraph::graph.data.frame(
+        new.network.data[["edges"]],
+        vertices = new.network.data[["vertices"]],
+        directed = igraph::is.directed(networks[[1]])
+    )
+
+    logging::logdebug("merge.networks: finished.")
+
+    return(whole.network)
+}
+
 #' Add vertex relations to the given network.
 #'
 #' @param net the network
-#' @param net1.to.net2 the vertex relations to add to the given network
+#' @param bipartite.relations the list of the vertex relations to add to the given network for
+#'                            all configured relations
 #' @param network.conf the network configuration
 #'
 #' @return the adjusted network
-add.edges.for.bipartite.relation = function(net, net1.to.net2, network.conf) {
+add.edges.for.bipartite.relation = function(net, bipartite.relations, network.conf) {
 
-    ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
-    vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
-        a = a.df[["data.vertices"]]
-        new.edges = lapply(a, function(vert) {
-            igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
+    ## iterate about all bipartite.relations depending on the relation type
+    for (net1.to.net2 in bipartite.relations) {
+
+        ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
+        vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
+            a = a.df[["data.vertices"]]
+            new.edges = lapply(a, function(vert) {
+                igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
+            })
+            return(new.edges)
+        }, names(net1.to.net2), net1.to.net2)
+
+        ## get extra edge attributes
+        extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
+            cols.which = network.conf$get.value("edge.attributes") %in% colnames(a.df)
+            return(a.df[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE])
         })
-        return(new.edges)
-    }, names(net1.to.net2), net1.to.net2)
+        extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
+        extra.edge.attributes.df["type"] = TYPE.EDGES.INTER # add egde type
+        extra.edge.attributes.df["weight"] = 1 # add weight
+        extra.edge.attributes.df["relation"] = attr(net1.to.net2, "relation") # add relation type
 
-    ## get extra edge attributes
-    extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
-        cols.which = network.conf$get.value("edge.attributes") %in% colnames(a.df)
-        return(a.df[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE])
-    })
-    extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
-    extra.edge.attributes.df["weight"] = 1 # add weight
+        extra.edge.attributes = as.list(extra.edge.attributes.df)
 
-    extra.edge.attributes = as.list(extra.edge.attributes.df)
+        ## add the vertex sequences as edges to the network
+        net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+    }
 
-    ## set edge type
-    extra.edge.attributes = c(extra.edge.attributes, list(type = TYPE.EDGES.INTER))
-
-    ## add the vertex sequences as edges to the network
-    new.net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
-
-    return(new.net)
+    return(net)
 }
 
 #' Create an empty network that does not break the algorithms.
@@ -950,6 +1127,14 @@ create.empty.network = function(directed = TRUE) {
     net = igraph::set.edge.attribute(net, "type", value = 6)
 
     return(net)
+}
+
+#' Create an empty data frame that does not break the algorithms and
+#' represents an edge list.
+#'
+#' @return the new empty data frame as edge list
+create.empty.edge.list = function() {
+    return(data.frame(from = character(0),to = character(0)))
 }
 
 

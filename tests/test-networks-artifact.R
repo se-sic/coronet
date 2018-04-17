@@ -57,6 +57,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
                       artifact.type = c("Feature", "Feature"),
                       artifact = c("Base_Feature", "foo"),
                       weight = c(1, 1),
+                      relation = c("cochange", "cochange"),
                       type = TYPE.EDGES.INTRA)
 
     ## build expected network
