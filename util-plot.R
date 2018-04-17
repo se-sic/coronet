@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -41,18 +42,28 @@ names(PLOT.COLORS.BY.TYPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 PLOT.COLORS.BY.TYPE.EDGE = c("#999999", "#14CC3B")
 names(PLOT.COLORS.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
 
+PLOT.COLORS.BY.RELATION.EDGE = c("#142ACC", "#0BE5E0", "#960BE5")
+names(PLOT.COLORS.BY.RELATION.EDGE) = c(RELATION.EDGES.INTRA.COCHANGE, RELATION.EDGES.INTRA.ISSUE,
+                                        RELATION.EDGES.INTRA.MAIL)
+
+
 ## colors for vertices and edges (grayscale)
 PLOT.COLORS.BY.TYPE.VERTEX.GRAY = c("gray40", "gray30")
 names(PLOT.COLORS.BY.TYPE.VERTEX.GRAY) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 PLOT.COLORS.BY.TYPE.EDGE.GRAY = c("gray60", "gray40")
 names(PLOT.COLORS.BY.TYPE.EDGE.GRAY) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
+PLOT.COLORS.BY.RELATION.EDGE.GRAY = c("gray60", "gray62", "gray64")
+names(PLOT.COLORS.BY.RELATION.EDGE.GRAY) = c(RELATION.EDGES.INTRA.COCHANGE, RELATION.EDGES.INTRA.ISSUE,
+                                             RELATION.EDGES.INTRA.MAIL)
 
 ## shapes of vertices and edges
 PLOT.SHAPE.VERTEX = c(16, 15) # (authors, artifacts)
 names(PLOT.SHAPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 PLOT.SHAPE.EDGE = c("dashed", "solid") # (unipartite, bipartite)
 names(PLOT.SHAPE.EDGE) = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
-
+PLOT.NAMES.BY.RELATION.EDGE = c("mail", "issue", "cochange")
+names(PLOT.NAMES.BY.RELATION.EDGE) = c(RELATION.EDGES.INTRA.MAIL, RELATION.EDGES.INTRA.ISSUE,
+                                       RELATION.EDGES.INTRA.COCHANGE)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Plot functions ----------------------------------------------------------
@@ -126,12 +137,14 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     if (grayscale) {
         colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX.GRAY
         colors.edge = PLOT.COLORS.BY.TYPE.EDGE.GRAY
+        colors.edge.relation = PLOT.COLORS.BY.RELATION.EDGE.GRAY
         colors.vertex.label = "white"
     }
     ## set colors for colored
     else {
         colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX
         colors.edge = PLOT.COLORS.BY.TYPE.EDGE
+        colors.edge.relation = PLOT.COLORS.BY.RELATION.EDGE
         colors.vertex.label = "black"
     }
 
@@ -147,7 +160,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     names(PLOT.VERTEX.TYPES) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 
     ## fix the type attributes (add new ones, also named)
-    network = plot.fix.type.attributes(network, colors.vertex = colors.vertex, colors.edge = colors.edge)
+    network = plot.fix.type.attributes(network)
 
     ## set network layout
     if (!("layout" %in% igraph::list.graph.attributes(network))) {
@@ -161,7 +174,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
     if (igraph::ecount(network) > 0) {
         p = p +
             ggraph::geom_edge_fan(
-                mapping = ggplot2::aes(colour = edge.type, linetype = edge.type),
+                mapping = ggplot2::aes(colour = relation, linetype = edge.type),
                 end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
@@ -184,8 +197,8 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.VERTEX.TYPES) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype_manual("Relations", values = PLOT.SHAPE.EDGE) +
-        ggraph::scale_edge_colour_manual("Relations", values = colors.edge) +
+        ggraph::scale_edge_linetype_manual("Relation Types", values = PLOT.SHAPE.EDGE) +
+        ggraph::scale_edge_colour_manual("Relations", values = colors.edge.relation) +
 
         ## theme
         ggplot2::theme_light() +
@@ -236,18 +249,15 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
 #'                      [default: PLOT.COLORS.BY.TYPE.VERTEX]
 #' @param colors.edge a vector of length 2, the entries named with the values of 'TYPE.EDGES.INTER' and 'TYPE.EDGES.INTRA'
 #'                    [default: PLOT.COLORS.BY.TYPE.EDGE]
+#' @param colors.edge.relation a vector of length 3, the entries named with 'RELATION.EDGES.INTRA.MAIL', 'RELATION.EDGES.INTRA.ISSUE'
+#'                    and 'RELATION.COLORS.BY.RELATION.EDGE'
+#'                    [default: PLOT.COLORS.BY.RELATION.EDGE]
 #'
 #' @return the old network with the new and changed vertex and edge attributes
-plot.fix.type.attributes = function(network, colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX, colors.edge = PLOT.COLORS.BY.TYPE.EDGE) {
+plot.fix.type.attributes = function(network) {
     ## copy type attribute to vertex.type and edge.type
     network = igraph::set.vertex.attribute(network, "vertex.type", value = igraph::get.vertex.attribute(network, "type"))
     network = igraph::set.edge.attribute(network, "edge.type", value = igraph::get.edge.attribute(network, "type"))
-
-    ## add edge and vertex colors
-    network = igraph::set.vertex.attribute(network, "vertex.color",
-                                       value = colors.vertex[ igraph::get.vertex.attribute(network, "vertex.type") ])
-    network = igraph::set.edge.attribute(network, "edge.color",
-                                     value = colors.edge[ igraph::get.edge.attribute(network, "edge.type") ])
 
     ## adjust 'type' attribute for vertices for bipartite plotting (we need Booleans there)
     types = igraph::get.vertex.attribute(network, "type")
