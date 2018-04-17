@@ -36,34 +36,9 @@ PLOT.VERTEX.TYPE.ARTIFACT = TYPE.ARTIFACT # "Artifact"
 PLOT.VERTEX.SIZE = 10
 PLOT.VERTEX.SIZE.LEGEND = PLOT.VERTEX.SIZE / 2
 
-## colors for vertices and edges (colored)
-PLOT.COLORS.BY.TYPE.VERTEX = c("#00AEFF", "#FF8B00")
-names(PLOT.COLORS.BY.TYPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
-PLOT.COLORS.BY.TYPE.EDGE = c("#999999", "#14CC3B")
-names(PLOT.COLORS.BY.TYPE.EDGE) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
+## vertex-label color
+PLOT.VERTEX.LABEL.COLOR = "gray55"
 
-PLOT.COLORS.BY.RELATION.EDGE = c("#142ACC", "#0BE5E0", "#960BE5")
-names(PLOT.COLORS.BY.RELATION.EDGE) = c(RELATION.EDGES.INTRA.COCHANGE, RELATION.EDGES.INTRA.ISSUE,
-                                        RELATION.EDGES.INTRA.MAIL)
-
-
-## colors for vertices and edges (grayscale)
-PLOT.COLORS.BY.TYPE.VERTEX.GRAY = c("gray40", "gray30")
-names(PLOT.COLORS.BY.TYPE.VERTEX.GRAY) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
-PLOT.COLORS.BY.TYPE.EDGE.GRAY = c("gray60", "gray40")
-names(PLOT.COLORS.BY.TYPE.EDGE.GRAY) =  c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
-PLOT.COLORS.BY.RELATION.EDGE.GRAY = c("gray60", "gray62", "gray64")
-names(PLOT.COLORS.BY.RELATION.EDGE.GRAY) = c(RELATION.EDGES.INTRA.COCHANGE, RELATION.EDGES.INTRA.ISSUE,
-                                             RELATION.EDGES.INTRA.MAIL)
-
-## shapes of vertices and edges
-PLOT.SHAPE.VERTEX = c(16, 15) # (authors, artifacts)
-names(PLOT.SHAPE.VERTEX) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
-PLOT.SHAPE.EDGE = c("dashed", "solid") # (unipartite, bipartite)
-names(PLOT.SHAPE.EDGE) = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTER)
-PLOT.NAMES.BY.RELATION.EDGE = c("mail", "issue", "cochange")
-names(PLOT.NAMES.BY.RELATION.EDGE) = c(RELATION.EDGES.INTRA.MAIL, RELATION.EDGES.INTRA.ISSUE,
-                                       RELATION.EDGES.INTRA.COCHANGE)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Plot functions ----------------------------------------------------------
@@ -81,14 +56,12 @@ names(PLOT.NAMES.BY.RELATION.EDGE) = c(RELATION.EDGES.INTRA.MAIL, RELATION.EDGES
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
-#' @param grayscale logical indicating whether the plot is to be in grayscale, by default, it is colored
-#'                  [default: FALSE]
 #'
 #' @return the network (invisibly)
 #'
 #' @aliases plot.print.network
-plot.network = function(network, labels = TRUE, grayscale = FALSE) {
-    plot.print.network(network, labels = labels, grayscale = grayscale)
+plot.network = function(network, labels = TRUE) {
+    plot.print.network(network, labels = labels)
 }
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
@@ -104,14 +77,12 @@ plot.network = function(network, labels = TRUE, grayscale = FALSE) {
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
-#' @param grayscale logical indicating whether the plot is to be in grayscale, by default, it is colored
-#'                  [default: FALSE]
 #'
 #' @return the network (invisibly)
 #'
 #' @aliases plot.network
-plot.print.network = function(network, labels = TRUE, grayscale = FALSE) {
-    p = plot.get.plot.for.network(network, labels = labels, grayscale = grayscale)
+plot.print.network = function(network, labels = TRUE) {
+    p = plot.get.plot.for.network(network, labels = labels)
     print(p)
 }
 
@@ -128,26 +99,9 @@ plot.print.network = function(network, labels = TRUE, grayscale = FALSE) {
 #'
 #' @param network the network to plot
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
-#' @param grayscale logical indicating whether the plot is to be in grayscale, by default, it is colored
-#'                  [default: FALSE]
 #'
 #' @return a ggplot2/ggraph plot object
-plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) {
-    ## set colors for grayscale
-    if (grayscale) {
-        colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX.GRAY
-        colors.edge = PLOT.COLORS.BY.TYPE.EDGE.GRAY
-        colors.edge.relation = PLOT.COLORS.BY.RELATION.EDGE.GRAY
-        colors.vertex.label = "white"
-    }
-    ## set colors for colored
-    else {
-        colors.vertex = PLOT.COLORS.BY.TYPE.VERTEX
-        colors.edge = PLOT.COLORS.BY.TYPE.EDGE
-        colors.edge.relation = PLOT.COLORS.BY.RELATION.EDGE
-        colors.vertex.label = "black"
-    }
-
+plot.get.plot.for.network = function(network, labels = TRUE) {
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
         network = create.empty.network(directed = igraph::is.directed(network)) +
@@ -175,6 +129,7 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
         p = p +
             ggraph::geom_edge_fan(
                 mapping = ggplot2::aes(colour = relation, linetype = edge.type),
+                width = 0.5,
                 end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
@@ -190,15 +145,29 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
 
         ## plot vertices
         ggraph::geom_node_point(ggplot2::aes(color = vertex.type, shape = vertex.type), size = PLOT.VERTEX.SIZE) +
-        ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = colors.vertex.label) +
+        ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = PLOT.VERTEX.LABEL.COLOR) +
+
 
         ## scale vertices (colors and styles)
-        ggplot2::scale_shape_manual("Vertices", values = PLOT.SHAPE.VERTEX, labels = PLOT.VERTEX.TYPES) +
-        ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.VERTEX.TYPES) +
+        ggplot2::scale_shape_discrete(name = "Vertices", solid = TRUE) +
+        viridis::scale_color_viridis(name = "Vertices", option = "plasma", discrete = TRUE,
+                                     end = 0.8, begin = 0.40) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype_manual("Relation Types", values = PLOT.SHAPE.EDGE) +
-        ggraph::scale_edge_colour_manual("Relations", values = colors.edge.relation) +
+        ggraph::scale_edge_linetype(name = "Relations") +
+        ggplot2::discrete_scale(name = "Relations", "edge_colour", "viridis",
+                                viridis::viridis_pal(option = "viridis", end = 0.8, begin = 0.25)) +
+        ## BROKEN RIGHT NOW due to bug in scale_edge_colour_viridis():
+        # ggraph::scale_edge_colour_viridis(name = "Relations", option = "magma", discrete = TRUE,
+        #                                   end = 0.85, begin = 0, direction = 1) +
+
+        # ## scale vertices (colors and styles)
+        # ggplot2::scale_shape_manual("Vertices", values = PLOT.SHAPE.VERTEX, labels = PLOT.VERTEX.TYPES) +
+        # ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.VERTEX.TYPES) +
+        #
+        # ## scale edges (colors and styles)
+        # ggraph::scale_edge_linetype_manual("Relation Types", values = PLOT.SHAPE.EDGE) +
+        # ggraph::scale_edge_colour_manual("Relations", values = colors.edge.relation) +
 
         ## theme
         ggplot2::theme_light() +
@@ -239,19 +208,10 @@ plot.get.plot.for.network = function(network, labels = TRUE, grayscale = FALSE) 
 #' - TYPE.ARTIFACT = TRUE.
 #'
 #' Furthermore, the following attributes are added to either vertices or edges:
-#' - vertex.color = a color code (hex or else) for coloring the vertices (see 'colors.vertex' parameter),
-#' - edge.color = a color code (hex or else) for coloring the edges (see 'colors.edge' parameter),
 #' - vertex.type = a copy of the old vertex attribute 'type', and
 #' - edge.type = a copy of the old edge attribute 'type'.
 #'
 #' @param network the igraph object to augment
-#' @param colors.vertex a vector of length 2, the entries named with the values of 'TYPE.AUTHOR' and 'TYPE.ARTIFACT'
-#'                      [default: PLOT.COLORS.BY.TYPE.VERTEX]
-#' @param colors.edge a vector of length 2, the entries named with the values of 'TYPE.EDGES.INTER' and 'TYPE.EDGES.INTRA'
-#'                    [default: PLOT.COLORS.BY.TYPE.EDGE]
-#' @param colors.edge.relation a vector of length 3, the entries named with 'RELATION.EDGES.INTRA.MAIL', 'RELATION.EDGES.INTRA.ISSUE'
-#'                    and 'RELATION.COLORS.BY.RELATION.EDGE'
-#'                    [default: PLOT.COLORS.BY.RELATION.EDGE]
 #'
 #' @return the old network with the new and changed vertex and edge attributes
 plot.fix.type.attributes = function(network) {

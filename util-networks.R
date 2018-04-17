@@ -40,11 +40,6 @@ TYPE.ARTIFACT = "Artifact"
 TYPE.EDGES.INTRA = "Unipartite"
 TYPE.EDGES.INTER = "Bipartite"
 
-## intra edge types
-RELATION.EDGES.INTRA.MAIL = "mail"
-RELATION.EDGES.INTRA.ISSUE = "issue"
-RELATION.EDGES.INTRA.COCHANGE = "cochange"
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Edge-attribute handling during simplification ---------------------------
@@ -141,7 +136,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             )
 
             igraph::E(author.net)$type = TYPE.EDGES.INTRA
-            igraph::E(author.net)$relation = RELATION.EDGES.INTRA.COCHANGE
 
             ## store network
             private$authors.network.cochange = author.net
@@ -176,7 +170,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = private$network.conf$get.value("author.directed")
             )
             igraph::E(author.relation)$type = TYPE.EDGES.INTRA
-            igraph::E(author.relation)$relation = RELATION.EDGES.INTRA.MAIL
 
             ## store network
             private$authors.network.mail = author.relation
@@ -207,7 +200,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             )
 
             igraph::E(author.relation)$type = TYPE.EDGES.INTRA
-            igraph::E(author.relation)$relation = RELATION.EDGES.INTRA.ISSUE
 
             private$authors.network.issue = author.relation
             logging::logdebug("get.author.network.issue: finished.")
@@ -242,8 +234,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.conf = private$network.conf,
                 directed = FALSE
             )
-
-            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.COCHANGE
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -321,7 +311,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net = igraph::set.vertex.attribute(artifacts.net, "id", value = names)
 
             ## store network
-            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.COCHANGE
             private$artifacts.network.callgraph = artifacts.net
             logging::logdebug("get.artifact.network.callgraph: finished.")
 
@@ -353,7 +342,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(private$proj.data$get.thread2author()) # thread IDs
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
-            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.MAIL
 
             ## store network
             private$artifacts.network.mail = artifacts.net
@@ -387,7 +375,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(private$proj.data$get.issue2author()) # thread IDs
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
-            igraph::E(artifacts.net)$relation = RELATION.EDGES.INTRA.ISSUE
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -559,6 +546,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     stop(sprintf("The author relation '%s' does not exist.", rel))
                     ## TODO get edge and vertex data
                 )
+                igraph::E(network)$relation = relation
                 return(network)
             })
             net = merge.networks(networks)
@@ -612,6 +600,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     issue = private$get.artifact.network.issue(),
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
+                igraph::E(network)$relation = relation
                 return(network)
             })
             net = merge.networks(networks)
@@ -1143,6 +1132,9 @@ create.empty.edge.list = function() {
 
 #' Simplify a given network.
 #'
+#' Important notice: This function only correctly works for networks with only one artifact and one
+#' author relation.
+#'
 #' @param network the given network
 #'
 #' @return the simplified network
@@ -1158,6 +1150,9 @@ simplify.network = function(network) {
 }
 
 #' Simplify a list of networks.
+#'
+#' Important notice: This function only correctly works for networks with only one artifact and one
+#' author relation.
 #'
 #' @param networks the list of networks
 #'
