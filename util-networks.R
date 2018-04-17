@@ -403,11 +403,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     relation,
                     cochange = {
                         bip.relation = private$proj.data$get.author2artifact()
-                        artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                        artifact.type = private$proj.data$get.project.conf.entry("artifact")
                     },
                     callgraph = {
                         bip.relation = private$proj.data$get.author2artifact()
-                        artifact.type =private$proj.data$get.project.conf.entry("artifact")
+                        artifact.type = private$proj.data$get.project.conf.entry("artifact")
                     },
                     mail = {
                         bip.relation = private$proj.data$get.author2thread()
@@ -547,6 +547,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     ## TODO get edge and vertex data
                 )
                 igraph::E(network)$relation = relation
+
+                # the kind is in this case the same as the type attribute
+                igraph::V(network)$kind = TYPE.AUTHOR
                 return(network)
             })
             net = merge.networks(networks)
@@ -591,7 +594,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("artifact.relation")
-            networks = lapply(relations, function(relation){
+            networks = lapply(relations, function(relation) {
                 network = switch(
                     relation,
                     cochange = private$get.artifact.network.cochange(),
@@ -601,6 +604,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
                 igraph::E(network)$relation = relation
+
+                ## for cochange, we use the exact artifact type as vertex attribute 'kind'
+                if (relation == "cochange") {
+                    igraph::V(network)$kind = private$proj.data$get.project.conf.entry("artifact")
+                } else {
+                    igraph::V(network)$kind = relation
+                }
                 return(network)
             })
             net = merge.networks(networks)
@@ -642,7 +652,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 vertices = data.frame(
                     name = c(author.vertices, artifact.vertices),
                     type = c(rep(TYPE.AUTHOR, length(author.vertices)), rep(TYPE.ARTIFACT, length(artifact.vertices))),
-                    artifact.type = c(rep(NA, length(author.vertices)), rep(artifact.type, length(artifact.vertices)))
+                    artifact.type = c(rep(NA, length(author.vertices)), rep(artifact.type, length(artifact.vertices))),
+                    kind = c(rep(TYPE.AUTHOR, length(author.vertices)), rep(artifact.type , length(artifact.vertices)))
                 )
                 return(vertices)
             })
@@ -714,6 +725,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             networks = self$get.networks()
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
+            igraph::V(authors.net)$kind = TYPE.AUTHOR
             artifacts.net = networks[["artifacts.net"]]
 
             ## remove authors from author-artifact relation, if needed:
@@ -736,13 +748,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## "cochange" and "callgraph"), then the vertex names need to be unified so that all vertices are
             ## represented properly and, more important here, all bipartite relations can be added
             artifacts = lapply(authors.to.artifacts, function(a2a.rel) {
-                return(unique(plyr::rbind.fill(a2a.rel)[[ "data.vertices" ]]))
+                artifact.list = plyr::rbind.fill(a2a.rel)[ c("data.vertices", "artifact.type") ]
+                artifact.list = unique(artifact.list)
+                return(artifact.list)
             })
-            artifacts.all <- unlist(artifacts)
+            artifacts.all = plyr::rbind.fill(artifacts)
 
             artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
             # browser(expr = length(setdiff(artifacts.all, artifacts.from.net)) > 0)
-            artifacts.net = artifacts.net + igraph::vertices(setdiff(artifacts.all, artifacts.from.net), type = TYPE.ARTIFACT)
+            artifacts.to.add = setdiff(artifacts.all[["data.vertices"]], artifacts.from.net)
+            artifacts.to.add.kind = artifacts.all[ artifacts.all[["data.vertices"]] %in% artifacts.to.add, "artifact.type" ]
+            artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
+                                                             artifact.type = artifacts.to.add.kind,
+                                                             kind = artifacts.to.add.kind)
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {

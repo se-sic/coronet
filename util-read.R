@@ -216,6 +216,9 @@ read.mails = function(data.path) {
     ## set pattern for thread ID for better recognition
     mail.data[["thread"]] = sprintf("<thread-%s>", mail.data[["thread"]])
 
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    mail.data["artifact.type"] = "Mail"
+
     ## remove mails without a proper date as they mess up directed mail-based networks
     ## this basically only applies for project-level analysis
     empty.dates = which(mail.data[["date"]] == "" | is.na(mail.data[["date"]]))
@@ -380,6 +383,9 @@ read.issues = function(data.path) {
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
+
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    issue.data["artifact.type"] = "Issue"
 
     ## convert 'is.pull.request' column to logicals
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])

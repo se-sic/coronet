@@ -37,7 +37,7 @@ PLOT.VERTEX.SIZE = 10
 PLOT.VERTEX.SIZE.LEGEND = PLOT.VERTEX.SIZE / 2
 
 ## vertex-label color
-PLOT.VERTEX.LABEL.COLOR = "gray55"
+PLOT.VERTEX.LABEL.COLOR = "gray60"
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -144,14 +144,14 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     p = p +
 
         ## plot vertices
-        ggraph::geom_node_point(ggplot2::aes(color = vertex.type, shape = vertex.type), size = PLOT.VERTEX.SIZE) +
+        ggraph::geom_node_point(ggplot2::aes(color = kind, shape = vertex.type), size = PLOT.VERTEX.SIZE) +
         ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = PLOT.VERTEX.LABEL.COLOR) +
 
 
         ## scale vertices (colors and styles)
         ggplot2::scale_shape_discrete(name = "Vertices", solid = TRUE) +
         viridis::scale_color_viridis(name = "Vertices", option = "plasma", discrete = TRUE,
-                                     end = 0.8, begin = 0.40) +
+                                     end = 0.8, begin = 0.05) +
 
         ## scale edges (colors and styles)
         ggraph::scale_edge_linetype(name = "Relations") +
