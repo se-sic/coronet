@@ -443,7 +443,7 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
     }
 
     ## Get eigenvectors for all authors
-    centrality.vec = sort(igraph::eigen_centrality(network)$vector, decreasing= TRUE)
+    centrality.vec = sort(igraph::eigen_centrality(network, directed = T)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
     if (igraph::ecount(network) == 0) {
@@ -1020,10 +1020,15 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     ## (1) check which positions are over the threshold
     ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
     author.cumsum = cumsum(author.data[[calc.base.name]])
-    author.class.threshold.idx = min(which(
+    buffer.value = which(
         author.cumsum > author.class.threshold |
             sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
-    ))
+    )
+    if (is.infinite(min(buffer.value))) {
+        author.class.threshold.idx = 0
+    } else {
+        author.class.threshold.idx = min(buffer.value)
+    }
 
     ## classify authors according to threshold
     core.classification = rep(FALSE, nrow(author.data))
