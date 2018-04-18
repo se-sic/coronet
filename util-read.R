@@ -303,7 +303,7 @@ read.pasta = function(data.path) {
     KEY.SEPERATOR = " "
 
     ## get file name of pasta data
-    filepath = file.path(data.path, "similar-mailbox")
+    filepath = file.path(data.path, "mbox-result")
 
     ## read data from disk [can be empty]
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
@@ -315,13 +315,15 @@ read.pasta = function(data.path) {
         return(data.frame())
     }
 
+    revision.set.id = 1
+
     result.list = parallel::mclapply(lines, function(line) {
         #line = lines[i]
         if ( nchar(line) == 0 ) {
             return(NULL)
         }
 
-        if (!grepl(SEPERATOR, line)) {
+        if(!grepl("<", line)) {
             logging::logwarn("Faulty line: %s", line)
             return(NULL)
         }
@@ -330,16 +332,23 @@ read.pasta = function(data.path) {
         # 2) split keys
         # 3) split values
         # 4) insert all key-value pairs by iteration (works also if there is only one key)
-        line.split = unlist(strsplit(line, SEPERATOR))
-        keys = line.split[1]
-        values = line.split[2]
-        keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
-        values.split = unlist(strsplit(values, KEY.SEPERATOR))
+        if (grepl(SEPERATOR, line)) {
+            line.split = unlist(strsplit(line, SEPERATOR))
+            keys = line.split[1]
+            values = line.split[2]
+            keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
+            values.split = unlist(strsplit(values, KEY.SEPERATOR))
+        } else {
+            keys.split = unlist(strsplit(line, KEY.SEPERATOR))
+            values.split = NA
+        }
 
         # Transform data to data.frame
         #df = data.frame(message.id = keys.split, commit.hash = values.split)
         df = merge(keys.split, values.split)
         colnames(df) = c("message.id", "commit.hash")
+        df$revision.set.id.id = revision.set.id
+        revision.set.id <<- revision.set.id + 1
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)
