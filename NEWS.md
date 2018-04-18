@@ -1,6 +1,12 @@
 # codeface-extraction-r – Changelog
 
 
+## unversioned
+
+### Added
+- Possibility to contract imperfect ranges in the end (#104, 8ebcf20b0aba0cb82dcd7e1d1b95e261a866d04e)
+
+
 ## 3.1.2
 
 ### Changed/Improved
