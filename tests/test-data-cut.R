@@ -68,7 +68,8 @@ test_that("Cut commit and mail data to same date range.", {
                                     date = get.date.from.string("2016-07-12 16:04:40"),
                                     date.offset = as.integer(c(100)),
                                     subject = c("Re: Fw: busybox 2 tab"),
-                                    thread = sprintf("<thread-%s>", c(9)))
+                                    thread = sprintf("<thread-%s>", c(9)),
+                                    artifact.type = "Mail")
 
     commit.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.commits()
     rownames(commit.data) = 1:nrow(commit.data)

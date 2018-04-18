@@ -50,12 +50,15 @@ test_that("Construction of the bipartite network for the feature artifact with a
     ## 1) construct expected vertices
     authors = data.frame(
         name = c("Björn", "Karl", "Olaf", "Thomas"),
-        type = TYPE.AUTHOR
+        type = TYPE.AUTHOR,
+        artifact.type = NA,
+        kind = TYPE.AUTHOR
     )
     artifacts = data.frame(
         name = c("A", "Base_Feature", "foo"),
         type = TYPE.ARTIFACT,
-        artifact.type = "feature"
+        artifact.type = "feature",
+        kind = "feature"
     )
     vertices = plyr::rbind.fill(authors, artifacts)
     ## 2) construct expected edge attributes
@@ -101,12 +104,15 @@ test_that("Construction of the bipartite network for the file artifact with auth
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("test.c", "test2.c"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "file"
+                  artifact.type = "file",
+                  kind = "file"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -151,12 +157,15 @@ test_that("Construction of the bipartite network for the function artifact with 
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("File_Level"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "function"
+                  artifact.type = "function",
+                  kind ="function"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -199,12 +208,15 @@ test_that("Construction of the bipartite network for the featureexpression artif
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "featureexpression"
+                  artifact.type = "featureexpression",
+                  kind = "featureexpression"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -247,12 +259,15 @@ test_that("Construction of the bipartite network for the feature artifact with a
               ## 1) construct expected vertices
               authors = data.frame(
                   name =c("Björn", "Karl", "Max", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "issue"
+                  artifact.type = "issue",
+                  kind = "issue"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -267,6 +282,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
                                                 "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
                                                 "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
+                  artifact.type = "Issue",
                   issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
                                "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
@@ -303,12 +319,15 @@ test_that("Construction of the directed bipartite network for the feature artifa
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Karl", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("A", "Base_Feature", "foo"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "feature"
+                  artifact.type = "feature",
+                  kind = "feature"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -353,12 +372,15 @@ test_that("Construction of the directed bipartite network for the file artifact 
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("test.c", "test2.c"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "file"
+                  artifact.type = "file",
+                  kind ="file"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -403,12 +425,15 @@ test_that("Construction of the directed bipartite network for the function artif
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("File_Level"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "function"
+                  artifact.type = "function",
+                  kind = "function"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -452,12 +477,15 @@ test_that("Construction of the directed bipartite network for the featureexpress
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf"),
-                  type = TYPE.AUTHOR
+                  type = TYPE.AUTHOR,
+                  artifact.type = NA,
+                  kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "featureexpression"
+                  artifact.type = "featureexpression",
+                  kind = "featureexpression"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes

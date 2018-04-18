@@ -172,7 +172,8 @@ test_that("Read the mail data.", {
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= 2", "Re: busybox 1",
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= tab", "Re: Fw: busybox 2 tab",
                                               "Re: Fw: busybox 10"),
-                                    thread = sprintf("<thread-%s>", c(1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 8, 9, 9))
+                                    thread = sprintf("<thread-%s>", c(1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 8, 9, 9)),
+                                    artifact.type = "Mail"
                                     )
     ## delete the line with the empty date
     mail.data.expected = mail.data.expected[-13, ]
@@ -239,21 +240,44 @@ test_that("Read and parse the issue data.", {
     ## build the expected data.frame
     issue.data.expected = data.frame(issue.id = sprintf("<issue-%s>", rep(c(2, 48, 51, 48, 2, 48, 51, 57), c(6, 2, 5, 5, 1, 3, 8, 6))),
                                      issue.state = rep(c("CLOSED", "OPEN", "CLOSED", "OPEN", "CLOSED", "OPEN", "CLOSED", "CLOSED"), c(6, 2, 5, 5, 1, 3, 8, 6)),
-                                     creation.date = get.date.from.string(rep(c("2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-04-17 02:06:38", "2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-12-07 15:53:02"), c(6, 2, 5, 5, 1, 3, 8, 6))),
-                                     closing.date = get.date.from.string(rep(c("2013-05-25 20:02:08", NA, "2016-12-07 15:37:02", NA, "2014-05-25 20:02:08", NA, "2016-12-07 15:37:02", "2017-05-23 12:32:21"), c(6, 2, 5, 5, 1, 3, 8, 6))),
+                                     creation.date = get.date.from.string(rep(c("2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-04-17 02:06:38",
+                                                                                "2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-12-07 15:53:02"),
+                                                                              c(6, 2, 5, 5, 1, 3, 8, 6))),
+                                     closing.date = get.date.from.string(rep(c("2013-05-25 20:02:08", NA, "2016-12-07 15:37:02", NA, "2014-05-25 20:02:08", NA, "2016-12-07 15:37:02",
+                                                                               "2017-05-23 12:32:21"), c(6, 2, 5, 5, 1, 3, 8, 6))),
                                      is.pull.request = rep(c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE), c(6, 2, 5, 5, 1, 3, 8, 6)),
-                                     author.name = c("Karl", "Karl", "Karl", "Olaf", "Olaf", "Karl", "udo", "udo", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Thomas", "Björn", "Björn", "Björn", "Thomas", "Thomas", "Björn", "Björn", "Olaf", "Björn", "Olaf", "Björn", "Björn", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max"),
-                                     author.email = c("karl@example.org", "karl@example.org", "karl@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org", "udo@example.org", "udo@example.org", "thomas@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "thomas@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "bjoern@example.org", "olaf@example.org", "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "olaf@example.org", "olaf@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "max@example.org", "max@example.org", "max@example.org"),
-                                     date = get.date.from.string(c("2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-05-25 20:02:08", "2013-05-25 20:02:08", "2013-06-01 22:37:03", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-07-14 02:03:14", "2016-07-14 17:42:52", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-19 10:47:25", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-08-31 18:21:48", "2016-10-05 01:07:46", "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2016-12-07 15:53:02", "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21", "2017-05-23 12:32:39")),
+                                     author.name = c("Karl", "Karl", "Karl", "Olaf", "Olaf", "Karl", "udo", "udo", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Thomas",
+                                                     "Björn", "Björn", "Björn", "Thomas", "Thomas", "Björn", "Björn", "Olaf", "Björn", "Olaf", "Björn", "Björn", "Olaf", "Olaf",
+                                                     "Olaf", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max"),
+                                     author.email = c("karl@example.org", "karl@example.org", "karl@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
+                                                      "udo@example.org", "udo@example.org", "thomas@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "thomas@example.org",
+                                                      "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "bjoern@example.org", "olaf@example.org",
+                                                      "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "olaf@example.org", "olaf@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "max@example.org", "max@example.org", "max@example.org"),
+                                     date = get.date.from.string(c("2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-05-25 20:02:08", "2013-05-25 20:02:08",
+                                                                   "2013-06-01 22:37:03", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-12 15:59:25", "2016-07-12 15:59:25",
+                                                                   "2016-07-12 15:59:25", "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-07-14 02:03:14", "2016-07-14 17:42:52",
+                                                                   "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-19 10:47:25", "2016-07-27 22:25:25",
+                                                                   "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-08-31 18:21:48", "2016-10-05 01:07:46", "2016-10-13 15:33:56",
+                                                                   "2016-12-06 14:03:42", "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02",
+                                                                   "2016-12-07 15:53:02", "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21",
+                                                                   "2017-05-23 12:32:39")),
                                      ref.name = c(rep("", 6), rep("Karl", 2), rep("Björn", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
-                                     event.name = c("created", "commented", "referenced", "merged", "closed", "head_ref_deleted", "mentioned", "subscribed", "mentioned", "subscribed", "created", "renamed", "commented", "commented", "commented", "mentioned", "subscribed", "commented", "referenced", "mentioned", "subscribed", "commented", "commented", "commented", "commented", "commented", "merged", "closed", "commented", "commented", "created", "commented", "commented", "merged", "closed", "commented"))
+                                     event.name = c("created", "commented", "referenced", "merged", "closed", "head_ref_deleted", "mentioned", "subscribed", "mentioned", "subscribed",
+                                                    "created", "renamed", "commented", "commented", "commented", "mentioned", "subscribed", "commented", "referenced", "mentioned",
+                                                    "subscribed", "commented", "commented", "commented", "commented", "commented", "merged", "closed", "commented", "commented", "created",
+                                                    "commented", "commented", "merged", "closed", "commented"),
+                                     artifact.type = "Issue"
+                                     )
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
         paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
         digest::sha1
     )
     ## set row names as integers
-    attr(issue.data.expected, "row.names") = as.integer(c(1, 2, 3, 4, 5, 6, 8, 9, 18, 19, 20, 21, 22, 10, 11, 12, 13, 14, 7, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36))
+    attr(issue.data.expected, "row.names") = as.integer(c(1, 2, 3, 4, 5, 6, 8, 9, 18, 19, 20, 21, 22, 10, 11, 12, 13, 14, 7, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+                                                          35, 36))
 
     ## check the results
     expect_identical(issue.data.read, issue.data.expected, info = "Issue data.")

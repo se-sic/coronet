@@ -51,7 +51,9 @@ test_that("Construction of the multi network for the feature artifact with autho
                                              "Base_Feature", "foo", "A"),
                                     id = c("Björn", "Olaf", "Karl", "Thomas",
                                            "Base_Feature", "foo", "A"),
-                                    type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3)))
+                                    kind = c(rep(TYPE.AUTHOR, 4), rep("feature", 3)),
+                                    type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3))
+                                    )
               row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")
 

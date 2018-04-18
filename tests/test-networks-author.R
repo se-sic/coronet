@@ -208,7 +208,10 @@ test_that("Network construction of the undirected author-cochange network", {
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Björn", "Olaf", "Karl", "Thomas")
+    authors = data.frame(name= c("Björn", "Olaf", "Karl", "Thomas"),
+                        id = c("Björn", "Olaf", "Karl", "Thomas"),
+                        kind= TYPE.AUTHOR,
+                        type = TYPE.AUTHOR)
 
     ## edge attributes
     data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
@@ -229,7 +232,6 @@ test_that("Network construction of the undirected author-cochange network", {
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
     network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    igraph::V(network.expected)$type = TYPE.AUTHOR
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -250,7 +252,10 @@ test_that("Network construction of the directed author-cochange network", {
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Björn", "Olaf", "Karl", "Thomas")
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
+                         id = c("Björn", "Olaf", "Karl", "Thomas"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
 
     ## edge attributes
     data = data.frame(from = c("Olaf", "Karl", "Thomas", "Thomas"),
@@ -270,7 +275,7 @@ test_that("Network construction of the directed author-cochange network", {
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
     network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    igraph::V(network.expected)$type = TYPE.AUTHOR
+
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -291,7 +296,10 @@ test_that("Network construction of the undirected simplified author-cochange net
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = c("Björn", "Olaf", "Karl", "Thomas")
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
+                         id = c("Björn", "Olaf", "Karl", "Thomas"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
 
     ## edge attributes
     data = data.frame(from = c("Björn", "Olaf", "Olaf", "Karl"),
@@ -311,7 +319,6 @@ test_that("Network construction of the undirected simplified author-cochange net
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
     network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    igraph::V(network.expected)$type = TYPE.AUTHOR
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -335,6 +342,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
                           id = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
+                          kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
     edges = data.frame(from = c("Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl",
@@ -372,6 +380,7 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:37:02", "2016-12-07 15:37:02",
                                                       "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2016-12-07 15:53:02", "2017-02-20 22:25:41",
                                                       "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21", "2017-05-23 12:32:39" )),
+                       artifact.type = "Issue",
                        issue.id = c( "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
                                      "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
                                      "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
@@ -397,21 +406,9 @@ test_that("Network construction of the undirected author-issue network with all 
                                        "closed", "commented", "created", "renamed", "commented", "commented", "commented",
                                        "commented", "commented", "merged", "closed", "commented", "commented", "created",
                                        "commented", "commented", "merged", "closed", "commented" ),
-                       weight = c( 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                   1, 1, 1, 1 ),
+                       weight = 1,
                        type = TYPE.EDGES.INTRA,
-                       relation = c("issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue", "issue",
-                                     "issue", "issue", "issue", "issue")
+                       relation = "issue"
             )
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
@@ -436,6 +433,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           id = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
+                          kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
     edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
@@ -448,15 +446,14 @@ test_that("Network construction of the undirected author-issue network with just
                                                       "2016-08-31 18:21:48", "2016-10-05 01:07:46", "2016-10-13 15:33:56",
                                                       "2016-12-06 14:03:42", "2016-12-07 15:37:21", "2016-12-07 15:53:02",
                                                       "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:39" )),
+                       artifact.type = "Issue",
                        issue.id = c( "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
                                      "<issue-48>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
                                      "<issue-51>", "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>" ),
-                       event.name = c( "commented", "commented", "commented", "commented", "commented", "commented",
-                                       "commented", "commented", "commented", "commented", "commented", "commented",
-                                       "commented", "commented", "commented", "commented", "commented", "commented" ),
-                       weight = c(1),
+                       event.name = "commented",
+                       weight = 1,
                        type = TYPE.EDGES.INTRA,
-                       relation = c("issue"))
+                       relation = "issue")
 
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
