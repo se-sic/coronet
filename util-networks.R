@@ -49,7 +49,7 @@ EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
-    relation = "concat",
+    relation = "first",
 
     ## commit data
     changed.files = "sum",
@@ -128,6 +128,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
+
             author.net = construct.network.from.edge.list(
                 author.net.data[["vertices"]],
                 author.net.data[["edges"]],
@@ -1150,9 +1151,6 @@ create.empty.edge.list = function() {
 
 #' Simplify a given network.
 #'
-#' Important notice: This function only correctly works for networks with only one artifact and one
-#' author relation.
-#'
 #' @param network the given network
 #'
 #' @return the simplified network
@@ -1160,8 +1158,29 @@ simplify.network = function(network) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
 
-    ## simplify networks (contract edges and remove loops)
-    network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+    ## data frame of the network
+    edge.data = igraph::as_data_frame(network, what = "edges")
+    vertex.data = igraph::as_data_frame(network, what = "vertices")
+
+    ## select edges of one relation, build the network and simplify this network
+    if ("relation" %in% colnames(edge.data)) {
+        networks = lapply(unique(edge.data[["relation"]]),
+                             function(relation) {
+                                network.data = edge.data[edge.data[["relation"]] == relation, ]
+                                net = igraph::graph_from_data_frame(d=network.data,
+                                                                    vertices = vertex.data,
+                                                                    directed = igraph::is.directed(network))
+
+                                ## simplify networks (contract edges and remove loops)
+                                net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+                                return(net)
+        })
+
+        ## merge the simplified networks
+        network = merge.networks(networks)
+    } else {
+        network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+    }
 
     logging::logdebug("simplify.network: finished.")
     return(network)
