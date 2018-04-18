@@ -411,6 +411,12 @@ ProjectData = R6::R6Class("ProjectData",
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
+
+                ## add pasta data if wanted
+                if(private$project.conf$get.value("pasta")) {
+                    logging::loginfo("Adding pasta data.")
+                    private$commits = private$add.pasta.data(private$commits)
+                }
             }
             private$extract.timestamps(source = "commits")
 
@@ -508,7 +514,8 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails = read.mails(self$get.data.path())
 
                 ## add pasta data if wanted
-                if (private$project.conf$get.value("pasta")) {
+                if(private$project.conf$get.value("pasta")) {
+                    logging::loginfo("Adding pasta data.")
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
@@ -605,7 +612,6 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the selected pasta data
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
-            logging::loginfo("Getting pasta items started.")
             #if neither message.id nor commit.hash are specified break the code
             if (is.null(message.id) && is.null(commit.hash)) {
                 logging::logwarn("Neither message.id nor commit.hash specified.")
@@ -619,9 +625,13 @@ ProjectData = R6::R6Class("ProjectData",
             ## else gather all message.ids which contain the given commit.hash and return them
             if (!is.null(message.id)) {
                 result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+                if (!(length(result) == 0) && is.na(result)) {
+                    result = ""
+                }
                 return(result)
             } else {
                 result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+                result = result[!is.na(result)]
                 return(result)
             }
         },
