@@ -274,6 +274,49 @@ test_that("Construct consecutive and overlapping ranges.", {
     expect_equal(result.raw, expected.raw, info = "Standard overlapping ranges (raw).")
     ## TODO use expect_identical here? why failing?
 
+    ## overlapping ranges without imperfect ranges:
+    ## 1) expected results
+    expected.formatted = c(
+      "2018-01-01 00:00:00-2018-01-01 02:00:00",
+      "2018-01-01 01:30:00-2018-01-01 03:30:00",
+      "2018-01-01 03:00:00-2018-01-01 06:05:01"
+    )
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+    ## 2) formatted
+    result.formatted = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
+                                                    imperfect.range.ratio = 1.0, raw = FALSE)
+    expect_identical(result.formatted, expected.formatted,
+                     info = "Overlapping ranges without imperfect ranges (formatted).")
+    ## 3) raw
+    result.raw = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
+                                              imperfect.range.ratio = 1.0, raw = TRUE)
+    expect_equal(result.raw, expected.raw,
+                 info = "Overlapping ranges without imperfect ranges (raw).")
+    ## TODO use expect_identical here? why failing?
+
+    ## overlapping ranges with imperfect ranges that last at least 8% of the time period:
+    ## 1) expected results
+    expected.formatted = c(
+      "2018-01-01 00:00:00-2018-01-01 02:00:00",
+      "2018-01-01 01:30:00-2018-01-01 03:30:00",
+      "2018-01-01 03:00:00-2018-01-01 05:00:00",
+      "2018-01-01 04:30:00-2018-01-01 06:05:01"
+    )
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+    ## 2) formatted
+    result.formatted = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
+                                                    imperfect.range.ratio = 0.08, raw = FALSE)
+    expect_identical(result.formatted, expected.formatted,
+                     info = "Overlapping ranges with imperfect ranges (at least 8% of the time period) (formatted).")
+    ## 3) raw
+    result.raw = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
+                                              imperfect.range.ratio = 0.08, raw = TRUE)
+    expect_equal(result.raw, expected.raw,
+                 info = "Overlapping ranges with imperfect ranges (at least 8% of the time period) (raw).")
+    ## TODO use expect_identical here? why failing?
+
     ## non-overlapping/consecutive ranges:
     ## 1) expected results
     expected.formatted = c(
@@ -295,6 +338,32 @@ test_that("Construct consecutive and overlapping ranges.", {
     results.raw = construct.consecutive.ranges(start.date, end.date, time.period = "2 hours", raw = FALSE)
     expect_equal(result.raw, expected.raw, info = "Non-overlapping ranges (consecutive).")
 
+    ## non-overlapping/consecutive ranges without imperfect ranges and exclusive end:
+    ## 1) expected results
+    expected.formatted = c(
+      "2018-01-01 00:00:00-2018-01-01 02:00:00",
+      "2018-01-01 02:00:00-2018-01-01 04:00:00",
+      "2018-01-01 04:00:00-2018-01-01 06:05:00"
+    )
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+    ## 2) formatted
+    result.formatted = construct.overlapping.ranges(start.date, end.date, time.period = "2 hours", overlap = 0,
+                                                    imperfect.range.ratio = 1.0, include.end.date = FALSE, raw = FALSE)
+    expect_identical(result.formatted, expected.formatted,
+                     info = "Non-overlapping ranges without imperfect ranges and exclusive end (formatted).")
+    ## 3) raw
+    result.raw = construct.overlapping.ranges(start.date, end.date, time.period = "2 hours", overlap = 0,
+                                              imperfect.range.ratio = 1.0, include.end.date = FALSE, raw = TRUE)
+    expect_equal(result.raw, expected.raw,
+                 info = "Non-overlapping ranges without imperfect ranges and exclusive end (raw).")
+    ## TODO use expect_identical here? why failing?
+    ## 4) matching with consecutive ranges
+    results.raw = construct.consecutive.ranges(start.date, end.date, time.period = "2 hours",
+                                               imperfect.range.ratio = 1.0, include.end.date = FALSE, raw = FALSE)
+    expect_equal(result.raw, expected.raw,
+                 info = "Non-overlapping ranges without imperfect ranges and exclusive end (consecutive).")
+
     ## illegal overlap
     expect_error(
         construct.overlapping.ranges(start.date, end.date, time.period = "2 hours", overlap = "1 year", raw = FALSE),
@@ -314,7 +383,7 @@ test_that("Construct cumulative ranges.", {
     end.date = get.date.from.string(end)
     end.including = end.date + 1
 
-    ## standard overlapping ranges:
+    ## standard cumulative ranges:
     ## 1) expected results
     expected.formatted = c(
         "2018-01-01 00:00:00-2018-01-01 02:00:00",
@@ -331,6 +400,28 @@ test_that("Construct cumulative ranges.", {
     result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours", raw = TRUE)
     expect_equal(result.raw, expected.raw, info = "Cumulative ranges (raw).")
     ## TODO use expect_identical here? why failing?
+
+    ## cumulative ranges without imperfect ranges:
+    ## 1) expected results
+    expected.formatted = c(
+      "2018-01-01 00:00:00-2018-01-01 02:00:00",
+      "2018-01-01 00:00:00-2018-01-01 04:00:00",
+      "2018-01-01 00:00:00-2018-01-01 06:05:01"
+    )
+    expected.raw = lapply(expected.formatted, get.range.bounds)
+    names(expected.raw) = expected.formatted
+    ## 2) formatted
+    result.formatted = construct.cumulative.ranges(start, end, time.period = "2 hours",
+                                                   imperfect.range.ratio = 1.0, raw = FALSE)
+    expect_identical(result.formatted, expected.formatted,
+                     info = "Cumulative ranges without imperfect ranges (formatted).")
+    ## 3) raw
+    result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours",
+                                             imperfect.range.ratio = 1.0, raw = TRUE)
+    expect_equal(result.raw, expected.raw,
+                 info = "Cumulative ranges without imperfect ranges (raw).")
+    ## TODO use expect_identical here? why failing?
+
 })
 
 ##
