@@ -196,6 +196,8 @@ metrics.hierarchy = function(network) {
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
     degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
+    return(data.frame(deg = degrees.without.cluster.coeff, cc = cluster.coeff,
+                      log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
 }
+
 
