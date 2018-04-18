@@ -347,7 +347,7 @@ read.pasta = function(data.path) {
         #df = data.frame(message.id = keys.split, commit.hash = values.split)
         df = merge(keys.split, values.split)
         colnames(df) = c("message.id", "commit.hash")
-        df$revision.set.id.id = revision.set.id
+        df$revision.set.id = revision.set.id
         revision.set.id <<- revision.set.id + 1
         return(df)
     })
