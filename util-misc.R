@@ -373,7 +373,7 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 #'                    string, e.g., "3 mins" or "15 days"
 #' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
 #'                              That is, if the last range would be shorter than ratio * \code{time.period},
-#'                              the last range will be combined the the second last range.
+#'                              the last range will be combined with the second last range.
 #'                              A ratio of 0.0 means that the last range could be as small as possible.
 #'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
 #'                              [default: 0.0]
@@ -425,7 +425,7 @@ construct.consecutive.ranges = function(start, end, time.period, imperfect.range
 #'                than the given \code{time.period}.
 #' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
 #'                              That is, if the last range would be shorter than ratio * \code{time.period},
-#'                              the last range will be combined the the second last range.
+#'                              the last range will be combined with the second last range.
 #'                              A ratio of 0.0 means that the last range could be as small as possible.
 #'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
 #'                              [default: 0.0]
@@ -449,7 +449,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
     }
     ## 3) the dates for theirselves
     start.date = get.date.from.string(start)
-    if(include.end.date) {
+    if (include.end.date) {
         end.date = get.date.from.string(end) + 1 ## add 1 for inclusion of end.date
     } else {
         end.date = get.date.from.string(end)
@@ -493,7 +493,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
         }
     }
 
-    if(ranges.approx[[length(ranges.approx)]] > end.date) {
+    if (ranges.approx[[length(ranges.approx)]] > end.date) {
         # check for imperfect range in the end
         if (imperfect.range.ratio > 0.0
             && ranges.approx[[length(ranges.approx)]] - end.date < imperfect.range.ratio * time.period) {
@@ -560,7 +560,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
 #'                    string, e.g., "3 mins" or "15 days"
 #' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
 #'                              That is, if the last range would be shorter than ratio * \code{time.period},
-#'                              the last range will be combined the the second last range.
+#'                              the last range will be combined with the second last range.
 #'                              A ratio of 0.0 means that the last range could be as small as possible.
 #'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
 #'                              [default: 0.0]
