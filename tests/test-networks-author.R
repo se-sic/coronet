@@ -209,7 +209,6 @@ test_that("Network construction of the undirected author-cochange network", {
 
     ## vertex attributes
     authors = data.frame(name= c("Björn", "Olaf", "Karl", "Thomas"),
-                        id = c("Björn", "Olaf", "Karl", "Thomas"),
                         kind= TYPE.AUTHOR,
                         type = TYPE.AUTHOR)
 
@@ -231,7 +230,6 @@ test_that("Network construction of the undirected author-cochange network", {
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
-    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -253,7 +251,6 @@ test_that("Network construction of the directed author-cochange network", {
 
     ## vertex attributes
     authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
-                         id = c("Björn", "Olaf", "Karl", "Thomas"),
                          kind = TYPE.AUTHOR,
                          type = TYPE.AUTHOR)
 
@@ -274,8 +271,6 @@ test_that("Network construction of the directed author-cochange network", {
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
-    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -297,7 +292,6 @@ test_that("Network construction of the undirected simplified author-cochange net
 
     ## vertex attributes
     authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
-                         id = c("Björn", "Olaf", "Karl", "Thomas"),
                          kind = TYPE.AUTHOR,
                          type = TYPE.AUTHOR)
 
@@ -318,7 +312,6 @@ test_that("Network construction of the undirected simplified author-cochange net
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
-    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -341,7 +334,6 @@ test_that("Network construction of the undirected author-issue network with all 
     network.built = network.builder$get.author.network()
 
     vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
-                          id = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
@@ -432,7 +424,6 @@ test_that("Network construction of the undirected author-issue network with just
     network.built = network.builder$get.author.network()
 
     vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
-                          id = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 

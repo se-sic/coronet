@@ -49,10 +49,9 @@ test_that("Construction of the multi network for the feature artifact with autho
               ## build expected network
               vertices = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas",
                                              "Base_Feature", "foo", "A"),
-                                    id = c("Björn", "Olaf", "Karl", "Thomas",
-                                           "Base_Feature", "foo", "A"),
                                     kind = c(rep(TYPE.AUTHOR, 4), rep("feature", 3)),
-                                    type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3))
+                                    type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3)),
+                                    artifact.type = c(rep(NA, 4), rep("feature", 3))
                                     )
               row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")

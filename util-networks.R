@@ -236,6 +236,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = FALSE
             )
 
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = ARTIFACT)
+
             ## store network
             private$artifacts.network.cochange = artifacts.net
             logging::logdebug("get.artifact.network.cochange: finished.")
@@ -309,7 +311,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
             ## (3) set processed names inside graph object
             artifacts.net = igraph::set.vertex.attribute(artifacts.net, "name", value = names)
-            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "id", value = names)
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = ARTIFACT)
 
             ## store network
             private$artifacts.network.callgraph = artifacts.net
@@ -344,6 +346,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
 
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = "thread")
             ## store network
             private$artifacts.network.mail = artifacts.net
             logging::logdebug("get.artifact.network.mail: finished.")
@@ -376,6 +379,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(private$proj.data$get.issue2author()) # thread IDs
             artifacts.net = create.empty.network(directed = directed) +
                 igraph::vertices(artifacts, type = TYPE.ARTIFACT)
+
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = "issue")
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -978,7 +983,6 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
         net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
     }
 
-    net = igraph::set.vertex.attribute(net, "id", value = igraph::get.vertex.attribute(net, "name"))
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     # transform multiple edges to edge weights

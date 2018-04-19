@@ -47,10 +47,10 @@ test_that("Network construction of the undirected artifact-cochange network", {
     network.built = network.builder$get.artifact.network()
 
     ## vertex attributes
-    vertices = data.frame(name=c("Base_Feature", "foo", "A"),
-                          id=c("Base_Feature", "foo", "A"),
-                          kind="feature",
-                         type = TYPE.ARTIFACT)
+    vertices = data.frame(name = c("Base_Feature", "foo", "A"),
+                          artifact.type = "feature",
+                          kind = "feature",
+                          type = TYPE.ARTIFACT)
 
     data = data.frame(from = c("Base_Feature", "Base_Feature"),
                       to = c("foo", "foo"),
@@ -65,7 +65,6 @@ test_that("Network construction of the undirected artifact-cochange network", {
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)
-    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
