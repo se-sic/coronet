@@ -13,6 +13,7 @@
 ##
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
