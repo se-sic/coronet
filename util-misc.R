@@ -481,25 +481,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
         if (seq.end == seq.start) {
             ranges.approx = c(seq.start, end.date)
         } else {
-
-            # check for imperfect range in the end
-            if (imperfect.range.ratio > 0.0
-                && end.date - ranges.approx[[length(ranges.approx)]] < imperfect.range.ratio * time.period) {
-
-                ranges.approx = ranges.approx[-length(ranges.approx)]
-                bins.number = bins.number - 1
-            }
             ranges.approx = c(ranges.approx, end.date)
-        }
-    }
-
-    if (ranges.approx[[length(ranges.approx)]] > end.date) {
-        # check for imperfect range in the end
-        if (imperfect.range.ratio > 0.0
-            && ranges.approx[[length(ranges.approx)]] - end.date < imperfect.range.ratio * time.period) {
-
-            ranges.approx = ranges.approx[-(length(ranges.approx)-1)]
-            bins.number = bins.number - 1
         }
     }
 
@@ -517,6 +499,23 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
         ## return the tuple of bin start and bin end
         return(c(bin.start, bin.end))
     })
+
+    # if wanted, check for imperfect range in the end:
+    if (imperfect.range.ratio > 0) {
+        ## 1) get the last range
+        last.range = ranges.raw[[bins.number]]
+        ## 2) get the last range's duration
+        last.range.duration = lubridate::as.duration(lubridate::interval(last.range[1], last.range[2]))
+        ## 3) check if the last range is too short
+        is.too.short = last.range.duration < imperfect.range.ratio * time.period
+        ## 4) combine the last range with the second-last one, if the last one is too short
+        if (bins.number > 1 && is.too.short) {
+            ## extend second-last range until end.date
+            ranges.raw[[bins.number - 1]][2] = end.date
+            ## remove last range
+            ranges.raw = ranges.raw[-bins.number]
+        }
+    }
 
     ## construct actual range strings (without names)
     ranges = sapply(ranges.raw, construct.ranges, sliding.window = FALSE, raw = FALSE)

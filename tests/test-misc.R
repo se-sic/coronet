@@ -443,7 +443,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
 
     ## consecutive
     ## 1) formatted
-    result.formatted = construct.consecutive.ranges(start, end, time.period = "1 week", raw = FALSE)
+    result.formatted = construct.consecutive.ranges(start, end, time.period = "1 week", imperfect.range.ratio = 0.2, raw = FALSE)
     expect_identical(result.formatted, expected.formatted, info = "Consecutive range (formatted).")
     ## 2) raw
     result.raw = construct.consecutive.ranges(start, end, time.period = "1 week", raw = TRUE)
@@ -452,7 +452,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
 
     ## cumulative
     ## 1) formatted
-    result.formatted = construct.cumulative.ranges(start, end, time.period = "1 week", raw = FALSE)
+    result.formatted = construct.cumulative.ranges(start, end, time.period = "1 week", imperfect.range.ratio = 0.2, raw = FALSE)
     expect_identical(result.formatted, expected.formatted, info = "Cumulative range (formatted).")
     ## 2) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "1 week", raw = TRUE)
@@ -461,7 +461,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
 
     ## overlapping
     ## 1) formatted
-    result.formatted = construct.overlapping.ranges(start, end, time.period = "1 week",
+    result.formatted = construct.overlapping.ranges(start, end, time.period = "1 week", imperfect.range.ratio = 0.2,
                                                     overlap = "1 day", raw = FALSE)
     expect_identical(result.formatted, expected.formatted, info = "Overlapping range (formatted).")
     ## 2) raw
