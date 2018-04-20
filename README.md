@@ -214,7 +214,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 **Note**: Default values are shown in *italics*.
 
 - `author.relation`
-  * The relation among authors, encoded as edges in an author network
+  * The relation(s) among authors, encoded as edges in an author network
   * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
   * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
@@ -228,7 +228,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
   * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
-  * The relation among artifacts, encoded as edges in an artifact network
+  * The relation(s) among artifacts, encoded as edges in an artifact network
   * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
   * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
@@ -239,6 +239,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The list of edge-attribute names and information
   * a subset of the following as a single vector:
        - timestamp information: *`"date"`*, `"date.offset"`
+       - relation information: *`"relation"`* (possible values: [`"mail"`,`"issue"`,`"cochange"`, `"callgraph"`])
        - author information: `"author.name"`, `"author.email"`
        - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
@@ -248,6 +249,11 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
   * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
+- `vertex.attributes`
+    - *`"name"`*
+    - *`"type"`*: [`Author`, `Artifact`]
+    - `"artifact.type"`: [`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
+    - *`"kind"`*: [`author`,`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
