@@ -53,6 +53,7 @@ PLOT.VERTEX.LABEL.COLOR = "gray60"
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
+#' All loops are deleted before plotting the network.
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -74,6 +75,7 @@ plot.network = function(network, labels = TRUE) {
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
+#' All loops are deleted before plotting the network.
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -96,6 +98,7 @@ plot.print.network = function(network, labels = TRUE) {
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
+#' All loops are deleted before plotting the network.
 #'
 #' @param network the network to plot
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -112,6 +115,9 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     ## properly set vertex-type names for legend
     PLOT.VERTEX.TYPES = c(PLOT.VERTEX.TYPE.AUTHOR, PLOT.VERTEX.TYPE.ARTIFACT)
     names(PLOT.VERTEX.TYPES) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
+
+    ## remove loops because of weird behavior when plotting
+    network = igraph::delete.edges(network, igraph::E(network)[igraph::is.loop(network)])
 
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network)
