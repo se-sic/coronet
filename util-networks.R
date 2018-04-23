@@ -236,7 +236,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = FALSE
             )
 
-            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = ARTIFACT)
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type",
+                                                         value = private$proj.data$get.project.conf.entry("artifact"))
 
             ## store network
             private$artifacts.network.cochange = artifacts.net
@@ -311,7 +312,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
             ## (3) set processed names inside graph object
             artifacts.net = igraph::set.vertex.attribute(artifacts.net, "name", value = names)
-            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type", value = ARTIFACT)
+            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "artifact.type",
+                                                         value = private$proj.data$get.project.conf.entry("artifact"))
 
             ## store network
             private$artifacts.network.callgraph = artifacts.net
