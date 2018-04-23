@@ -49,10 +49,10 @@ CF.DATA = "/path/to/codeface-data" # path to codeface data
 CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
 
 CASESTUDY = "busybox"
-ARTIFACT = "feature" # function, feature, file, featureexpression
+ARTIFACT = "feature" # function, feature, file, featureexpression (only relevant for cochange)
 
-AUTHOR.RELATION = "mail" # mail, cochange
-ARTIFACT.RELATION = "cochange" # cochange, callgraph
+AUTHOR.RELATION = "mail" # mail, cochange, issue
+ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
