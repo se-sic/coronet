@@ -127,7 +127,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
             name = c("<thread-1>", "<thread-2>", "<thread-8>",
                      "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>", "<thread-3>"),
             type = TYPE.ARTIFACT,
-            kind = "Mail"
+            kind = "MailThread"
     )
     vertices = plyr::rbind.fill(authors1, issues, authors2, threads)
     ## 2) construct expected edge attributes

@@ -94,7 +94,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             vertex.kind = switch(relation,
                 cochange  = private$proj.data$get.project.conf.entry("artifact.codeface"),
                 callgraph = private$proj.data$get.project.conf.entry("artifact.codeface"),
-                mail      = "Mail",
+                mail      = "MailThread",
                 issue     = "Issue"
             )
 
