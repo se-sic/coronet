@@ -52,14 +52,12 @@ test_that("Construction of the bipartite network for the feature artifact with a
     authors = data.frame(
         name = c("Björn", "Karl", "Olaf", "Thomas"),
         type = TYPE.AUTHOR,
-        artifact.type = NA,
         kind = TYPE.AUTHOR
     )
     artifacts = data.frame(
         name = c("A", "Base_Feature", "foo"),
         type = TYPE.ARTIFACT,
-        artifact.type = "feature",
-        kind = "feature"
+        kind = "Feature"
     )
     vertices = plyr::rbind.fill(authors, artifacts)
     ## 2) construct expected edge attributes
@@ -68,18 +66,19 @@ test_that("Construction of the bipartite network for the feature artifact with a
         to   = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
         date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                       "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+        artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
                  "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
         file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c"),
-        artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
         artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
-        type = TYPE.EDGES.INTER,
         weight = 1,
+        type = TYPE.EDGES.INTER,
         relation = "cochange"
     )
     ## 3) construct expected network
-    network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+    network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -106,14 +105,12 @@ test_that("Construction of the bipartite network for the file artifact with auth
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("test.c", "test2.c"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "file",
-                  kind = "file"
+                  kind = "File"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -122,20 +119,21 @@ test_that("Construction of the bipartite network for the file artifact with auth
                   to   = c("test.c", "test.c", "test2.c", "test2.c"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+                  artifact.type = c("File", "File", "File", "File"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact.type = c("File", "File", "File", "File"),
                   artifact = c("test.c", "test.c", "test2.c", "test2.c"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange", "cochange")
+                  relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 
 test_that("Construction of the bipartite network for the function artifact with author.relation = 'cochange' and artifact.
@@ -159,14 +157,12 @@ test_that("Construction of the bipartite network for the function artifact with 
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("File_Level"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "function",
-                  kind ="function"
+                  kind ="Function"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -175,19 +171,20 @@ test_that("Construction of the bipartite network for the function artifact with 
                   to   = c("File_Level", "File_Level", "File_Level", "File_Level"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+                  artifact.type = c("Function", "Function", "Function", "Function"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact.type = c("Function", "Function", "Function", "Function"),
                   artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
               network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 test_that("Construction of the bipartite network for the featureexpression artifact with author.relation = 'cochange' and artifact.
           relation = 'cochange'.", {
@@ -210,14 +207,12 @@ test_that("Construction of the bipartite network for the featureexpression artif
               authors = data.frame(
                   name = c("Björn", "Olaf"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "featureexpression",
-                  kind = "featureexpression"
+                  kind = "FeatureExpression"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -226,19 +221,21 @@ test_that("Construction of the bipartite network for the featureexpression artif
                   to   = c("defined(A)", "defined(A)", "Base_Feature"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41")),
+                  artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774"),
                   file = c("test.c", "test.c", "test2.c"),
-                  artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                   artifact = c("defined(A)", "defined(A)", "Base_Feature"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 test_that("Construction of the bipartite network for the feature artifact with author.relation = 'cochange' and artifact.
           relation = 'issue'.", {
@@ -261,14 +258,12 @@ test_that("Construction of the bipartite network for the feature artifact with a
               authors = data.frame(
                   name =c("Björn", "Karl", "Max", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "issue",
-                  kind = "issue"
+                  kind = "Issue"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -290,14 +285,15 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   event.name = c("commented", "commented", "commented", "commented", "commented",
                                  "commented", "commented", "commented", "commented", "commented",
                                  "commented", "commented", "commented", "commented", "commented"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-                  relation = "issue")
+                  relation = "issue"
+              )
               ## 3) construct expected network
               network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 test_that("Construction of the directed bipartite network for the feature artifact with author.relation = 'cochange' and artifact.
           relation = 'cochange'.", {
@@ -321,14 +317,12 @@ test_that("Construction of the directed bipartite network for the feature artifa
               authors = data.frame(
                   name = c("Björn", "Karl", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("A", "Base_Feature", "foo"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "feature",
-                  kind = "feature"
+                  kind = "Feature"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -337,20 +331,22 @@ test_that("Construction of the directed bipartite network for the feature artifa
                   to   = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                  artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
                            "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c"),
-                  artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
                   artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange", "cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 test_that("Construction of the directed bipartite network for the file artifact with author.relation = 'cochange' and artifact.
           relation = 'cochange'.", {
@@ -374,14 +370,12 @@ test_that("Construction of the directed bipartite network for the file artifact 
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("test.c", "test2.c"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "file",
-                  kind ="file"
+                  kind = "File"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -390,19 +384,21 @@ test_that("Construction of the directed bipartite network for the file artifact 
                   to   = c("test.c", "test.c", "test2.c", "test2.c"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+                  artifact.type = c("File", "File", "File", "File"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact.type = c("File", "File", "File", "File"),
                   artifact = c("test.c", "test.c", "test2.c", "test2.c"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-          })
+})
 
 
 test_that("Construction of the directed bipartite network for the function artifact with author.relation = 'cochange' and artifact.
@@ -427,14 +423,12 @@ test_that("Construction of the directed bipartite network for the function artif
               authors = data.frame(
                   name = c("Björn", "Olaf", "Thomas"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("File_Level"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "function",
-                  kind = "function"
+                  kind = "Function"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -443,19 +437,21 @@ test_that("Construction of the directed bipartite network for the function artif
                   to   = c("File_Level", "File_Level", "File_Level", "File_Level"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+                  artifact.type = c("Function", "Function", "Function", "Function"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact.type = c("Function", "Function", "Function", "Function"),
                   artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-              })
+})
 
 test_that("Construction of the directed bipartite network for the featureexpression artifact with author.relation = 'cochange' and artifact.
           relation = 'cochange'.", {
@@ -479,14 +475,12 @@ test_that("Construction of the directed bipartite network for the featureexpress
               authors = data.frame(
                   name = c("Björn", "Olaf"),
                   type = TYPE.AUTHOR,
-                  artifact.type = NA,
                   kind = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
                   type = TYPE.ARTIFACT,
-                  artifact.type = "featureexpression",
-                  kind = "featureexpression"
+                  kind = "FeatureExpression"
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -495,16 +489,18 @@ test_that("Construction of the directed bipartite network for the featureexpress
                   to   = c("defined(A)", "defined(A)", "Base_Feature"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41")),
+                  artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774"),
                   file = c("test.c", "test.c", "test2.c"),
-                  artifact.type = c("FeatureExpression", "FeatureExpression", "FeatureExpression"),
                   artifact = c("defined(A)", "defined(A)", "Base_Feature"),
+                  weight = 1,
                   type = TYPE.EDGES.INTER,
-                  weight = c(1, 1, 1),
-                  relation = c("cochange", "cochange", "cochange"))
+                  relation = "cochange"
+              )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                          directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
-              })
+})

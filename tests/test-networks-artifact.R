@@ -49,20 +49,21 @@ test_that("Network construction of the undirected artifact-cochange network", {
 
     ## vertex attributes
     vertices = data.frame(name = c("Base_Feature", "foo", "A"),
-                          artifact.type = "feature",
-                          kind = "feature",
+                          kind = "Feature",
                           type = TYPE.ARTIFACT)
 
-    data = data.frame(from = c("Base_Feature", "Base_Feature"),
-                      to = c("foo", "foo"),
-                      date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-                      hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-                      file = c("test2.c", "test2.c"),
-                      artifact.type = c("Feature", "Feature"),
-                      artifact = c("Base_Feature", "foo"),
-                      weight = c(1, 1),
-                      relation = c("cochange", "cochange"),
-                      type = TYPE.EDGES.INTRA)
+    data = data.frame(
+        from = c("Base_Feature", "Base_Feature"),
+        to = c("foo", "foo"),
+        date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+        artifact.type = c("Feature", "Feature"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        file = c("test2.c", "test2.c"),
+        artifact = c("Base_Feature", "foo"),
+        weight = 1,
+        type = TYPE.EDGES.INTRA,
+        relation = "cochange"
+    )
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)

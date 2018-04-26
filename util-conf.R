@@ -687,15 +687,17 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             ),
             edge.attributes = list(
                 default = c(
-                    "date", # general
+                    "date", "artifact.type", # general
                     "message.id", "thread", # mail data
-                    "hash", "file", "artifact.type", "artifact", # commit data
+                    "hash", "file", "artifact", # commit data
                     "issue.id", "event.name" # issue data
                 ),
                 type = "character",
                 allowed = c(
                     # the date
                     "date", "date.offset",
+                    # the artifact type indicating the edge
+                    "artifact.type",
                     # author information
                     "author.name", "author.email",
                     # committer information
@@ -703,7 +705,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     # e-mail information
                     "message.id", "thread", "subject",
                     ## commit information
-                    "hash", "file", "artifact.type", "artifact", "changed.files", "added.lines",
+                    "hash", "file", "artifact", "changed.files", "added.lines",
                     "deleted.lines", "diff.size", "artifact.diff.size", "synchronicity",
                     # pasta information
                     "pasta",
@@ -752,9 +754,13 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
         update.values = function(updated.values = list(), stop.on.error = FALSE) {
             super$update.values(updated.values = updated.values, stop.on.error = stop.on.error)
 
-            ## 1) "date" always as edge attribute
+            ## 1) "date" and "artifact.type" always as edge attribute
             name = "edge.attributes"
-            private[["attributes"]][[name]][["value"]] = unique(c(self$get.value(name), "date"))
+            private[["attributes"]][[name]][["value"]] = unique(c(
+                "date",
+                "artifact.type",
+                self$get.value(name)
+            ))
 
             ## return invisible
             invisible()

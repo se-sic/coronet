@@ -59,6 +59,8 @@ test_that("Network construction of the undirected author network with relation =
                                                     "2016-07-12 16:06:10",   "2016-07-12 16:06:32",
                                                     "2016-07-12 15:58:40", "2016-07-12 15:58:50", "2016-07-12 16:04:40", # mail
                                                     "2016-07-12 16:05:37")),
+                      artifact.type = c(rep("Feature", 8), # cochange
+                                        rep("Mail", 4)), # mail
                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
@@ -66,13 +68,11 @@ test_that("Network construction of the undirected author network with relation =
                                rep(NA, 4)),
                       file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c",
                                rep(NA, 4)),
-                      artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", #cochange
-                                        rep("Mail", 4)), #mail
                       artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
                                    rep(NA, 4)),
                       weight = 1,
                       type = TYPE.EDGES.INTRA,
-                      relation = c("cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange",
+                      relation = c(rep("cochange", 8),
                                    rep("mail", 4)),
                       message.id = c(NA, NA, NA, NA, NA, NA, NA, NA,
                                      "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
@@ -83,7 +83,8 @@ test_that("Network construction of the undirected author network with relation =
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
+    network.expected = igraph::graph.data.frame(data, vertices = authors,
+                                                directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -110,27 +111,23 @@ test_that("Construction of the bipartite network for the feature artifact with a
      authors1 = data.frame( # author -- issue
         name = c("Björn", "Karl", "Max", "Olaf", "Thomas"),
         type = TYPE.AUTHOR,
-        artifact.type = NA,
         kind = TYPE.AUTHOR
      )
      authors2 = data.frame( # author --mail
          name = c("Fritz fritz@example.org", "georg", "Hans", "udo"),
          type = TYPE.AUTHOR,
-         artifact.type = NA,
          kind = TYPE.AUTHOR
      )
     issues = data.frame(
          name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
          type = TYPE.ARTIFACT,
-         artifact.type = "issue",
-         kind = "issue"
+         kind = "Issue"
     )
     threads = data.frame(
             name = c("<thread-1>", "<thread-2>", "<thread-8>",
                      "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>", "<thread-3>"),
             type = TYPE.ARTIFACT,
-            artifact.type = "thread",
-            kind = "thread"
+            kind = "Mail"
     )
     vertices = plyr::rbind.fill(authors1, issues, authors2, threads)
     ## 2) construct expected edge attributes
@@ -161,12 +158,10 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>",
                                rep(NA,16)),
-                  event.name = c("commented", "commented", "commented", "commented", "commented",
-                                 "commented", "commented", "commented", "commented", "commented",
-                                 "commented", "commented", "commented", "commented", "commented",
+                  event.name = c(rep("commented", 15),
                                  rep(NA, 16)),
-                  type = TYPE.EDGES.INTER,
                   weight = 1,
+                  type = TYPE.EDGES.INTER,
                   relation = c(rep("issue", 15), rep("mail", 16)),
                   message.id = c(rep(NA, 15),
                                  "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<1107974989.17910.6.camel@jmcmullan>",
@@ -183,7 +178,8 @@ test_that("Construction of the bipartite network for the feature artifact with a
                              "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>")
     )
     ## 3) construct expected network
-    network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+    network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+                                                directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -209,9 +205,8 @@ test_that("Construction of the multi network for the feature artifact with autho
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
                  "Base_Feature", "foo", "A", "<issue-2>", "<issue-48>", "<issue-51>", "<issue-57>"),
-        kind = c(rep(TYPE.AUTHOR, 8), rep("feature", 3), rep("issue", 4)),
-        type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7)),
-        artifact.type = c(rep(NA, 8), rep("feature", 3), rep("issue", 4))
+        kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 4)),
+        type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7))
     )
     row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
                             "Base_Feature", "foo", "A", "<issue-2>", "<issue-48>", "<issue-51>", "<issue-57>")
@@ -240,6 +235,11 @@ test_that("Construction of the multi network for the feature artifact with autho
                                                      "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2016-07-27 22:25:25",
                                                      "2016-10-05 01:07:46", "2016-12-07 15:37:21", "2013-05-05 23:28:57",
                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
+                        artifact.type = c(rep("Feature", 8),
+                                          rep("Mail", 4),
+                                          rep("Feature", 2),
+                                          rep("Feature", 6),
+                                          rep("Issue", 14)),
                         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", # author cochange
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
@@ -255,11 +255,6 @@ test_that("Construction of the multi network for the feature artifact with autho
                                  "test2.c", "test2.c",                                                                 # artifact cochange
                                  "test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c",                       # bipartite cochange
                                  rep(NA, 14)),
-                        artifact.type = c(rep("Feature", 8),
-                                          rep("Mail", 4),
-                                          rep("Feature", 2),
-                                          rep("Feature", 6),
-                                          rep("Issue", 14)),
                         artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", # author cochange
                                      "Base_Feature",
                                      rep(NA, 4),
@@ -289,7 +284,8 @@ test_that("Construction of the multi network for the feature artifact with autho
                         event.name = c(rep(NA, 20), rep("commented", 14))
      )
 
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph.data.frame(edges, vertices = vertices,
+                                                directed = net.conf$get.value("author.directed"))
 
     expected.edges = igraph::as_data_frame(network.expected, what = "edges")
     expected.vertices = igraph::as_data_frame(network.expected, what = "vertices")

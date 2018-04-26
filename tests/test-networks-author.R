@@ -216,17 +216,20 @@ test_that("Network construction of the undirected author-cochange network", {
     ## edge attributes
     data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
                       comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
-                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:06:10",
-                                                    "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
-                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
-                               "1143db502761379c2bfcecc2007fc34282e7ee61", "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
+                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                                    "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                      artifact.type = "Feature",
+                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                               "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
                                "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
                       file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
-                      artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
-                      artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature"),
-                      weight = c(1, 1, 1, 1, 1, 1, 1, 1),
+                      artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
+                                   "Base_Feature", "Base_Feature"),
+                      weight = 1,
                       type = TYPE.EDGES.INTRA,
-                      relation = c("cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange", "cochange")
+                      relation = "cochange"
     )
 
     ## build expected network
@@ -260,14 +263,14 @@ test_that("Network construction of the directed author-cochange network", {
                       to = c("Björn", "Olaf", "Olaf", "Karl"),
                       date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32",
                                                     "2016-07-12 16:06:32")),
+                      artifact.type = "Feature",
                       hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
                       file = c("test.c", "test3.c", "test2.c", "test2.c"),
-                      artifact.type = c("Feature", "Feature", "Feature", "Feature"),
                       artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
-                      weight = c(1, 1, 1, 1),
+                      weight = 1,
                       type = TYPE.EDGES.INTRA,
-                      relation = c("cochange", "cochange", "cochange", "cochange")
+                      relation = "cochange"
     )
 
     ## build expected network
@@ -297,18 +300,24 @@ test_that("Network construction of the undirected simplified author-cochange net
                          type = TYPE.AUTHOR)
 
     ## edge attributes
-    data = data.frame(from = c("Björn", "Olaf", "Olaf", "Karl"),
-                      to = c("Olaf", "Karl", "Thomas", "Thomas"),
-                      date = I(list(c(1468339139, 1468339245), c(1468339541, 1468339570), c(1468339541, 1468339592), c(1468339570, 1468339592))),
-                      hash = I(list(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"), c("3a0ed78458b3976243db6829f63eba3eead26774",
-                               "1143db502761379c2bfcecc2007fc34282e7ee61"), c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                               c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))),
-                      file = I(list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"))),
-                      artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"))),
-                      artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"))),
-                      weight = c(2, 2, 2, 2),
-                      type = TYPE.EDGES.INTRA,
-                      relation = c("cochange", "cochange", "cochange", "cochange")
+    data = data.frame(
+        from = c("Björn", "Olaf", "Olaf", "Karl"),
+        to = c("Olaf", "Karl", "Thomas", "Thomas"),
+        date = I(list(c(1468339139, 1468339245), c(1468339541, 1468339570), c(1468339541, 1468339592),
+                      c(1468339570, 1468339592))),
+        artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"),
+                               c("Feature", "Feature"))),
+        hash = I(list(
+            c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+            c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+            c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+            c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))),
+        file = I(list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"))),
+        artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"),
+                          c("Base_Feature", "Base_Feature"))),
+        weight = 2,
+        type = TYPE.EDGES.INTRA,
+        relation = "cochange"
     )
 
     ## build expected network

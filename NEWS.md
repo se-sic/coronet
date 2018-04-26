@@ -14,7 +14,7 @@
 - handle more than one relation type and merge the resulting vertex lists and edge lists in `get.bipartite.network`
 - enable for different relations for `authors.to.artifacts` in `get.multi.network`, add information about the relation
   and merge vertex sets
-- add new vertex attribute `kind`, which include `artifact.type` and the `type` of author vertices
+- add new vertex attribute `kind`
 (7c628fb93eb21f280c7d9da66680f817e107fa24, 7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
 - remove vertex attribute `id` in artifact vertices (7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
 
