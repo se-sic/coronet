@@ -268,7 +268,7 @@ test_that("Read and parse the issue data.", {
                                                     "created", "renamed", "commented", "commented", "commented", "mentioned", "subscribed", "commented", "referenced", "mentioned",
                                                     "subscribed", "commented", "commented", "commented", "commented", "commented", "merged", "closed", "commented", "commented", "created",
                                                     "commented", "commented", "merged", "closed", "commented"),
-                                     artifact.type = "Issue"
+                                     artifact.type = "IssueComment"
                                      )
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(

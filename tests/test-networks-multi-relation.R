@@ -153,7 +153,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2010-07-12 12:05:46",
                                                 "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
                                                 "2010-07-12 10:05:36")),
-                  artifact.type = c(rep("Issue", 15), rep("Mail", 16)),
+                  artifact.type = c(rep("IssueComment", 15), rep("Mail", 16)),
                   issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
                                "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>",
@@ -239,7 +239,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                           rep("Mail", 4),
                                           rep("Feature", 2),
                                           rep("Feature", 6),
-                                          rep("Issue", 14)),
+                                          rep("IssueComment", 14)),
                         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", # author cochange
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
