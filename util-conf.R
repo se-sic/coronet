@@ -90,7 +90,6 @@ Conf = R6::R6Class("Conf",
         #'         - allowed, and
         #'         - allowed.number.
         check.value = function(value, name) {
-            # browser(expr = name == "revisions")
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
             } else {
@@ -810,7 +809,6 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
             if (len == 1) {
                 field = paste0(" = ", paste(struct, collapse = ", "), "\n")
             } else if (len > 7) {
-                # browser()
                 entries = paste0(indentation, indentation.item, indentation.item, struct)
                 field = paste0(
                     " = [\n",

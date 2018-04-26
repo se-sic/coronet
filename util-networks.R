@@ -764,7 +764,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.all = plyr::rbind.fill(artifacts)
 
             artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
-            # browser(expr = length(setdiff(artifacts.all, artifacts.from.net)) > 0)
             artifacts.to.add = setdiff(artifacts.all[["data.vertices"]], artifacts.from.net)
             artifacts.to.add.kind = artifacts.all[ artifacts.all[["data.vertices"]] %in% artifacts.to.add, "artifact.type" ]
             artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
