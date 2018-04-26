@@ -87,8 +87,21 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
 
-        ## * * data cutting ---------------------------------------------
+        ## * * relation-to-vertex-kind mapping -----------------------------
 
+        get.vertex.kind.for.relation = function(relation) {
+
+            vertex.kind = switch(relation,
+                cochange  = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                callgraph = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                mail      = "Mail",
+                issue     = "Issue"
+            )
+
+            return(vertex.kind)
+        },
+
+        ## * * data cutting ------------------------------------------------
 
         #' Cut the data sources of the data object to the same date ranges.
         cut.data.to.same.timestamps = function() {
@@ -247,7 +260,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## vertex attribute 'kind' later
             artifacts.net = igraph::set.graph.attribute(
                 artifacts.net, "vertex.kind",
-                value = private$proj.data$get.project.conf.entry("artifact.codeface")
+                value = private$get.vertex.kind.for.relation("cochange")
             )
 
             ## store network
@@ -335,7 +348,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## vertex attribute 'kind' later
             artifacts.net = igraph::set.graph.attribute(
                 artifacts.net, "vertex.kind",
-                value = private$proj.data$get.project.conf.entry("artifact.codeface")
+                value = private$get.vertex.kind.for.relation("callgraph")
             )
 
             ## store network
@@ -373,12 +386,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## set network attribute 'vertex.kind' to ensure the correct setting of the
             ## vertex attribute 'kind' later
-            if (length(artifacts.net.data.raw) > 0) {
-                artifacts.net = igraph::set.graph.attribute(
-                    artifacts.net, "vertex.kind",
-                    value = unique(artifacts.net.data.raw[[1]][["artifact.type"]])
-                )
-            }
+            artifacts.net = igraph::set.graph.attribute(
+                artifacts.net, "vertex.kind",
+                value = private$get.vertex.kind.for.relation("mail")
+            )
 
             ## store network
             private$artifacts.network.mail = artifacts.net
@@ -415,12 +426,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## set network attribute 'vertex.kind' to ensure the correct setting of the
             ## vertex attribute 'kind' later
-            if (length(artifacts.net.data.raw) > 0) {
-                artifacts.net = igraph::set.graph.attribute(
-                    artifacts.net, "vertex.kind",
-                    value = unique(artifacts.net.data.raw[[1]][["artifact.type"]])
-                )
-            }
+            artifacts.net = igraph::set.graph.attribute(
+                artifacts.net, "vertex.kind",
+                value = private$get.vertex.kind.for.relation("issue")
+            )
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -461,16 +470,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     }
                 )
 
-                ## set vertex attribute 'kind' on all edges, corresponding to relation
-                ## FIXME remove?
-                if (length(bip.relation) > 0) {
-                    vertex.kind = unique(bip.relation[[1]][["artifact.type"]])
-                } else {
-                    vertex.kind = NA
-                }
-
                 ## set vertex.kind and relation attributes
-                attr(bip.relation, "vertex.kind") = vertex.kind
+                attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
                 attr(bip.relation, "relation") = relation
 
                 return (bip.relation)
