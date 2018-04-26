@@ -295,7 +295,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param reset.environment parameter to determine whether the environment
         #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
-            private$project.conf = project.conf
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
 
             if (reset.environment) {
                 self$reset.environment()
