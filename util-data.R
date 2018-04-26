@@ -636,6 +636,74 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        #' Get the names of all data sources that are currently cached in the
+        #' ProjectData object.
+        #'
+        #' @return a vector containing all the names
+        get.cached.data.sources = function() {
+            result = c()
+
+            if (!is.null(private$data.timestamps)) {
+                result = c(result, "data.timestamps")
+            }
+            if (!is.null(private$commits)) {
+                result = c(result, "commits")
+            }
+            if (!is.null(private$mails)) {
+                result = c(result, "mails")
+            }
+            if (!is.null(private$authors)) {
+                result = c(result, "authors")
+            }
+            if (!is.null(private$issues)) {
+                result = c(result, "issues")
+            }
+            if (!is.null(private$synchronicity)) {
+                result = c(result, "synchronicity")
+            }
+            if (!is.null(private$pasta)) {
+                result = c(result, "pasta")
+            }
+
+            return(result)
+        },
+
+        #' Compares two ProjectData objects by first comparing the names of the
+        #' cached data sources of the two.
+        #' Then it compares the ProjectConf objects and in the end the cached data
+        #' sources.
+        #'
+        #' @param other.data.object the object to compare
+        #'
+        #' @return TRUE is the objects are equal and FALSE otherwise
+        equals = function(other.data.object) {
+            if (!(class(other.data.object)[1] == "ProjectData")) {
+                logging::logerror("You can only compare a ProjectData object against another one.")
+                return()
+            }
+
+            self.data.sources = self$get.cached.data.sources()
+            other.data.sources = other.data.object$get.cached.data.sources()
+
+            if (!identical(self.data.sources, other.data.sources)) {
+                return(FALSE)
+            }
+
+            if (!identical(self$get.project.conf()$get.conf.as.string(),
+                          other.data.object$get.project.conf()$get.conf.as.string())) {
+                return(FALSE)
+            }
+
+            for (source in self.data.sources) {
+                function.call = paste("get.", source, "()", sep = "")
+                if (!identical(self[[function.call]], other.data.object[[function.call]])) {
+                    return(FALSE)
+                }
+            }
+
+            return(TRUE)
+        },
+
         ## * * data cutting ------------------------------------------------
 
         #' Get the timestamps (earliest and latest date of activity) of the specified
