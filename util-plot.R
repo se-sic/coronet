@@ -134,8 +134,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     if (igraph::ecount(network) > 0) {
         p = p +
             ggraph::geom_edge_fan(
-                mapping = ggplot2::aes(colour = relation, linetype = edge.type),
-                width = 0.5,
+                mapping = ggplot2::aes(colour = relation, linetype = edge.type, width = 0.3 + 0.5 * log(weight)),
                 end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {
