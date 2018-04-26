@@ -53,7 +53,7 @@ PLOT.VERTEX.LABEL.COLOR = "gray60"
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
-#' All loops are deleted before plotting the network.
+#' All loops are deleted for plotting the network.
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -75,7 +75,7 @@ plot.network = function(network, labels = TRUE) {
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
-#' All loops are deleted before plotting the network.
+#' All loops are deleted for plotting the network.
 #'
 #' @param network the network to plot and print
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -98,7 +98,7 @@ plot.print.network = function(network, labels = TRUE) {
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
-#' All loops are deleted before plotting the network.
+#' All loops are deleted for plotting the network.
 #'
 #' @param network the network to plot
 #' @param labels logical indicating whether vertex lables should be plotted [default: TRUE]
@@ -166,14 +166,6 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
         ## BROKEN RIGHT NOW due to bug in scale_edge_colour_viridis():
         # ggraph::scale_edge_colour_viridis(name = "Relations", option = "magma", discrete = TRUE,
         #                                   end = 0.85, begin = 0, direction = 1) +
-
-        # ## scale vertices (colors and styles)
-        # ggplot2::scale_shape_manual("Vertices", values = PLOT.SHAPE.VERTEX, labels = PLOT.VERTEX.TYPES) +
-        # ggplot2::scale_color_manual("Vertices", values = colors.vertex, labels = PLOT.VERTEX.TYPES) +
-        #
-        # ## scale edges (colors and styles)
-        # ggraph::scale_edge_linetype_manual("Relation Types", values = PLOT.SHAPE.EDGE) +
-        # ggraph::scale_edge_colour_manual("Relations", values = colors.edge.relation) +
 
         ## theme
         ggplot2::theme_light() +

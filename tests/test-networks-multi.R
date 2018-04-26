@@ -86,7 +86,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                               "foo"),
                                  weight = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
                                  type = c(rep(TYPE.EDGES.INTRA, 10), rep(TYPE.EDGES.INTER, 6)),
-                                 relation =c(rep("cochange", 16)))
+                                 relation = c(rep("cochange", 16)))
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 

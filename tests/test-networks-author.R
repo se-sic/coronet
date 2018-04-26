@@ -209,9 +209,9 @@ test_that("Network construction of the undirected author-cochange network", {
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    authors = data.frame(name= c("Björn", "Olaf", "Karl", "Thomas"),
-                        kind= TYPE.AUTHOR,
-                        type = TYPE.AUTHOR)
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
 
     ## edge attributes
     data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),

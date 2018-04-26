@@ -159,24 +159,24 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-            author.relation.data = construct.edge.list.from.key.value.list(
+            author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
-            author.relation = construct.network.from.edge.list(
-                author.relation.data[["vertices"]],
-                author.relation.data[["edges"]],
+            author.net = construct.network.from.edge.list(
+                author.net.data[["vertices"]],
+                author.net.data[["edges"]],
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
-            igraph::E(author.relation)$type = TYPE.EDGES.INTRA
+            igraph::E(author.net)$type = TYPE.EDGES.INTRA
 
             ## store network
-            private$authors.network.mail = author.relation
+            private$authors.network.mail = author.net
             logging::logdebug("get.author.network.mail: finished.")
 
-            return(author.relation)
+            return(author.net)
         },
 
         ##get the issue based author relation as network
@@ -193,19 +193,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
-            author.relation = construct.network.from.edge.list(
+            author.net = construct.network.from.edge.list(
                 author.net.data[["vertices"]],
                 author.net.data[["edges"]],
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed")
             )
 
-            igraph::E(author.relation)$type = TYPE.EDGES.INTRA
+            igraph::E(author.net)$type = TYPE.EDGES.INTRA
 
-            private$authors.network.issue = author.relation
+            private$authors.network.issue = author.net
             logging::logdebug("get.author.network.issue: finished.")
 
-            return(author.relation)
+            return(author.net)
         },
 
         ## * * artifact networks -------------------------------------------
@@ -653,10 +653,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     author.vertices = names(net.to.net)
                 }
 
+                ## select all artifact vertices
                 artifact.vertices = unique(unlist(lapply(net.to.net, function(df) {
                     return(df[["data.vertices"]])
                 })))
 
+                ## join author and artifact vertices to the list of all vertices in the network
                 vertices = data.frame(
                     name = c(author.vertices, artifact.vertices),
                     type = c(rep(TYPE.AUTHOR, length(author.vertices)), rep(TYPE.ARTIFACT, length(artifact.vertices))),
@@ -666,7 +668,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(vertices)
             })
 
-            ## Merge network data
+            ## Merge network data and construct a vertex-only network for now
             vertex.data = merge.network.data(vertex.data = vertex.data, edge.data = NULL)[["vertices"]]
             vertex.network = igraph::graph.data.frame(
                 d = create.empty.edge.list(),
@@ -741,7 +743,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## configured by 'author.only.committers', for example), thus, we need to remove any authors
             ## from the author--artifact relation that are superfluous
             authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
-
             ## save relation and intersect the author vertices from the author network and the
             ## bipartite networks
             authors.to.artifacts = mapply(function(a2a.rel, relation.type) {
@@ -1052,7 +1053,7 @@ merge.network.data = function(vertex.data, edge.data) {
     ))
 }
 
-#' Merges a list of network to one big network
+#' Merges a list of networks to one big network
 #'
 #' @param networks the list of networks
 #'
@@ -1148,7 +1149,7 @@ create.empty.network = function(directed = TRUE) {
 #'
 #' @return the new empty data frame as edge list
 create.empty.edge.list = function() {
-    return(data.frame(from = character(0),to = character(0)))
+    return(data.frame(from = character(0), to = character(0)))
 }
 
 
@@ -1164,21 +1165,22 @@ simplify.network = function(network) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
 
-    ## data frame of the network
-    edge.data = igraph::as_data_frame(network, what = "edges")
-    vertex.data = igraph::as_data_frame(network, what = "vertices")
+    if (length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
+        ## data frame of the network
+        edge.data = igraph::as_data_frame(network, what = "edges")
+        vertex.data = igraph::as_data_frame(network, what = "vertices")
 
-    ## select edges of one relation, build the network and simplify this network
-    if ("relation" %in% colnames(edge.data)) {
+        ## select edges of one relation, build the network and simplify this network
         networks = lapply(unique(edge.data[["relation"]]),
                              function(relation) {
                                 network.data = edge.data[edge.data[["relation"]] == relation, ]
-                                net = igraph::graph_from_data_frame(d=network.data,
+                                net = igraph::graph_from_data_frame(d = network.data,
                                                                     vertices = vertex.data,
                                                                     directed = igraph::is.directed(network))
 
                                 ## simplify networks (contract edges and remove loops)
                                 net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+                                ## TODO perform simplification on edge list?
                                 return(net)
         })
 
@@ -1193,9 +1195,6 @@ simplify.network = function(network) {
 }
 
 #' Simplify a list of networks.
-#'
-#' Important notice: This function only correctly works for networks with only one artifact and one
-#' author relation.
 #'
 #' @param networks the list of networks
 #'

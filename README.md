@@ -43,6 +43,7 @@ When selecting a version to work with, you should consider the following points:
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
+- `viridis`: For plotting of networks with nice colours
 
 
 ## How-To
@@ -239,7 +240,6 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The list of edge-attribute names and information
   * a subset of the following as a single vector:
        - timestamp information: *`"date"`*, `"date.offset"`
-       - relation information: *`"relation"`* (possible values: [`"mail"`,`"issue"`,`"cochange"`, `"callgraph"`])
        - author information: `"author.name"`, `"author.email"`
        - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
@@ -249,11 +249,6 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
   * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
-- `vertex.attributes`
-    - *`"name"`*
-    - *`"type"`*: [`Author`, `Artifact`]
-    - `"artifact.type"`: [`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
-    - *`"kind"`*: [`author`,`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
 - `simplify`
   * Perform edge contraction to retrieve a simplified network
   * [`TRUE`, *`FALSE`*]
@@ -271,6 +266,19 @@ The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pa
 You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
 For more examples, please look in the file `showcase.R`.
+
+
+###  Network properties
+- mandatory vertex attributes (`vertex.attributes`)
+  *  *`"name"`*
+  * *`"type"`*: [`Author`, `Artifact`]
+  * `"artifact.type"`: [`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
+  * *`"kind"`*: [`author`,`file`, `feature`, `function`,`mail`, `issue`,`featureexpression`]
+
+- mandatory edge attributes
+  * *`"type"`*: [`Unipartite`, `Bipartite`]
+  * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`]
+  * *`"date"`*
 
 
 ## File/Module overview
