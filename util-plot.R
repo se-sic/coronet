@@ -154,12 +154,12 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
 
 
         ## scale vertices (colors and styles)
-        ggplot2::scale_shape_discrete(name = "Vertices", solid = TRUE) +
+        ggplot2::scale_shape_discrete(name = "Vertex Types", solid = TRUE) +
         viridis::scale_color_viridis(name = "Vertices", option = "plasma", discrete = TRUE,
                                      end = 0.8, begin = 0.05) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype(name = "Relations") +
+        ggraph::scale_edge_linetype(name = "Relation Types") +
         ggplot2::discrete_scale(name = "Relations", "edge_colour", "viridis",
                                 viridis::viridis_pal(option = "viridis", end = 0.8, begin = 0.25)) +
         ## BROKEN RIGHT NOW due to bug in scale_edge_colour_viridis():
@@ -170,7 +170,8 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
         ggplot2::theme_light() +
         ggplot2::guides(
             ## reduce size of symbols in legend
-            shape = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND))
+            shape = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND)),
+            color = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND))
         ) +
         ggplot2::theme(
             legend.position = "bottom",
