@@ -1211,9 +1211,11 @@ create.empty.edge.list = function() {
 #' Simplify a given network.
 #'
 #' @param network the given network
+#' @param remove.multiple whether to contract multiple edges between the same pair of nodes [default: TRUE]
+#' @param remove.loops whether to remove loops [default: TRUE]
 #'
 #' @return the simplified network
-simplify.network = function(network) {
+simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
 
@@ -1231,7 +1233,9 @@ simplify.network = function(network) {
                                                                     directed = igraph::is.directed(network))
 
                                 ## simplify networks (contract edges and remove loops)
-                                net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+                                net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
+                                                       remove.multiple = remove.multiple,
+                                                       remove.loops = remove.loops)
                                 ## TODO perform simplification on edge list?
                                 return(net)
         })
@@ -1239,7 +1243,8 @@ simplify.network = function(network) {
         ## merge the simplified networks
         network = merge.networks(networks)
     } else {
-        network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING, remove.loops = TRUE)
+        network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
+                                   remove.multiple = remove.multiple, remove.loops = remove.loops)
     }
 
     logging::logdebug("simplify.network: finished.")
@@ -1249,16 +1254,19 @@ simplify.network = function(network) {
 #' Simplify a list of networks.
 #'
 #' @param networks the list of networks
+#' @param remove.multiple whether to contract multiple edges between the same pair of nodes [default: TRUE]
+#' @param remove.loops whether to remove loops [default: TRUE]
 #'
 #' @return the simplified networks
-simplify.networks = function(networks) {
+simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TRUE) {
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
         "Simplifying networks (names = [%s]).",
         paste(names(networks), collapse = ", ")
     )
 
-    nets = parallel::mclapply(networks, simplify.network)
+    nets = parallel::mclapply(networks, simplify.network, remove.multiple = remove.multiple,
+                              remove.loops = remove.loops)
 
     logging::logdebug("simplify.networks: finished.")
     return(nets)
