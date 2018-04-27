@@ -278,7 +278,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
                                                 "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
                                                 "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
-                  artifact.type = "IssueComment",
+                  artifact.type = "IssueEvent",
                   issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
                                "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
                                "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),

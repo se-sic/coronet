@@ -385,7 +385,7 @@ read.issues = function(data.path) {
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
 
     ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueComment"
+    issue.data["artifact.type"] = "IssueEvent"
 
     ## convert 'is.pull.request' column to logicals
     issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
