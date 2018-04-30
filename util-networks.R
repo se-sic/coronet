@@ -92,6 +92,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Determine which vertex kind should be chose for the vertex depending on the relation
         #' between the vertices.
         #'
+        #' @param relation the given relation
+        #'
         #' @return the vertex kind to be used
         get.vertex.kind.for.relation = function(relation) {
 
@@ -496,7 +498,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' given data object and the network configuration
         #'
         #' @param project.data the given data object
-                  #' @param network.conf the network configuration
+        #' @param network.conf the network configuration
         initialize = function(project.data, network.conf) {
 
             ## check arguments
