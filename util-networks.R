@@ -262,13 +262,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = FALSE
             )
 
-            ## set network attribute 'vertex.kind' to ensure the correct setting of the
-            ## vertex attribute 'kind' later
-            artifacts.net = igraph::set.graph.attribute(
-                artifacts.net, "vertex.kind",
-                value = private$get.vertex.kind.for.relation("cochange")
-            )
-
             ## store network
             private$artifacts.network.cochange = artifacts.net
             logging::logdebug("get.artifact.network.cochange: finished.")
@@ -350,13 +343,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 value = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
-            ## set network attribute 'vertex.kind' to ensure the correct setting of the
-            ## vertex attribute 'kind' later
-            artifacts.net = igraph::set.graph.attribute(
-                artifacts.net, "vertex.kind",
-                value = private$get.vertex.kind.for.relation("callgraph")
-            )
-
             ## store network
             private$artifacts.network.callgraph = artifacts.net
             logging::logdebug("get.artifact.network.callgraph: finished.")
@@ -390,13 +376,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts = names(artifacts.net.data.raw) # thread IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
 
-            ## set network attribute 'vertex.kind' to ensure the correct setting of the
-            ## vertex attribute 'kind' later
-            artifacts.net = igraph::set.graph.attribute(
-                artifacts.net, "vertex.kind",
-                value = private$get.vertex.kind.for.relation("mail")
-            )
-
             ## store network
             private$artifacts.network.mail = artifacts.net
             logging::logdebug("get.artifact.network.mail: finished.")
@@ -429,13 +408,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net.data.raw = private$proj.data$get.issue2author()
             artifacts = names(artifacts.net.data.raw) # thread IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
-
-            ## set network attribute 'vertex.kind' to ensure the correct setting of the
-            ## vertex attribute 'kind' later
-            artifacts.net = igraph::set.graph.attribute(
-                artifacts.net, "vertex.kind",
-                value = private$get.vertex.kind.for.relation("issue")
-            )
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -667,8 +639,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 igraph::E(network)$relation = relation
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
-                kind = unique(igraph::get.graph.attribute(network, "vertex.kind"))
-                network = igraph::set.vertex.attribute(network, "kind", value = kind)
+                vertex.kind = private$get.vertex.kind.for.relation(relation)
+                network = igraph::set.vertex.attribute(network, "kind", value = vertex.kind)
 
                 return(network)
             })
