@@ -846,7 +846,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
 #'
-#' @return the built edge list
+#' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
+#'         of \code{igraph::as.data.frame})
 construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
@@ -975,7 +976,9 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     logging::logdebug("construct.edge.list.from.key.value.list: finished.")
 
     return(list(
-        vertices = nodes.processed,
+        vertices = data.frame(
+            name = nodes.processed
+        ),
         edges = edge.list
     ))
 }
