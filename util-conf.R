@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -89,7 +90,6 @@ Conf = R6::R6Class("Conf",
         #'         - allowed, and
         #'         - allowed.number.
         check.value = function(value, name) {
-            browser(expr = name == "revisions")
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
             } else {
@@ -652,7 +652,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 default = "mail",
                 type = "character",
                 allowed = c("mail", "cochange", "issue"),
-                allowed.number = 1
+                allowed.number = Inf
             ),
             author.directed = list(
                 default = FALSE,
@@ -677,7 +677,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 default = "cochange",
                 type = "character",
                 allowed = c("cochange", "callgraph", "mail", "issue"),
-                allowed.number = 1
+                allowed.number = Inf
             ),
             artifact.directed = list(
                 default = FALSE,
@@ -687,15 +687,17 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             ),
             edge.attributes = list(
                 default = c(
-                    "date", # general
+                    "date", "artifact.type", # general
                     "message.id", "thread", # mail data
-                    "hash", "file", "artifact.type", "artifact", # commit data
+                    "hash", "file", "artifact", # commit data
                     "issue.id", "event.name" # issue data
                 ),
                 type = "character",
                 allowed = c(
                     # the date
                     "date", "date.offset",
+                    # the artifact type indicating the edge
+                    "artifact.type",
                     # author information
                     "author.name", "author.email",
                     # committer information
@@ -703,7 +705,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     # e-mail information
                     "message.id", "thread", "subject",
                     ## commit information
-                    "hash", "file", "artifact.type", "artifact", "changed.files", "added.lines",
+                    "hash", "file", "artifact", "changed.files", "added.lines",
                     "deleted.lines", "diff.size", "artifact.diff.size", "synchronicity",
                     # pasta information
                     "pasta",
@@ -752,9 +754,13 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
         update.values = function(updated.values = list(), stop.on.error = FALSE) {
             super$update.values(updated.values = updated.values, stop.on.error = stop.on.error)
 
-            ## 1) "date" always as edge attribute
+            ## 1) "date" and "artifact.type" always as edge attribute
             name = "edge.attributes"
-            private[["attributes"]][[name]][["value"]] = unique(c(self$get.value(name), "date"))
+            private[["attributes"]][[name]][["value"]] = unique(c(
+                "date",
+                "artifact.type",
+                self$get.value(name)
+            ))
 
             ## return invisible
             invisible()
@@ -809,7 +815,6 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
             if (len == 1) {
                 field = paste0(" = ", paste(struct, collapse = ", "), "\n")
             } else if (len > 7) {
-                # browser()
                 entries = paste0(indentation, indentation.item, indentation.item, struct)
                 field = paste0(
                     " = [\n",

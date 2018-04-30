@@ -1,5 +1,47 @@
 # codeface-extraction-r – Changelog
 
+## unversioned
+
+### Add relations to authors and artifacts (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- add for new relation types for each edge
+- accept vector with more than one relation for `author.relation` and `artifact.relation` in util-conf.R
+
+### Changes in util-networks (#98, 2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+
+#### Build Networks (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- edit function `get.author.network` to handle more than one relation
+- edit function `get.artifact.network` to handle more than one artifact relation
+- handle more than one relation type and merge the resulting vertex lists and edge lists in `get.bipartite.network`
+- enable for different relations for `authors.to.artifacts` in `get.multi.network`, add information about the relation
+  and merge vertex sets
+- add new vertex attribute `kind`
+(7c628fb93eb21f280c7d9da66680f817e107fa24, 7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
+- remove vertex attribute `id` in artifact vertices (7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
+
+#### Network and Edge Construction (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- function `construct.network.from.list` split in two functions  `construct.edge.list.from.key.value.list` and `construct.network.from.edge.list`
+- add function `merge.network.data` und `merge.networks`
+- handle more than one relation in function `add.edges.for.bipartite.relation` and set the edge attribute `relation`
+- add function `create.empty.edge.list`
+- enable for different relations in `get.bipartite.relation` and save the type of the relation in an attribute `relation`
+
+#### Simplify (021ac8b88e9a181364a51e89807df55cb741ed44)
+- iterate over the different types of relations and simplfy the subnetworks relating to the `relation` attribute
+- the `EDGE.ATTR.HANDLING` of the attribute `relation` is "first"
+
+### Changes in test suite (784c417c50eb1de5d0143908a390ead6ba22dbbf, 7ad49c4ad937c9a6c7398a45179e25d5d5c03faa, be6ee8cd48dc7692e02b7f1c512870591300fa8a)
+- add relation attribute `relation` to result data frames
+- remove vertex attribute `id`
+- write new tests for networks with more than one relation type
+
+### Changes in util-plot (b55d3e84a5f9b122dacd0ee52784d930f22d1f4b, f190ca130a15a82e5eed836e9ffc53b8a34aac20)
+- colors of the edges depending on the relation type
+- line shape depend on the edge type (inter or intra)
+- change colors of edges
+- remove colors from `plot.fix.type.attributes`
+- use palette 'viridis'
+- different colors for artifacts
+
 
 ## unversioned
 
