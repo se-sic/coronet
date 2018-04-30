@@ -273,12 +273,14 @@ For more examples, please look in the file `showcase.R`.
 
 - Mandatory vertex attributes
   * *`"type"`*: [`"Author"`, `"Artifact"`]
-  * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"Issue"`,`"FeatureExpression"`]
+  * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`,
+  `"Issue"`,`"FeatureExpression"`]
   * *`"name"`*
 
 - Mandatory edge attributes
   * *`"type"`*: [`Unipartite`, `Bipartite`]
-  * *`"artifact.type"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"Issue"`,`"FeatureExpression"`]
+  * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`,
+  `"IssueEvent"`,`"FeatureExpression"`]
   * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
   * *`"date"`*
 

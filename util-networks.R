@@ -89,6 +89,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
+        #' Determine which vertex kind should be chose for the vertex depending on the relation
+        #' between the vertices.
+        #'
+        #' @return the vertex kind to be used
         get.vertex.kind.for.relation = function(relation) {
 
             vertex.kind = switch(relation,
@@ -443,8 +447,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Get the key-value data for the bipartite relations,
         #' which are implied by the "artifact.relation" from the network configuration.
         #'
-        #' @return the list of data for the bipartite relations, with the attributes
-        #'         'artifact.type' denoting the artifact type for the relations
+        #' @return the list of data for the bipartite relations, each with the attributes
+        #'         'vertex.kind' denoting the artifact type for the relations
         #'         and 'relation' denoting the respective network-configuration entry
         get.bipartite.relations = function() {
             logging::logdebug("get.bipartite.relations: starting.")
@@ -540,7 +544,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @param network.conf the new network configuration.
         #' @param reset.environment parameter to determine whether the environment
-        #'                          has to be reset or not
+        #'                          has to be reset or not [default: FALSE]
         set.network.conf = function(network.conf, reset.environment = FALSE) {
             private$network.conf = network.conf
 
@@ -866,7 +870,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'
 #' @param list the list of lists with data
 #' @param network.conf the network configuration
-#' @param directed whether or not the network should be directed
+#' @param directed whether or not the network should be directed [default: FALSE]
 #'
 #' @return the built edge list
 construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE) {
@@ -1012,10 +1016,10 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' @param vertices data frame with vertex data
 #' @param edge.list list of edges
 #' @param network.conf the network configuration
-#' @param directed whether or not the network should be directed
+#' @param directed whether or not the network should be directed [default: FALSE]
 #'
 #' @return the built network
-construct.network.from.edge.list = function(vertices, edge.list, network.conf, directed = TRUE) {
+construct.network.from.edge.list = function(vertices, edge.list, network.conf, directed = FALSE) {
     logging::logdebug("construct.network.from.edge.list: starting.")
     logging::loginfo("Construct network from edges.")
 
@@ -1181,7 +1185,7 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 
 #' Create an empty network that does not break the algorithms.
 #'
-#' @param directed whether or not the network should be directed
+#' @param directed whether or not the network should be directed [default: TRUE]
 #'
 #' @return the new empty network
 create.empty.network = function(directed = TRUE) {
