@@ -522,13 +522,13 @@ get.committer.not.author.commit.count = function(range.data) {
     return(res)
 }
 
-#' Get the commit count per person for commits where the author equals the commiter.
+#' Get the commit count per person in the given range data for commits where the author equals the commiter.
 #'
 #' @param range.data The data to count on
 #'
 #' @return A data frame in descending order by the commit count
 get.committer.and.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.not.author.commit.count: starting.")
+    logging::logdebug("get.committer.and.author.commit.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
