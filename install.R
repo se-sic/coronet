@@ -22,7 +22,7 @@
 ## to our needs.
 
 
-pacakges = c(
+packages = c(
     "yaml",
     "R6",
     "igraph",
@@ -34,7 +34,8 @@ pacakges = c(
     "ggplot2",
     "ggraph",
     "markovchain",
-    "lubridate"
+    "lubridate",
+    "viridis"
 )
 
 
@@ -47,7 +48,7 @@ filter.installed.packages = function(packageList)  {
 }
 
 
-p = filter.installed.packages(pacakges)
+p = filter.installed.packages(packages)
 if (length(p) > 0) {
     print(sprintf("Installing package '%s'.", p))
     install.packages(p, dependencies = TRUE, verbose = FALSE, quiet = FALSE)
