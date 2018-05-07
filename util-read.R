@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -292,7 +292,8 @@ read.authors = function(data.path) {
 
 #' Read and parse the pasta data from the 'similar-mailbox' file.
 #' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
-#' The parsed form is a data frame with message IDs as keys and commit hashes as values.
+#' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
+#' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
 #'
 #' @param data.path the path to the pasta data
 #'
@@ -323,7 +324,7 @@ read.pasta = function(data.path) {
             return(NULL)
         }
 
-        if(!grepl("<", line)) {
+        if (!grepl("<", line)) {
             logging::logwarn("Faulty line: %s", line)
             return(NULL)
         }

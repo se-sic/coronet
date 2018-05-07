@@ -16,6 +16,7 @@
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -411,7 +412,7 @@ get.author.class.network.hierarchy = function(network = NULL, result.limit = NUL
     }
 
     hierarchy.base.df = metrics.hierarchy(network)
-    hierarchy.calculated = hierarchy.base.df$deg/hierarchy.base.df$cc
+    hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
 
     hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
 
@@ -443,7 +444,8 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
     }
 
     ## Get eigenvectors for all authors
-    centrality.vec = sort(igraph::eigen_centrality(network, directed = T)$vector, decreasing= TRUE)
+    ## The method ignores the directed parameter if the given network is undirected
+    centrality.vec = sort(igraph::eigen_centrality(network, directed = TRUE)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
     if (igraph::ecount(network) == 0) {

@@ -14,7 +14,7 @@
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -606,6 +606,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Get single pasta items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
         #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
+        #' If there is no assigned 'commit.hash' for the given 'message.id', we return "".
         #'
         #' @param message.id the message ID to get the corresponding commit hash
         #' @param commit.hash the commit hash to get the corresponding message ID
@@ -637,27 +638,36 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the names of all data sources that are currently cached in the
-        #' ProjectData object.
+        #' ProjectData object. The possible data sources are:
+        #' 'data.timestamps', 'commits', 'mails', 'issues', 'authors',
+        #' 'synchronicity', and 'pasta'.
         #'
         #' @return a vector containing all the names
         get.cached.data.sources = function() {
             result = c()
 
+            ## timestamp data
             if (!is.null(private$data.timestamps)) {
                 result = c(result, "data.timestamps")
             }
+
+            ## main data sources
             if (!is.null(private$commits)) {
                 result = c(result, "commits")
             }
             if (!is.null(private$mails)) {
                 result = c(result, "mails")
             }
-            if (!is.null(private$authors)) {
-                result = c(result, "authors")
-            }
             if (!is.null(private$issues)) {
                 result = c(result, "issues")
             }
+
+            ## author data
+            if (!is.null(private$authors)) {
+                result = c(result, "authors")
+            }
+
+            ## additional data sources
             if (!is.null(private$synchronicity)) {
                 result = c(result, "synchronicity")
             }
@@ -670,12 +680,12 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Compares two ProjectData objects by first comparing the names of the
         #' cached data sources of the two.
-        #' Then it compares the ProjectConf objects and in the end the cached data
+        #' Then, it compares the ProjectConf objects and, in the end, the cached data
         #' sources.
         #'
-        #' @param other.data.object the object to compare
+        #' @param other.data.object the object with which to compare
         #'
-        #' @return TRUE is the objects are equal and FALSE otherwise
+        #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
         equals = function(other.data.object) {
             if (!(class(other.data.object)[1] == "ProjectData")) {
                 logging::logerror("You can only compare a ProjectData object against another one.")
@@ -685,15 +695,18 @@ ProjectData = R6::R6Class("ProjectData",
             self.data.sources = self$get.cached.data.sources()
             other.data.sources = other.data.object$get.cached.data.sources()
 
+            ## compare the list of cached data sources
             if (!identical(self.data.sources, other.data.sources)) {
                 return(FALSE)
             }
 
+            ## compare the two ProjectConf objects
             if (!identical(self$get.project.conf()$get.conf.as.string(),
-                          other.data.object$get.project.conf()$get.conf.as.string())) {
+                           other.data.object$get.project.conf()$get.conf.as.string())) {
                 return(FALSE)
             }
 
+            ## compare the cached data sources
             for (source in self.data.sources) {
                 function.call = paste("get.", source, "()", sep = "")
                 if (!identical(self[[function.call]], other.data.object[[function.call]])) {
