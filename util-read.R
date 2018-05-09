@@ -316,9 +316,7 @@ read.pasta = function(data.path) {
         return(data.frame())
     }
 
-    revision.set.id = 1
-
-    result.list = parallel::mclapply(lines, function(line) {
+    result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {
         #line = lines[i]
         if ( nchar(line) == 0 ) {
             return(NULL)
@@ -348,8 +346,7 @@ read.pasta = function(data.path) {
         #df = data.frame(message.id = keys.split, commit.hash = values.split)
         df = merge(keys.split, values.split)
         colnames(df) = c("message.id", "commit.hash")
-        df$revision.set.id = revision.set.id
-        revision.set.id <<- revision.set.id + 1
+        df$revision.set.id = line.id
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)

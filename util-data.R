@@ -689,7 +689,7 @@ ProjectData = R6::R6Class("ProjectData",
         equals = function(other.data.object) {
             if (!(class(other.data.object)[1] == "ProjectData")) {
                 logging::logerror("You can only compare a ProjectData object against another one.")
-                return()
+                return(FALSE)
             }
 
             self.data.sources = self$get.cached.data.sources()
@@ -708,8 +708,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## compare the cached data sources
             for (source in self.data.sources) {
-                function.call = paste("get.", source, "()", sep = "")
-                if (!identical(self[[function.call]], other.data.object[[function.call]])) {
+                function.call = paste0("get.", source, "()")
+                if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
                     return(FALSE)
                 }
             }
