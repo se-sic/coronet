@@ -290,7 +290,7 @@ read.authors = function(data.path) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## PaStA data --------------------------------------------------------------
 
-#' Read and parse the pasta data from the 'similar-mailbox' file.
+#' Read and parse the pasta data from the 'mbox-result' file.
 #' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
 #' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
 #' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
@@ -343,10 +343,9 @@ read.pasta = function(data.path) {
         }
 
         # Transform data to data.frame
-        #df = data.frame(message.id = keys.split, commit.hash = values.split)
         df = merge(keys.split, values.split)
         colnames(df) = c("message.id", "commit.hash")
-        df$revision.set.id = line.id
+        df["revision.set.id"] = sprintf("<revision-set-%s>", line.id)
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)

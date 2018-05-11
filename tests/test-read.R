@@ -215,15 +215,17 @@ test_that("Read and parse the pasta data.", {
     pasta.data.read = read.pasta(proj.conf$get.value("datapath.pasta"))
 
     ## build the expected data.frame
-    pasta.data.expected = data.frame(message.id= c("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>","<asddghdswqeasdasd@mail.gmail.com>",
-                                                   "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>","<hans1@mail.gmail.com>",
-                                                   "<hans2@mail.gmail.com>","<hans3@mail.gmail.com>","<saf54sd4gfasf46asf46@mail.gmail.com>",
+    pasta.data.expected = data.frame(message.id = c("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>",
+                                                   "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<hans1@mail.gmail.com>",
+                                                   "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>", "<saf54sd4gfasf46asf46@mail.gmail.com>",
                                                    "<saf54sd4gfasf46asf46@mail.gmail.com>"),
-                                     commit.hash= c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0","5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                                                    NA,"1143db502761379c2bfcecc2007fc34282e7ee61",
-                                                    "1143db502761379c2bfcecc2007fc34282e7ee61","1143db502761379c2bfcecc2007fc34282e7ee61",
+                                     commit.hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                                    NA, "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                                    "1143db502761379c2bfcecc2007fc34282e7ee61", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                                     "0a1a5c523d835459c42f33e863623138555e2526", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0"),
-                                     revision.set.id = c(1, 2, 3, 4, 4, 4, 5, 5))
+                                     revision.set.id = c("<revision-set-1>", "<revision-set-2>", "<revision-set-3>",
+                                                         "<revision-set-4>", "<revision-set-4>", "<revision-set-4>",
+                                                         "<revision-set-5>", "<revision-set-5>"))
 
     ## check the results
     expect_identical(pasta.data.read, pasta.data.expected, info = "PaStA data.")

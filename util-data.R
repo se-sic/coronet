@@ -606,7 +606,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Get single pasta items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
         #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
-        #' If there is no assigned 'commit.hash' for the given 'message.id', we return "".
+        #' If there is no assigned 'commit.hash' for the given 'message.id', "" is returned.
         #'
         #' @param message.id the message ID to get the corresponding commit hash
         #' @param commit.hash the commit hash to get the corresponding message ID
@@ -708,7 +708,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## compare the cached data sources
             for (source in self.data.sources) {
-                function.call = paste0("get.", source, "()")
+                function.call = paste0("get.", source)
                 if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
                     return(FALSE)
                 }
