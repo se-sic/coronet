@@ -639,17 +639,13 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'data.timestamps', 'commits', 'mails', 'issues', 'authors',
-        #' 'synchronicity', and 'pasta'.
+        #' 'commits', 'mails', 'issues', 'authors', synchronicity', and 'pasta'.
+        #' 'data.timestamps' are tested implicitly every time as they only contain
+        #' the earliest and latest date of one data source.
         #'
         #' @return a vector containing all the names
         get.cached.data.sources = function() {
             result = c()
-
-            ## timestamp data
-            if (!is.null(private$data.timestamps)) {
-                result = c(result, "data.timestamps")
-            }
 
             ## main data sources
             if (!is.null(private$commits)) {

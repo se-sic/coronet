@@ -39,8 +39,55 @@ test_that("Compare two ProjectData objects", {
 
     expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects.")
 
+    ## Always change one data source in the one object, test for inequality, change it in the
+    ## second object, as well, and test for equality.
+
     ##change the second data object
+    proj.data.one$get.commits()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.two$get.commits()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
     proj.data.two$get.pasta()
 
     expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.one$get.pasta()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.two$get.mails()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.one$get.mails()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.one$get.issues()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.two$get.issues()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.two$get.authors()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.one$get.authors()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.one$get.synchronicity()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.two$get.synchronicity()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 })
