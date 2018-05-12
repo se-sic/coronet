@@ -22,7 +22,11 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## System variables and R settings -----------------------------------------
 
-Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
+if (Sys.info()['sysname'] == "Windows") {
+    Sys.setlocale(category = "LC_ALL", locale = "english-us")
+} else {
+    Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
+}
 Sys.setenv(TZ = "UTC")
 options(stringsAsFactors = FALSE)
 
