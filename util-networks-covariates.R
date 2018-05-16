@@ -134,7 +134,7 @@ add.vertex.attribute.commit.count.author = function(list.of.networks, project.da
                                                     aggregation.level = c("range", "cumulative", "all.ranges",
                                                                           "project.cumulative", "project.all.ranges",
                                                                           "complete"),
-                                                    default.value = 0) {
+                                                    default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.author.commit.count, "author.name"
@@ -161,7 +161,7 @@ add.vertex.attribute.commit.count.author.not.committer = function(list.of.networ
                                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
-                                                                  default.value = 0) {
+                                                                  default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.not.author.commit.count, "author.name"
@@ -187,7 +187,7 @@ add.vertex.attribute.commit.count.committer = function(list.of.networks, project
                                                        aggregation.level = c("range", "cumulative", "all.ranges",
                                                                              "project.cumulative", "project.all.ranges",
                                                                              "complete"),
-                                                       default.value = 0) {
+                                                       default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.commit.count, "committer.name"
@@ -214,7 +214,7 @@ add.vertex.attribute.commit.count.committer.not.author = function(list.of.networ
                                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
-                                                                  default.value = 0) {
+                                                                  default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.not.author.commit.count, "committer.name"
@@ -241,7 +241,7 @@ add.vertex.attribute.commit.count.committer.and.author = function(list.of.networ
                                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
-                                                                  default.value = 0) {
+                                                                  default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.and.author.commit.count, "committer.name"
@@ -269,7 +269,7 @@ add.vertex.attribute.commit.count.committer.or.author = function(list.of.network
                                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
-                                                                  default.value = 0) {
+                                                                  default.value = 0L) {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.or.author.commit.count, "name"
@@ -300,7 +300,7 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
                                              aggregation.level = c("range", "cumulative", "all.ranges",
                                                                    "project.cumulative", "project.all.ranges",
                                                                    "complete"),
-                                             default.value = 0, commit.count.method, name.column) {
+                                             default.value = 0L, commit.count.method, name.column) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     nets.with.attr = split.and.add.vertex.attribute(
