@@ -91,3 +91,26 @@ test_that("Compare two ProjectData objects", {
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 })
+
+test_that("Compare two RangeData objects", {
+
+    ##initialize a ProjectData object with the ProjectConf
+    ##cut it on the base of commits and clone the resulting RangeData object
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data.base = ProjectData$new(project.conf = proj.conf)
+    range.data.one = proj.data.base$get.data.cut.to.same.date("commits")
+    range.data.two = range.data.one$clone()
+
+    ##compare the two equal RangeData objects
+    expect_true(range.data.one$equals(range.data.two))
+
+    ##cut the ProjectData object on base of issues in order to get another
+    ##RangeData object to check for inequality
+    range.data.three = proj.data.base$get.data.cut.to.same.date("issues")
+
+    expect_false(range.data.one$equals(range.data.three))
+
+    ##check whether a ProjectData object can be compared to a RangeData object
+    expect_false(range.data.one$equals(proj.data.base))
+
+})
