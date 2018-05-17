@@ -14,7 +14,7 @@
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -295,7 +295,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param reset.environment parameter to determine whether the environment
         #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
-            private$project.conf = project.conf
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
 
             if (reset.environment) {
                 self$reset.environment()
@@ -411,6 +411,12 @@ ProjectData = R6::R6Class("ProjectData",
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
+
+                ## add pasta data if wanted
+                if(private$project.conf$get.value("pasta")) {
+                    logging::loginfo("Adding pasta data.")
+                    private$commits = private$add.pasta.data(private$commits)
+                }
             }
             private$extract.timestamps(source = "commits")
 
@@ -508,7 +514,8 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails = read.mails(self$get.data.path())
 
                 ## add pasta data if wanted
-                if (private$project.conf$get.value("pasta")) {
+                if(private$project.conf$get.value("pasta")) {
+                    logging::loginfo("Adding pasta data.")
                     private$mails = private$add.pasta.data(private$mails)
                 }
             }
@@ -599,13 +606,13 @@ ProjectData = R6::R6Class("ProjectData",
         #' Get single pasta items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
         #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
+        #' If there is no assigned 'commit.hash' for the given 'message.id', "" is returned.
         #'
         #' @param message.id the message ID to get the corresponding commit hash
         #' @param commit.hash the commit hash to get the corresponding message ID
         #'
         #' @return the selected pasta data
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
-            logging::loginfo("Getting pasta items started.")
             #if neither message.id nor commit.hash are specified break the code
             if (is.null(message.id) && is.null(commit.hash)) {
                 logging::logwarn("Neither message.id nor commit.hash specified.")
@@ -619,11 +626,99 @@ ProjectData = R6::R6Class("ProjectData",
             ## else gather all message.ids which contain the given commit.hash and return them
             if (!is.null(message.id)) {
                 result = private$pasta[private$pasta[["message.id"]] == message.id, "commit.hash"]
+                if (!(length(result) == 0) && is.na(result)) {
+                    result = ""
+                }
                 return(result)
             } else {
                 result = private$pasta[private$pasta[["commit.hash"]] == commit.hash, "message.id"]
+                result = result[!is.na(result)]
                 return(result)
             }
+        },
+
+        #' Get the names of all data sources that are currently cached in the
+        #' ProjectData object. The possible data sources are:
+        #' 'commits', 'mails', 'issues', 'authors', synchronicity', and 'pasta'.
+        #' 'data.timestamps' are tested implicitly every time as they only contain
+        #' the earliest and latest date of one data source.
+        #'
+        #' @return a vector containing all the names
+        get.cached.data.sources = function() {
+            result = c()
+
+            ## main data sources
+            if (!is.null(private$commits)) {
+                result = c(result, "commits")
+            }
+            if (!is.null(private$mails)) {
+                result = c(result, "mails")
+            }
+            if (!is.null(private$issues)) {
+                result = c(result, "issues")
+            }
+
+            ## author data
+            if (!is.null(private$authors)) {
+                result = c(result, "authors")
+            }
+
+            ## additional data sources
+            if (!is.null(private$synchronicity)) {
+                result = c(result, "synchronicity")
+            }
+            if (!is.null(private$pasta)) {
+                result = c(result, "pasta")
+            }
+
+            return(result)
+        },
+
+        #' Compares two ProjectData objects by first comparing the names of the
+        #' cached data sources of the two.
+        #' Then, it compares the ProjectConf objects and, in the end, the cached data
+        #' sources.
+        #'
+        #' @param other.data.object the object with which to compare
+        #'
+        #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
+        equals = function(other.data.object) {
+
+            ## check whether the given object is an instance of ProjectData
+            if (!("ProjectData" %in% class(other.data.object))) {
+                logging::logerror("You can only compare a ProjectData object against another one.")
+                return(FALSE)
+            }
+
+            ## check whether the two objects are of the same type
+            if (!identical(self$get.class.name(), other.data.object$get.class.name())) {
+                logging::logerror("You can only compare two instances of the same class.")
+                return(FALSE)
+            }
+
+            self.data.sources = self$get.cached.data.sources()
+            other.data.sources = other.data.object$get.cached.data.sources()
+
+            ## compare the list of cached data sources
+            if (!identical(self.data.sources, other.data.sources)) {
+                return(FALSE)
+            }
+
+            ## compare the two ProjectConf objects
+            if (!identical(self$get.project.conf()$get.conf.as.string(),
+                           other.data.object$get.project.conf()$get.conf.as.string())) {
+                return(FALSE)
+            }
+
+            ## compare the cached data sources
+            for (source in self.data.sources) {
+                function.call = paste0("get.", source)
+                if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
+                    return(FALSE)
+                }
+            }
+
+            return(TRUE)
         },
 
         ## * * data cutting ------------------------------------------------
@@ -683,7 +778,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param data.sources the specified data sources
         #'
-        #' @return a list of the cut data.sources
+        #' @return the RangeData object with cut data sources
         get.data.cut.to.same.date = function(data.sources = c("mails", "commits", "issues")) {
             ## check arguments
             data.sources = match.arg(arg = data.sources, several.ok = TRUE)
@@ -938,6 +1033,36 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @return the revision callgraph
         get.revision.callgraph = function() {
             return(private$revision.callgraph)
+        },
+
+        #' Compares two RangeData objects by first comparing the ranges. Then it compares
+        #' the revision callgraphs and if they are equal, it calls the equals method of
+        #' ProjectData to compare the remaining data sources.
+        #'
+        #' @param other.data.object the object with which to compare
+        #'
+        #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
+        equals = function(other.data.object = NULL) {
+
+            ## check whether the given object is an instance of RangeData
+            if (!("RangeData" %in% class(other.data.object))) {
+                logging::logerror("You can only compare a RangeData object against another one.")
+                return(FALSE)
+            }
+
+            ## check whether the ranges are equal
+            if (!identical(self$get.range(), other.data.object$get.range())) {
+                return(FALSE)
+            }
+
+            ## check whether the revision callgraphs are equal
+            if (!identical(self$get.revision.callgraph(),
+                           other.data.object$get.revision.callgraph())) {
+                return(FALSE)
+            }
+
+            ## check the equality of the remaining data sources
+            return(super$equals(other.data.object = other.data.object))
         }
     )
 )

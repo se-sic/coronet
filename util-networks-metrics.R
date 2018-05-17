@@ -14,6 +14,7 @@
 ## Copyright 2015 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -190,12 +191,15 @@ metrics.scale.freeness = function(network) {
 #' @param network the network to be examined
 #'
 #' @return A dataframe containing the logarithm of the node degree and the logarithm
-#' of the local clustering coefficient for each node.
+#' of the local clustering coefficient for each node as well as the non-logarithmic values
+#' for these.
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode = "total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
     degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
     cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
+    return(data.frame(deg = degrees.without.cluster.coeff, cc = cluster.coeff,
+                      log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
 }
+
 

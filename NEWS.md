@@ -47,7 +47,21 @@
 
 ### Added
 - Possibility to contract imperfect ranges in the end (#104, 8ebcf20b0aba0cb82dcd7e1d1b95e261a866d04e)
+- Equals method for the `ProjectData` objects (#116, 00df306a3e6dbdeb81ddc116e88a4854b07afe72)
+- Hierarchy network metric as classification metric in the core-peripheral module (8139f34fd809d6750064514a549024df4cbf5863)
 
+### Changed/Improved
+- The reading method for the pasta data now also reads lines without the `message.id` being mapped to a `commit.hash`
+- The pasta data get a `revision.set.id` now to show what mails are concerned with the same patch
+- Pasta data are now added to the commit data if it is configured (70d9b8bd4cb16636086ca7ab90e817b89844f172)
+
+### Fixed
+- Check whether a given object to the `ProjectConf` setter in the `ProjectData` class really is a object of the
+  type `ProjectConf` (ab00c962e164428df2d59de7292eed3c3b1352aa)
+- The method for eigenvector centrality now considers whether the network is directed or not
+  (c0277c36e4ff45cfbb421317a42b6ea8736afe53)
+- Fix a bug that caused errors when the core classification within a core-periphery classification is empty
+  (c0277c36e4ff45cfbb421317a42b6ea8736afe53)
 
 ## 3.1.2
 

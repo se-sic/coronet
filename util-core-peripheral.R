@@ -16,6 +16,7 @@
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -56,7 +57,8 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## For count-based network metrics, the raw data has to be given. For network-based metrics,
 ## the network has to be given.
 get.author.class.by.type = function(network = NULL, data = NULL,
-                                    type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
+                                    type = c("network.degree", "network.eigen", "network.hierarchy",
+                                             "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.by.type: starting.")
 
     type = match.arg(type)
@@ -69,6 +71,7 @@ get.author.class.by.type = function(network = NULL, data = NULL,
     result = switch(type,
                     "network.degree" = get.author.class.network.degree(network = network),
                     "network.eigen" = get.author.class.network.eigen(network = network),
+                    "network.hierarchy" = get.author.class.network.hierarchy(network = network),
                     "commit.count" = get.author.class.commit.count(range.data = data),
                     "loc.count" = get.author.class.loc.count(range.data = data))
 
@@ -82,7 +85,8 @@ get.author.class.by.type = function(network = NULL, data = NULL,
 ## The data can either be given as list of raw range data (for the count-based metrics)
 ## or as list of networks for the network-based metrics).
 get.author.class.overview = function(network.list = NULL, range.data.list = NULL,
-                                     type = c("network.degree", "network.eigen", "commit.count", "loc.count")) {
+                                     type = c("network.degree", "network.eigen", "network.hierarchy",
+                                              "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.overview: starting.")
 
     type = match.arg(type)
@@ -393,6 +397,32 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
     return(res)
 }
 
+get.author.class.network.hierarchy = function(network = NULL, result.limit = NULL) {
+
+    logging::logdebug("get.author.class.network.hierarchy: starting.")
+
+    if(is.null(network)) {
+        logging::logerror("For the network-based hierarchy-centrality analysis, the network is needed.")
+        stop("The network has to be given for this analysis.")
+    } else if(igraph::vcount(network) == 0) {
+        logging::logwarn("The given network is empty. Returning empty classification...")
+        ## return an empty classification
+        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
+                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
+    }
+
+    hierarchy.base.df = metrics.hierarchy(network)
+    hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
+
+    hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
+
+    ## Get the author classification based on the centrality
+    res = get.author.class(hierarchy.df, "hierarchy", result.limit = result.limit)
+
+    logging::logdebug("get.author.class.network.hierarchy: finished.")
+    return(res)
+}
+
 ## * Eigenvector-based classification --------------------------------------
 
 ## Classify the authors of the specified version range into core and peripheral
@@ -414,7 +444,8 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
     }
 
     ## Get eigenvectors for all authors
-    centrality.vec = sort(igraph::eigen_centrality(network)$vector, decreasing= TRUE)
+    ## The method ignores the directed parameter if the given network is undirected
+    centrality.vec = sort(igraph::eigen_centrality(network, directed = TRUE)$vector, decreasing= TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
     if (igraph::ecount(network) == 0) {
@@ -991,10 +1022,15 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     ## (1) check which positions are over the threshold
     ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
     author.cumsum = cumsum(author.data[[calc.base.name]])
-    author.class.threshold.idx = min(which(
+    buffer.value = which(
         author.cumsum > author.class.threshold |
             sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
-    ))
+    )
+    if (is.infinite(min(buffer.value))) {
+        author.class.threshold.idx = 0
+    } else {
+        author.class.threshold.idx = min(buffer.value)
+    }
 
     ## classify authors according to threshold
     core.classification = rep(FALSE, nrow(author.data))
