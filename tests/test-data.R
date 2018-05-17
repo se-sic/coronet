@@ -94,23 +94,31 @@ test_that("Compare two ProjectData objects", {
 
 test_that("Compare two RangeData objects", {
 
-    ##initialize a ProjectData object with the ProjectConf
-    ##cut it on the base of commits and clone the resulting RangeData object
+    ## initialize a ProjectData object with the ProjectConf
+    ## cut it on the base of commits and clone the resulting RangeData object
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("commits")
     range.data.two = range.data.one$clone()
 
-    ##compare the two equal RangeData objects
+    ## compare the two equal RangeData objects
     expect_true(range.data.one$equals(range.data.two))
 
-    ##cut the ProjectData object on base of issues in order to get another
-    ##RangeData object to check for inequality
+    ## cut the ProjectData object on base of issues in order to get another
+    ## RangeData object to check for inequality
     range.data.three = proj.data.base$get.data.cut.to.same.date("issues")
 
     expect_false(range.data.one$equals(range.data.three))
 
-    ##check whether a ProjectData object can be compared to a RangeData object
+    ## check whether a ProjectData object can be compared to a RangeData object
     expect_false(range.data.one$equals(proj.data.base))
+    expect_false(proj.data.base$equals(range.data.one))
+
+    ## create a RangeData object with the same data sources as proj.data.base
+    ## and check for inequality
+    timestamps = proj.data.base$get.data.timestamps(outermost = TRUE)
+    range.data.four = split.data.time.based(proj.data.base, bins = c(timestamps$start[[1]], timestamps$end[[1]]))[[1]]
+
+    expect_false(proj.data.base$equals(range.data.four))
 
 })

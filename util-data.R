@@ -688,6 +688,11 @@ ProjectData = R6::R6Class("ProjectData",
                 return(FALSE)
             }
 
+            if (!identical(self$get.class.name(), other.data.object$get.class.name())) {
+                logging::logerror("You can only compare two instances of the same class.")
+                return(FALSE)
+            }
+
             self.data.sources = self$get.cached.data.sources()
             other.data.sources = other.data.object$get.cached.data.sources()
 
@@ -1036,17 +1041,26 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #'
         #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
         equals = function(other.data.object = NULL) {
+
+            ## check whether the given object is a instance of RangeData
             if (!("RangeData" %in% class(other.data.object))) {
                 logging::logerror("You can only compare a RangeData object against another one.")
                 return(FALSE)
             }
-            if (super$equals(other.data.object = other.data.object)) {
-                return((identical(self$get.range(), other.data.object$get.range()) &&
-                            identical(self$get.revision.callgraph(),
-                                      other.data.object$get.revision.callgraph())))
-            } else {
+
+            ## check whether the ranges are equal
+            if (!identical(self$get.range(), other.data.object$get.range())) {
                 return(FALSE)
             }
+
+            ## check whether the revision callgraphs are equal
+            if (!identical(self$get.revision.callgraph(),
+                          other.data.object$get.revision.callgraph())) {
+                return(FALSE)
+            }
+
+            ## check the equality of the remaining data sources
+            return(super$equals(other.data.object = other.data.object))
         }
     )
 )
