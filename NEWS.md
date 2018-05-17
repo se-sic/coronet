@@ -1,6 +1,43 @@
 # codeface-extraction-r – Changelog
 
 
+## 3.2
+
+### Added
+- Handling of multiple relations for all types of networks (#98, #15, #11, PR #115)
+    - Allow several entries for the entries `author.relation` and `artifact.relation` in the `NetworkConf` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+    - Add the mandatory edge attribute `relation` representing `author.relation` or `artifact.relation`, respectively, for all types of networks (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+    - Return data for several relations in `get.bipartite.relation` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+    - Retain one edge for each available value of edge attribute `relation` during network simplification (021ac8b88e9a181364a51e89807df55cb741ed44)
+    - Add new tests and adapt existing ones (784c417c50eb1de5d0143908a390ead6ba22dbbf, 7ad49c4ad937c9a6c7398a45179e25d5d5c03faa, be6ee8cd48dc7692e02b7f1c512870591300fa8a)
+- Add the mandatory vertex attribute `kind` describing the actual vertex kind (7c628fb93eb21f280c7d9da66680f817e107fa24, 784c417c50eb1de5d0143908a390ead6ba22dbbf)
+- Respect new vertex and edge attributes in plot functions (b55d3e84a5f9b122dacd0ee52784d930f22d1f4b)
+- Possibility to merge networks with function `merge.networks` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- Possibility to merge edge and vertex lists with function `merge.network.data` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- Add function `create.empty.edge.list` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- Possibility to contract imperfect ranges in the end (#104, 8ebcf20b0aba0cb82dcd7e1d1b95e261a866d04e)
+- Add method `ProjectData$equals` (#116, 00df306a3e6dbdeb81ddc116e88a4854b07afe72)
+- Add author classification by hierarchy to the core-peripheral module (8139f34fd809d6750064514a549024df4cbf5863)
+
+### Changed/Improved
+- Remove the mandatory vertex attribute `artifact.type` due to inconsistent use ()
+- Remove the mandatory vertex attribute `id` from artifact vertices due to inconsistent use (7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
+- Streamline edge attribute `artifact.type` for uniformity ()
+- Use color palette 'viridis' for plotting for better flexibility  (f190ca130a15a82e5eed836e9ffc53b8a34aac20)
+- Edge width in network plots now depends on edge weight, i.e., `width = 0.3 + 0.5 * log(weight)` (d791df8e2c41314f86c36b3af566141e7713f46c)
+- Split function `construct.network.from.list` into the two functions `construct.edge.list.from.key.value.list` and `construct.network.from.edge.list` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- Handle data for more than one relation in function `add.edges.for.bipartite.relation` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
+- Retain one edge for each available value of edge attribute `relation` during network simplification (021ac8b88e9a181364a51e89807df55cb741ed44)
+- Read also lines from the PaStA data without the `message.id` being mapped to a `commit.hash` (992ddf8d582a7a023f000b4fc57f9ff85a7f38f6)
+- Add column `revision.set.id` to PaStA data to indicate which e-mails are concerned with the same patch (992ddf8d582a7a023f000b4fc57f9ff85a7f38f6)
+- Add PaStA data to the unfiltered commit data if configured (70d9b8bd4cb16636086ca7ab90e817b89844f172)
+
+### Fixed
+- Check whether a given object to the `ProjectConf` setter in the `ProjectData` class really is a object of type `ProjectConf` (ab00c962e164428df2d59de7292eed3c3b1352aa)
+- The method for eigenvector centrality now properly considers whether the network is directed or not (c0277c36e4ff45cfbb421317a42b6ea8736afe53)
+- Fix a bug that caused errors when the core classification within a core-periphery classification is empty (c0277c36e4ff45cfbb421317a42b6ea8736afe53)
+
+
 ## 3.1.2
 
 ### Changed/Improved

@@ -13,6 +13,7 @@
 ##
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -47,22 +48,25 @@ test_that("Network construction of the undirected artifact-cochange network", {
     network.built = network.builder$get.artifact.network()
 
     ## vertex attributes
-    vertices = c("Base_Feature", "foo", "A")
+    vertices = data.frame(name = c("Base_Feature", "foo", "A"),
+                          kind = "Feature",
+                          type = TYPE.ARTIFACT)
 
-    data = data.frame(from = c("Base_Feature", "Base_Feature"),
-                      to = c("foo", "foo"),
-                      date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-                      hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-                      file = c("test2.c", "test2.c"),
-                      artifact.type = c("Feature", "Feature"),
-                      artifact = c("Base_Feature", "foo"),
-                      weight = c(1, 1),
-                      type = TYPE.EDGES.INTRA)
+    data = data.frame(
+        from = c("Base_Feature", "Base_Feature"),
+        to = c("foo", "foo"),
+        date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+        artifact.type = c("Feature", "Feature"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        file = c("test2.c", "test2.c"),
+        artifact = c("Base_Feature", "foo"),
+        weight = 1,
+        type = TYPE.EDGES.INTRA,
+        relation = "cochange"
+    )
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)
-    network.expected = igraph::set.vertex.attribute(network.expected, "id", value = igraph::get.vertex.attribute(network.expected, "name"))
-    igraph::V(network.expected)$type = TYPE.ARTIFACT
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })

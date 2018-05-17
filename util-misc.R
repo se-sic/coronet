@@ -361,7 +361,7 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 #'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
-#' in the last range.
+#' in the last range. To avoid that behavior, set parameter \code{include.end.date} to \code{FALSE}.
 #'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
@@ -371,15 +371,25 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 #'            last range (see above)
 #' @param time.period The time period describing the length of the ranges, a character
 #'                    string, e.g., "3 mins" or "15 days"
+#' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
+#'                              That is, if the last range would be shorter than ratio * \code{time.period},
+#'                              the last range will be combined with the second last range.
+#'                              A ratio of 0.0 means that the last range could be as small as possible.
+#'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
+#'                              [default: 0.0]
+#' @param include.end.date whether to include the end date or not [default: TRUE]
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
-construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
+construct.consecutive.ranges = function(start, end, time.period, imperfect.range.ratio = 0.0,
+                                        include.end.date = TRUE, raw = FALSE) {
 
     ## just construct overlapping ranges without any overlap ;)
-    ranges = construct.overlapping.ranges(start, end, time.period, overlap = 0, raw)
+    ranges = construct.overlapping.ranges(start, end, time.period, overlap = 0,
+                                          imperfect.range.ratio = imperfect.range.ratio,
+                                          include.end.date = include.end.date, raw)
     return(ranges)
 }
 
@@ -399,7 +409,7 @@ construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
 #'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
-#' in the last range.
+#' in the last range. To avoid that behavior, set parameter \code{include.end.date} to \code{FALSE}.
 #'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
@@ -413,12 +423,20 @@ construct.consecutive.ranges = function(start, end, time.period, raw = FALSE) {
 #'                (e.g., "3 mins" or "15 days") or a numeric indication the percentage of
 #'                overlap (e.g., 1/4). Should be more than 0 seconds and must not be larger
 #'                than the given \code{time.period}.
+#' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
+#'                              That is, if the last range would be shorter than ratio * \code{time.period},
+#'                              the last range will be combined with the second last range.
+#'                              A ratio of 0.0 means that the last range could be as small as possible.
+#'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
+#'                              [default: 0.0]
+#' @param include.end.date whether to include the end date or not [default: TRUE]
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
-construct.overlapping.ranges = function(start, end, time.period, overlap, raw = FALSE) {
+construct.overlapping.ranges = function(start, end, time.period, overlap, imperfect.range.ratio = 0.0,
+                                        include.end.date = TRUE, raw = FALSE) {
 
     ## convert given periods to lubridate stuff:
     ## 1) time period
@@ -431,7 +449,11 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
     }
     ## 3) the dates for theirselves
     start.date = get.date.from.string(start)
-    end.date = get.date.from.string(end) + 1 ## add 1 for inclusion of end.date
+    if (include.end.date) {
+        end.date = get.date.from.string(end) + 1 ## add 1 for inclusion of end.date
+    } else {
+        end.date = get.date.from.string(end)
+    }
 
     ## check the breaking case
     if (overlap >= time.period) {
@@ -478,6 +500,23 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
         return(c(bin.start, bin.end))
     })
 
+    # if wanted, check for imperfect range in the end:
+    if (imperfect.range.ratio > 0) {
+        ## 1) get the last range
+        last.range = ranges.raw[[bins.number]]
+        ## 2) get the last range's duration
+        last.range.duration = lubridate::as.duration(lubridate::interval(last.range[1], last.range[2]))
+        ## 3) check if the last range is too short
+        is.too.short = last.range.duration < imperfect.range.ratio * time.period
+        ## 4) combine the last range with the second-last one, if the last one is too short
+        if (bins.number > 1 && is.too.short) {
+            ## extend second-last range until end.date
+            ranges.raw[[bins.number - 1]][2] = end.date
+            ## remove last range
+            ranges.raw = ranges.raw[-bins.number]
+        }
+    }
+
     ## construct actual range strings (without names)
     ranges = sapply(ranges.raw, construct.ranges, sliding.window = FALSE, raw = FALSE)
     ranges = unname(ranges)
@@ -508,7 +547,7 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
 #'
 #' Important: As the start of each range is supposed to be inclusive and the end of each range
 #' exclusive, 1 second is added to \code{end}. This way, the date \code{end} will be *included*
-#' in the last range.
+#' in the last range. To avoid that behavior, set parameter \code{include.end.date} to \code{FALSE}.
 #'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
@@ -518,15 +557,25 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, raw = 
 #'            last range (see above)
 #' @param time.period The time period describing the length of the ranges, a character
 #'                    string, e.g., "3 mins" or "15 days"
+#' @param imperfect.range.ratio The ratio of the \code{time.period} the last range has to last at least.
+#'                              That is, if the last range would be shorter than ratio * \code{time.period},
+#'                              the last range will be combined with the second last range.
+#'                              A ratio of 0.0 means that the last range could be as small as possible.
+#'                              A ratio of 1.0 means that the last range has to last at least \code{time.period}.
+#'                              [default: 0.0]
+#' @param include.end.date whether to include the end date or not [default: TRUE]
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
-construct.cumulative.ranges = function(start, end, time.period, raw = FALSE) {
+construct.cumulative.ranges = function(start, end, time.period, imperfect.range.ratio = 0.0,
+                                       include.end.date = TRUE, raw = FALSE) {
 
     ## get the consecutive ranges to alter them afterwards
-    ranges.consecutive = construct.overlapping.ranges(start, end, time.period, overlap = 0, raw = TRUE)
+    ranges.consecutive = construct.overlapping.ranges(start, end, time.period, overlap = 0,
+                                                      imperfect.range.ratio = imperfect.range.ratio,
+                                                      include.end.date = include.end.date, raw = TRUE)
 
     ## set the start of each range to global start date
     ranges.raw = lapply(ranges.consecutive, function(range.bounds) {

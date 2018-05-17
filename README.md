@@ -43,6 +43,7 @@ When selecting a version to work with, you should consider the following points:
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
+- `viridis`: For plotting of networks with nice colours
 
 
 ## How-To
@@ -214,7 +215,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 **Note**: Default values are shown in *italics*.
 
 - `author.relation`
-  * The relation among authors, encoded as edges in an author network
+  * The relation(s) among authors, encoded as edges in an author network
   * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
   * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
@@ -228,7 +229,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
   * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
-  * The relation among artifacts, encoded as edges in an artifact network
+  * The relation(s) among artifacts, encoded as edges in an artifact network
   * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
   * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
@@ -239,13 +240,14 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
   * The list of edge-attribute names and information
   * a subset of the following as a single vector:
        - timestamp information: *`"date"`*, `"date.offset"`
+       - general information: *`"artifact.type"`*
        - author information: `"author.name"`, `"author.email"`
        - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
        - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
-       - commit information: *`"hash"`*, *`"file"`*, *`"artifact.type"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
+       - commit information: *`"hash"`*, *`"file"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
        - PaStA information: `"pasta"`,
        - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
-  * **Note**: `"date"` is always included as this information is needed for several parts of the library, e.g., time-based splitting.
+  * **Note**: `"date"` and `"artifact.type"` are always included as this information is needed for several parts of the library, e.g., time-based splitting.
   * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
   * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
 - `simplify`
@@ -265,6 +267,22 @@ The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pa
 You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
 For more examples, please look in the file `showcase.R`.
+
+
+###  Network properties
+
+- Mandatory vertex attributes
+  * *`"type"`*: [`"Author"`, `"Artifact"`]
+  * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`,
+  `"Issue"`,`"FeatureExpression"`]
+  * *`"name"`*
+
+- Mandatory edge attributes
+  * *`"type"`*: [`Unipartite`, `Bipartite`]
+  * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`,
+  `"IssueEvent"`,`"FeatureExpression"`]
+  * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
+  * *`"date"`*
 
 
 ## File/Module overview
