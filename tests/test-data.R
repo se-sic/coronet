@@ -117,7 +117,8 @@ test_that("Compare two RangeData objects", {
     ## create a RangeData object with the same data sources as proj.data.base
     ## and check for inequality
     timestamps = proj.data.base$get.data.timestamps(outermost = TRUE)
-    range.data.four = split.data.time.based(proj.data.base, bins = c(timestamps$start[[1]], timestamps$end[[1]]))[[1]]
+    range.data.four = split.data.time.based(proj.data.base, bins =
+                                                c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]))[[1]]
 
     expect_false(proj.data.base$equals(range.data.four))
 

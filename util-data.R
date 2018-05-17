@@ -683,11 +683,14 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
         equals = function(other.data.object) {
+
+            ## check whether the given object is an instance of ProjectData
             if (!("ProjectData" %in% class(other.data.object))) {
                 logging::logerror("You can only compare a ProjectData object against another one.")
                 return(FALSE)
             }
 
+            ## check whether the two objects are of the same type
             if (!identical(self$get.class.name(), other.data.object$get.class.name())) {
                 logging::logerror("You can only compare two instances of the same class.")
                 return(FALSE)
@@ -1032,17 +1035,16 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             return(private$revision.callgraph)
         },
 
-        #' Compares two RangeData objects by first calling the \code{equals()} method of
-        #' ProjectData.
-        #' Then, it compares the additional two data sources (\code{range} and
-        #' \code{revision.callgraph}).
+        #' Compares two RangeData objects by first comparing the ranges. Then it compares
+        #' the revision callgraphs and if they are equal, it calls the equals method of
+        #' ProjectData to compare the remaining data sources.
         #'
         #' @param other.data.object the object with which to compare
         #'
         #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
         equals = function(other.data.object = NULL) {
 
-            ## check whether the given object is a instance of RangeData
+            ## check whether the given object is an instance of RangeData
             if (!("RangeData" %in% class(other.data.object))) {
                 logging::logerror("You can only compare a RangeData object against another one.")
                 return(FALSE)
@@ -1055,7 +1057,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
             ## check whether the revision callgraphs are equal
             if (!identical(self$get.revision.callgraph(),
-                          other.data.object$get.revision.callgraph())) {
+                           other.data.object$get.revision.callgraph())) {
                 return(FALSE)
             }
 
