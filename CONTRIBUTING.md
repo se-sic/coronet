@@ -47,7 +47,7 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 
 #### How Do I Submit A (Good) Bug Report?
 
-Bugs are tracked as GitHub issues. Create an issue and provide needed information by filling in the template.
+Bugs are tracked as GitHub issues. Create an issue and provide needed information by filling in [the template](.github/ISSUE_TEMPLATE/issue.md).
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -75,7 +75,7 @@ Include details about your configuration and environment:
 
 This section guides you through submitting an enhancement suggestion, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion and find related suggestions.
 
-Before creating enhancement suggestions, please check [this list](#before-submitting-an-enhancement-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](ISSUE_TEMPLATE.md), including the steps that you imagine you would take if the feature you're requesting existed.
+Before creating enhancement suggestions, please check [this list](#before-submitting-an-enhancement-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](.github/ISSUE_TEMPLATE/enhancement.md), including the steps that you imagine you would take if the feature you're requesting existed.
 
 #### Before Submitting An Enhancement Suggestion
 
@@ -85,12 +85,14 @@ Before creating enhancement suggestions, please check [this list](#before-submit
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
 
-Enhancements are tracked as GitHub issues. Create an issue and provide the needed information:
+Enhancements are tracked as GitHub issues, but slightly different information is needed for them. 
+
+Create an issue and provide the needed information:
 
 * **Use a clear and descriptive title** for the issue to identify the suggestion.
-* **Provide a step-by-step description of the suggested enhancement** in as many details as possible.
-* **Provide specific examples to demonstrate the steps**. Include copy/pasteable snippets which you use in those examples.
-* **Describe the current behavior** and **explain which behavior you expected to see instead** and why.
+* If possible, **provide a step-by-step description of the suggested enhancement** in as many details as possible.
+* **Provide specific examples to demonstrate the enhancement**. Include copy/pasteable snippets which you use in those examples.
+* **Describe the current behavior** and **explain which behavior you want to see instead** and why.
 * **Explain why this enhancement would be useful** to all users of the library and isn't something that can or should be implemented as a functionality in your code.
 * **Which version of the library are you using?** You can get the exact version by running `git rev-parse HEAD` and `git rev-parse --abbrev-ref HEAD` in your terminal.
 
@@ -127,6 +129,7 @@ The current build status is as follows:
   * Code must be reviewed by one other project member and, if needed, be properly adapted/fixed.
   * We add the `Reviewed-by` tag only for the merge commit.
 
+There will also another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
 
 ## Style Conventions
 
