@@ -1,17 +1,20 @@
 # codeface-extraction-r – Changelog
 
 
-## unversioned
+## Unversioned
 
 ### Added
-- Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (Issue #92 / second task, commits da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
+- Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
 
 ### Changed/Improved
-- Add committer information to the commitlist in the testdata
+- Add committer information to the commit list in the test data
+- Set the locale to "english-us" on Windows (3a9aa081bacd1c15b9454f7f636a62a685002f04)
+- Update templates for pull requests and issues (00df0af8ed3ee338a9a9231a069e1fe790151923)
+- Update the contribution guide regarding things to be done for a pull request (00df0af8ed3ee338a9a9231a069e1fe790151923)
+- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (1fdec69be3c14e254dd519fb2ff8ac46069f02bd)
 
 ### Fixed
-- Change the type of all commit count default values to Integer
-
+- Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
 
 
 ## 3.2
