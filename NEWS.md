@@ -1,6 +1,18 @@
 # codeface-extraction-r – Changelog
 
 
+## unversioned
+
+### Added
+- Possibility to add the commit count per person as vertex attribute, counting either commits, where the person ist committer AND author, or committer OR author 
+
+### Changed/Improved
+
+### Fixed
+- Change the type of all commit count default values to Integer
+
+
+
 ## 3.2
 
 ### Added
