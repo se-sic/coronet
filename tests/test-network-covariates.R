@@ -211,6 +211,34 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     })
 })
 
+#' Test the add.vertex.attribute.commit.count.committer.or.author method
+test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
+
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.commit.count.committer.or.author(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "commit.count.committer.or.author")
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
 #' Test the add.vertex.attribute.author.email method
 test_that("Test add.vertex.attribute.author.email", {
 
