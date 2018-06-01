@@ -108,30 +108,30 @@ There is no way to update the entries, except for the revision-based parameters.
 #### Basic Information
 
 - `project`
-  * The project name from the Codeface analysis
-  * E.g., `busybox_feature`
+    * The project name from the Codeface analysis
+    * E.g., `busybox_feature`
 - `repo`
-  * The repository subfolder name used by Codeface
-  * E.g., `busybox`
-  * **Note**: This is the casestudy name given as parameter to constructor!
+    * The repository subfolder name used by Codeface
+    * E.g., `busybox`
+    * **Note**: This is the casestudy name given as parameter to constructor!
 - `description`
-  * The description of the project from the Codeface configuration file
+    * The description of the project from the Codeface configuration file
 - `mailinglists`
-  * A list of the mailinglists of the project containing their name, type and source
+    * A list of the mailinglists of the project containing their name, type and source
 
 #### Artifact-Related Information
 
 - `artifact`
-  * The artifact of the project used for all data retrievals
-  * **Note**: Given as parameter to the class constructor
+    * The artifact of the project used for all data retrievals
+    * **Note**: Given as parameter to the class constructor
 - `artifact.short`
-  * The abbreviation of the artifact name used in file names for call-graph data
+    * The abbreviation of the artifact name used in file names for call-graph data
 - `artifact.codeface`
-  * The artifact name as in the Codeface database
-  * Used to identify the right commits during data retrieval
+    * The artifact name as in the Codeface database
+    * Used to identify the right commits during data retrieval
 - `tagging`
-  * The Codeface tagging parameter for the project, based on the `artifact` parameter
-  * Either `"proximity"` or `"feature"`
+    * The Codeface tagging parameter for the project, based on the `artifact` parameter
+    * Either `"proximity"` or `"feature"`
 
 #### Revision-Related Information
 
@@ -139,27 +139,27 @@ There is no way to update the entries, except for the revision-based parameters.
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
 
 - `revisions`
-  * The analyzed revisions of the project, retrieved from the Codeface database
+    * The analyzed revisions of the project, retrieved from the Codeface database
 - `revisions.dates`
-  * The dates for the `revisions`
+    * The dates for the `revisions`
 - `revisions.callgraph`
-  * The revisions as used in call-graph file name
+    * The revisions as used in call-graph file name
 - `ranges`
-  * The revision ranges constructed from the list of `revisions`
-  * The ranges are constructed in sliding-window manner when a data object is split using the sliding-window approach
+    * The revision ranges constructed from the list of `revisions`
+    * The ranges are constructed in sliding-window manner when a data object is split using the sliding-window approach
 - `ranges.callgraph`
-  * The revision ranges based on the list `revisions.callgraph`
+    * The revision ranges based on the list `revisions.callgraph`
 
 #### Data Paths
 
 - `datapath`
-  * The data path to the Codeface results folder of this project
+    * The data path to the Codeface results folder of this project
 - `datapath.callgraph`
-  * The data path to the call-graph data
+    * The data path to the call-graph data
 - `datapath.synchronicity`
-  * The data path to the synchronicity data
+    * The data path to the synchronicity data
 - `datapath.pasta`
-  * The data path to the pasta data
+    * The data path to the pasta data
 
 #### Splitting Information
 
@@ -167,43 +167,43 @@ There is no way to update the entries, except for the revision-based parameters.
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
 
 - `split.type`
-  * Either `"time-based"` or `"activity-based"`, depending on splitting function
+    * Either `"time-based"` or `"activity-based"`, depending on splitting function
 - `split.length`
-  * The string given to time-based splitting (e.g., "3 months") or the activity amount given to acitivity-based splitting
+    * The string given to time-based splitting (e.g., "3 months") or the activity amount given to acitivity-based splitting
 - `split.basis`
-  * The data used as basis for splitting (either `"commits"` or `"mails"`)
+    * The data used as basis for splitting (either `"commits"` or `"mails"`)
 - `split.sliding.window`
-  * Logical indicator whether a sliding-window approach has been used to split the data or network (either `"TRUE"` or `"FALSE"`)
+    * Logical indicator whether a sliding-window approach has been used to split the data or network (either `"TRUE"` or `"FALSE"`)
 - `split.revisions`
-  * The revisions used for splitting (list of character strings)
+    * The revisions used for splitting (list of character strings)
 - `split.revisions.dates`
-  * The respective date objects for `split.revisions`
+    * The respective date objects for `split.revisions`
 - `split.ranges`
-  * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
+    * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
 
 #### (Configurable) Data-Retrieval-Related Parameters
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
 - `artifact.filter.base`
-  * Remove all artifact information regarding the base artifact
+    * Remove all artifact information regarding the base artifact
     (`"Base_Feature"` or `"File_Level"` for features and functions, respectively, as artifacts)
-  * [*`TRUE`*, `FALSE`]
+    * [*`TRUE`*, `FALSE`]
 - `issues.only.comments`
-  * Only use comments from the issue data on disk and no further events such as references and label changes
-  * [*`TRUE`*, `FALSE`]
+    * Only use comments from the issue data on disk and no further events such as references and label changes
+    * [*`TRUE`*, `FALSE`]
 - `synchronicity`
-  * Read and add synchronicity data to commits and co-change-based networks
-  * [`TRUE`, *`FALSE`*]
-  * **Note**: To include synchronicity-data-based edge attributes, you need to give the `"synchronicity"` edge attribute for `edge.attributes`.
+    * Read and add synchronicity data to commits and co-change-based networks
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: To include synchronicity-data-based edge attributes, you need to give the `"synchronicity"` edge attribute for `edge.attributes`.
 - `synchronicity.time.window`:
-  * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
-  * [1, *5*, 10, 15]
-  * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
+    * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
+    * [1, *5*, 10, 15]
+    * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
 - `pasta`
-  * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
-  * [`TRUE`, *`FALSE`*]
-  * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
+    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 
 ### NetworkConf
 
@@ -215,53 +215,53 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 **Note**: Default values are shown in *italics*.
 
 - `author.relation`
-  * The relation(s) among authors, encoded as edges in an author network
-  * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
-  * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
+    * The relation(s) among authors, encoded as edges in an author network
+    * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
+    * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
-  * The (time-based) directedness of edges in an author network
-  * [`TRUE`, *`FALSE`*]
+    * The (time-based) directedness of edges in an author network
+    * [`TRUE`, *`FALSE`*]
 - `author.all.authors`
-  * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
-  * **Note**: Depending on the chosen author relation, there may be isolates then
-  * [`TRUE`, *`FALSE`*]
+    * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
+    * **Note**: Depending on the chosen author relation, there may be isolates then
+    * [`TRUE`, *`FALSE`*]
 - `author.only.committers`
-  * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
-  * [`TRUE`, *`FALSE`*]
+    * Remove all authors from an author network (including bipartite and multi networks) who are not present in an author network constructed with `artifact.relation` as relation, i.e., all authors that have no biparite relations in a bipartite/multi network are removed.
+    * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
-  * The relation(s) among artifacts, encoded as edges in an artifact network
-  * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
-  * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
+    * The relation(s) among artifacts, encoded as edges in an artifact network
+    * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
+    * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
-  * The (time-based) directedness of edges in an artifact network
-  * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
+    * The (time-based) directedness of edges in an artifact network
+    * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
   * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
-  * The list of edge-attribute names and information
-  * a subset of the following as a single vector:
-       - timestamp information: *`"date"`*, `"date.offset"`
-       - general information: *`"artifact.type"`*
-       - author information: `"author.name"`, `"author.email"`
-       - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
-       - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
-       - commit information: *`"hash"`*, *`"file"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
+    * The list of edge-attribute names and information
+    * a subset of the following as a single vector:
+         - timestamp information: *`"date"`*, `"date.offset"`
+         - general information: *`"artifact.type"`*
+         - author information: `"author.name"`, `"author.email"`
+         - committer information: `"committer.date"`, `"committer.name"`, `"committer.email"`
+         - e-mail information: *`"message.id"`*, *`"thread"`*, `"subject"`
+         - commit information: *`"hash"`*, *`"file"`*, *`"artifact"`*, `"changed.files"`, `"added.lines"`, `"deleted.lines"`, `"diff.size"`, `"artifact.diff.size"`, `"synchronicity"`
        - PaStA information: `"pasta"`,
        - issue information: *`"issue.id"`*, *`"event.name"`*, `"issue.state"`, `"creation.date"`, `"closing.date"`, `"is.pull.request"`
-  * **Note**: `"date"` and `"artifact.type"` are always included as this information is needed for several parts of the library, e.g., time-based splitting.
-  * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
-  * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
+    * **Note**: `"date"` and `"artifact.type"` are always included as this information is needed for several parts of the library, e.g., time-based splitting.
+    * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
+    * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
 - `simplify`
-  * Perform edge contraction to retrieve a simplified network
-  * [`TRUE`, *`FALSE`*]
+    * Perform edge contraction to retrieve a simplified network
+    * [`TRUE`, *`FALSE`*]
 - `skip.threshold`
-  * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
-  * any positive integer
-  * **Example**: The amount of `mail`-based directed edges in an author network for one thread with 100 authors is 5049.
+    * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
+    * any positive integer
+    * **Example**: The amount of `mail`-based directed edges in an author network for one thread with 100 authors is 5049.
     A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this thread from the network.
 - `unify.date.ranges`
-  * Cut the data sources to the largest start date and the smallest end date across all data sources
-  * **Note**: This parameter does not affect the original data object, but rather creates a clone.
-  * [`TRUE`, *`FALSE`*]
+    * Cut the data sources to the largest start date and the smallest end date across all data sources
+    * **Note**: This parameter does not affect the original data object, but rather creates a clone.
+    * [`TRUE`, *`FALSE`*]
 
 The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pass the object as parameter to the constructor.
 You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
@@ -272,51 +272,49 @@ For more examples, please look in the file `showcase.R`.
 ###  Network properties
 
 - Mandatory vertex attributes
-  * *`"type"`*: [`"Author"`, `"Artifact"`]
-  * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`,
-  `"Issue"`,`"FeatureExpression"`]
-  * *`"name"`*
+    * *`"type"`*: [`"Author"`, `"Artifact"`]
+    * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
+    * *`"name"`*
 
 - Mandatory edge attributes
-  * *`"type"`*: [`Unipartite`, `Bipartite`]
-  * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`,
-  `"IssueEvent"`,`"FeatureExpression"`]
-  * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
-  * *`"date"`*
+    * *`"type"`*: [`Unipartite`, `Bipartite`]
+    * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
+    * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
+    * *`"date"`*
 
 
 ## File/Module overview
 
 - `util-init.R`
-  * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
+    * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
 - `util-conf.R`
-  * The configuration classes of the project
+    * The configuration classes of the project
 - `util-read.R`
-  * Functionality to read data file from disk
+    * Functionality to read data file from disk
 - `util-data.R`
-  * All representations of the data classes
+    * All representations of the data classes
 - `util-networks.R`
-  * The `NetworkBuilder` class and all corresponding helper functions to construct networks
+    * The `NetworkBuilder` class and all corresponding helper functions to construct networks
 - `util-split.R`
-  * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
+    * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
 - `util-bulk.R`
-  * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
+    * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
 - `util-networks-covariates.R`
-  * Functionality to add vertex attributes to existing networks
+    * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
-  * A set of network-metric functions
+    * A set of network-metric functions
 - `util-core-peripheral.R`
-  * Author classification (core and peripheral) and related functions
+    * Author classification (core and peripheral) and related functions
 - `util-motifs.R`
-  * Functionality for the identifaction of network motifs (subgraph patterns)
+    * Functionality for the identifaction of network motifs (subgraph patterns)
 - `util-plot.R`
-  * Everything needed for plotting networks
+    * Everything needed for plotting networks
 - `util-misc.R`
-  * Helper functions and also legacy functions, both needed in the other files
+    * Helper functions and also legacy functions, both needed in the other files
 - `showcase.R`
-  * Showcase file (see Section also [*How-To*](#how-to))
+    * Showcase file (see Section also [*How-To*](#how-to))
 - `tests.R`
-  * Test suite (running all tests in `tests/` subfolder)
+    * Test suite (running all tests in `tests/` subfolder)
 
 
 ## License
