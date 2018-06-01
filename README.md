@@ -49,7 +49,7 @@ When selecting a version to work with, you should consider the following points:
 ## How-To
 
 In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
-For more examples, please see the file `showcase.R`.
+For more examples, please see [the types of networks we can construct](#types-of-networks) and the file `showcase.R`.
 
 ```R
 CF.DATA = "/path/to/codeface-data" # path to codeface data
@@ -86,7 +86,6 @@ bpn = netbuilder$get.bipartite.network()
 
 ## plot the retrieved network
 plot.network(bpn)
-
 ```
 
 There are two different classes of configuration objects in this library:
@@ -95,6 +94,83 @@ There are two different classes of configuration objects in this library:
 
 You can find an overview on all the parameters in these classes below in this file.
 For examples on how to use both classes and how to build networks with them, please look in the file `showcase.R`.
+
+
+## Functionality
+
+### Data sources
+
+There are two distinguishable types of data sources handled by the `ProjectData` and `RangeData` classes. The important difference is that the *main data sources* are used internally to construct artifacts vertices in relevant types of networks. Additionally, these data sources can used as a basis for splitting `ProjectData` in a time-based or activity-based manner (see file `split.R` and the contained functions). The *additional data sources* are orthogonal to the main data sources, can augment them by additional information and, thus, are not split at any time.
+
+All data sources are accessible from the `ProjectData` objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
+
+- Main data sources (artifact networks, splittable)
+    * Commit data (called `"commits"` internally)
+    * E-Mail data (called `"mails"` internally)
+    * Issue data (called `"issues"` internally)
+
+- Additional orthogonal data sources (augmentable to main data sources, not splittable)
+    * PaStA data (see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
+    * Synchronicity information (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
+
+###  Network construction
+
+When constructing networks by using a `NetworkBuilder` object, we basically construct `igraph` objects. You can find more information on how to handle these objects on the [`igraph` project website](http://igraph.org/r/).
+
+#### Types of networks
+
+> TODO
+
+#### Network attributes
+
+There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional.
+
+- Mandatory vertex attributes (and their potential values)
+    * *`"type"`*: [`"Author"`, `"Artifact"`]
+    * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
+    * *`"name"`*
+
+- Mandatory edge attributes (and their potential values)
+    * *`"type"`*: [`Unipartite`, `Bipartite`]
+    * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
+    * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
+    * *`"date"`*
+
+ To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class). To add further vertex attributes – which can only be done *after constructing a network* –, plese see the file `util-networks-covariantes.R` for the set of corresponding functions to call.
+
+### File/Module overview
+
+- `util-init.R`
+    * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
+- `util-conf.R`
+    * The configuration classes of the project
+- `util-read.R`
+    * Functionality to read data file from disk
+- `util-data.R`
+    * All representations of the data classes
+- `util-networks.R`
+    * The `NetworkBuilder` class and all corresponding helper functions to construct networks
+- `util-split.R`
+    * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
+- `util-bulk.R`
+    * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
+- `util-networks-covariates.R`
+    * Functionality to add vertex attributes to existing networks
+- `util-networks-metrics.R`
+    * A set of network-metric functions
+- `util-core-peripheral.R`
+    * Author classification (core and peripheral) and related functions
+- `util-motifs.R`
+    * Functionality for the identifaction of network motifs (subgraph patterns)
+- `util-plot.R`
+    * Everything needed for plotting networks
+- `util-misc.R`
+    * Helper functions and also legacy functions, both needed in the other files
+- `showcase.R`
+    * Showcase file (see Section also [*How-To*](#how-to))
+- `tests.R`
+    * Test suite (running all tests in `tests/` subfolder)
+
 
 ## Configuration Classes
 
@@ -267,54 +343,6 @@ The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pa
 You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
 For more examples, please look in the file `showcase.R`.
-
-
-###  Network properties
-
-- Mandatory vertex attributes
-    * *`"type"`*: [`"Author"`, `"Artifact"`]
-    * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
-    * *`"name"`*
-
-- Mandatory edge attributes
-    * *`"type"`*: [`Unipartite`, `Bipartite`]
-    * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
-    * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
-    * *`"date"`*
-
-
-## File/Module overview
-
-- `util-init.R`
-    * Initialization file that can be used by other analysis projects (see Section [*Submodule*](#submodule))
-- `util-conf.R`
-    * The configuration classes of the project
-- `util-read.R`
-    * Functionality to read data file from disk
-- `util-data.R`
-    * All representations of the data classes
-- `util-networks.R`
-    * The `NetworkBuilder` class and all corresponding helper functions to construct networks
-- `util-split.R`
-    * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
-- `util-bulk.R`
-    * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
-- `util-networks-covariates.R`
-    * Functionality to add vertex attributes to existing networks
-- `util-networks-metrics.R`
-    * A set of network-metric functions
-- `util-core-peripheral.R`
-    * Author classification (core and peripheral) and related functions
-- `util-motifs.R`
-    * Functionality for the identifaction of network motifs (subgraph patterns)
-- `util-plot.R`
-    * Everything needed for plotting networks
-- `util-misc.R`
-    * Helper functions and also legacy functions, both needed in the other files
-- `showcase.R`
-    * Showcase file (see Section also [*How-To*](#how-to))
-- `tests.R`
-    * Test suite (running all tests in `tests/` subfolder)
 
 
 ## License
