@@ -121,22 +121,34 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 > TODO
 
-#### Network attributes
+#### Vertex and edge attributes
 
 There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional.
 
-- Mandatory vertex attributes (and their potential values)
-    * *`"type"`*: [`"Author"`, `"Artifact"`]
-    * *`"kind"`*: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
-    * *`"name"`*
+- Mandatory *vertex* attributes
+    * `type`
+        - The abstract type of data represented by the respective vertex, either an author or any type of artifact (e.g., source-code artifact or mail thread)
+        - possible values: [`"Author"`, `"Artifact"`]
+    * `kind`
+        - The specific type of data represented by the respective vertex, augmenting the vertex attribute `kind`
+        - possible values: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
+    * `name`
+        - The name for the data represented by the respective vertex (e.g., the author's name or a file path)
 
-- Mandatory edge attributes (and their potential values)
-    * *`"type"`*: [`Unipartite`, `Bipartite`]
-    * *`"artifact.type"`*: [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
-    * *`"relation"`*: [`mail`, `cochange`, `issue`, `callgraph`] (from `artifact.relation` and `author.relation` attributes in the `NetworkConf` class)
-    * *`"date"`*
+- Mandatory *edge* attributes
+    * `type`
+        - The abstract type of edge, either unipartite (among same-type vertices) or bipartite (among different-type vertices)
+        - [`"Unipartite"`, `"Bipartite"`]
+    * `relation`
+        - The specific type of relation of this edge, augmenting the edge attribute `type` (see also the attributes `artifact.relation` and `author.relation` in the `NetworkConf` class)
+        -  [`"mail"`, `"cochange"`, `"issue"`, `"callgraph"`]
+    * `artifact.type`
+        - The specific artifact type associated with the event causing the respective edge
+        - [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
+    * `date`
+        - The date of the event causing the respective edge
 
- To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class). To add further vertex attributes – which can only be done *after constructing a network* –, plese see the file `util-networks-covariantes.R` for the set of corresponding functions to call.
+To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class). To add further vertex attributes – which can only be done *after constructing a network* –, plese see the file `util-networks-covariantes.R` for the set of corresponding functions to call.
 
 ### File/Module overview
 
