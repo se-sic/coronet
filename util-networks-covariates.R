@@ -127,7 +127,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.author = function(list.of.networks, project.data, name = "commit.count",
@@ -153,7 +153,7 @@ add.vertex.attribute.commit.count.author = function(list.of.networks, project.da
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.author.not.committer = function(list.of.networks, project.data,
@@ -180,7 +180,7 @@ add.vertex.attribute.commit.count.author.not.committer = function(list.of.networ
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer = function(list.of.networks, project.data, name = "commit.count.committer",
@@ -206,7 +206,7 @@ add.vertex.attribute.commit.count.committer = function(list.of.networks, project
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer.not.author = function(list.of.networks, project.data,
@@ -223,7 +223,7 @@ add.vertex.attribute.commit.count.committer.not.author = function(list.of.networ
     return(nets.with.attr)
 }
 
-#' Add commit-count attribute based on comitter name where the committer equals the author.
+#' Add commit-count attribute based on committer name where the committer equals the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -233,7 +233,7 @@ add.vertex.attribute.commit.count.committer.not.author = function(list.of.networ
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer.and.author = function(list.of.networks, project.data,
@@ -261,7 +261,7 @@ add.vertex.attribute.commit.count.committer.and.author = function(list.of.networ
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.commit.count.committer.or.author = function(list.of.networks, project.data,
@@ -291,7 +291,7 @@ add.vertex.attribute.commit.count.committer.or.author = function(list.of.network
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #' @param commit.count.method The method reference for counting the commits
 #' @param name.column The name of the author or committer column
 #'

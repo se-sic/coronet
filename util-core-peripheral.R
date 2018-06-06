@@ -522,7 +522,7 @@ get.committer.not.author.commit.count = function(range.data) {
     return(res)
 }
 
-#' Get the commit count per person in the given range data for commits where the author equals the commiter.
+#' Get the commit count per person in the given range data for commits where the author equals the committer.
 #'
 #' @param range.data The data to count on
 #'
@@ -548,7 +548,7 @@ get.committer.and.author.commit.count = function(range.data) {
     return(res)
 }
 
-#' Get the commit count per person in the given range data where it is commiter or author or both.
+#' Get the commit count per person in the given range data where the person is committer or author or both.
 #'
 #' @param range.data The data to count on
 #'
@@ -566,7 +566,7 @@ get.committer.or.author.commit.count = function(range.data) {
 
     ## Execute queries to get the commit count per person
     ungrouped = sqldf::sqldf("SELECT `committer.name` AS `name` FROM `commits.df`
-                             WhERE `committer.name` = `author.name`
+                             WHERE `committer.name` = `author.name`
                                 UNION ALL
                              SELECT `author.name` AS `name` FROM `commits.df`
                              WHERE `author.name` <> `committer.name`
@@ -582,7 +582,7 @@ get.committer.or.author.commit.count = function(range.data) {
     return(res)
 }
 
-#' Get the commit count per comitter in the given range data, where the committer
+#' Get the commit count per committer in the given range data, where the committer
 #' may match the author of the respective commits
 #'
 #' @param range.data The data to count on
