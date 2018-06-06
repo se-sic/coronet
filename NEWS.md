@@ -11,10 +11,14 @@
 - Set the locale to "english-us" on Windows (3a9aa081bacd1c15b9454f7f636a62a685002f04)
 - Update templates for pull requests and issues (00df0af8ed3ee338a9a9231a069e1fe790151923)
 - Update the contribution guide regarding things to be done for a pull request (00df0af8ed3ee338a9a9231a069e1fe790151923)
-- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (1fdec69be3c14e254dd519fb2ff8ac46069f02bd)
+- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (1fdec69be3c14e254dd519fb2ff8ac46069f02bd, a61c0cdb504ff8ecda90fcbbeb31c898960bc4f7)
+- Update README file regarding functionality, network types, data sources, and mandatory attributes (#121, 2ed9c813e73943bc9ab930dcc2b5b7be96297cfe, e16d9eda896a54b3f3a90cf9c3a8f3c6f351bf66, d28c1c16fdb3984fca89356dacea546da8d4da1f)
+- Adjust legend orientation and placement in plots (now column-oriented) (ea8b33b88484c85d6c5244a0868900e8f0eed089)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
+- Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (c9ab243334d7154430015d0b4930d6ed363ab137)
+- Fix showcase file regarding outdated plotting parameters (611fbb8546eea14a90b02fbb63d7ebafc627b40c)
 
 
 ## 3.2
