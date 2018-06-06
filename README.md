@@ -119,7 +119,24 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 #### Types of networks
 
-> TODO
+There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks. In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
+
+- Author networks
+     * The vertices in an author network denote authors who are uniquely identifiable by their name. There are only unipartite edges among authors in this type of network.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `author.relation`.
+
+- Artifact networks
+     * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail or issue threads). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
+
+- Bipartite networks
+     * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
+
+- Multi networks
+     * The vertices in a multi network denote both authors and artifacts. There are both unipartite and bipartite edges among the vertices in this type of network. Essentially, a multi network is the combination of all other types of networks.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attributes `author.relation` and `artifact.relation`, respectively.
+
 
 #### Vertex and edge attributes
 
