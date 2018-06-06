@@ -46,7 +46,7 @@ When selecting a version to work with, you should consider the following points:
 - `viridis`: For plotting of networks with nice colours
 
 
-## How-To
+## How-to
 
 In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
 For more examples, please see [the types of networks we can construct](#types-of-networks) and the file `showcase.R`.
@@ -172,7 +172,7 @@ There are some mandatory attributes that are added to vertices and edges in the 
     * Test suite (running all tests in `tests/` subfolder)
 
 
-## Configuration Classes
+## Configuration classes
 
 ### ProjectConf
 
@@ -181,7 +181,7 @@ In this section, we give an overview on the parameters of the `ProjectConf` clas
 All parameters can be retrieved with the method `ProjectConf$get.entry(...)`, by passing one parameter name as method parameter.
 There is no way to update the entries, except for the revision-based parameters.
 
-#### Basic Information
+#### Basic information
 
 - `project`
     * The project name from the Codeface analysis
@@ -195,7 +195,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `mailinglists`
     * A list of the mailinglists of the project containing their name, type and source
 
-#### Artifact-Related Information
+#### Artifact-related information
 
 - `artifact`
     * The artifact of the project used for all data retrievals
@@ -209,7 +209,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * The Codeface tagging parameter for the project, based on the `artifact` parameter
     * Either `"proximity"` or `"feature"`
 
-#### Revision-Related Information
+#### Revision-related information
 
 **Note**: This data is updated after performing a data-based splitting (i.e., by calling the functions `split.data.*(...)`).
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
@@ -226,7 +226,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `ranges.callgraph`
     * The revision ranges based on the list `revisions.callgraph`
 
-#### Data Paths
+#### Data paths
 
 - `datapath`
     * The data path to the Codeface results folder of this project
@@ -237,7 +237,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `datapath.pasta`
     * The data path to the pasta data
 
-#### Splitting Information
+#### Splitting information
 
 **Note**: This data is added to the `ProjectConf` object only after performing a data-based splitting (by calling the  functions `split.data.*(...)`).
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
@@ -257,7 +257,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `split.ranges`
     * The ranges constructed from `split.revisions` (either in sliding-window manner or not, depending on `split.sliding.window`)
 
-#### (Configurable) Data-Retrieval-Related Parameters
+#### (Configurable) Data-retrieval-related parameters
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
