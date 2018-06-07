@@ -34,7 +34,7 @@ This section guides you through submitting a bug report for our project. Followi
 
 Before creating bug reports, please check [this list](#before-submitting-a-bug-report) as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible.
 
-    Note: If you find a `Closed` issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
+**Note**: If you find a `closed` issue that seems like it is the same thing that you are experiencing, open a new issue and include a link to the original issue in the body of your new one.
 
 #### Before Submitting A Bug Report
 
@@ -129,7 +129,7 @@ The current build status is as follows:
   * Code must be reviewed by one other project member and, if needed, be properly adapted/fixed.
   * We add the `Reviewed-by` tag only for the merge commit.
 
-There will also another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
+There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
 
 ## Style Conventions
 

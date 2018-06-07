@@ -128,7 +128,7 @@ There are four types of networks that can be built using this library: author ne
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `author.relation`.
 
 - Artifact networks
-     * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail or issue threads). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
+     * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
 
 - Bipartite networks
@@ -149,7 +149,7 @@ There are some mandatory attributes that are added to vertices and edges in the 
         - The abstract type of data represented by the respective vertex, either an author or any type of artifact (e.g., source-code artifact or mail thread)
         - possible values: [`"Author"`, `"Artifact"`]
     * `kind`
-        - The specific type of data represented by the respective vertex, augmenting the vertex attribute `kind`
+        - The specific type of data represented by the respective vertex, augmenting the vertex attribute `type`
         - possible values: [`"Author"`,`"File"`, `"Feature"`, `"Function"`, `"MailThread"`, `"Issue"`,`"FeatureExpression"`]
     * `name`
         - The name for the data represented by the respective vertex (e.g., the author's name or a file path)
