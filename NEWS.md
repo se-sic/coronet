@@ -8,17 +8,17 @@
 
 ### Changed/Improved
 - Add committer information to the commit list in the test data
-- Set the locale to "english-us" on Windows (3a9aa081bacd1c15b9454f7f636a62a685002f04)
-- Update templates for pull requests and issues (00df0af8ed3ee338a9a9231a069e1fe790151923)
-- Update the contribution guide regarding things to be done for a pull request (00df0af8ed3ee338a9a9231a069e1fe790151923)
-- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (1fdec69be3c14e254dd519fb2ff8ac46069f02bd, a61c0cdb504ff8ecda90fcbbeb31c898960bc4f7)
-- Update README file regarding functionality, network types, data sources, and mandatory attributes (#121, 2ed9c813e73943bc9ab930dcc2b5b7be96297cfe, e16d9eda896a54b3f3a90cf9c3a8f3c6f351bf66, d28c1c16fdb3984fca89356dacea546da8d4da1f)
-- Adjust legend orientation and placement in plots (now column-oriented) (ea8b33b88484c85d6c5244a0868900e8f0eed089)
+- Set the locale to "english-us" on Windows (b3da10d1d8b0b7667883964f11ca9a47b2f7b417)
+- Update templates for pull requests and issues (0b9ecb7d9958d41c2bfc80c3489c3f4ca9ecac2a)
+- Update the contribution guide regarding things to be done for a pull request (0b9ecb7d9958d41c2bfc80c3489c3f4ca9ecac2a)
+- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (9bf7fcb383809903f9f11dcbb31969d4bc5fae12, b34bf75b55283ab36aa723dab87531e7a49d8126)
+- Update README file regarding functionality, network types, data sources, and mandatory attributes (#121, da68b94445a2ac0c145ef73dc73cddfa64a1a499, 3200c57cb16d478712bf5a8f63c406b898e19762, baf41aa422a1e28f21d419572c6d23ed2c1b33e1, bec3a4704201e9b015c596591d1d70948dd4e929)
+- Adjust legend orientation and placement in plots (now column-oriented) (c93ad2a48b2d18c725675637235d3b1939a99cd4)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
-- Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (c9ab243334d7154430015d0b4930d6ed363ab137)
-- Fix showcase file regarding outdated plotting parameters (611fbb8546eea14a90b02fbb63d7ebafc627b40c)
+- Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (424b2bce24a56ee594f5600327843fc240a376fd)
+- Fix showcase file regarding outdated plotting parameters (29d5ac6485d679d1b2cc42c0633ab4cd343c73b7)
 
 
 ## 3.2
