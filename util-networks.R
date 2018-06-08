@@ -815,10 +815,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             rm(networks)
             gc()
 
-            ## combine the networks
-            ## TODO use merge.networks and add.edges.for.bipartite.relations here (remove combine.networks then!)
-            u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = private$network.conf)
+            ## combine the networks:
+            ## 1) merge the existing networks
+            u = igraph::disjoint_union(authors.net, artifacts.net)
+            ## 2) add the bipartite edges
+            u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
@@ -1031,38 +1032,6 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     logging::logdebug("construct.network.from.edge.list: finished.")
 
     return(net)
-}
-
-#' Combine networks to a bipartite network.
-#'
-#' @param net1 the first network to merge
-#' @param net2 the second network to merge
-#' @param net1.to.net2 the relation between both given networks
-#' @param network.conf the network.conf
-#'
-#' @return the combined bipartite network
-combine.networks = function(net1, net2, net1.to.net2, network.conf) {
-    vertices.net1 = igraph::get.vertex.attribute(net1, "name")
-    vertices.net2 = igraph::get.vertex.attribute(net2, "name")
-
-    ## check emptiness of networks
-    if (length(vertices.net1) == 0) {
-        logging::logwarn("net1 is empty.")
-    }
-    if (length(vertices.net2) == 0) {
-        logging::logwarn("net2 is empty.")
-    }
-
-    ## combine networks
-    u = igraph::disjoint_union(net1, net2)
-
-    u = add.edges.for.bipartite.relation(u, net1.to.net2, network.conf = network.conf)
-
-    ## simplify network
-    if (network.conf$get.value("simplify"))
-        u = simplify.network(u)
-
-    return(u)
 }
 
 #' Merges a list vertex data frame and merges a list of edge
