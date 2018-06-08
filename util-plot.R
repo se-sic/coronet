@@ -152,7 +152,6 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
         ggraph::geom_node_point(ggplot2::aes(color = kind, shape = vertex.type), size = PLOT.VERTEX.SIZE) +
         ggraph::geom_node_text(ggplot2::aes(label = if (labels) name else c("")), size = 3.5, color = PLOT.VERTEX.LABEL.COLOR) +
 
-
         ## scale vertices (colors and styles)
         ggplot2::scale_shape_discrete(name = "Vertex Types", solid = TRUE) +
         viridis::scale_color_viridis(name = "Vertices", option = "plasma", discrete = TRUE,
@@ -175,6 +174,8 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
         ) +
         ggplot2::theme(
             legend.position = "bottom",
+            legend.box = "horizontal", # orientation for complete legend
+            legend.direction = "vertical", # orientation for each sublegend/guide
             axis.line = ggplot2::element_blank(),
             axis.text.x = ggplot2::element_blank(),
             axis.text.y = ggplot2::element_blank(),

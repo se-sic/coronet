@@ -1191,6 +1191,8 @@ create.empty.edge.list = function() {
 
 #' Simplify a given network.
 #'
+#' This function retains all set network, vertex, and edge attributes.
+#'
 #' @param network the given network
 #' @param remove.multiple whether to contract multiple edges between the same pair of nodes [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
@@ -1199,6 +1201,9 @@ create.empty.edge.list = function() {
 simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
+
+    ## save network attributes, otherwise they get lost
+    network.attributes = igraph::get.graph.attribute(network)
 
     if (length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
         ## data frame of the network
@@ -1226,6 +1231,11 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     } else {
         network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
                                    remove.multiple = remove.multiple, remove.loops = remove.loops)
+    }
+
+    ## re-apply all network attributes
+    for (att in names(network.attributes)) {
+        network = igraph::set.graph.attribute(network, att, network.attributes[[att]])
     }
 
     logging::logdebug("simplify.network: finished.")

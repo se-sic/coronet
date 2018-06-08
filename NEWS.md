@@ -1,17 +1,24 @@
 # codeface-extraction-r – Changelog
 
 
-## unversioned
+## Unversioned
 
 ### Added
-- Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (Issue #92 / second task, commits da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
+- Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
 
 ### Changed/Improved
-- Add committer information to the commitlist in the testdata
+- Add committer information to the commit list in the test data
+- Set the locale to "english-us" on Windows (b3da10d1d8b0b7667883964f11ca9a47b2f7b417)
+- Update templates for pull requests and issues (0b9ecb7d9958d41c2bfc80c3489c3f4ca9ecac2a)
+- Update the contribution guide regarding things to be done for a pull request (0b9ecb7d9958d41c2bfc80c3489c3f4ca9ecac2a)
+- Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (9bf7fcb383809903f9f11dcbb31969d4bc5fae12, b34bf75b55283ab36aa723dab87531e7a49d8126)
+- Update README file regarding functionality, network types, data sources, and mandatory attributes (#121, da68b94445a2ac0c145ef73dc73cddfa64a1a499, 3200c57cb16d478712bf5a8f63c406b898e19762, baf41aa422a1e28f21d419572c6d23ed2c1b33e1, bec3a4704201e9b015c596591d1d70948dd4e929)
+- Adjust legend orientation and placement in plots (now column-oriented) (c93ad2a48b2d18c725675637235d3b1939a99cd4)
 
 ### Fixed
-- Change the type of all commit count default values to Integer
-
+- Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
+- Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (424b2bce24a56ee594f5600327843fc240a376fd)
+- Fix showcase file regarding outdated plotting parameters (29d5ac6485d679d1b2cc42c0633ab4cd343c73b7)
 
 
 ## 3.2

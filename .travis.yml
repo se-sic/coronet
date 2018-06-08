@@ -16,7 +16,10 @@
 
 
 language: r
-r: 3.3
+r:
+  - 3.3
+  - 3.4
+  - 3.5
 
 # TravisCI container
 sudo: false

@@ -295,21 +295,22 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # ## construct sample network for plotting
 # g = get.sample.network()
 # g = igraph::as.directed(g, mode = "arbitrary")
-# g = g + igraph::edges("A6", "A5", type = TYPE.EDGES.INTRA, weight = 2)
+# g = g + igraph::edges("A6", "A5", type = TYPE.EDGES.INTRA, weight = 2,
+#                       relation = "callgraph", artifact.type = "Feature")
 # g = simplify.network(g)
 
 # ## print directly
-# plot.print.network(g, labels = TRUE, grayscale = FALSE)
+# plot.print.network(g, labels = TRUE)
 
 # ## set a layout and print directly
 # lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
 #                 245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
 #              nrow = 12, byrow = FALSE) # for sample graph
 # g = igraph::set.graph.attribute(g, "layout", lay)
-# plot.print.network(g, labels = TRUE, grayscale = FALSE)
+# plot.print.network(g, labels = TRUE)
 
 # ## get the plot object and modify it before plotting
-# p = plot.get.plot.for.network(g, labels = FALSE, grayscale = TRUE)
+# p = plot.get.plot.for.network(g, labels = FALSE)
 # p = p +
 #     ggplot2::theme(
 #         panel.border = ggplot2::element_blank(),
