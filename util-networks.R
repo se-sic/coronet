@@ -421,9 +421,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Get the key-value data for the bipartite relations,
         #' which are implied by the "artifact.relation" from the network configuration.
         #'
-        #' @return the list of data for the bipartite relations, each with the attributes
+        #' @return a named list of data for the bipartite relations, each with the attributes
         #'         'vertex.kind' denoting the artifact type for the relations
-        #'         and 'relation' denoting the respective network-configuration entry
+        #'         and 'relation' denoting the respective network-configuration entry; the names
+        #'         are the relations configured by the attribute 'artifact.relation' of the
+        #'         network configuration
         get.bipartite.relations = function() {
             logging::logdebug("get.bipartite.relations: starting.")
 
@@ -1130,7 +1132,9 @@ merge.networks = function(networks) {
 add.edges.for.bipartite.relation = function(net, bipartite.relations, network.conf) {
 
     ## iterate about all bipartite.relations depending on the relation type
-    for (net1.to.net2 in bipartite.relations) {
+    for (relation in names(bipartite.relations)) {
+        ## get the data for the current relation
+        net1.to.net2 = bipartite.relations[[relation]]
 
         ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
         vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
@@ -1149,7 +1153,7 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
         extra.edge.attributes.df["weight"] = 1 # add weight
         extra.edge.attributes.df["type"] = TYPE.EDGES.INTER # add egde type
-        extra.edge.attributes.df["relation"] = attr(net1.to.net2, "relation") # add relation type
+        extra.edge.attributes.df["relation"] = relation # add relation type
 
         extra.edge.attributes = as.list(extra.edge.attributes.df)
 
