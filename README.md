@@ -102,7 +102,7 @@ For examples on how to use both classes and how to build networks with them, ple
 
 ### Data sources
 
-There are two distinguishable types of data sources handled by the `ProjectData` and `RangeData` classes. The important difference is that the *main data sources* are used internally to construct artifacts vertices in relevant types of networks. Additionally, these data sources can used as a basis for splitting `ProjectData` in a time-based or activity-based manner (see file `split.R` and the contained functions). The *additional data sources* are orthogonal to the main data sources, can augment them by additional information and, thus, are not split at any time.
+There are two distinguishable types of data sources handled by the `ProjectData` and `RangeData` classes. The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner (see file `split.R` and the contained functions). The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
 
 All data sources are accessible from the `ProjectData` objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
 
