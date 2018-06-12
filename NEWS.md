@@ -14,6 +14,8 @@
 - Update TravisCI script to run a job matrix with R 3.3, 3.4, and 3.5 (9bf7fcb383809903f9f11dcbb31969d4bc5fae12, b34bf75b55283ab36aa723dab87531e7a49d8126)
 - Update README file regarding functionality, network types, data sources, and mandatory attributes (#121, da68b94445a2ac0c145ef73dc73cddfa64a1a499, 3200c57cb16d478712bf5a8f63c406b898e19762, baf41aa422a1e28f21d419572c6d23ed2c1b33e1, bec3a4704201e9b015c596591d1d70948dd4e929)
 - Adjust legend orientation and placement in plots (now column-oriented) (c93ad2a48b2d18c725675637235d3b1939a99cd4)
+- Refactor 'add.edges.for.bipartite.relation' for better readability (#118, 3d98b401664e601e9bb6fe202fddeb262417e0a4)
+- Remove function 'combine.networks' (#118, b3496313e61eb1f6fe1e62e647cf0ab9a0d5b255)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)

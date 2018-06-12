@@ -421,9 +421,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Get the key-value data for the bipartite relations,
         #' which are implied by the "artifact.relation" from the network configuration.
         #'
-        #' @return the list of data for the bipartite relations, each with the attributes
+        #' @return a named list of data for the bipartite relations, each with the attributes
         #'         'vertex.kind' denoting the artifact type for the relations
-        #'         and 'relation' denoting the respective network-configuration entry
+        #'         and 'relation' denoting the respective network-configuration entry; the names
+        #'         are the relations configured by the attribute 'artifact.relation' of the
+        #'         network configuration
         get.bipartite.relations = function() {
             logging::logdebug("get.bipartite.relations: starting.")
 
@@ -813,10 +815,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             rm(networks)
             gc()
 
-            ## combine the networks
-            ## TODO use merge.networks and add.edges.for.bipartite.relations here (remove combine.networks then!)
-            u = combine.networks(authors.net, artifacts.net, authors.to.artifacts,
-                                 network.conf = private$network.conf)
+            ## combine the networks:
+            ## 1) merge the existing networks
+            u = igraph::disjoint_union(authors.net, artifacts.net)
+            ## 2) add the bipartite edges
+            u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
@@ -1031,38 +1034,6 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     return(net)
 }
 
-#' Combine networks to a bipartite network.
-#'
-#' @param net1 the first network to merge
-#' @param net2 the second network to merge
-#' @param net1.to.net2 the relation between both given networks
-#' @param network.conf the network.conf
-#'
-#' @return the combined bipartite network
-combine.networks = function(net1, net2, net1.to.net2, network.conf) {
-    vertices.net1 = igraph::get.vertex.attribute(net1, "name")
-    vertices.net2 = igraph::get.vertex.attribute(net2, "name")
-
-    ## check emptiness of networks
-    if (length(vertices.net1) == 0) {
-        logging::logwarn("net1 is empty.")
-    }
-    if (length(vertices.net2) == 0) {
-        logging::logwarn("net2 is empty.")
-    }
-
-    ## combine networks
-    u = igraph::disjoint_union(net1, net2)
-
-    u = add.edges.for.bipartite.relation(u, net1.to.net2, network.conf = network.conf)
-
-    ## simplify network
-    if (network.conf$get.value("simplify"))
-        u = simplify.network(u)
-
-    return(u)
-}
-
 #' Merges a list vertex data frame and merges a list of edge
 #' data frames
 #'
@@ -1130,7 +1101,9 @@ merge.networks = function(networks) {
 add.edges.for.bipartite.relation = function(net, bipartite.relations, network.conf) {
 
     ## iterate about all bipartite.relations depending on the relation type
-    for (net1.to.net2 in bipartite.relations) {
+    for (relation in names(bipartite.relations)) {
+        ## get the data for the current relation
+        net1.to.net2 = bipartite.relations[[relation]]
 
         ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
         vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
@@ -1149,7 +1122,7 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
         extra.edge.attributes.df["weight"] = 1 # add weight
         extra.edge.attributes.df["type"] = TYPE.EDGES.INTER # add egde type
-        extra.edge.attributes.df["relation"] = attr(net1.to.net2, "relation") # add relation type
+        extra.edge.attributes.df["relation"] = relation # add relation type
 
         extra.edge.attributes = as.list(extra.edge.attributes.df)
 
