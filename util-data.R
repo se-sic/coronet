@@ -421,16 +421,12 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$commits = read.commits(
+                commits.read = read.commits(
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
 
-                ## add pasta data if wanted
-                if(private$project.conf$get.value("pasta")) {
-                    logging::loginfo("Adding pasta data.")
-                    private$commits = private$add.pasta.data(private$commits)
-                }
+                self$set.commits(data = commits.read)
             }
             private$extract.timestamps(source = "commits")
 
@@ -453,7 +449,13 @@ ProjectData = R6::R6Class("ProjectData",
         set.commits = function(data) {
             logging::loginfo("Setting raw commit data.")
             if (is.null(data)) data = data.frame()
-            private$commits = data
+            ## add pasta data if wanted
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Adding pasta data.")
+                private$commits = private$add.pasta.data(data = data)
+            } else {
+                private$commits = data
+            }
         },
 
         #' Set the commit list of the project to a new one.
@@ -513,6 +515,15 @@ ProjectData = R6::R6Class("ProjectData",
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
             private$pasta = data
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Updating pasta data.")
+                if (!is.null(private$commits)) {
+                    self$set.commits(private$commits)
+                }
+                if (!is.null(private$mails)) {
+                    self$set.mails(private$mails)
+                }
+            }
         },
 
         #' Get the mail data.
@@ -525,13 +536,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
-                private$mails = read.mails(self$get.data.path())
+                mails.read = read.mails(self$get.data.path())
 
-                ## add pasta data if wanted
-                if(private$project.conf$get.value("pasta")) {
-                    logging::loginfo("Adding pasta data.")
-                    private$mails = private$add.pasta.data(private$mails)
-                }
+                self$set.mails(data = mails.read)
             }
             private$extract.timestamps(source = "mails")
 
@@ -544,7 +551,13 @@ ProjectData = R6::R6Class("ProjectData",
         set.mails = function(data) {
             logging::loginfo("Setting e-mail data.")
             if (is.null(data)) data = data.frame()
-            private$mails = data
+            ## add pasta data if wanted
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Adding pasta data.")
+                private$mails = private$add.pasta.data(data = data)
+            } else {
+                private$mails = data
+            }
         },
 
         #' Get the author data.
