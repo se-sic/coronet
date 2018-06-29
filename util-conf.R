@@ -764,6 +764,13 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
             ## return invisible
             invisible()
+        },
+
+        #' Clears the edge attributes by setting the attribute to just the mandatory
+        #' 'date' value. This can be used to get rid of all the default values at once.
+        clear.edge.attributes = function() {
+            logging::loginfo("Clearing edge.attributes.")
+            self$update.values(list(edge.attributes = c("date")))
         }
 
     )
