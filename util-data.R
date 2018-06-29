@@ -412,8 +412,9 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If configured in the field \code{project.conf}, append the pasta data to the commit data.
-        #' If the list of commits does not already exist, call the read method first.
+        #' If it does not already exist call the read method first.
+        #' Call the setter function to set the data and add pasta
+        #' data if configured.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -444,6 +445,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Set the commit list of the project to a new one.
+        #' Add pasta data if configured.
         #'
         #' @param data the new list of commits
         set.commits = function(data) {
@@ -452,10 +454,10 @@ ProjectData = R6::R6Class("ProjectData",
             ## add pasta data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding pasta data.")
-                private$commits = private$add.pasta.data(data = data)
-            } else {
-                private$commits = data
+                data = private$add.pasta.data(data = data)
             }
+
+            private$commits = data
         },
 
         #' Set the commit list of the project to a new one.
@@ -509,7 +511,8 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$pasta)
         },
 
-        #' Set the pasta data to the given new data.
+        #' Set the pasta data to the given new data and update it when
+        #' configured for the mail and commit data.
         #'
         #' @param data the new pasta data
         set.pasta = function(data) {
@@ -528,7 +531,8 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the mail data.
         #' If it does not already exist call the read method.
-        #' Add pasta data if it is configured.
+        #' Call the setter function to set the data and add pasta
+        #' data if configured.
         #'
         #' @return the mail data
         get.mails = function() {
@@ -545,7 +549,8 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$mails)
         },
 
-        #' Set the mail data to the given new data.
+        #' Set the mail data to the given new data and add pasta data
+        #' if configured.
         #'
         #' @param data the new mail data
         set.mails = function(data) {
@@ -554,10 +559,10 @@ ProjectData = R6::R6Class("ProjectData",
             ## add pasta data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding pasta data.")
-                private$mails = private$add.pasta.data(data = data)
-            } else {
-                private$mails = data
+                data = private$add.pasta.data(data = data)
             }
+
+            private$mails = data
         },
 
         #' Get the author data.
