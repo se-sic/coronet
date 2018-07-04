@@ -49,12 +49,12 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                 "project.cumulative", "project.all.ranges",
                                                                 "complete"),
-                                          default.value, compute.attr) {
+                                          default.value, compute.attr, list.attributes = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr)
+    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr, list.attributes)
     return(nets.with.attr)
 }
 
@@ -72,7 +72,7 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #'                     with the names being the name of the vertex.
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr) {
+add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr, list.attributes = FALSE) {
 
     nets.with.attr = mapply(
         names(net.to.range.list), net.to.range.list,
@@ -99,7 +99,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
                 attributes = unlist(attributes)
             }
             ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
-            else {
+            else if (!list.attributes) {
                 attributes = unlist(attributes, recursive = FALSE)
             }
 
@@ -315,6 +315,8 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
 
             commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[[name.column]])
 
+            #browser()
+
             return(commit.count.list)
         }
     )
@@ -404,18 +406,66 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                                      "complete"),
                                                default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
-    activity.type = match.arg.or.default(activity.type)
-    ## TODO support getting first activity over all available activity types
-    function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
-    activity.type.function = paste0("get.author2", function.suffix)
+
+    activity.type = match.arg.or.default(activity.type, several.ok = TRUE)
+    activity.type.functions =
+        lapply(activity.type,
+               function(activity.type) {
+                   function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
+                   activity.type.function = paste0("get.author2", function.suffix)
+               }
+        )
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data[[activity.type.function]](),
-                   function(x) min(x[["date"]])
-            )
-        }
+            df = data.frame()
+            for (type in activity.type.functions) {
+                x = lapply(range.data[[type]](),
+                       function(x) min(x[["date"]])
+                )
+
+                for (person in names(x)) {
+                    df[person, type] = x[person]
+                }
+
+                #formatting dataframe
+                df[type] = get.date.from.unix.timestamp(df[[type]])
+            }
+
+            #initialise list of persons and the vector for naming
+            result = list()
+            resultnames = c()
+
+            for (person in rownames(df)) {
+
+                #initialise the personal list of data sources
+                personallist = list()
+
+                for (datasource in colnames(df)) {
+                    if (!is.na(df[person, datasource])) {
+                        element = list(df[person, datasource])
+#TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
+                        elementname = paste0(substr(datasource, 12, nchar(datasource)), "s")
+                        names(element) = c(elementname)
+
+                        personallist = c(personallist, element)
+                    }
+                }
+
+                #if the personal list isn't empty, append it to the result and handle naming.
+                if (length(personallist) != 0) {
+                    resultnames = c(resultnames, person)
+                    result = c(result, list(personallist))
+                }
+            }
+
+            #name and return result
+            names(result) = resultnames
+            return(result)
+        },
+
+        list.attributes = TRUE
     )
 
     return(nets.with.attr)
