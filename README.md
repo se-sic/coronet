@@ -6,6 +6,35 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
 
 ![Examplary plot of multi network](plot-multi.png)
 
+## Table of Contents
+
+- [Integration](#integration)
+    * [Submodule](#submodule)
+    * [Selecting the correct version](#selecting-the-correct-version)
+    * [Requirements](#requirements)
+        * [R](#r)
+        * [packrat](#packrat)
+        * [Data structure](#data-structure)
+        * [Needed R packages](#needed-r-packages)
+- [How-to](#how-to)
+- [Functionality](#functionality)
+    * [Data sources](#data-sources)
+    * [Network construction](#network-construction)
+        * [Types of networks](#types-of-networks)
+        * [Vertex and edge attributes](#vertex-and-edge-attributes)
+    * [Further functionalities](#further-functionalities)
+    * [File/Module overview](#file/Module-overview)
+- [Configuration classes](#configuration-classes)
+    * [ProjectConf](#ProjectConf)
+        * [Basic information](#basic-information)
+        * [Artifact-related information](#Artifact-related-information)
+        * [Revision-related information](#Revision-related-information)
+        * [Data paths](#Data-paths)
+        * [Splitting information](#Splitting-information)
+        * [(Configurable) Data-retrieval-related parameters](#(Configurable)-Data-retrieval-related-parameters)
+    * [NetworkConf](#NetworkConf)
+- [License](#license)
+- [Work in progress](#Work-in-progress)
 
 ## Integration
 
@@ -31,7 +60,49 @@ When selecting a version to work with, you should consider the following points:
 - You should always work with the current version on the `master` branch. If you, nentheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bugfixes only in special cases and only for the last minor version of the second last major version.
 - If you are confident enough, you can use the `dev` branch.
 
-### Needed R packages
+### Requirements
+
+While using the package, we require the following infrastructure.
+
+#### [`R`](https://www.r-project.org/) `3.3.1`
+
+  Later `R` versions should work, but, for reliability reasons and
+  `packrat` compatibility, only version `3.3.1` is supported.
+
+#### [`packrat`](http://rstudio.github.io/packrat/)
+
+  The local package manager of `R` enables the use to store all needed R
+  packages for this repository inside the repository itself. All `R`
+  tools and IDEs should be able to handle this automatically
+  ([RStudio](https://www.rstudio.com/) does).
+
+#### Data structure
+
+  The data folder which can result from `Codeface` [https://github.com/siemens/codeface] and `codeface-extraction`,  needs to have the following structure (roughly):
+  ```
+  codeface-data
+  ├── configurations
+  │   ├── releases
+  │   │     └──{project-name}.conf
+  │   └── threemonth
+  │         └──{project-name}.conf
+  └── results
+      ├── releases
+      │      └──{project-name}
+      │             ├── authors.list
+      │             ├── commits.list
+      │             ├── emails.list
+      │             ├── revisions.list
+      │             └── issues.list
+      └── threemonth
+              └──{project-name}
+                    ├── authors.list
+                    ├── ...
+  ```
+
+
+#### Needed R packages
+To manage the following packages, we recommand to use `packrat`.
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)
 - `R6`: For proper classes
@@ -121,7 +192,7 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 #### Types of networks
 
-There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks. In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
+There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks which are a combination of author, artifact and bipartite networks. In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
 
 - Author networks
      * The vertices in an author network denote authors who are uniquely identifiable by their name. There are only unipartite edges among authors in this type of network.
@@ -129,16 +200,18 @@ There are four types of networks that can be built using this library: author ne
 
 - Artifact networks
      * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
-     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`. The relation also describes which types of artifacts are in the network. (For example, if `mail` is selected as `artifact.relation`, only mail-thread nodes are included in the network.)
 
 - Bipartite networks
      * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
 
 - Multi networks
-     * The vertices in a multi network denote both authors and artifacts. There are both unipartite and bipartite edges among the vertices in this type of network. Essentially, a multi network is the combination of all other types of networks.
-     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attributes `author.relation` and `artifact.relation`, respectively.
-
+     * The vertices in a multi network denote both authors and artifacts. There are both unipartite
+     and bipartite edges among the vertices in this type of network. Essentially, a multi network
+     is the combination of all other types of networks.
+     * The relations (i.e., the edges' meaning and source) can be configured using the
+     [`NetworkConf`](#networkconf) attributes `author.relation` and `artifact.relation`, respectively.
 
 #### Vertex and edge attributes
 
@@ -168,6 +241,16 @@ There are some mandatory attributes that are added to vertices and edges in the 
         - The date of the event causing the respective edge
 
 To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class). To add further vertex attributes – which can only be done *after constructing a network* –, plese see the file `util-networks-covariantes.R` for the set of corresponding functions to call.
+
+### Further functionalities
+
+Often it is interessting to build the development networks not only for the whole project history
+but also to split the data in smaller ranges. One benefit is to observe changes in the network over
+time. Further details can be find in the section [*Splitting information*](#splitting-information).
+
+In some cases it is not necessary to build a network to get the informations, we need. Therefore we
+offer the possibility to  get the raw data or mapppings between e.g. an author and his edited
+files. Example can be find the file `showcase.R`.
 
 ### File/Module overview
 
