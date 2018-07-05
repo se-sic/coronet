@@ -102,7 +102,7 @@ While using the package, we require the following infrastructure.
 
 
 #### Needed R packages
-To manage the following packages, we recommand to use `packrat`.
+To manage the following packages, we recommend to use `packrat`.
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)
 - `R6`: For proper classes
@@ -244,13 +244,13 @@ To add further edge attributes, please see the parameter `edge.attributes` in th
 
 ### Further functionalities
 
-Often it is interessting to build the development networks not only for the whole project history
-but also to split the data in smaller ranges. One benefit is to observe changes in the network over
-time. Further details can be find in the section [*Splitting information*](#splitting-information).
+Often it is interesting to build the development networks not only for the whole project history
+but also to split the data in smaller ranges. Ones benefit is to observe changes in the network over
+time. Further details can be found in the section [*Splitting information*](#splitting-information).
 
 In some cases it is not necessary to build a network to get the informations, we need. Therefore we
 offer the possibility to  get the raw data or mapppings between e.g. an author and his edited
-files. Example can be find the file `showcase.R`.
+files. Examples can be found the file `showcase.R`.
 
 ### File/Module overview
 
