@@ -14,7 +14,7 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
     * [Requirements](#requirements)
         * [R](#r)
         * [packrat](#packrat)
-        * [Data structure](#data-structure)
+        * [Folder structure of the input data](#Folder-structure-of-the-input-data)
         * [Needed R packages](#needed-r-packages)
 - [How-to](#how-to)
 - [Functionality](#functionality)
@@ -76,9 +76,11 @@ While using the package, we require the following infrastructure.
   tools and IDEs should be able to handle this automatically
   ([RStudio](https://www.rstudio.com/) does).
 
-#### Data structure
+#### Folder structure of the input data
 
-  The data folder which can result from `Codeface` [https://github.com/siemens/codeface] and `codeface-extraction`,  needs to have the following structure (roughly):
+  To use this network library, the data which the network construction should be based on has to match a certain folder structure and agree on certain file names.
+  The data folder which can result from `Codeface` [https://github.com/siemens/codeface] and
+  `codeface-extraction` [https://github.com/se-passau/codeface-extraction],  needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
@@ -192,7 +194,7 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 #### Types of networks
 
-There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks which are a combination of author, artifact and bipartite networks. In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
+There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks which are a combination of author, artifact, and bipartite networks. In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
 
 - Author networks
      * The vertices in an author network denote authors who are uniquely identifiable by their name. There are only unipartite edges among authors in this type of network.
@@ -200,7 +202,7 @@ There are four types of networks that can be built using this library: author ne
 
 - Artifact networks
      * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
-     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`. The relation also describes which types of artifacts are in the network. (For example, if `mail` is selected as `artifact.relation`, only mail-thread nodes are included in the network.)
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`. The relation also describes which kinds of artifacts are in the network. (For example, if `mail` is selected as `artifact.relation`, only mail-thread nodes are included in the network.)
 
 - Bipartite networks
      * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
@@ -244,13 +246,12 @@ To add further edge attributes, please see the parameter `edge.attributes` in th
 
 ### Further functionalities
 
-Often it is interesting to build the development networks not only for the whole project history
-but also to split the data in smaller ranges. Ones benefit is to observe changes in the network over
+Often it is interesting to build the networks not only for the whole project history
+but also to split the data into smaller ranges. Ones benefit is to observe changes in the network over
 time. Further details can be found in the section [*Splitting information*](#splitting-information).
 
-In some cases it is not necessary to build a network to get the informations, we need. Therefore we
-offer the possibility to  get the raw data or mapppings between e.g. an author and his edited
-files. Examples can be found the file `showcase.R`.
+In some cases, it is not necessary to build a network to get the information we need. Therefore, we offer the possibility to  get the raw data or mappings between, e.g., an author and his edited
+files. Examples can be found in the file `showcase.R`.
 
 ### File/Module overview
 
