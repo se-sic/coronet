@@ -6,15 +6,15 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
 
 ![Examplary plot of multi network](plot-multi.png)
 
-## Table of Contents
+## Table of contents
 
 - [Integration](#integration)
     * [Submodule](#submodule)
     * [Selecting the correct version](#selecting-the-correct-version)
     * [Requirements](#requirements)
-        * [R](#r)
+        * [R](#r-331)
         * [packrat](#packrat)
-        * [Folder structure of the input data](#Folder-structure-of-the-input-data)
+        * [Folder structure of the input data](#folder-structure-of-the-input-data)
         * [Needed R packages](#needed-r-packages)
 - [How-to](#how-to)
 - [Functionality](#functionality)
@@ -23,18 +23,18 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
         * [Types of networks](#types-of-networks)
         * [Vertex and edge attributes](#vertex-and-edge-attributes)
     * [Further functionalities](#further-functionalities)
-    * [File/Module overview](#file/Module-overview)
+    * [File/Module overview](#filemodule-overview)
 - [Configuration classes](#configuration-classes)
-    * [ProjectConf](#ProjectConf)
+    * [ProjectConf](#projectconf)
         * [Basic information](#basic-information)
-        * [Artifact-related information](#Artifact-related-information)
-        * [Revision-related information](#Revision-related-information)
-        * [Data paths](#Data-paths)
-        * [Splitting information](#Splitting-information)
-        * [(Configurable) Data-retrieval-related parameters](#(Configurable)-Data-retrieval-related-parameters)
-    * [NetworkConf](#NetworkConf)
+        * [Artifact-related information](#artifact-related-information)
+        * [Revision-related information](#revision-related-information)
+        * [Data paths](#data-paths)
+        * [Splitting information](#splitting-information)
+        * [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
+    * [NetworkConf](#networkconf)
 - [License](#license)
-- [Work in progress](#Work-in-progress)
+- [Work in progress](#work-in-progress)
 
 ## Integration
 
