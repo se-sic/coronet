@@ -72,8 +72,10 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * filtering commits -------------------------------------------
 
-        #' Filter commits with empty artifacts from the commit list and save the new list
-        #' to 'commits.filtered.empty'.
+        #' Filter commits with empty artifacts from the already filtered commit list and
+        #' save the new list to 'commits.filtered.empty'.
+        #'
+        #' @seealso \code{get.commits.filtered}
         filter.commits.empty = function() {
 
             logging::logdebug("filter.commits.empty: starting.")
@@ -104,9 +106,10 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits.empty: finished.")
         },
 
-        #' Filter the commits from the commit list that touch the base artifact and save the new list
-        #' to 'commits.filtered'.
+        #' Filter the data from the commit list which does not belong to the artifact listed in 'project.conf'.
+        #' If configured in 'project.conf', filter the commits from the commit list that touch the base artifact.
         #' Add synchronicity and pasta data if configured in 'project.conf'.
+        #' Finally, save the new list to 'commits.filtered'.
         filter.commits = function() {
 
             logging::logdebug("filter.commits: starting.")
@@ -368,10 +371,15 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Get the list of commits without empty artifacts.
-        #' If it does not already exist call the filter method.
+        #' Get the list of commits without empty artifacts and filtered by the artifact kind configured
+        #' in 'project.conf'.
+        #' If configured in 'project.conf', get the list of commits without the base artifact.
+        #' In addition, if configured in 'project.conf', append the synchronicity data and pasta data to
+        #' the filtered commit data.
+        #' If the list of filtered commits does not already exist, call the filter method.
         #'
-        #' @return the commit list without empty artifacts
+        #' @return the commit list without empty artifacts and containing only commit data related to the
+        #'         configured artifact and, if configured, without the base artifact
         get.commits.filtered.empty = function() {
             logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
 
@@ -383,10 +391,14 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered.empty)
         },
 
-        #' Get the list of commits without the base artifact.
-        #' If it does not already exist call the filter method.
+        #' Get the list of commits filtered by the artifact kind configured in 'project.conf'.
+        #' If configured in 'project.conf', get the list of commits without the base artifact.
+        #' In addition, if configured in 'project.conf', append the synchronicity data and pasta data to
+        #' the filtered commit data.
+        #' If the list of filtered commits does not already exist, call the filter method.
         #'
-        #' @return the commit list without the base artifact
+        #' @return the commit list containing only commit data related to the configured artifact and,
+        #'         if configured, without the base artifact
         get.commits.filtered = function() {
             logging::loginfo("Getting commit data filtered by artifact.base.")
 
@@ -399,7 +411,8 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it does not already exist call the read method first.
+        #' If configured in 'project.conf', append the pasta data to the commit data.
+        #' If the list of commits does not already exist, call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -424,7 +437,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it does not already exist call the read method first.
+        #' If it does not already exist, call the read method first.
         #'
         #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
         #'

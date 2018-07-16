@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -114,7 +114,7 @@ read.commits = function(data.path, artifact) {
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
-    ## set pattern for thread ID for better recognition
+    ## set pattern for commit ID for better recognition
     commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
 
     ## store the commit data
