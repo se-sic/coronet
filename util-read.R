@@ -69,6 +69,25 @@ read.commits = function(data.path, artifact) {
     )
     colnames(commit.data) = commit.data.columns
 
+    ## remove duplicated lines (even if they contain different commit ids but the same commit hash)
+    commit.data = commit.data[rownames(unique(commit.data[, -1])), ]
+
+    ## aggregate lines which are identical except for the "artifact.diff.size" column (ignoring the commit id)
+    ## 1) select columns which have to be identical
+    primary.columns = commit.data.columns[!(commit.data.columns %in% c("commit.id", "artifact.diff.size"))]
+    ## 2) aggregate "artifact.diff.size" for identical rows of the selected columns
+    commit.data.without.id = aggregate(commit.data["artifact.diff.size"],
+                                       commit.data[primary.columns],
+                                       function(sizes) { as.integer(round(mean(sizes))) })
+    ## 3) keep only one commit id for identical rows of the selected columns
+    commit.data.without.artifact.diff.size = aggregate(commit.data["commit.id"],
+                                                       commit.data[primary.columns],
+                                                       min)
+    ## 4) merge the data again to have both "commit.id" and "artifact.diff.size" in one data.frame again
+    commit.data = merge(commit.data.without.id, commit.data.without.artifact.diff.size)
+    ## 5) reorder the columns of the data.frame as their order might be changed during aggregating and merging
+    commit.data = commit.data[, commit.data.columns]
+
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
     if (artifact == "file") {
@@ -109,6 +128,7 @@ read.commits = function(data.path, artifact) {
 
     ## set pattern for commit ID for better recognition
     commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
+    row.names(commit.data) = seq_len(nrow(commit.data))
 
     ## store the commit data
     logging::logdebug("read.commits: finished.")
