@@ -67,13 +67,6 @@ read.commits = function(data.path, artifact) {
         "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
         "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
-    ## if there are no committer data available, we need to add dummy data (NAs) for this
-    if (ncol(commit.data) != length(commit.data.columns)) {
-        ## add three columns with NAs
-        commit.data[, 14:16] = NA
-        ## do a re-ordering
-        commit.data = commit.data[c(1:4, 14:16, 5:13)]
-    }
     colnames(commit.data) = commit.data.columns
 
     ## rewrite data.frame when we want file-based data
