@@ -419,7 +419,7 @@ read.issues = function(data.path) {
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
         paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
-        digest::sha1
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
     logging::logdebug("read.issues: finished.")

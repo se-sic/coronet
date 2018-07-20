@@ -14,6 +14,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -280,7 +281,7 @@ test_that("Read and parse the issue data.", {
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
         paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
-        digest::sha1
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
     ## set row names as integers
     attr(issue.data.expected, "row.names") = as.integer(c(1, 2, 3, 4, 5, 6, 8, 9, 18, 19, 20, 21, 22, 10, 11, 12, 13, 14, 7, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
