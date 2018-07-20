@@ -76,32 +76,48 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder - which can result from consecutive runs of  `Codeface` [https://github.com/siemens/codeface] and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] -  needs to have the following structure (roughly):
+The data folder - which can result from consecutive runs of  `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] -  needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
+  │   ├── threemonth
+  │   │     └──{project-name}_{tagging}.conf
   │   ├── releases
-  │   │     └──{project-name}.conf
-  │   └── threemonth
-  │         └──{project-name}.conf
+  │   │     └──{project-name}_{tagging}.conf
+  │   ├── ...
+  │
   └── results
+      ├── threemonth
+      │     └──{project-name}_{tagging}
+      │           └──{tagging}
+      │                ├── authors.list
+      │                ├── commits.list
+      │                ├── emails.list
+      │                ├── revisions.list
+      │                └── issues.list
       ├── releases
-      │      └──{project-name}
-      │             ├── authors.list
-      │             ├── commits.list
-      │             ├── emails.list
-      │             ├── revisions.list
-      │             └── issues.list
-      └── threemonth
-              └──{project-name}
-                    ├── authors.list
-                    ├── ...
+      │     └──{project-name}_{tagging}
+      │           └──{tagging}
+      │                ├── authors.list
+      │                ├── ...
+      ├── ...
   ```
 
 The names "threemonth" and "releases" correspond to selection processes that are used inside `Codeface` and describe the notation of the `revs` key in the `Codeface` configuration files.
 Essentially, these are arbitrary names that are used internally for grouping.
 If you are in doubt, just pick a name and you are fine (you just need to take care that you give `Codeface` the correct folders!).
 E.g., if you use "threemonth" as selection process, you need to give `Codeface` and `codeface-extraction` the folder "releases/threemonth" as results folder (`resdir`  command-line parameter of `Codeface`).
+
+`{tagging}` corresponds to the different `Codeface` commit-analysis types.
+In this network library, `{tagging}` can be either `proximity` or `feature`.
+While `proximity` triggers a file/function-based commit analysis in `Codeface`, `feature` triggers a feature-based analysis.
+When using this network library, the user only needs to give the `artifact` parameter to the [`ProjectConf`](#projectconf) constructor, which automatically ensures that the correct tagging is selected.
+
+The configuration files `{project-name}_{tagging}.conf` are mandatory and contain some basic configuration regarding a performed `Codeface` analysis (e.g., project name, name of the corresponding repository, name of the mailing list, etc.).
+For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) files in the `Codeface` repository.
+
+All the `*.list` files listed above are output files of `codeface-extraction` and contain meta data of, e.g., commits or e-mails to the mailing list, etc., in CSV format.
+This network library lazily loads and processes these files when needed.
 
 
 #### Needed R packages
