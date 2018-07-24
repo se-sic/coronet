@@ -443,21 +443,16 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                 personallist = list()
 
                 for (datasource in colnames(df)) {
-                    if (!is.na(df[person, datasource])) {
-                        element = list(df[person, datasource])
-#TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
-                        elementname = paste0(substr(datasource, 12, nchar(datasource)), "s")
-                        names(element) = c(elementname)
+                    element = list(df[person, datasource])
+                    #TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
+                    sourcename = paste0(substr(datasource, 12, nchar(datasource)), "s")
+                    names(element) = c(sourcename)
 
-                        personallist = c(personallist, element)
-                    }
+                    personallist = c(personallist, element)
                 }
 
-                #if the personal list isn't empty, append it to the result and handle naming.
-                if (length(personallist) != 0) {
-                    resultnames = c(resultnames, person)
-                    result = c(result, list(personallist))
-                }
+                resultnames = c(resultnames, person)
+                result = c(result, list(personallist))
             }
 
             #name and return result
