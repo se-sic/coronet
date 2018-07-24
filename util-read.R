@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -67,14 +67,26 @@ read.commits = function(data.path, artifact) {
         "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
         "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
-    ## if there are no committer data available, we need to add dummy data (NAs) for this
-    if (ncol(commit.data) != length(commit.data.columns)) {
-        ## add three columns with NAs
-        commit.data[, 14:16] = NA
-        ## do a re-ordering
-        commit.data = commit.data[c(1:4, 14:16, 5:13)]
-    }
     colnames(commit.data) = commit.data.columns
+
+    ## remove duplicated lines (even if they contain different commit ids but the same commit hash)
+    commit.data = commit.data[rownames(unique(commit.data[, -1])), ]
+
+    ## aggregate lines which are identical except for the "artifact.diff.size" column (ignoring the commit id)
+    ## 1) select columns which have to be identical
+    primary.columns = commit.data.columns[!(commit.data.columns %in% c("commit.id", "artifact.diff.size"))]
+    ## 2) aggregate "artifact.diff.size" for identical rows of the selected columns
+    commit.data.without.id = aggregate(commit.data["artifact.diff.size"],
+                                       commit.data[primary.columns],
+                                       function(sizes) { as.integer(round(mean(sizes))) })
+    ## 3) keep only one commit id for identical rows of the selected columns
+    commit.data.without.artifact.diff.size = aggregate(commit.data["commit.id"],
+                                                       commit.data[primary.columns],
+                                                       min)
+    ## 4) merge the data again to have both "commit.id" and "artifact.diff.size" in one data.frame again
+    commit.data = merge(commit.data.without.id, commit.data.without.artifact.diff.size)
+    ## 5) reorder the columns of the data.frame as their order might be changed during aggregating and merging
+    commit.data = commit.data[, commit.data.columns]
 
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
@@ -114,8 +126,9 @@ read.commits = function(data.path, artifact) {
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
-    ## set pattern for thread ID for better recognition
+    ## set pattern for commit ID for better recognition
     commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
+    row.names(commit.data) = seq_len(nrow(commit.data))
 
     ## store the commit data
     logging::logdebug("read.commits: finished.")
@@ -406,7 +419,7 @@ read.issues = function(data.path) {
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
         paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
-        digest::sha1
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
     logging::logdebug("read.issues: finished.")

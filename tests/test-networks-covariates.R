@@ -15,6 +15,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -190,12 +191,12 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  0L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 0L)),
-        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 0L))
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L))
     )
 
     ## Test
@@ -220,10 +221,10 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
     expected.attributes = list(
         range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
         cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
         project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L)),
-        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L))
+        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L))
     )
 
     ## Test

@@ -16,11 +16,14 @@
 - Adjust legend orientation and placement in plots (now column-oriented) (c93ad2a48b2d18c725675637235d3b1939a99cd4)
 - Refactor 'add.edges.for.bipartite.relation' for better readability (#118, 3d98b401664e601e9bb6fe202fddeb262417e0a4)
 - Remove function 'combine.networks' (#118, b3496313e61eb1f6fe1e62e647cf0ab9a0d5b255)
+- Do not support missing committer data anymore (871008e6f86ac728e616bd1de734a3203d524f4a)
+- Do not serialize Strings when calculating the sha1 hash to generate an event ID for issues (basically due to encoding issues, eb56a8791ba5991781566f0073276ba216474ea9)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
 - Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (424b2bce24a56ee594f5600327843fc240a376fd)
 - Fix showcase file regarding outdated plotting parameters (29d5ac6485d679d1b2cc42c0633ab4cd343c73b7)
+- Eliminate duplicated lines in the raw commit data (dec0005e8e6af1bdecd3028d074ddd2120c7b2cc)
 
 
 ## 3.2
