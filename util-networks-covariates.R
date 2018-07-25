@@ -404,7 +404,8 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                aggregation.level = c("range", "cumulative", "all.ranges",
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
-                                               default.value = NA) {
+                                               default.value = NA,
+                                               compute.over.all = TRUE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
     activity.type = match.arg.or.default(activity.type, several.ok = TRUE)
@@ -433,31 +434,50 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                 df[type] = get.date.from.unix.timestamp(df[[type]])
             }
 
-            #initialise list of persons and the vector for naming
-            result = list()
-            resultnames = c()
+            if(compute.over.all) {
 
-            for (person in rownames(df)) {
+                #extract minimum for every row as list
+                min.per.person = apply(df, 1, min, na.rm = TRUE)
 
-                #initialise the personal list of data sources
-                personallist = list()
+                #wrap each minimum in a list (required for compatibility with the single first activity calculation)
+                wrapped.min.per.person = lapply(min.per.person, function(element) {
+                    listed.element = list(element)
+                    names(listed.element) = c("all.sources")
+                    return(listed.element)
+                })
 
-                for (datasource in colnames(df)) {
-                    element = list(df[person, datasource])
-                    #TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
-                    sourcename = paste0(substr(datasource, 12, nchar(datasource)), "s")
-                    names(element) = c(sourcename)
+                names(wrapped.min.per.person) = rownames(df)
+                return(wrapped.min.per.person)
 
-                    personallist = c(personallist, element)
+            } else {
+
+                #initialise list of persons and the vector for naming
+                result = list()
+                resultnames = c()
+
+                for (person in rownames(df)) {
+
+                    #initialise the personal list of data sources
+                    personallist = list()
+
+                    for (datasource in colnames(df)) {
+                        element = list(df[person, datasource])
+                        #TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
+                        sourcename = paste0(substr(datasource, 12, nchar(datasource)), "s")
+                        names(element) = c(sourcename)
+
+                        personallist = c(personallist, element)
+                    }
+
+                    resultnames = c(resultnames, person)
+                    result = c(result, list(personallist))
                 }
 
-                resultnames = c(resultnames, person)
-                result = c(result, list(personallist))
+                #name and return result
+                names(result) = resultnames
+                return(result)
             }
 
-            #name and return result
-            names(result) = resultnames
-            return(result)
         },
 
         list.attributes = TRUE
