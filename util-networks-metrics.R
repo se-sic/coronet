@@ -15,6 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -167,9 +168,11 @@ metrics.smallworldness = function(network) {
 #' Determine scale freeness of a network using the power law fitting method.
 #'
 #' @param network the network to be examined
+#' @param minimum.number.developers the minimum number of developers with which
+#'  a network can be scale free (default value 30)
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
-metrics.scale.freeness = function(network) {
+metrics.scale.freeness = function(network, minimum.number.developers = 30) {
     v.degree = sort(igraph::degree(network, mode = "total"), decreasing = TRUE)
 
     ## Power-law fiting
@@ -182,8 +185,42 @@ metrics.scale.freeness = function(network) {
     ## Check percent of vertices under power-law
     res["num.power.law"] = length(which(v.degree >= res[["xmin"]]))
     res["percent.power.law"] = 100 * (res[["num.power.law"]] / length(v.degree))
+
+    ## If less than N developers are in the power law, set x_min manually
+    ## to include a minimum of number of developers and recompute the powerlaw fit
+    non.zero.degree.v.count <- length(v.degree[v.degree > 0])
+    if(res[["num.power.law"]] < minimum.number.developers
+       & non.zero.degree.v.count >= minimum.number.developers) {
+      ## vertex degree is sorted above
+      x.min <- v.degree[[minimum.number.developers]]
+      p.fit <- power.law.fit(v.degree, implementation="plfit", xmin=x.min)
+      res[param.names] <- p.fit[param.names]
+
+      ## Check percent of vertices under power-law
+      res[["num.power.law"]] <- length(which(v.degree >= res[["xmin"]]))
+      res[["percent.power.law"]] <- 100 * (res[["num.power.law"]] / length(v.degree))
+    }
+
+    ## Remove non conclusive sample sizes
+    if(res[["num.power.law"]] < minimum.number.developers) {
+      res[["KS.p"]] <- 0 # 0 instead of NA
+    }
+
     df = as.data.frame(res, row.names = "scale.freeness")
     return(df)
+}
+
+#' Decide, whether a network is scale free or not.
+#'
+#' @param network the network to be examined
+#' @param minimum.number.developers the minimum number of developers with which
+#'  a network can be scale free (default value 30)
+#'
+#' @return TRUE, if the network is scale free,
+#'         FALSE, otherwise.
+is.scale.free = function(network, minimum.number.developers = 30) {
+  df = metrics.scale.freeness(network, minimum.number.developers)
+  return(df$KS.p >= 0.05)
 }
 
 #' Calculate the hierarchy for a network.
