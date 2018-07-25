@@ -476,6 +476,11 @@ You can also update the `NetworkConf` object at any time by calling `NetworkBuil
 For more examples, please look in the file `showcase.R`.
 
 
+## Contributing
+
+If you want to contribute to this project, please have a look at the file [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and further details.
+
+
 ## License
 
 This project is licensed under [GNU General Public License v2.0](LICENSE).
