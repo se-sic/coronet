@@ -188,22 +188,22 @@ metrics.scale.freeness = function(network, minimum.number.developers = 30) {
 
     ## If less than N developers are in the power law, set x_min manually
     ## to include a minimum of number of developers and recompute the powerlaw fit
-    non.zero.degree.v.count <- length(v.degree[v.degree > 0])
+    non.zero.degree.v.count = length(v.degree[v.degree > 0])
     if(res[["num.power.law"]] < minimum.number.developers
        & non.zero.degree.v.count >= minimum.number.developers) {
-      ## vertex degree is sorted above
-      x.min <- v.degree[[minimum.number.developers]]
-      p.fit <- power.law.fit(v.degree, implementation="plfit", xmin=x.min)
-      res[param.names] <- p.fit[param.names]
+        ## vertex degree is sorted above
+        x.min <- v.degree[[minimum.number.developers]]
+        p.fit <- power.law.fit(v.degree, implementation="plfit", xmin=x.min)
+        res[param.names] = p.fit[param.names]
 
-      ## Check percent of vertices under power-law
-      res[["num.power.law"]] <- length(which(v.degree >= res[["xmin"]]))
-      res[["percent.power.law"]] <- 100 * (res[["num.power.law"]] / length(v.degree))
+        ## Check percent of vertices under power-law
+        res[["num.power.law"]] = length(which(v.degree >= res[["xmin"]]))
+        res[["percent.power.law"]] = 100 * (res[["num.power.law"]] / length(v.degree))
     }
 
     ## Remove non conclusive sample sizes
     if(res[["num.power.law"]] < minimum.number.developers) {
-      res[["KS.p"]] <- 0 # 0 instead of NA
+        res[["KS.p"]] = 0 # 0 instead of NA
     }
 
     df = as.data.frame(res, row.names = "scale.freeness")
@@ -219,8 +219,8 @@ metrics.scale.freeness = function(network, minimum.number.developers = 30) {
 #' @return TRUE, if the network is scale free,
 #'         FALSE, otherwise.
 is.scale.free = function(network, minimum.number.developers = 30) {
-  df = metrics.scale.freeness(network, minimum.number.developers)
-  return(df$KS.p >= 0.05)
+    df = metrics.scale.freeness(network, minimum.number.developers)
+    return(df$KS.p >= 0.05)
 }
 
 #' Calculate the hierarchy for a network.
