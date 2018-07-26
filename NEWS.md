@@ -5,7 +5,7 @@
 
 ### Added
 - Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
-- Add method which decide, whether a network is scale free or not, in `util-networks-metrics.R` (80f47512ce7634c81f3708865eb1697b0151f549)
+- Add method `is.scale.free()` to decide whether a network is scale-free or not (80f47512ce7634c81f3708865eb1697b0151f549)
 
 ### Changed/Improved
 - Add committer information to the commit list in the test data
