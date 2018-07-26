@@ -383,106 +383,43 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 
 ## * Activity --------------------------------------------------------------
 
-#' Add first activity attribute
+#' Add first activity attribute.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param activity.type The kind of activity to use as basis.
-#'                      One of \code{mails}, \code{commits}, and \code{issues}. [default: "mails"]
-#' @param name The attribute name to add [default: "first.activity"]
+#' @param activity.types The kinds of activity to use as basis.
+#'                      One ore more of \code{mails}, \code{commits} and \code{issues}.
+#' @param name The attribute name to add [default: "first.activity"].
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA].
+#' @param compute.over.all Flag indicating that one the first activity over all given
+#'                         \code{activity.types} is of interest (instead of one value per type)
 #'
-#' @return A list of networks with the added attribute
+#' @return A list of networks with the added attribute.
 add.vertex.attribute.first.activity = function(list.of.networks, project.data,
-                                               activity.type = c("mails", "commits", "issues"),
+                                               activity.types = c("mails", "commits", "issues"),
                                                name = "first.activity",
                                                aggregation.level = c("range", "cumulative", "all.ranges",
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
                                                default.value = NA,
-                                               compute.over.all = TRUE) {
+                                               compute.over.all = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    compute.attr = function(range, range.data, net) {
+        df = compute.first.activities.dataframe(activity.types, range.data)
+        if(compute.over.all) {
+            return(list.over.all(df))
+        } else {
+            return(list.single.types(df))
+        }
+    }
 
-    activity.type = match.arg.or.default(activity.type, several.ok = TRUE)
-    activity.type.functions =
-        lapply(activity.type,
-               function(activity.type) {
-                   function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
-                   activity.type.function = paste0("get.author2", function.suffix)
-               }
-        )
-
-    nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range, range.data, net) {
-            df = data.frame()
-            for (type in activity.type.functions) {
-                x = lapply(range.data[[type]](),
-                       function(x) min(x[["date"]])
-                )
-
-                for (person in names(x)) {
-                    df[person, type] = x[person]
-                }
-
-                #formatting dataframe
-                df[type] = get.date.from.unix.timestamp(df[[type]])
-            }
-
-            if(compute.over.all) {
-
-                #extract minimum for every row as list
-                min.per.person = apply(df, 1, min, na.rm = TRUE)
-
-                #wrap each minimum in a list (required for compatibility with the single first activity calculation)
-                wrapped.min.per.person = lapply(min.per.person, function(element) {
-                    listed.element = list(element)
-                    names(listed.element) = c("all.sources")
-                    return(listed.element)
-                })
-
-                names(wrapped.min.per.person) = rownames(df)
-                return(wrapped.min.per.person)
-
-            } else {
-
-                #initialise list of persons and the vector for naming
-                result = list()
-                resultnames = c()
-
-                for (person in rownames(df)) {
-
-                    #initialise the personal list of data sources
-                    personallist = list()
-
-                    for (datasource in colnames(df)) {
-                        element = list(df[person, datasource])
-                        #TODO - Klara: get name from datasource (eventuell besser woanders, warum wird das denn überhaupt hin- und dann wieder hergemappt?)
-                        sourcename = paste0(substr(datasource, 12, nchar(datasource)), "s")
-                        names(element) = c(sourcename)
-
-                        personallist = c(personallist, element)
-                    }
-
-                    resultnames = c(resultnames, person)
-                    result = c(result, list(personallist))
-                }
-
-                #name and return result
-                names(result) = resultnames
-                return(result)
-            }
-
-        },
-
-        list.attributes = TRUE
-    )
-
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+                                                    compute.attr, list.attributes = TRUE)
     return(nets.with.attr)
 }
 
@@ -772,4 +709,91 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
         }
     )
     return(nets.with.attr)
+}
+
+## * Helper for adding first activity attribute -----------------------------
+
+#' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
+#'
+#' @param activity.types The activity types to compute information for. They determine the colums of the returned data frame.
+#' @param range.data The data to base the computation on.
+#'
+#' @return A data frame with rows named with persons and colums named with activity types, containing the time of the corresponding
+#'         first activity as POSIXct.
+compute.first.activities.dataframe = function(activity.types = c("commits", "mails", "issues"), range.data) {
+
+    # parse given activity types to functions
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
+    activity.type.functions = lapply(parsed.activity.types,
+                    function(activity.type) {
+                        function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
+                        activity.type.function = paste0("get.author2", function.suffix)
+                        return(activity.type.function)
+                    }
+    )
+
+    result = data.frame()
+    for (type in activity.type.functions) {
+
+        # compute minimums
+        minimums.per.person = lapply(range.data[[type]](),
+                                     function(x) min(x[["date"]])
+        )
+
+        # fill dataframe
+        for (person in names(minimums.per.person)) {
+            result[person, type] = minimums.per.person[person]
+        }
+
+        # format dataframe elements to POSIXct
+        result[type] = get.date.from.unix.timestamp(result[[type]])
+    }
+    return(result)
+}
+
+#' Helper function for first activity: Converts the given dataframe in a list containing the first activity of all activity types per person. For
+#' compatibility with the single first activity calculation (see function \code{list.single.types}), the values are each wrapped in an inner list.
+#'
+#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the colums are activity type functions.
+#'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
+#'
+#' @return A list containing for each person in the given dataframe a list containing the first activity of all activity types in the given dataframe.
+list.over.all = function(first.activity.dataframe) {
+    min.per.person = apply(first.activity.dataframe, 1, min, na.rm = TRUE)
+    wrapped.min.per.person = lapply(min.per.person, function(element) {
+        listed.element = list(element)
+        names(listed.element) = c("all.activities")
+        return(listed.element)
+    })
+    names(wrapped.min.per.person) = rownames(first.activity.dataframe)
+    return(wrapped.min.per.person)
+}
+
+#' Helper function for first activity: Converts the given dataframe in a list containing the first activity per activity type and person.
+#'
+#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the coloums are activity type functions.
+#'                                 A correctly formatted dataframe can easily be created by the functione \code{compute.first.activities.dataframe}.
+#'
+#' @return A list containing for each person in the given datafram a list containing for each activity type in the given dataframe the first activity.
+list.single.types = function(first.activity.dataframe) {
+
+    result = list()
+    resultnames = c()
+    for (person in rownames(first.activity.dataframe)) {
+
+        first.activity.for.person = list()
+        for (activity.type in colnames(first.activity.dataframe)) {
+            element = list(first.activity.dataframe[person, activity.type])
+            typename = paste0(substr(activity.type, 12, nchar(activity.type)), "s")
+            names(element) = c(typename)
+
+            first.activity.for.person = c(first.activity.for.person, element)
+        }
+
+        resultnames = c(resultnames, person)
+        result = c(result, list(first.activity.for.person))
+    }
+
+    names(result) = resultnames
+    return(result)
 }
