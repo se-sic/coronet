@@ -216,8 +216,8 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
 #' @param minimum.number.vertices the minimum number of vertices with which
 #'  a network can be scale free [default: 30]
 #'
-#' @return TRUE, if the network is scale free,
-#'         FALSE, otherwise.
+#' @return \code{TRUE}, if the network is scale free,
+#'         \code{FALSE}, otherwise.
 metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
     df = metrics.scale.freeness(network, minimum.number.vertices)
     return(df[["KS.p"]] >= 0.05)
