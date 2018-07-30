@@ -373,13 +373,6 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
-        ## convert unix timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, function(network) {
-            lapply(network, function(person) {
-                lapply(person, get.date.from.unix.timestamp)
-            })
-        })
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -613,13 +606,6 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
             default.value = NA, compute.over.all = FALSE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
-
-        ## convert unix timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, function(network) {
-            lapply(network, function(person) {
-                lapply(person, get.date.from.unix.timestamp)
-            })
-        })
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
