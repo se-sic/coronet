@@ -293,123 +293,221 @@ test_that("Test add.vertex.attribute.artifact.count", {
     })
 })
 
-#' Test the add.vertex.attribute.first.activity method
-test_that("Test add.vertex.attribute.first.activity", {
+#' Test the add.vertex.attribute.first.activity method with multiple activity types and computation per type.
+test_that("Test add.vertex.attribute.first.activity with multiple types and computation per type", {
 
     ## Test setup
 
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = list(
-            mails = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:40"),
-                c(NA),
-                c("2016-07-12 16:05:37", NA, NA)
+        range = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2016-07-12 15:58:40 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = NA
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c(NA),
-                c("2016-07-27 22:25:25", NA, "2016-07-14 02:03:14")
+            list(
+                list(
+                    mails = "2016-07-12 16:05:37 UTC",
+                    commits = "2016-07-12 16:05:41 UTC",
+                    issues = "2016-07-27 22:25:25 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = NA
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-14 02:03:14 UTC"
+                )
             )
         ),
-        cumulative = list(
-            mails = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:40"),
-                c("2016-07-12 15:58:50"),
-                c("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        cumulative = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2016-07-12 15:58:40 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = NA
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c(NA),
-                c("2016-07-27 22:25:25", NA, "2016-07-12 15:59:25")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2016-07-27 22:25:25 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = NA
+                ),
+                list(
+                    mails = "2016-07-12 16:04:40 UTC",
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             )
         ),
-        all.ranges = list(
-            mails = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:40"),
-                c("2016-07-12 15:58:50"),
-                c("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        all.ranges = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2016-07-12 15:58:40 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2016-07-27 22:25:25 UTC"
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c("2016-07-27 22:25:25"),
-                c("2016-07-27 22:25:25", NA, "2016-07-12 15:59:25")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2016-07-27 22:25:25 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = NA
+                ),
+                list(
+                    mails = "2016-07-12 16:04:40 UTC",
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             )
         ),
-        project.cumulative = list(
-            mails = network.covariates.test.build.expected(
-                c("2004-10-09 18:38:13"),
-                c("2016-07-12 15:58:50"),
-                c("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        project.cumulative = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2004-10-09 18:38:13 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c("2013-05-25 20:02:08"),
-                c("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = "2013-04-21 23:52:09 UTC"
+                ),
+                list(
+                    mails = "2016-07-12 16:04:40 UTC",
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             )
         ),
-        project.all.ranges = list(
-            mails = network.covariates.test.build.expected(
-                c("2004-10-09 18:38:13"),
-                c("2016-07-12 15:58:50"),
-                c("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        project.all.ranges = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2004-10-09 18:38:13 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c("2013-05-25 20:02:08"),
-                c("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = "2013-04-21 23:52:09 UTC"
+                ),
+                list(
+                    mails = "2016-07-12 16:04:40 UTC",
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             )
         ),
-        complete = list(
-            mails = network.covariates.test.build.expected(
-                c("2004-10-09 18:38:13"),
-                c("2016-07-12 15:58:50"),
-                c("2016-07-12 15:58:50", NA, "2016-07-12 16:04:40")
+        complete = network.covariates.test.build.expected(
+            list(
+                list(
+                    mails = "2004-10-09 18:38:13 UTC",
+                    commits = "2016-07-12 15:58:59 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             ),
-            commits = network.covariates.test.build.expected(
-                c("2016-07-12 15:58:59"),
-                c("2016-07-12 16:00:45"),
-                c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                )
             ),
-            issues = network.covariates.test.build.expected(
-                c("2016-07-12 15:59:25"),
-                c("2013-05-25 20:02:08"),
-                c("2013-05-25 20:02:08", "2013-04-21 23:52:09", "2016-07-12 15:59:25")
+            list(
+                list(
+                    mails = "2016-07-12 15:58:50 UTC",
+                    commits = "2016-07-12 16:00:45 UTC",
+                    issues = "2013-05-25 20:02:08 UTC"
+                ),
+                list(
+                    mails = NA,
+                    commits = "2016-07-12 16:06:10 UTC",
+                    issues = "2013-04-21 23:52:09 UTC"
+                ),
+                list(
+                    mails = "2016-07-12 16:04:40 UTC",
+                    commits = "2016-07-12 16:06:32 UTC",
+                    issues = "2016-07-12 15:59:25 UTC"
+                )
             )
         )
     )
 
     ## convert date strings to POSIXct
-    expected.attributes = lapply(expected.attributes, function(types) {
-        lapply(types, function(times) {
-            lapply(times, function(date.vector) {
-                get.date.from.string(date.vector)
+    expected.attributes = lapply(expected.attributes, function(level) {
+        lapply(level, function(network) {
+            lapply(network, function(person) {
+                lapply(person, function(date.per.datasource) {
+                    return(get.date.from.string(date.per.datasource))
+                })
             })
         })
     })
@@ -417,20 +515,22 @@ test_that("Test add.vertex.attribute.first.activity", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        lapply(c("mails", "commits", "issues"), function(type) {
 
-            networks.with.attr = add.vertex.attribute.first.activity(
-                networks.and.data[["networks"]], networks.and.data[["project.data"]],
-                aggregation.level = level, activity.type = type
-            )
+        networks.with.attributes = add.vertex.attribute.first.activity(
+            list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
+            activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
+            default.value = NA, compute.over.all = FALSE
+        )
+        actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
-            actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "first.activity")
-
-            ## convert UNIX timestamps to POSIXct
-            actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
-            expect_equal(expected.attributes[[level]][[type]], actual.attributes)
+        ## convert unix timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, function(network) {
+            lapply(network, function(person) {
+                lapply(person, get.date.from.unix.timestamp)
+            })
         })
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
 
