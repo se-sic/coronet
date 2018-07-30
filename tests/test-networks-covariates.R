@@ -293,6 +293,97 @@ test_that("Test add.vertex.attribute.artifact.count", {
     })
 })
 
+#' Test the add.vertex.attribute.first.activity method with multiple activity types and computation over all types.
+test_that("Test add.vertex.attribute.first.activity with multiple types and computation over all types", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            list(list(all.activities = "2016-07-12 15:58:40 UTC")),
+            list(list(all.activities = "2016-07-12 16:00:45 UTC")),
+            list(list(all.activities = "2016-07-12 16:05:37 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 16:06:32 UTC")
+            )
+        ),
+        cumulative = network.covariates.test.build.expected(
+            list(list(all.activities = "2016-07-12 15:58:40 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            )
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            list(list(all.activities = "2016-07-12 15:58:40 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            )
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            list(list(all.activities = "2004-10-09 18:38:13 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
+                 list(all.activities = "2013-04-21 23:52:09 UTC"),
+                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            )
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            list(list(all.activities = "2004-10-09 18:38:13 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
+                 list(all.activities = "2013-04-21 23:52:09 UTC"),
+                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            )
+        ),
+        complete = network.covariates.test.build.expected(
+            list(list(all.activities = "2004-10-09 18:38:13 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
+            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
+                 list(all.activities = "2013-04-21 23:52:09 UTC"),
+                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            )
+        )
+    )
+
+    ## convert date strings to POSIXct
+    expected.attributes = lapply(expected.attributes, function(level) {
+        lapply(level, function(network) {
+            lapply(network, function(person) {
+                lapply(person, function(date.per.datasource) {
+                    return(get.date.from.string(date.per.datasource))
+                })
+            })
+        })
+    })
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+
+        networks.with.attributes = add.vertex.attribute.first.activity(
+            list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
+            activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
+            default.value = NA, compute.over.all = TRUE
+        )
+        actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
+
+        ## convert unix timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, function(network) {
+            lapply(network, function(person) {
+                lapply(person, get.date.from.unix.timestamp)
+            })
+        })
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
 #' Test the add.vertex.attribute.first.activity method with multiple activity types and computation per type.
 test_that("Test add.vertex.attribute.first.activity with multiple types and computation per type", {
 
