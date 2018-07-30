@@ -687,13 +687,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 ## join author and artifact vertices to the list of all vertices in the network
                 vertices = data.frame(
                     name = c(author.vertices, artifact.vertices),
-                    type = c(
-                        rep(TYPE.AUTHOR, length(author.vertices)),
-                        rep(TYPE.ARTIFACT, length(artifact.vertices))
-                    ),
                     kind = c(
                         rep(TYPE.AUTHOR, length(author.vertices)),
                         rep(vertex.kind , length(artifact.vertices))
+                    ),
+                    type = c(
+                        rep(TYPE.AUTHOR, length(author.vertices)),
+                        rep(TYPE.ARTIFACT, length(artifact.vertices))
                     )
                 )
                 return(vertices)

@@ -110,24 +110,24 @@ test_that("Construction of the bipartite network for the feature artifact with a
      ## 1) construct expected vertices
      authors1 = data.frame( # author -- issue
         name = c("Björn", "Karl", "Max", "Olaf", "Thomas"),
-        type = TYPE.AUTHOR,
-        kind = TYPE.AUTHOR
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
      )
      authors2 = data.frame( # author --mail
          name = c("Fritz fritz@example.org", "georg", "Hans", "udo"),
-         type = TYPE.AUTHOR,
-         kind = TYPE.AUTHOR
+         kind = TYPE.AUTHOR,
+         type = TYPE.AUTHOR
      )
     issues = data.frame(
          name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
-         type = TYPE.ARTIFACT,
-         kind = "Issue"
+         kind = "Issue",
+         type = TYPE.ARTIFACT
     )
     threads = data.frame(
             name = c("<thread-1>", "<thread-2>", "<thread-8>",
                      "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>", "<thread-3>"),
-            type = TYPE.ARTIFACT,
-            kind = "MailThread"
+            kind = "MailThread",
+            type = TYPE.ARTIFACT
     )
     vertices = plyr::rbind.fill(authors1, issues, authors2, threads)
     ## 2) construct expected edge attributes
