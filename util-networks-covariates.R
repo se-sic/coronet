@@ -315,8 +315,6 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
 
             commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[[name.column]])
 
-            #browser()
-
             return(commit.count.list)
         }
     )
@@ -410,7 +408,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                compute.over.all = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     compute.attr = function(range, range.data, net) {
-        df = compute.first.activities.dataframe(activity.types, range.data)
+        df = get.first.activity.data(activity.types, range.data)
         if(compute.over.all) {
             return(list.over.all(df))
         } else {
@@ -711,7 +709,8 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
     return(nets.with.attr)
 }
 
-## * Helper for adding first activity attribute -----------------------------
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper ------------------------------------------------------------------
 
 #' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
 #'
@@ -720,7 +719,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'
 #' @return A data frame with rows named with persons and colums named with activity types, containing the time of the corresponding
 #'         first activity as POSIXct.
-compute.first.activities.dataframe = function(activity.types = c("commits", "mails", "issues"), range.data) {
+get.first.activity.data = function(activity.types = c("commits", "mails", "issues"), range.data) {
 
     # parse given activity types to functions
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
