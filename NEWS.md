@@ -5,6 +5,7 @@
 
 ### Added
 - Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
+- Add method `metrics.is.scale.free()` to decide whether a network is scale-free or not (80f47512ce7634c81f3708865eb1697b0151f549, 97161b1228a157cbe747c2e98b88f27f572d695e)
 
 ### Changed/Improved
 - Add committer information to the commit list in the test data
@@ -18,6 +19,7 @@
 - Remove function 'combine.networks' (#118, b3496313e61eb1f6fe1e62e647cf0ab9a0d5b255)
 - Do not support missing committer data anymore (871008e6f86ac728e616bd1de734a3203d524f4a)
 - Do not serialize Strings when calculating the sha1 hash to generate an event ID for issues (basically due to encoding issues, eb56a8791ba5991781566f0073276ba216474ea9)
+- Add implementation of Codeface to compute the scale-free attributes for small networks (80f47512ce7634c81f3708865eb1697b0151f549)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
