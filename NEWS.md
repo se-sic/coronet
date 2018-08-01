@@ -6,6 +6,8 @@
 ### Added
 - Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
 - Add method `metrics.is.scale.free()` to decide whether a network is scale-free or not (80f47512ce7634c81f3708865eb1697b0151f549, 97161b1228a157cbe747c2e98b88f27f572d695e)
+- Tests for comparing networks that are created differently (0b211fd7962baac170dbb2c94312a4cdba1bd339, 7981b3670757a682de88118ea9d1a13750cea5bb, 090f12d89e4271ca9f80a709f3d1922da5ef2618)
+- Method to clear the edge attributes list of the network configuration (e26d1c83f5ba7d4907e964bf923f591b20f2f192)
 
 ### Changed/Improved
 - Add committer information to the commit list in the test data
@@ -20,12 +22,16 @@
 - Do not support missing committer data anymore (871008e6f86ac728e616bd1de734a3203d524f4a)
 - Do not serialize Strings when calculating the sha1 hash to generate an event ID for issues (basically due to encoding issues, eb56a8791ba5991781566f0073276ba216474ea9)
 - Add implementation of Codeface to compute the scale-free attributes for small networks (80f47512ce7634c81f3708865eb1697b0151f549)
+- Remove data inconsistencies when re-setting the commit, mail, and pasta data (6fac2986ff3aecf86c5b02bbca81e604d1cf7cc3)
+- Switch `type` and `kind` attributes of vertices in bipartite networks for testing reasons (b1ae2abd5ba8d8454663cb30adab5243af8993d0)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
 - Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (424b2bce24a56ee594f5600327843fc240a376fd)
 - Fix showcase file regarding outdated plotting parameters (29d5ac6485d679d1b2cc42c0633ab4cd343c73b7)
 - Eliminate duplicated lines in the raw commit data (dec0005e8e6af1bdecd3028d074ddd2120c7b2cc)
+- Fix the `split.networks.time.based` method by now splitting the networks from the earliest timestamp to
+the latest (3691fa9fcb82ac51fe4449cd3170e290e0fb648f)
 
 
 ## 3.2
