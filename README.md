@@ -259,7 +259,7 @@ There are some mandatory attributes that are added to vertices and edges in the 
     * `date`
         - The date of the event causing the respective edge
 
-To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class). To add further vertex attributes – which can only be done *after constructing a network* –, plese see the file `util-networks-covariantes.R` for the set of corresponding functions to call.
+To add further edge attributes, please see the parameter `edge.attributes` in the [`NetworkConf`](#networkconf) class. To add further vertex attributes – which can only be done *after constructing a network* –, please see the functions `add.vertex.attribute.*` in the file  `util-networks-covariates.R` for the set of corresponding functions to call.
 
 ### Further functionalities
 
