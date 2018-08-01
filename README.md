@@ -4,7 +4,7 @@ Have you ever wanted to build socio-technical developer networks the way you wan
 
 The network library `codeface-extraction-r` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
-![Examplary plot of multi network](plot-multi.png)
+![Exemplary plot of multi network](plot-multi.png)
 
 ## Table of contents
 
@@ -57,7 +57,7 @@ It may lead to unpredictable behavior, when you do not do this, as we need to se
 When selecting a version to work with, you should consider the following points:
 - Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
 - On the branch `master`, there is always the most recent and complete version.
-- You should always work with the current version on the `master` branch. If you, nentheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bugfixes only in special cases and only for the last minor version of the second last major version.
+- You should always work with the current version on the `master` branch. If you, nonetheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bug fixes only in special cases and only for the last minor version of the second last major version.
 - If you are confident enough, you can use the `dev` branch.
 
 ### Requirements
@@ -138,7 +138,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
-- `viridis`: For plotting of networks with nice colours
+- `viridis`: For plotting of networks with nice colors
 
 
 ## How-to
@@ -292,7 +292,7 @@ In some cases, it is not necessary to build a network to get the information you
 - `util-core-peripheral.R`
     * Author classification (core and peripheral) and related functions
 - `util-motifs.R`
-    * Functionality for the identifaction of network motifs (subgraph patterns)
+    * Functionality for the identification of network motifs (subgraph patterns)
 - `util-plot.R`
     * Everything needed for plotting networks
 - `util-misc.R`
