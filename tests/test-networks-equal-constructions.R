@@ -265,12 +265,9 @@ test_that("Compare the bipartite and author network constructed in two ways with
         split.bipartite.networks.two[[i]] = bipartite.net
     }
 
-    # browser()
-
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
     for (i in 1:length(split.author.networks.one)) {
-        # browser()
         author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
         ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
                          author.edges.one[["date"]])
