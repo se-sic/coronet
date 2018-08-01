@@ -460,6 +460,11 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             private$commits = data
+
+            # remove cached data for filtered commits as these need to be re-computed
+            # after changing the data
+            private$commits.filtered = NULL
+            private$commits.filtered.empty = NULL
         },
 
         #' Set the commit list of the project to a new one.

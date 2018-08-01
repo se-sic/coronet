@@ -30,6 +30,62 @@ ARTIFACT = "feature"
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
+#' Compare the edges and vertices of the corresponding networks constructed in different ways.
+#'
+#' @param split.author.networks.one the first list of split author networks
+#' @param split.author.networks.two the second list of split author networks
+#' @param split.bipartite.networks.one the first list of split bipartite networks
+#' @param split.bipartite.networks.two the second list of split bipartite networks
+compare.edge.and.vertice.lists = function(split.author.networks.one = NULL, split.author.networks.two = NULL,
+                                          split.bipartite.networks.one = NULL, split.bipartite.networks.two = NULL) {
+
+    for (i in seq_along(split.author.networks.one)) {
+        author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
+        ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
+                         author.edges.one[["date"]])
+        author.edges.one = author.edges.one[ordering, ]
+        rownames(author.edges.one) = seq_len(nrow(author.edges.one))
+        author.edges.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "edges")
+        ordering = order(author.edges.two[["from"]], author.edges.two[["to"]],
+                         author.edges.two[["date"]])
+        author.edges.two = author.edges.two[ordering, ]
+        rownames(author.edges.two) = seq_len(nrow(author.edges.two))
+        author.vertices.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "vertices")
+        ordering = order(author.vertices.one[["name"]])
+        author.vertices.one = author.vertices.one[ordering, ]
+        rownames(author.vertices.one) = seq_len(nrow(author.vertices.one))
+        author.vertices.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "vertices")
+        ordering = order(author.vertices.two[["name"]])
+        author.vertices.two = author.vertices.two[ordering, ]
+        rownames(author.vertices.two) = seq_len(nrow(author.vertices.two))
+
+        expect_identical(author.edges.one, author.edges.two)
+        expect_identical(author.vertices.one, author.vertices.two)
+
+        bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
+        ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
+                         bipartite.edges.one[["date"]])
+        bipartite.edges.one = bipartite.edges.one[ordering, ]
+        rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
+        bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
+        ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
+                         bipartite.edges.two[["date"]])
+        bipartite.edges.two = bipartite.edges.two[ordering, ]
+        rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
+        bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
+        ordering = order(bipartite.vertices.one[["name"]])
+        bipartite.vertices.one = bipartite.vertices.one[ordering, ]
+        rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
+        bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
+        ordering = order(bipartite.vertices.two[["name"]])
+        bipartite.vertices.two = bipartite.vertices.two[ordering, ]
+        rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
+
+        expect_identical(bipartite.edges.one, bipartite.edges.two)
+        expect_identical(bipartite.vertices.one, bipartite.vertices.two)
+    }
+}
+
 test_that("Compare the bipartite and author network constructed in two ways with author/artifact relation 'cochange'", {
 
     ## configuration object for the datapath
@@ -66,7 +122,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
     split.bipartite.networks.two = list()
 
     ## extract the author and bipartite networks from the splitted multi networks
-    for (i in 1:length(multi.network.split)) {
+    for (i in seq_along(multi.network.split)) {
         author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
         bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
 
@@ -76,51 +132,8 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    for (i in 1:length(split.author.networks.one)) {
-        author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
-        ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
-                         author.edges.one[["date"]])
-        author.edges.one = author.edges.one[ordering,]
-        rownames(author.edges.one) = seq_len(nrow(author.edges.one))
-        author.edges.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "edges")
-        ordering = order(author.edges.two[["from"]], author.edges.two[["to"]],
-                         author.edges.two[["date"]])
-        author.edges.two = author.edges.two[ordering,]
-        rownames(author.edges.two) = seq_len(nrow(author.edges.two))
-        author.vertices.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "vertices")
-        ordering = order(author.vertices.one[["name"]])
-        author.vertices.one = author.vertices.one[ordering,]
-        rownames(author.vertices.one) = seq_len(nrow(author.vertices.one))
-        author.vertices.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "vertices")
-        ordering = order(author.vertices.two[["name"]])
-        author.vertices.two = author.vertices.two[ordering,]
-        rownames(author.vertices.two) = seq_len(nrow(author.vertices.two))
-
-        expect_identical(author.edges.one, author.edges.two)
-        expect_identical(author.vertices.one, author.vertices.two)
-
-        bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
-        ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
-                         bipartite.edges.one[["date"]])
-        bipartite.edges.one = bipartite.edges.one[ordering,]
-        rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
-        bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
-        ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
-                         bipartite.edges.two[["date"]])
-        bipartite.edges.two = bipartite.edges.two[ordering,]
-        rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
-        bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.one[["name"]])
-        bipartite.vertices.one = bipartite.vertices.one[ordering,]
-        rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
-        bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.two[["name"]])
-        bipartite.vertices.two = bipartite.vertices.two[ordering,]
-        rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
-
-        expect_identical(bipartite.edges.one, bipartite.edges.two)
-        expect_identical(bipartite.vertices.one, bipartite.vertices.two)
-    }
+    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+                                   split.bipartite.networks.one, split.bipartite.networks.two)
 })
 
 test_that("Compare the bipartite and author network constructed in two ways with author relation 'mail' and artifact relation
@@ -162,7 +175,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
 
     ## extract the author and bipartite networks from the splitted multi networks
-    for (i in 1:length(multi.network.split)) {
+    for (i in seq_along(multi.network.split)) {
         author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
         bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
 
@@ -172,51 +185,8 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    for (i in 1:length(split.author.networks.one)) {
-        author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
-        ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
-                         author.edges.one[["date"]])
-        author.edges.one = author.edges.one[ordering,]
-        rownames(author.edges.one) = seq_len(nrow(author.edges.one))
-        author.edges.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "edges")
-        ordering = order(author.edges.two[["from"]], author.edges.two[["to"]],
-                         author.edges.two[["date"]])
-        author.edges.two = author.edges.two[ordering,]
-        rownames(author.edges.two) = seq_len(nrow(author.edges.two))
-        author.vertices.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "vertices")
-        ordering = order(author.vertices.one[["name"]])
-        author.vertices.one = author.vertices.one[ordering,]
-        rownames(author.vertices.one) = seq_len(nrow(author.vertices.one))
-        author.vertices.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "vertices")
-        ordering = order(author.vertices.two[["name"]])
-        author.vertices.two = author.vertices.two[ordering,]
-        rownames(author.vertices.two) = seq_len(nrow(author.vertices.two))
-
-        expect_identical(author.edges.one, author.edges.two)
-        expect_identical(author.vertices.one, author.vertices.two)
-
-        bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
-        ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
-                         bipartite.edges.one[["date"]])
-        bipartite.edges.one = bipartite.edges.one[ordering,]
-        rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
-        bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
-        ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
-                         bipartite.edges.two[["date"]])
-        bipartite.edges.two = bipartite.edges.two[ordering,]
-        rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
-        bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.one[["name"]])
-        bipartite.vertices.one = bipartite.vertices.one[ordering,]
-        rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
-        bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.two[["name"]])
-        bipartite.vertices.two = bipartite.vertices.two[ordering,]
-        rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
-
-        expect_identical(bipartite.edges.one, bipartite.edges.two)
-        expect_identical(bipartite.vertices.one, bipartite.vertices.two)
-    }
+    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+                                   split.bipartite.networks.one, split.bipartite.networks.two)
 })
 
 test_that("Compare the bipartite and author network constructed in two ways with author and artifact relation 'mail'", {
@@ -257,7 +227,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
 
     ## extract the author and bipartite networks from the splitted multi networks
-    for (i in 1:length(multi.network.split)) {
+    for (i in seq_along(multi.network.split)) {
         author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
         bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
 
@@ -267,49 +237,6 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    for (i in 1:length(split.author.networks.one)) {
-        author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
-        ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
-                         author.edges.one[["date"]])
-        author.edges.one = author.edges.one[ordering,]
-        rownames(author.edges.one) = seq_len(nrow(author.edges.one))
-        author.edges.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "edges")
-        ordering = order(author.edges.two[["from"]], author.edges.two[["to"]],
-                         author.edges.two[["date"]])
-        author.edges.two = author.edges.two[ordering,]
-        rownames(author.edges.two) = seq_len(nrow(author.edges.two))
-        author.vertices.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "vertices")
-        ordering = order(author.vertices.one[["name"]])
-        author.vertices.one = author.vertices.one[ordering,]
-        rownames(author.vertices.one) = seq_len(nrow(author.vertices.one))
-        author.vertices.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "vertices")
-        ordering = order(author.vertices.two[["name"]])
-        author.vertices.two = author.vertices.two[ordering,]
-        rownames(author.vertices.two) = seq_len(nrow(author.vertices.two))
-
-        expect_identical(author.edges.one, author.edges.two)
-        expect_identical(author.vertices.one, author.vertices.two)
-
-        bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
-        ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
-                         bipartite.edges.one[["date"]])
-        bipartite.edges.one = bipartite.edges.one[ordering,]
-        rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
-        bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
-        ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
-                         bipartite.edges.two[["date"]])
-        bipartite.edges.two = bipartite.edges.two[ordering,]
-        rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
-        bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.one[["name"]])
-        bipartite.vertices.one = bipartite.vertices.one[ordering,]
-        rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
-        bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.two[["name"]])
-        bipartite.vertices.two = bipartite.vertices.two[ordering,]
-        rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
-
-        expect_identical(bipartite.edges.one, bipartite.edges.two)
-        expect_identical(bipartite.vertices.one, bipartite.vertices.two)
-    }
+    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+                                   split.bipartite.networks.one, split.bipartite.networks.two)
 })
