@@ -383,19 +383,20 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 
 #' Add first activity attribute.
 #'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param activity.types The kinds of activity to use as basis.
-#'                      One ore more of \code{mails}, \code{commits} and \code{issues}.
-#' @param name The attribute name to add [default: "first.activity"].
+#' @param list.of.networks The network list.
+#' @param project.data The project data.
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues}. [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add. [default: "first.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value [default: NA].
-#' @param compute.over.all Flag indicating that one the first activity over all given
-#'                         \code{activity.types} is of interest (instead of one value per type)
+#' @param default.value The default value to add if a vertex has no matching value. [default: NA].
+#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
 #'
 #' @return A list of networks with the added attribute.
 add.vertex.attribute.first.activity = function(list.of.networks, project.data,
@@ -405,14 +406,14 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
                                                default.value = NA,
-                                               compute.over.all = FALSE) {
+                                               take.first.over.all.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     compute.attr = function(range, range.data, net) {
-        df = get.first.activity.data(activity.types, range.data)
-        if(compute.over.all) {
-            return(list.over.all(df))
+        df = get.first.activity.data(range.data, activity.types)
+        if (take.first.over.all.activity.types) {
+            return(get.first.activity.data.list.over.all(df))
         } else {
-            return(list.single.types(df))
+            return(get.first.activity.data.list.single.types(df))
         }
     }
 
@@ -714,14 +715,15 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 
 #' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
 #'
-#' @param activity.types The activity types to compute information for. They determine the colums of the returned data frame.
+#' @param activity.types The activity types to compute information for. They determine the columns of the returned data frame.
+#'                       [default: c("mails", "commits", "issues")]
 #' @param range.data The data to base the computation on.
 #'
-#' @return A data frame with rows named with persons and colums named with activity types, containing the time of the corresponding
+#' @return A data frame with rows named with persons and columns named with activity types, containing the time of the corresponding
 #'         first activity as POSIXct.
-get.first.activity.data = function(activity.types = c("commits", "mails", "issues"), range.data) {
+get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues")) {
 
-    # parse given activity types to functions
+    ## parse given activity types to functions
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
     activity.type.functions = lapply(parsed.activity.types,
                     function(activity.type) {
@@ -734,36 +736,41 @@ get.first.activity.data = function(activity.types = c("commits", "mails", "issue
     result = data.frame()
     for (type in activity.type.functions) {
 
-        # compute minimums
+        ## compute minimums
         minimums.per.person = lapply(range.data[[type]](),
-                                     function(x) min(x[["date"]])
-        )
+                                     function(x) min(x[["date"]]))
 
-        # fill dataframe
+        ## fill dataframe
         for (person in names(minimums.per.person)) {
             result[person, type] = minimums.per.person[person]
         }
 
-        # format dataframe elements to POSIXct
+        ## format dataframe elements to POSIXct
         result[type] = get.date.from.unix.timestamp(result[[type]])
     }
     return(result)
 }
 
 #' Helper function for first activity: Converts the given dataframe in a list containing the first activity of all activity types per person. For
-#' compatibility with the single first activity calculation (see function \code{list.single.types}), the values are each wrapped in an inner list.
+#' compatibility with the single first activity calculation (see function \code{get.first.activity.data.list.single.types}), the values are each wrapped in an inner list.
 #'
-#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the colums are activity type functions.
+#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the columns are activity type functions.
 #'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
 #'
 #' @return A list containing for each person in the given dataframe a list containing the first activity of all activity types in the given dataframe.
-list.over.all = function(first.activity.dataframe) {
-    min.per.person = apply(first.activity.dataframe, 1, min, na.rm = TRUE)
+get.first.activity.data.list.over.all = function(first.activity.dataframe) {
+
+    ## Compute the minimum per person. The function apply is called with MARGIN = 1, as we are looking for the minimum per row, and na.rm = TRUE, as
+    ## we don't want to consider NA values for the computation.
+    min.per.person = apply(first.activity.dataframe, MARGIN = 1, min, na.rm = TRUE)
+
+    ## Wrap each list element in its own list for compatibility with the single first activity calculation.
     wrapped.min.per.person = lapply(min.per.person, function(element) {
         listed.element = list(element)
         names(listed.element) = c("all.activities")
         return(listed.element)
     })
+
     names(wrapped.min.per.person) = rownames(first.activity.dataframe)
     return(wrapped.min.per.person)
 }
@@ -771,28 +778,27 @@ list.over.all = function(first.activity.dataframe) {
 #' Helper function for first activity: Converts the given dataframe in a list containing the first activity per activity type and person.
 #'
 #' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the coloums are activity type functions.
-#'                                 A correctly formatted dataframe can easily be created by the functione \code{compute.first.activities.dataframe}.
+#'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
 #'
 #' @return A list containing for each person in the given datafram a list containing for each activity type in the given dataframe the first activity.
-list.single.types = function(first.activity.dataframe) {
+get.first.activity.data.list.single.types = function(first.activity.dataframe) {
 
-    result = list()
-    resultnames = c()
-    for (person in rownames(first.activity.dataframe)) {
+    result = lapply(rownames(first.activity.dataframe), function(person) {
 
-        first.activity.for.person = list()
-        for (activity.type in colnames(first.activity.dataframe)) {
-            element = list(first.activity.dataframe[person, activity.type])
-            typename = paste0(substr(activity.type, 12, nchar(activity.type)), "s")
-            names(element) = c(typename)
+        ## get first activities as list from dataframe
+        first.activity.for.person = lapply(colnames(first.activity.dataframe), function(activity.type) {
+            return(first.activity.dataframe[person, activity.type])
+        })
 
-            first.activity.for.person = c(first.activity.for.person, element)
-        }
+        ## get readable name from dataframe column names as names for first.activity.for.person
+        names(first.activity.for.person) = lapply(colnames(first.activity.dataframe), function(activity.type) {
+            return(paste0(substr(activity.type, 12, nchar(activity.type)), "s"))
+        })
 
-        resultnames = c(resultnames, person)
-        result = c(result, list(first.activity.for.person))
-    }
+        return(first.activity.for.person)
 
-    names(result) = resultnames
+    })
+
+    names(result) = rownames(first.activity.dataframe)
     return(result)
 }
