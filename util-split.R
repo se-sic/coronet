@@ -132,7 +132,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.range.data$set.synchronicity(project.data$get.synchronicity())
         ## 5) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
-        ## 6) pasta data
+        ## 6) PaStA data
         cf.range.data$set.pasta(project.data$get.pasta())
 
         return(cf.range.data)

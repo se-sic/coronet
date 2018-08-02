@@ -508,7 +508,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$datapath.callgraph = private$get.results.folder(data, selection.process, casestudy, "callgraphs")
             ## store path to synchronicity data
             conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
-            ## store path to pasta data
+            ## store path to PaStA data
             conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
             ## store path to issue data
             conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
@@ -707,7 +707,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     ## commit information
                     "hash", "file", "artifact", "changed.files", "added.lines",
                     "deleted.lines", "diff.size", "artifact.diff.size", "synchronicity",
-                    # pasta information
+                    # PaStA information
                     "pasta",
                     # issue information
                     "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request",
