@@ -36,7 +36,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 #' @param split.author.networks.two the second list of split author networks
 #' @param split.bipartite.networks.one the first list of split bipartite networks
 #' @param split.bipartite.networks.two the second list of split bipartite networks
-compare.edge.and.vertice.lists = function(split.author.networks.one = NULL, split.author.networks.two = NULL,
+compare.edge.and.vertex.lists = function(split.author.networks.one = NULL, split.author.networks.two = NULL,
                                           split.bipartite.networks.one = NULL, split.bipartite.networks.two = NULL) {
 
     for (i in seq_along(split.author.networks.one)) {
@@ -132,7 +132,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
 })
 
@@ -185,7 +185,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
 })
 
@@ -237,6 +237,6 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    compare.edge.and.vertice.lists(split.author.networks.one, split.author.networks.two,
+    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
 })
