@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
@@ -508,7 +508,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$datapath.callgraph = private$get.results.folder(data, selection.process, casestudy, "callgraphs")
             ## store path to synchronicity data
             conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
-            ## store path to pasta data
+            ## store path to PaStA data
             conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
             ## store path to issue data
             conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
@@ -707,7 +707,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     ## commit information
                     "hash", "file", "artifact", "changed.files", "added.lines",
                     "deleted.lines", "diff.size", "artifact.diff.size", "synchronicity",
-                    # pasta information
+                    # PaStA information
                     "pasta",
                     # issue information
                     "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request",
@@ -764,6 +764,13 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
             ## return invisible
             invisible()
+        },
+
+        #' Clears the edge attributes by setting the attribute to just the mandatory
+        #' 'date' value. This can be used to get rid of all the default values at once.
+        clear.edge.attributes = function() {
+            logging::loginfo("Clearing edge.attributes.")
+            self$update.values(list(edge.attributes = c("date")))
         }
 
     )

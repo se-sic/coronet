@@ -303,26 +303,26 @@ read.authors = function(data.path) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## PaStA data --------------------------------------------------------------
 
-#' Read and parse the pasta data from the 'mbox-result' file.
+#' Read and parse the PaStA data from the 'mbox-result' file.
 #' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
 #' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
 #' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
 #'
-#' @param data.path the path to the pasta data
+#' @param data.path the path to the PaStA data
 #'
-#' @return the read and parsed pasta data
+#' @return the read and parsed PaStA data
 read.pasta = function(data.path) {
     # constant for seperating keys and value
     SEPERATOR = " => "
     KEY.SEPERATOR = " "
 
-    ## get file name of pasta data
+    ## get file name of PaStA data
     filepath = file.path(data.path, "mbox-result")
 
     ## read data from disk [can be empty]
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
-    ## handle the case if the list of pasta items is empty
+    ## handle the case if the list of PaStA items is empty
     if (inherits(lines, "try-error")) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
