@@ -322,6 +322,16 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # # ggraph::facet_graph(edge.type.char ~ vertex.type.char)
 # print(p)
 
+# ## generate network plot from README file and save it to disk
+# p = plot.get.plot.for.network(g)
+# p = p +
+#     ggplot2::ggtitle("Exemplary multi network") +
+#     ggplot2::theme(
+#         plot.title = ggplot2::element_text(hjust = 0.5, size = 15),
+#         plot.margin = ggplot2::unit(c(0.5, 0.5, 0.5, 0.5), "cm")
+#     )
+# ggplot2::ggsave("plot-multi.png", plot = p)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Core/peripheral classification ------------------------------------------
