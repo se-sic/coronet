@@ -24,6 +24,7 @@
 - Add implementation of Codeface to compute the scale-free attributes for small networks (80f47512ce7634c81f3708865eb1697b0151f549)
 - Remove data inconsistencies when re-setting the commit, mail, and PaStA data (569552687e70ec7a67bed7da2c77cf56f5434dc6)
 - Switch the order of the `type` and `kind` attributes of vertices in bipartite networks for testing reasons (351311a30f545d31e43e0065a6147185edec647b)
+- Update README file (8380dc62f53591e53762a3692e44973535b5dcea, f590453aadde2dc9224d9f418f4a92c59cd49795, 792cb9558e04868bcad230dfdc50a5ace6d63d35, 8c2a8255966cc6c38ea16e64a28b135ef8456e58)
 
 ### Fixed
 - Change the type of all commit count default values to Integer (62c033948d3449ed3bb64ec044036bcda56afdae)
@@ -32,6 +33,8 @@
 - Eliminate duplicated lines in the raw commit data (dec0005e8e6af1bdecd3028d074ddd2120c7b2cc)
 - Fix the `split.networks.time.based` method by now splitting the networks from the earliest timestamp to
 the latest (1f65db382396e701655812a8ef4e9def61e8981b)
+- Fix TravisCI build regarding `sudo` commands (baca08e33ff336fe91caaca5ca8ceb1cb77f3ded)
+- Fix direction of edges in exemplary network plot in README file (5c80c256b214e03bdc7881774ba8b1b9f43c21ed)
 
 
 ## 3.2
