@@ -6,23 +6,26 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
 
 ![Exemplary plot of multi network](plot-multi.png)
 
+
 ## Table of contents
 
 - [Integration](#integration)
-    * [Submodule](#submodule)
-    * [Selecting the correct version](#selecting-the-correct-version)
     * [Requirements](#requirements)
         * [R](#r-331)
-        * [packrat](#packrat)
+        * [packrat (recommended)](#packrat)
         * [Folder structure of the input data](#folder-structure-of-the-input-data)
         * [Needed R packages](#needed-r-packages)
-- [How-to](#how-to)
+    * [Submodule](#submodule)
+    * [Selecting the correct version](#selecting-the-correct-version)
 - [Functionality](#functionality)
+    * [Configuration](#configuration)
     * [Data sources](#data-sources)
     * [Network construction](#network-construction)
         * [Types of networks](#types-of-networks)
+        * [Relations](#relations)
         * [Vertex and edge attributes](#vertex-and-edge-attributes)
     * [Further functionalities](#further-functionalities)
+    * [How-to](#how-to)
     * [File/Module overview](#filemodule-overview)
 - [Configuration classes](#configuration-classes)
     * [ProjectConf](#projectconf)
@@ -36,29 +39,8 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
 - [License](#license)
 - [Work in progress](#work-in-progress)
 
+
 ## Integration
-
-### Submodule
-
-Please insert the project into yours by use of [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
-Furthermore, the file `install.R` installs all needed R packages (see [below](#needed-r-packages)) into your R library.
-Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
-
-This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
-
-To initialize the library in your project, you need to source all files of the library in your project using the following command:
-```R
-source("path/to/util-init.R", chdir = TRUE)
-```
-It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
-
-### Selecting the correct version
-
-When selecting a version to work with, you should consider the following points:
-- Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
-- On the branch `master`, there is always the most recent and complete version.
-- You should always work with the current version on the `master` branch. If you, nonetheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bug fixes only in special cases and only for the last minor version of the second last major version.
-- If you are confident enough, you can use the `dev` branch.
 
 ### Requirements
 
@@ -68,9 +50,9 @@ While using the package, we require the following infrastructure.
 
 Later `R` versions should work (and are tested using our TravisCI script), but, for reliability reasons and `packrat` compatibility, only version `3.3.1` is supported.
 
-#### [`packrat`](http://rstudio.github.io/packrat/)
+#### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
-The local package manager of `R` enables the user to store all needed `R` packages for this repository inside the repository itself. 
+The local package manager of `R` enables the user to store all needed `R` packages for this repository inside the repository itself.
 All `R` tools and IDEs should provide a  more sophisticated interface for the interaction with `packrat`([RStudio](https://www.rstudio.com/) does).
 
 #### Folder structure of the input data
@@ -119,7 +101,6 @@ For further details on those files, please have a look at some [example files](h
 All the `*.list` files listed above are output files of `codeface-extraction` and contain meta data of, e.g., commits or e-mails to the mailing list, etc., in CSV format.
 This network library lazily loads and processes these files when needed.
 
-
 #### Needed R packages
 
 To manage the following packages, we recommend to use `packrat` using the `R` command `install.packages("packrat"); packrat::on()`.
@@ -140,73 +121,60 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `lubridate`: For convenient date conversion and parsing
 - `viridis`: For plotting of networks with nice colors
 
+### Submodule
 
-## How-to
+Please insert the project into yours by use of [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+Furthermore, the file `install.R` installs all needed R packages (see [below](#needed-r-packages)) into your R library.
+Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
 
-In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
-For more examples, please see [the types of networks we can construct](#types-of-networks) and the file `showcase.R`.
+This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
+To initialize the library in your project, you need to source all files of the library in your project using the following command:
 ```R
-CF.DATA = "/path/to/codeface-data" # path to codeface data
-
-CF.SELECTION.PROCESS = "threemonth" # releases, threemonth(, testing)
-
-CASESTUDY = "busybox"
-ARTIFACT = "feature" # function, feature, file, featureexpression
-
-AUTHOR.RELATION = "mail" # mail, cochange
-ARTIFACT.RELATION = "cochange" # cochange, callgraph
-
-## create the configuration Objects
-proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-net.conf = NetworkConf$new()
-
-## update the values of the NetworkConf object to the specific needs
-net.conf$update.values(list(author.relation = AUTHOR.RELATION,
-                            artifact.relation = ARTIFACT.RELATION,
-                            simplify = TRUE))
-
-## get ranges information from project configuration
-ranges = proj.conf$get.entry("ranges")
-
-## create data object which actually holds and handles data
-data = ProjectData$new(proj.conf)
-
-## create network builder to construct networks from the given data object
-netbuilder = NetworkBuilder$new(data, net.conf)
-
-## create and get the bipartite network
-## (construction configured by net.conf's "artifact.relation")
-bpn = netbuilder$get.bipartite.network()
-
-## plot the retrieved network
-plot.network(bpn)
+source("path/to/util-init.R", chdir = TRUE)
 ```
+It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
+
+### Selecting the correct version
+
+When selecting a version to work with, you should consider the following points:
+- Each version (i.e., a tag) contains, at least, a major and a minor version in the form `v{major}.{minor}[.{bugfix}]`.
+- On the branch `master`, there is always the most recent and complete version.
+- You should always work with the current version on the `master` branch. If you, nonetheless, work on a former version, there might be a branch called `{your_version}-fixes` (e.g., `v2.3-fixes`) when we have fixed some extreme bugs in the current version, then select this one as it contains backported bugfixes for the former version. We will backport some very important bug fixes only in special cases and only for the last minor version of the second last major version.
+- If you are confident enough, you can use the `dev` branch.
+
+
+## Functionality
+
+### Configuration
 
 There are two different classes of configuration objects in this library:
 - the `ProjectConf` class which determines all configuration parameters needed for the configured project (mainly data paths) and
 - the `NetworkConf` class which is used for all configuration parameters concerning data retrieval and network construction.
 
-You can find an overview on all the parameters in these classes below in this file.
-For examples on how to use both classes and how to build networks with them, please look in the file `showcase.R`.
-
-
-## Functionality
+You can find an overview on all the parameters in these classes [below in this file](#configuration-classes).
 
 ### Data sources
 
-There are two distinguishable types of data sources handled by the `ProjectData` and `RangeData` classes. The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner (see file `split.R` and the contained functions). The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
-
-All data sources are accessible from the `ProjectData` objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
+There are two distinguishable types of data sources that are both handled by the class `ProjectData` (and possibly its subclass `RangeData`):
 
 - Main data sources (artifact networks, splittable)
     * Commit data (called `"commits"` internally)
     * E-Mail data (called `"mails"` internally)
     * Issue data (called `"issues"` internally)
 
-- Additional orthogonal data sources (augmentable to main data sources, not splittable)
-    * PaStA data (see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
-    * Synchronicity information (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
+- Additional (orthogonal) data sources (augmentable to main data sources, not splittable)
+    * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
+        * Patch-stack analysis to link patches sent to mailing lists and upstream commits
+    * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
+        * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
+
+ The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
+
+ The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
+
+All data sources are accessible from the `ProjectData` and `RangeData`objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
+
 
 ###  Network construction
 
@@ -214,7 +182,7 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 #### Types of networks
 
-There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks (which are a combination of author, artifact, and bipartite networks). In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object.
+There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks (which are a combination of author, artifact, and bipartite networks). In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object. The respective relations and their meaning are explained [in the next section](#relations) in more detail.
 
 - Author networks
      * The vertices in an author network denote authors who are uniquely identifiable by their name. There are only unipartite edges among authors in this type of network.
@@ -231,6 +199,31 @@ There are four types of networks that can be built using this library: author ne
 - Multi networks
      * The vertices in a multi network denote both authors and artifacts. There are both unipartite and bipartite edges among the vertices in this type of network. Essentially, a multi network is the combination of all other types of networks.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attributes `author.relation` and `artifact.relation`, respectively.
+
+#### Relations
+
+Relations determine which information is used to construct edges among the vertices in the different types of networks. In this network library, you can specify, if wanted, several relations for a single network using the corresponding `NetworkConf` attributes mentioned in the following.
+
+- `cochange`
+    * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who change the same source-code artifact are connected with an edge.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts that are concurrently changed in the same commit are connected with an edge.
+    * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits.
+
+- `mail`
+    * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to the same mail thread are connected with an edge.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), mail threads are connected when they reference each other. (**Note:** There are no edges available right now .)
+    * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all mail threads they have contributed to.
+
+- `issue`
+    * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to the same issue are connected with an edge.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), issues are connected when they reference each other.
+    * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all issues they have contributed to.
+
+- `callgraph`
+    * This relation does not apply for author networks.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts are connected when they reference each other (i.e., one artifact calls a function contained in the other artifact).
+    * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits (same as for the relation `cochange`).
+
 
 #### Vertex and edge attributes
 
@@ -269,6 +262,55 @@ time. Further details can be found in the section [*Splitting information*](#spl
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, we offer the possibility to  get the raw data or mappings between, e.g., authors and the files they edited. Examples can be found in the file `showcase.R`.
 
+### How-to
+
+In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
+
+**Disclaimer:** The following code is configured to use sample data shipped with this repository. If you want to use the network library with a real-world project such as BusyBox, you need actual data and adjust the variables in the first block of the code to the existing data.
+
+```R
+CF.DATA = "./sample/" # path to codeface data
+CF.SELECTION.PROCESS = "testing" # selection process
+CASESTUDY = "sample" # project name
+ARTIFACT = "feature" # the source-code artifact to use
+
+## configuration of network relations
+AUTHOR.RELATION = "mail"
+ARTIFACT.RELATION = "cochange"
+
+## initialize network library
+source("./util-init.R", chdir = TRUE)
+
+## create the configuration objects
+proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+net.conf = NetworkConf$new()
+
+## update the values of the NetworkConf object to the specific needs
+net.conf$update.values(list(author.relation = AUTHOR.RELATION,
+                            artifact.relation = ARTIFACT.RELATION,
+                            simplify = TRUE))
+
+## get project-folder information from project configuration
+cf.project.folder = proj.conf$get.entry("project") # obtaining: "sample_feature"
+
+## create data object which actually holds and handles data
+data = ProjectData$new(proj.conf)
+
+## create network builder to construct networks from the given data object
+netbuilder = NetworkBuilder$new(data, net.conf)
+
+## create and get the bipartite network
+## (construction configured by net.conf's "artifact.relation")
+bpn = netbuilder$get.bipartite.network()
+
+## plot the retrieved network
+plot.network(bpn)
+```
+
+Please also see [the other types of networks we can construct](#types-of-networks).
+For more information on how to use the configuration classes and how to construct networks with them, please see  [the corresponding section](#configuration-classes).
+Additionally, for more examples, the file `showcase.R`is worth a look.
+
 ### File/Module overview
 
 - `util-init.R`
@@ -284,7 +326,7 @@ In some cases, it is not necessary to build a network to get the information you
 - `util-split.R`
     * Splitting functionality for data objects and networks (time-based and activity-based, using arbitrary ranges)
 - `util-bulk.R`
-    * Collection functionality for the different network types (using Codeface revision ranges, deprecated)
+    * Collection functionality for the different network types (using Codeface ranges, deprecated)
 - `util-networks-covariates.R`
     * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
@@ -298,7 +340,7 @@ In some cases, it is not necessary to build a network to get the information you
 - `util-misc.R`
     * Helper functions and also legacy functions, both needed in the other files
 - `showcase.R`
-    * Showcase file (see Section also [*How-To*](#how-to))
+    * Showcase file (see also Section [*How-To*](#how-to))
 - `tests.R`
     * Test suite (running all tests in `tests/` subfolder)
 
@@ -346,16 +388,18 @@ There is no way to update the entries, except for the revision-based parameters.
 **Note**: These parameters can be updated using the method `ProjectConf$set.splitting.info()`, but you should *not* do that manually!
 
 - `revisions`
-    * The analyzed revisions of the project, retrieved from the Codeface database
+    * The analyzed revisions of the project, initially retrieved from the Codeface database
+    * A revision represents a single point in time (such as a version number or a commit hash).
 - `revisions.dates`
     * The dates for the `revisions`
 - `revisions.callgraph`
     * The revisions as used in call-graph file name
 - `ranges`
-    * The revision ranges constructed from the list of `revisions`
+    * The ranges constructed from the list of `revisions`
+    * A range represents the time between two revisions.
     * The ranges are constructed in sliding-window manner when a data object is split using the sliding-window approach
 - `ranges.callgraph`
-    * The revision ranges based on the list `revisions.callgraph`
+    * The ranges based on the list `revisions.callgraph`
 
 #### Data paths
 
@@ -437,7 +481,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * [`TRUE`, *`FALSE`*]
 - `artifact.relation`
     * The relation(s) among artifacts, encoded as edges in an artifact network
-    * **Note**: This relation configures also the author--artifact relation in bipartite and multi networks!
+    * **Note**: Additionally, this relation configures also the author--artifact relation in bipartite and multi networks!
     * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
     * The (time-based) directedness of edges in an artifact network
@@ -463,8 +507,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `skip.threshold`
     * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
     * any positive integer
-    * **Example**: The amount of `mail`-based directed edges in an author network for one thread with 100 authors is 5049.
-    A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this thread from the network.
+    * **Example**: The amount of `mail`-based directed edges in an author network for one mail thread with 100 authors is 5049.
+    A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this mail thread from the network.
 - `unify.date.ranges`
     * Cut the data sources to the largest start date and the smallest end date across all data sources
     * **Note**: This parameter does not affect the original data object, but rather creates a clone.
@@ -473,7 +517,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pass the object as parameter to the constructor.
 You can also update the `NetworkConf` object at any time by calling `NetworkBuilder$update.network.conf(...)`, but as soon as you do so, all cached data of the `NetworkBuilder` object are reset and have to be rebuilt.
 
-For more examples, please look in the file `showcase.R`.
+For more examples, please have a look into the file `showcase.R`.
 
 
 ## Contributing
