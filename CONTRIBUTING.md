@@ -1,4 +1,4 @@
-# Contributing to the Network Library
+# Contributing to the network library
 
 The following is a set of guidelines for contributing to the Network Library, which are hosted in the [se-passau](https://github.com/se-passau) organization on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
@@ -52,11 +52,11 @@ Bugs are tracked as GitHub issues. Create an issue and provide needed informatio
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
 * **Use a clear and descriptive title** for the issue to identify the problem.
-* **Describe the exact steps which reproduce the problem** in as many details as possible. For example, start by explaining how you initalize the library in your code, e.g., which command exactly you used in in your script, or whether you modified the library code or not. Give also details on what your goal is, what you want to achieve by using the library.
+* **Describe the exact steps which reproduce the problem** in as many details as possible. For example, start by explaining how you initialize the library in your code, e.g., which command exactly you used in in your script, or whether you modified the library code or not. Give also details on what your goal is, what you want to achieve by using the library.
 * **Provide specific examples to demonstrate the steps**. Include links to files or GitHub projects, or copy/pasteable snippets, or even minimal working examples (MWEs) to reproduce the problem. Especially, include your project and network configurations so that we can understand your setting.
 * **Describe the behavior you observed after following the steps** and point out what exactly is the problem with that behavior.
 * **Explain which behavior you expected to see instead and why.**
-* **If you're reporting that the library's code crashed somehow**, include the R stacktrace if available.
+* **If you're reporting that the library's code crashed somehow**, include the R stack trace if available.
 
 Provide more context by answering these questions:
 
