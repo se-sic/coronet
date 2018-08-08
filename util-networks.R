@@ -145,7 +145,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.artifact2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -182,7 +183,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -213,7 +215,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.issue2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -842,27 +845,39 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'
 #' Important: The input needs to be compatible with the function \code{get.key.to.value.from.df}.
 #'
-#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' If \code{directed}, as default, the order of things in the sublist is respected (if
+#' \code{respect.temporal.order} is not set manually) and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
 #'
 #' @param list the list of lists with data
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
+#' @param respect.temporal.order whether to respect the temporal order when constructing edges,
+#'                               i.e., whether to only add edges from the later event to the previous one.
+#'                               If \code{NA} is passed, the default value is taken.
+#'                               [default: directed]
 #'
 #' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
 #'         of \code{igraph::as.data.frame})
-construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE) {
+construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE,
+                                                   respect.temporal.order = directed) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
-    # initialize an edge list to fill and the set of nodes
+    ## if no value for respect.temporal.order is specified (indicated by an NA value
+    ## coming from the network configuration), use the value of directed parameter instead
+    if (is.na(respect.temporal.order)) {
+        respect.temporal.order = directed
+    }
+
+    ## initialize an edge list to fill and the set of nodes
     nodes.processed = c()
     edge.list = data.frame()
 
     keys = names(list)
     keys.number = length(list)
 
-    if (directed) {
+    if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
@@ -990,7 +1005,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' For example for a list of authors per thread, where all authors are connected if they are
 #' in the same thread (sublist).
 #'
-#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' If \code{directed}, the direction of edges in the edge list is respected and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
 #'
 #' @param vertices data frame with vertex data
