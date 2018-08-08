@@ -470,8 +470,12 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
     * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
 - `author.directed`
-    * The (time-based) directedness of edges in an author network
+    * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
+- `respect.temporal.order`
+    * Denotes whether the temporal order of activities shall be respected when constructing author networks. When respecting the temporal order, there will be only one edge for the later of two corresponding events between two authors. Otherwise, there will be mutual edges. (For instance, when constructing author networks with relation mail, there will be only an edge for an answer in a mail thread to the autors of every previous e-mail in this mail thread if the temporal order is respected. If the temporal order is not respected, there is an edge for every answer to all the authors of the previous e-mails in the mail thread, but also an edge for every previously sent e-mail from its author to the author of each subsequent mail in this mail thread.)
+    * **Note**: If no value is speficied (i.e., `NA` is used), the value of `author.directed` is used for determining whether to respect the temporal order during edge construction.
+    * [`TRUE`, `FALSE`, *`NA`*]
 - `author.all.authors`
     * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
     * **Note**: Depending on the chosen author relation, there may be isolates then
@@ -484,8 +488,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * **Note**: Additionally, this relation configures also the author--artifact relation in bipartite and multi networks!
     * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
-    * The (time-based) directedness of edges in an artifact network
-    * **Note**: This parameter does not take effect for now, as the co-change relation is always undirected, while the call-graph relation is always directed.
+    * The directedness of edges in an artifact network
+    * **Note**: This parameter does not take effect for now, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed.
   * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
     * The list of edge-attribute names and information
