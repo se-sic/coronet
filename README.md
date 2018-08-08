@@ -173,7 +173,7 @@ There are two distinguishable types of data sources that are both handled by the
 
  The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
 
-All data sources are accessible from the `ProjectData` and `RangeData`objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
+All data sources are accessible from the `ProjectData` and `RangeData` objects through their respective getter methods. For some data sources, there are additional methods available to access, for example, a more aggregated version of the data.
 
 
 ###  Network construction
@@ -309,7 +309,7 @@ plot.network(bpn)
 
 Please also see [the other types of networks we can construct](#types-of-networks).
 For more information on how to use the configuration classes and how to construct networks with them, please see  [the corresponding section](#configuration-classes).
-Additionally, for more examples, the file `showcase.R`is worth a look.
+Additionally, for more examples, the file `showcase.R` is worth a look.
 
 ### File/Module overview
 
