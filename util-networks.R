@@ -893,11 +893,11 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 return(NULL)
             }
 
-            # queue of already processed artifacts
+            ## queue of already processed artifacts
             edge.list.set = data.frame()
             nodes.processed.set = c()
 
-            # connect the current item to all previous ones
+            ## connect the current item to all previous ones
             for (item.no in 1:nrow(set)) {
                 item = set[item.no, ]
 
@@ -914,7 +914,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
                 edge.list.set = rbind(edge.list.set, combinations) # add to edge list
 
-                # mark current item as processed
+                ## mark current item as processed
                 nodes.processed.set = c(nodes.processed.set, item.node)
             }
 
@@ -973,7 +973,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
                 edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
-                # add edge attributes to edge list
+                ## add edge attributes to edge list
                 edgelist = cbind(edge, edge.attrs)
 
                 return(edgelist)
@@ -1021,7 +1021,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     ## get unique list of vertices to produce
     nodes.processed = unique(vertices)
 
-    # if we do not have nodes AND the edge.list is empty, return rightaway
+    ## if we do not have nodes AND the edge.list is empty, return rightaway
     if (length(nodes.processed) == 0) {
         return(create.empty.network(directed = directed))
     }
@@ -1039,7 +1039,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
-    # transform multiple edges to edge weights
+    ## transform multiple edges to edge weights
     if (network.conf$get.value("simplify")) {
         net = simplify.network(net)
     }
