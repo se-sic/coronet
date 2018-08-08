@@ -881,7 +881,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(0:(nrow(set) - 1))
+            number.edges = sum(seq_len(nrow(set)) - 1)
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -898,11 +898,11 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             nodes.processed.set = c()
 
             ## connect the current item to all previous ones
-            for (item.no in 1:nrow(set)) {
+            for (item.no in seq_len(nrow(set))) {
                 item = set[item.no, ]
 
                 ## get vertex data
-                item.node = item[, 1]
+                item.node = item[["data.vertices"]]
 
                 ## get edge attributes
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
@@ -910,8 +910,9 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
-                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1)
+                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
+                }
                 edge.list.set = rbind(edge.list.set, combinations) # add to edge list
 
                 ## mark current item as processed
@@ -933,7 +934,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(table(set[, 1]) * (dim(table(set[, 1])) - 1))
+            number.edges = sum(table(set[["data.vertices"]]) * (dim(table(set[["data.vertices"]])) - 1))
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -946,7 +947,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             }
 
             ## get vertex data
-            nodes = unique(set[, 1])
+            nodes = unique(set[["data.vertices"]])
 
             ## break if there is no author
             if (length(nodes) < 1) {
@@ -965,18 +966,26 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
             ## construct edge list
             edges = apply(combinations, 2, function(comb) {
-                ## basic edge data
-                edge = data.frame(comb[1], comb[2])
 
-                ## get edge attibutes
-                edge.attrs = set[ set[, 1] %in% comb, ] # get data for current combination
-                cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                ## iterate over each item of the current combination
+                edges.by.comb.item = lapply(comb, function(comb.item) {
+                    ## basic edge data
+                    edge = data.frame(comb.item, comb[comb != comb.item])
 
-                ## add edge attributes to edge list
-                edgelist = cbind(edge, edge.attrs)
+                    ## get edge attibutes
+                    edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
+                    cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
+                    edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
-                return(edgelist)
+                    # add edge attributes to edge list
+                    edgelist = cbind(edge, edge.attrs)
+                    return(edgelist)
+                })
+
+                ## union the edge lists for the combination items
+                edges.union = plyr::rbind.fill(edges.by.comb.item)
+                return(edges.union)
+
             })
             edges = plyr::rbind.fill(edges)
 

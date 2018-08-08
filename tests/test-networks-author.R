@@ -343,8 +343,8 @@ test_that("Network construction of the directed author-cochange network without 
                          type = TYPE.AUTHOR)
 
     ## edge attributes
-    data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
-                      comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
+    data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl", "Olaf", "Thomas", "Karl", "Thomas"),
+                      comb.2. = c("Olaf", "Björn", "Karl", "Olaf", "Thomas", "Olaf", "Thomas", "Karl"),
                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                     "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
                                                     "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
