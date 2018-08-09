@@ -231,7 +231,7 @@ When constructing author networks, we have four different edge-construction poss
 
 - On the one hand, networks can either be *directed* or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). If directedness is configured, the edges are directed from the author of an event (i.e., the actor) to the other authors.
 
-- On the other hand, we can construct edges based on the *temporal order of events* or just construct edges neglecting the temporal order of events (configured via `respect.temporal.order` in the [`NetworkConf`](#networkconf)). When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). Otherwise, when neglecting the temporal order, there will be mutual edges among all pairs of authors.
+- On the other hand, we can construct edges based on the *temporal order of events* or just construct edges neglecting the temporal order of events (configured via `author.respect.temporal.order` in the [`NetworkConf`](#networkconf)). When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). Otherwise, when neglecting the temporal order, there will be mutual edges among all pairs of authors.
 
 In the following, we illustrate the edge construction for all combinations of temporally (un-)ordered data and (un-)directed networks on an example with one mail thread:
 
@@ -516,7 +516,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `author.directed`
     * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
-- `respect.temporal.order`
+- `author.respect.temporal.order`
     * Denotes whether the temporal order of activities shall be respected when constructing author networks (see also Section [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks))
     * **Note**: If no value is specified explicitly by the user (i.e., `NA` is used), the value of `author.directed` is used for determining whether to respect the temporal order during edge construction.
     * **Note**: This parameter has *no* effect on the construction of artifact networks and bipartite networks.

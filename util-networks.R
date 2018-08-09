@@ -146,7 +146,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 private$proj.data$get.artifact2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
-                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -184,7 +184,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
-                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -216,7 +216,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 private$proj.data$get.issue2author(),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
-                respect.temporal.order = private$network.conf$get.value("respect.temporal.order")
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data

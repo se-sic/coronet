@@ -660,7 +660,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
-            respect.temporal.order = list(
+            author.respect.temporal.order = list(
               default = NA, # default value will be determined from the 'author.directed' parameter
               type = "logical",
               allowed = c(TRUE, FALSE, NA),
