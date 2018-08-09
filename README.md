@@ -23,6 +23,7 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
     * [Network construction](#network-construction)
         * [Types of networks](#types-of-networks)
         * [Relations](#relations)
+        * [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
         * [Vertex and edge attributes](#vertex-and-edge-attributes)
     * [Further functionalities](#further-functionalities)
     * [How-to](#how-to)
@@ -186,7 +187,7 @@ There are four types of networks that can be built using this library: author ne
 
 - Author networks
      * The vertices in an author network denote authors who are uniquely identifiable by their name. There are only unipartite edges among authors in this type of network.
-     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `author.relation`.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `author.relation`. For the edge-construction algorithms used for constructing author networks, please also see the [respective section](#edge-construction-algorithms-for-author-networks).
 
 - Artifact networks
      * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
@@ -224,6 +225,41 @@ Relations determine which information is used to construct edges among the verti
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts are connected when they reference each other (i.e., one artifact calls a function contained in the other artifact).
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits (same as for the relation `cochange`).
 
+#### Edge-construction algorithms for author networks
+
+When constructing author networks, we have four different edge-construction possibilities, based on two different configuration parameters in the [`NetworkConf`](#networkconf). On the one hand, networks can either be directed or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). On the other hand, we can construct edges based on the temporal order of events or just construct edges neglecting the temporal order of events (configured via `respect.temporal.order` in the [`NetworkConf`](#networkconf)).
+
+When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Otherwise, there will be mutual edges. For instance, when constructing author networks with relation `mail`, there will be only an edge for an answer in a mail thread to the authors of every previous e-mail in this mail thread if the temporal order is respected. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). If the temporal order is not respected, there is not only an edge for every answer to all the authors of the previous e-mails in the mail thread, but also an edge for every previously sent e-mail from its author to the author of each subsequent mail in this mail thread. In this case, no loop edges are contained in the network.
+
+In the following, we show an example defining the edge construction for all combinations of temporally (un-)ordered data and (un-)directed networks:
+
+*Raw data*:
+
+| Author  | Date (Year)    | Artifact        |
+|---------|---------------:| ---------------:|
+| A       | 1998           | 1               |
+| A       | 1999           | 1               |
+| B       | 2000           | 1               |
+
+*Networks:*
+
+<table>
+  <tr>
+    <th></th>
+    <th>respect temporal order</th>
+    <th>without respecting temporal order</th>
+  </tr>
+  <tr>
+    <td><strong>network directed</strong></td>
+    <td><em>A ←(1999)– A<br>A ←(2000)– B</em></td>
+    <td>A –(1998)→ B<br>A –(1999)→ B<br>A ←(2000)– B</td>
+  </tr>
+  <tr>
+    <td><strong>network undirected</strong></td>
+    <td>A –(1999)– A<br>A –(2000)– B</td>
+    <td><em>A –(1998)– B<br>A –(1999)– B<br>A –(2000)– B</em></td>
+  </tr>
+</table>
 
 #### Vertex and edge attributes
 
@@ -473,8 +509,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
 - `respect.temporal.order`
-    * Denotes whether the temporal order of activities shall be respected when constructing author networks. When respecting the temporal order, there will be only one edge for the later of two corresponding events between two authors. Otherwise, there will be mutual edges. (For instance, when constructing author networks with relation mail, there will be only an edge for an answer in a mail thread to the autors of every previous e-mail in this mail thread if the temporal order is respected. If the temporal order is not respected, there is an edge for every answer to all the authors of the previous e-mails in the mail thread, but also an edge for every previously sent e-mail from its author to the author of each subsequent mail in this mail thread.)
-    * **Note**: If no value is speficied (i.e., `NA` is used), the value of `author.directed` is used for determining whether to respect the temporal order during edge construction.
+    * Denotes whether the temporal order of activities shall be respected when constructing author networks (see also Section [Edge-construction algorithms in author networks](#edge-construction-algorithms-in-author-networks))
+    * **Note**: If no value is specified explicitly by the user (i.e., `NA` is used), the value of `author.directed` is used for determining whether to respect the temporal order during edge construction.
     * [`TRUE`, `FALSE`, *`NA`*]
 - `author.all.authors`
     * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
@@ -489,7 +525,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
     * The directedness of edges in an artifact network
-    * **Note**: This parameter does not take effect for now, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed.
+    * **Note**: This parameter does not take effect for now, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed. For the other relations (`mail` and `issue`), we currently do not have data available to exhibit edge information.
   * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
     * The list of edge-attribute names and information
