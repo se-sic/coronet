@@ -8,7 +8,7 @@
 - Add method `metrics.is.scale.free()` to decide whether a network is scale-free or not (80f47512ce7634c81f3708865eb1697b0151f549, 97161b1228a157cbe747c2e98b88f27f572d695e)
 - Tests for comparing networks that are created differently (66d37ceb8227ba120e4e06fb7b8334a73b19c076, 4a9d6b9a543a18c2e2f38aa7e05592f84039a745, a37c27731bbd2e96bb0b3730a8e6b429616248f0)
 - Method `clear.edge.attributes` to clear the edge attributes list of the network configuration (15f7587ed6590637991c2f811a26f9e860229288)
-- Add network configuration parameter `respect.temporal.order` for determining the edge-construction algorithm (#6, 4fc59a0ff68c8600b574e868458e5d53dbdc405b)
+- Add network configuration parameter `author.respect.temporal.order` for determining the edge-construction algorithm (#6, 4fc59a0ff68c8600b574e868458e5d53dbdc405b, fd0b07da55a1ecdead7e5a5677bbd9ae810c391c)
 
 ### Changed/Improved
 - Add committer information to the commit list in the test data
@@ -25,7 +25,7 @@
 - Add implementation of Codeface to compute the scale-free attributes for small networks (80f47512ce7634c81f3708865eb1697b0151f549)
 - Remove data inconsistencies when re-setting the commit, mail, and PaStA data (569552687e70ec7a67bed7da2c77cf56f5434dc6)
 - Switch the order of the `type` and `kind` attributes of vertices in bipartite networks for testing reasons (351311a30f545d31e43e0065a6147185edec647b)
-- Update README file (8380dc62f53591e53762a3692e44973535b5dcea, f590453aadde2dc9224d9f418f4a92c59cd49795, 792cb9558e04868bcad230dfdc50a5ace6d63d35, 8c2aI8255966cc6c38ea16e64a28b135ef8456e58, 5cfc5aec95eb3be5afcc549671477dcaf73d21b6, ebae9f8480033c073128e09dfae3873512cadafb)
+- Update README file (8380dc62f53591e53762a3692e44973535b5dcea, f590453aadde2dc9224d9f418f4a92c59cd49795, 792cb9558e04868bcad230dfdc50a5ace6d63d35, 8c2aI8255966cc6c38ea16e64a28b135ef8456e58, 5cfc5aec95eb3be5afcc549671477dcaf73d21b6, ebae9f8480033c073128e09dfae3873512cadafb, c66321e4ce6a9a08f681fd6f4d4afbde6c0bf260, 38e7c5d3f8e47450e9a71453ef09ff5ad5c39de4)
 - Distinguish directedness of author networks and edge-construction algorithm (#6, 4fc59a0ff68c8600b574e868458e5d53dbdc405b, 70b3c82d73d1fee37829a61952dc1e2e993fa06f)
 
 ### Fixed
