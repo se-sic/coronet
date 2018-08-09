@@ -239,9 +239,9 @@ Consider the following raw data (temporally ordered from the first to the last e
 
 | Author  | Date (Timestamp)    | Artifact (Mail Thread)     |
 |---------|--------------------:| --------------------------:|
-| A       | 1                   | <thread-1>                 |
-| A       | 2                   | <thread-1>                 |
-| B       | 3                   | <thread-1>                 |
+| A       | 1                   | \<thread-1\>                 |
+| A       | 2                   | \<thread-1\>                 |
+| B       | 3                   | \<thread-1\>                 |
 
 Based on the above raw data, we get the following author networks with relation `mail`:
 
