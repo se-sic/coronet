@@ -227,21 +227,23 @@ Relations determine which information is used to construct edges among the verti
 
 #### Edge-construction algorithms for author networks
 
-When constructing author networks, we have four different edge-construction possibilities, based on two different configuration parameters in the [`NetworkConf`](#networkconf). On the one hand, networks can either be directed or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). On the other hand, we can construct edges based on the temporal order of events or just construct edges neglecting the temporal order of events (configured via `respect.temporal.order` in the [`NetworkConf`](#networkconf)).
+When constructing author networks, we have four different edge-construction possibilities, based on two configuration parameters in the [`NetworkConf`](#networkconf):
 
-When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Otherwise, there will be mutual edges. For instance, when constructing author networks with relation `mail`, there will be only an edge for an answer in a mail thread to the authors of every previous e-mail in this mail thread if the temporal order is respected. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). If the temporal order is not respected, there is not only an edge for every answer to all the authors of the previous e-mails in the mail thread, but also an edge for every previously sent e-mail from its author to the author of each subsequent mail in this mail thread. In this case, no loop edges are contained in the network.
+- On the one hand, networks can either be *directed* or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). If directedness is configured, the edges are directed from the author of an event (i.e., the actor) to the other authors.
 
-In the following, we show an example defining the edge construction for all combinations of temporally (un-)ordered data and (un-)directed networks:
+- On the other hand, we can construct edges based on the *temporal order of events* or just construct edges neglecting the temporal order of events (configured via `respect.temporal.order` in the [`NetworkConf`](#networkconf)). When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). Otherwise, when neglecting the temporal order, there will be mutual edges among all pairs of authors.
 
-*Raw data*:
+In the following, we illustrate the edge construction for all combinations of temporally (un-)ordered data and (un-)directed networks on an example with one mail thread:
 
-| Author  | Date (Year)    | Artifact        |
-|---------|---------------:| ---------------:|
-| A       | 1998           | 1               |
-| A       | 1999           | 1               |
-| B       | 2000           | 1               |
+Consider the following raw data (temporally ordered from the first to the last e-mail):
 
-*Networks:*
+| Author  | Date (Timestamp)    | Artifact (Mail Thread)     |
+|---------|--------------------:| --------------------------:|
+| A       | 1                   | <thread-1>                 |
+| A       | 2                   | <thread-1>                 |
+| B       | 3                   | <thread-1>                 |
+
+Based on the above raw data, we get the following author networks with relation `mail`:
 
 <table>
   <tr>
@@ -251,15 +253,21 @@ In the following, we show an example defining the edge construction for all comb
   </tr>
   <tr>
     <td><strong>network directed</strong></td>
-    <td><em>A ←(1999)– A<br>A ←(2000)– B</em></td>
-    <td>A –(1998)→ B<br>A –(1999)→ B<br>A ←(2000)– B</td>
+    <td><em>A ←(2)– A<br>A ←(3)– B</em></td>
+    <td>A –(1)→ B<br>A –(2)→ B<br>A ←(3)– B</td>
   </tr>
   <tr>
     <td><strong>network undirected</strong></td>
-    <td>A –(1999)– A<br>A –(2000)– B</td>
-    <td><em>A –(1998)– B<br>A –(1999)– B<br>A –(2000)– B</em></td>
+    <td>A –(2)– A<br>A –(3)– B</td>
+    <td><em>A –(1)– B<br>A –(2)– B<br>A –(3)– B</em></td>
   </tr>
 </table>
+
+When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread to the senders of every previous e-mail in this mail thread. Note that this can lead to loop edges (i.e., edges from one author to herself/himself).
+
+If the temporal order is not respected, we first extract all pairs of authors which participate in the mail thread. Then, for each of these pairs of authors, we add one edge for each e-mail one of the authors in this pair has sent to the mail thread (regardless of in which order the e-mails were sent). In this case, no loop edges are contained in the network. If directedness is configured, the edges are directed from the sender of an e-mail to the other authors.
+
+Analogously, this applies also for all other relations among authors.
 
 #### Vertex and edge attributes
 
@@ -509,8 +517,9 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
 - `respect.temporal.order`
-    * Denotes whether the temporal order of activities shall be respected when constructing author networks (see also Section [Edge-construction algorithms in author networks](#edge-construction-algorithms-in-author-networks))
+    * Denotes whether the temporal order of activities shall be respected when constructing author networks (see also Section [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks))
     * **Note**: If no value is specified explicitly by the user (i.e., `NA` is used), the value of `author.directed` is used for determining whether to respect the temporal order during edge construction.
+    * **Note**: This parameter has *no* effect on the construction of artifact networks and bipartite networks.
     * [`TRUE`, `FALSE`, *`NA`*]
 - `author.all.authors`
     * Denotes whether all available authors (from all analyses and data sources) shall be added to the network as a basis
