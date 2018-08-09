@@ -245,7 +245,8 @@ test_that("Network construction of the undirected but temorally ordered author-c
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "cochange", respect.temporal.order = TRUE))
+    net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = FALSE,
+                                                 respect.temporal.order = TRUE))
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
@@ -328,7 +329,7 @@ test_that("Network construction of the directed author-cochange network without 
     proj.conf$update.value("artifact.filter.base", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE,
-                                               respect.temporal.order = FALSE))
+                                                 respect.temporal.order = FALSE))
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)

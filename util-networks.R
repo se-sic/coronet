@@ -967,7 +967,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             ## construct edge list
             edges = apply(combinations, 2, function(comb) {
 
-                ## iterate over each item of the current combination
+                ## iterate over each of the two data vertices of the current combination to determine the edges
+                ## for which it is the sender of the edge and use the second one as the receiver of the edge
                 edges.by.comb.item = lapply(comb, function(comb.item) {
                     ## basic edge data
                     edge = data.frame(comb.item, comb[comb != comb.item])
