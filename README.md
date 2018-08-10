@@ -212,7 +212,7 @@ Relations determine which information is used to construct edges among the verti
 
 - `mail`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to the same mail thread are connected with an edge.
-    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), mail threads are connected when they reference each other. (**Note:** There are no edges available right now .)
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), mail threads are connected when they reference each other. (**Note:** There are no edges available right now.)
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all mail threads they have contributed to.
 
 - `issue`
@@ -227,15 +227,17 @@ Relations determine which information is used to construct edges among the verti
 
 #### Edge-construction algorithms for author networks
 
-When constructing author networks, we have four different edge-construction possibilities, based on two configuration parameters in the [`NetworkConf`](#networkconf):
+When constructing author networks, we use events in time (i.e., commits, e-mails, issue events) to model interactions among authors on the same artifact as edges. Therefore, we group the events on artifacts, based on the configured relation (see the [previous section](#relations)).
 
-- On the one hand, networks can either be *directed* or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). If directedness is configured, the edges are directed from the author of an event (i.e., the actor) to the other authors.
+We have four different edge-construction possibilities, based on two configuration parameters in the [`NetworkConf`](#networkconf):
 
-- On the other hand, we can construct edges based on the *temporal order of events* or just construct edges neglecting the temporal order of events (configured via `author.respect.temporal.order` in the [`NetworkConf`](#networkconf)). When respecting the temporal order, there will be only one edge for the later event of two related events between two authors. Potentially, this also includes loop edges (i.e., edges from one vertex to itself). Otherwise, when neglecting the temporal order, there will be mutual edges among all pairs of authors.
+- On the one hand, networks can either be *directed* or undirected (configured via `author.directed` in the [`NetworkConf`](#networkconf)). If directedness is configured, the edges are directed from the author of an event (i.e., the actor) to the authors the actor interacted with via this event.
+
+- On the other hand, we can construct edges based on the *temporal order of events* or just construct edges neglecting the temporal order of events (configured via `author.respect.temporal.order` in the [`NetworkConf`](#networkconf)). When respecting the temporal order, for every group of events, there will be edges for each event in the group from its author to the actors of all previous events in the group. More precisely, if there are serveral previous events of an author, we construct an individual edge for each of those events (resulting in several duplicated edges arising from the same event). Potentially, this also includes loop edges (i.e., edges from one vertex to itself). Otherwise, when neglecting the temporal order, there will be mutual edges among all pairs of authors, representing all events in the group performed by one pair of authors (i.e., if directedness is configured, there are edges in both directions).
 
 In the following, we illustrate the edge construction for all combinations of temporally (un-)ordered data and (un-)directed networks on an example with one mail thread:
 
-Consider the following raw data (temporally ordered from the first to the last e-mail):
+Consider the following raw e-mail data for one thread (i.e., one group of events), temporally ordered from the first to the last e-mail:
 
 | Author  | Date (Timestamp)    | Artifact (Mail Thread)     |
 |---------|--------------------:| --------------------------:|
@@ -253,21 +255,21 @@ Based on the above raw data, we get the following author networks with relation 
   </tr>
   <tr>
     <td><strong>network directed</strong></td>
-    <td><em>A ←(2)– A<br>A ←(3)– B</em></td>
+    <td><em>A ←(2)– A<br>A ←(3)– B<br>A ←(3)– B</em></td>
     <td>A –(1)→ B<br>A –(2)→ B<br>A ←(3)– B</td>
   </tr>
   <tr>
     <td><strong>network undirected</strong></td>
-    <td>A –(2)– A<br>A –(3)– B</td>
+    <td>A –(2)– A<br>A –(3)– B<br>A –(3)– B</td>
     <td><em>A –(1)– B<br>A –(2)– B<br>A –(3)– B</em></td>
   </tr>
 </table>
 
-When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread to the senders of every previous e-mail in this mail thread. Note that this can lead to loop edges (i.e., edges from one author to herself/himself).
+When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread from the answer's author to the senders of every previous e-mail in this mail thread. Note that this can lead to duplicated edges if an author has sent several previous e-mails to the mail thread (see the duplicated edges `A –(3)– B` in the above example). This also leads to loop edges if an author of an answer has already sent an e-mail to this thread before (see the edge `A –(2)– A`).
 
-If the temporal order is not respected, we first extract all pairs of authors which participate in the mail thread. Then, for each of these pairs of authors, we add one edge for each e-mail one of the authors in this pair has sent to the mail thread (regardless of in which order the e-mails were sent). In this case, no loop edges are contained in the network. If directedness is configured, the edges are directed from the sender of an e-mail to the other authors.
+If the temporal order is not respected, for each e-mail in a mail thread, there is an edge from the sender of the e-mail to every other author participating in this mail thread (regardless of in which order the e-mails were sent). In this case, no loop edges are contained in the network. However, it is possible that there are several edges (having different timestamps) between two authors (see the edges `A –(1)– B` and `A –(2)– B` in the example above). If directedness is configured, the edges are directed from the sender of an e-mail to the other authors.
 
-Analogously, this applies also for all other relations among authors.
+Analogously, these edge-construction algorithms apply also for all other relations among authors (see the Section [Relations](#relations)).
 
 #### Vertex and edge attributes
 
@@ -302,7 +304,7 @@ To add further edge attributes, please see the parameter `edge.attributes` in th
 
 Often, it is interesting to build the networks not only for the whole project history
 but also to split the data into smaller ranges. One's benefit is to observe changes in the network over
-time. Further details can be found in the section [*Splitting information*](#splitting-information).
+time. Further details can be found in the Section [*Splitting information*](#splitting-information).
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, we offer the possibility to  get the raw data or mappings between, e.g., authors and the files they edited. Examples can be found in the file `showcase.R`.
 
