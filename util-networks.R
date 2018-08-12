@@ -145,7 +145,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.artifact2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -182,7 +183,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.thread2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -213,7 +215,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$get.issue2author(),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed")
+                directed = private$network.conf$get.value("author.directed"),
+                respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
             ## construct network from obtained data
@@ -842,31 +845,43 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'
 #' Important: The input needs to be compatible with the function \code{get.key.to.value.from.df}.
 #'
-#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' If \code{directed}, as default, the order of things in the sublist is respected (if
+#' \code{respect.temporal.order} is not set manually) and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
 #'
 #' @param list the list of lists with data
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
+#' @param respect.temporal.order whether to respect the temporal order when constructing edges,
+#'                               i.e., whether to only add edges from the later event to the previous one.
+#'                               If \code{NA} is passed, the default value is taken.
+#'                               [default: directed]
 #'
 #' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
 #'         of \code{igraph::as.data.frame})
-construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE) {
+construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE,
+                                                   respect.temporal.order = directed) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
-    # initialize an edge list to fill and the set of nodes
+    ## if no value for respect.temporal.order is specified (indicated by an NA value
+    ## coming from the network configuration), use the value of directed parameter instead
+    if (is.na(respect.temporal.order)) {
+        respect.temporal.order = directed
+    }
+
+    ## initialize an edge list to fill and the set of nodes
     nodes.processed = c()
     edge.list = data.frame()
 
     keys = names(list)
     keys.number = length(list)
 
-    if (directed) {
+    if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(0:(nrow(set) - 1))
+            number.edges = sum(seq_len(nrow(set)) - 1)
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -878,16 +893,16 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 return(NULL)
             }
 
-            # queue of already processed artifacts
+            ## queue of already processed artifacts
             edge.list.set = data.frame()
             nodes.processed.set = c()
 
-            # connect the current item to all previous ones
-            for (item.no in 1:nrow(set)) {
+            ## connect the current item to all previous ones
+            for (item.no in seq_len(nrow(set))) {
                 item = set[item.no, ]
 
                 ## get vertex data
-                item.node = item[, 1]
+                item.node = item[["data.vertices"]]
 
                 ## get edge attributes
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
@@ -895,11 +910,12 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                 ## construct edges
                 combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
-                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1)
+                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
+                }
                 edge.list.set = rbind(edge.list.set, combinations) # add to edge list
 
-                # mark current item as processed
+                ## mark current item as processed
                 nodes.processed.set = c(nodes.processed.set, item.node)
             }
 
@@ -918,7 +934,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(table(set[, 1]) * (dim(table(set[, 1])) - 1))
+            number.edges = sum(table(set[["data.vertices"]]) * (dim(table(set[["data.vertices"]])) - 1))
             logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
                               match(attr(set, "group.name"), keys), keys.number,
                               attr(set, "group.type"), attr(set, "group.name"), number.edges)
@@ -931,7 +947,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             }
 
             ## get vertex data
-            nodes = unique(set[, 1])
+            nodes = unique(set[["data.vertices"]])
 
             ## break if there is no author
             if (length(nodes) < 1) {
@@ -950,18 +966,27 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
             ## construct edge list
             edges = apply(combinations, 2, function(comb) {
-                ## basic edge data
-                edge = data.frame(comb[1], comb[2])
 
-                ## get edge attibutes
-                edge.attrs = set[ set[, 1] %in% comb, ] # get data for current combination
-                cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                ## iterate over each of the two data vertices of the current combination to determine the edges
+                ## for which it is the sender of the edge and use the second one as the receiver of the edge
+                edges.by.comb.item = lapply(comb, function(comb.item) {
+                    ## basic edge data
+                    edge = data.frame(comb.item, comb[comb != comb.item])
 
-                # add edge attributes to edge list
-                edgelist = cbind(edge, edge.attrs)
+                    ## get edge attibutes
+                    edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
+                    cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
+                    edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
-                return(edgelist)
+                    # add edge attributes to edge list
+                    edgelist = cbind(edge, edge.attrs)
+                    return(edgelist)
+                })
+
+                ## union the edge lists for the combination items
+                edges.union = plyr::rbind.fill(edges.by.comb.item)
+                return(edges.union)
+
             })
             edges = plyr::rbind.fill(edges)
 
@@ -990,7 +1015,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' For example for a list of authors per thread, where all authors are connected if they are
 #' in the same thread (sublist).
 #'
-#' If directed the order of things in the sublist is respected and the 'edge.attr's hold the
+#' If \code{directed}, the direction of edges in the edge list is respected and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
 #'
 #' @param vertices data frame with vertex data
@@ -1006,7 +1031,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     ## get unique list of vertices to produce
     nodes.processed = unique(vertices)
 
-    # if we do not have nodes AND the edge.list is empty, return rightaway
+    ## if we do not have nodes AND the edge.list is empty, return rightaway
     if (length(nodes.processed) == 0) {
         return(create.empty.network(directed = directed))
     }
@@ -1024,7 +1049,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
-    # transform multiple edges to edge weights
+    ## transform multiple edges to edge weights
     if (network.conf$get.value("simplify")) {
         net = simplify.network(net)
     }
