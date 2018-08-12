@@ -15,6 +15,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -238,6 +239,48 @@ test_that("Network construction of the undirected author-cochange network", {
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
 
+test_that("Network construction of the undirected but temorally ordered author-cochange network", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = FALSE,
+                                                 author.respect.temporal.order = TRUE))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## vertex attributes
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
+
+    ## edge attributes
+    data = data.frame(comb.1. = c("Olaf", "Karl", "Thomas", "Thomas"),
+                      comb.2. = c("Björn", "Olaf", "Olaf", "Karl"),
+                      date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                      artifact.type = "Feature",
+                      hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                              "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test3.c", "test2.c", "test2.c"),
+                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+                      weight = 1,
+                      type = TYPE.EDGES.INTRA,
+                      relation = "cochange"
+    )
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
+
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
 test_that("Network construction of the directed author-cochange network", {
 
     ## configurations
@@ -268,6 +311,52 @@ test_that("Network construction of the directed author-cochange network", {
                                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
                       file = c("test.c", "test3.c", "test2.c", "test2.c"),
                       artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+                      weight = 1,
+                      type = TYPE.EDGES.INTRA,
+                      relation = "cochange"
+    )
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
+
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+test_that("Network construction of the directed author-cochange network without respecting temporal order", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("artifact.filter.base", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE,
+                                                 author.respect.temporal.order = FALSE))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## vertex attributes
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
+
+    ## edge attributes
+    data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl", "Olaf", "Thomas", "Karl", "Thomas"),
+                      comb.2. = c("Olaf", "Björn", "Karl", "Olaf", "Thomas", "Olaf", "Thomas", "Karl"),
+                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                                    "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                      artifact.type = "Feature",
+                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                               "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                      artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
+                                   "Base_Feature", "Base_Feature"),
                       weight = 1,
                       type = TYPE.EDGES.INTRA,
                       relation = "cochange"
@@ -363,14 +452,14 @@ test_that("Network construction of the undirected author-issue network with all 
                                "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
                                "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max", "Max", "Max",
                                "Max" ),
-                       date = get.date.from.string(c( "2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-05-25 20:02:08",
-                                                      "2013-05-25 20:02:08", "2013-06-01 22:37:03", "2013-04-21 23:52:09", "2013-05-05 23:28:57",
+                       date = get.date.from.string(c( "2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-06-01 22:37:03",
+                                                      "2013-05-25 20:02:08", "2013-05-25 20:02:08", "2013-04-21 23:52:09", "2013-05-05 23:28:57",
                                                       "2013-05-05 23:28:57", "2013-06-01 22:37:03", "2016-07-19 10:47:25", "2013-05-25 20:02:08",
                                                       "2013-05-25 20:02:08", "2016-07-19 10:47:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
                                                       "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
                                                       "2016-07-14 17:42:52", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
                                                       "2016-07-27 22:25:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-27 22:25:25",
-                                                      "2016-07-14 02:03:14", "2016-07-14 17:42:52", "2016-07-15 08:37:57", "2016-07-15 08:37:57",
+                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
                                                       "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-14 02:03:14",
                                                       "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
                                                       "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-27 22:25:25",
@@ -378,9 +467,9 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
                                                       "2016-12-07 15:53:02", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-10-05 01:07:46",
                                                       "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-07-12 15:59:25",
-                                                      "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-05 01:07:46",
-                                                      "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:37:02", "2016-12-07 15:37:02",
-                                                      "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2016-12-07 15:53:02", "2017-02-20 22:25:41",
+                                                      "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56",
+                                                      "2016-12-06 14:03:42", "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:02",
+                                                      "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2017-02-20 22:25:41",
                                                       "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21", "2017-05-23 12:32:39" )),
                        artifact.type = "IssueEvent",
                        issue.id = c( "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
@@ -396,17 +485,17 @@ test_that("Network construction of the undirected author-issue network with all 
                                      "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
                                      "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>", "<issue-57>",
                                      "<issue-57>", "<issue-57>" ),
-                       event.name = c( "created", "commented", "referenced", "merged", "closed", "head_ref_deleted", "created",
+                       event.name = c( "created", "commented", "referenced", "head_ref_deleted", "merged", "closed", "created",
                                        "commented", "referenced", "head_ref_deleted", "referenced", "merged", "closed",
                                        "referenced", "mentioned", "subscribed", "commented", "commented", "mentioned",
                                        "subscribed", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
-                                       "mentioned", "subscribed", "commented", "commented", "commented", "mentioned",
-                                       "subscribed", "commented", "mentioned", "subscribed", "commented", "commented",
+                                       "mentioned", "subscribed", "commented", "commented", "commented", "commented",
+                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "commented",
                                        "commented", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
                                        "commented", "mentioned", "subscribed", "created", "renamed", "commented", "commented",
                                        "commented", "commented", "commented", "mentioned", "subscribed", "commented", "merged",
                                        "closed", "commented", "created", "renamed", "commented", "commented", "commented",
-                                       "commented", "commented", "merged", "closed", "commented", "commented", "created",
+                                       "commented", "commented", "commented", "merged", "closed", "commented", "created",
                                        "commented", "commented", "merged", "closed", "commented" ),
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
@@ -441,11 +530,11 @@ test_that("Network construction of the undirected author-issue network with just
                                  "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn" ),
                        to = c( "Björn", "Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
                                "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Max", "Max", "Max" ),
-                       date = get.date.from.string(c( "2016-07-14 02:03:14", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
+                       date = get.date.from.string(c( "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52",
                                                       "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
                                                       "2016-07-14 17:42:52", "2016-07-27 22:25:25", "2016-07-12 16:05:47",
-                                                      "2016-08-31 18:21:48", "2016-10-05 01:07:46", "2016-10-13 15:33:56",
-                                                      "2016-12-06 14:03:42", "2016-12-07 15:37:21", "2016-12-07 15:53:02",
+                                                      "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
+                                                      "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:21",
                                                       "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:39" )),
                        artifact.type = "IssueEvent",
                        issue.id = c( "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",

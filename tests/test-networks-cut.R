@@ -13,6 +13,7 @@
 ##
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -49,9 +50,10 @@ test_that("Cut commit and mail data to same date range.", {
                                       author.name = c("Björn", "Björn", "Olaf", "Olaf"),
                                       author.email = c("bjoern@example.org", "bjoern@example.org", "olaf@example.org",
                                                      "olaf@example.org"),
-                                      committer.date = get.date.from.string(NA),
-                                      committer.name = NA,
-                                      committer.email = NA,
+                                      committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-20 10:00:44",
+                                                                              "2016-07-20 10:00:44")),
+                                      committer.name = c("Björn", "Björn", "Björn", "Björn"),
+                                      committer.email = c("bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org"),
                                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
                                              "5a5ec9675e98187e1e92561e1888aa6f04faa338", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
                                       changed.files = as.integer(c(1, 1, 1, 1)),

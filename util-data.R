@@ -72,8 +72,10 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * filtering commits -------------------------------------------
 
-        #' Filter commits with empty artifacts from the commit list and save the new list
-        #' to 'commits.filtered.empty'.
+        #' Filter commits with empty artifacts from the already filtered commit list and
+        #' save the new list to 'commits.filtered.empty'.
+        #'
+        #' @seealso \code{get.commits.filtered}
         filter.commits.empty = function() {
 
             logging::logdebug("filter.commits.empty: starting.")
@@ -104,9 +106,11 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits.empty: finished.")
         },
 
-        #' Filter the commits from the commit list that touch the base artifact and save the new list
-        #' to 'commits.filtered'.
-        #' Add synchronicity and pasta data if configured in 'project.conf'.
+        #' Filter the data from the commit list which does not belong to the artifact listed in the field
+        #' \code{project.conf}.
+        #' If configured in \code{project.conf}, filter the commits from the commit list that touch the base artifact.
+        #' Add synchronicity and PaStA data if configured in \code{project.conf}.
+        #' Finally, save the new list to the field \code{commits.filtered}.
         filter.commits = function() {
 
             logging::logdebug("filter.commits: starting.")
@@ -145,7 +149,7 @@ ProjectData = R6::R6Class("ProjectData",
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
 
-            ## add pasta data if wanted
+            ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
                 self$get.pasta()
                 commit.data = private$add.pasta.data(commit.data)
@@ -156,15 +160,15 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
         },
 
-        ## * * pasta data --------------------------------------------------
+        ## * * PaStA data --------------------------------------------------
 
-        #' Add the pasta data to the given data.frame for further analysis.
+        #' Add the PaStA data to the given data.frame for further analysis.
         #'
         #' @param data the base data as data.frame to append the PaStA data to.
         #'
         #' @return the augmented data.frame
         add.pasta.data = function(data) {
-            logging::loginfo("Adding pasta data.")
+            logging::loginfo("Adding PaStA data.")
             data[, "pasta"] = NA
             if ("message.id" %in% colnames(data)) {
                 for (i in 1:nrow(data)) {
@@ -241,7 +245,7 @@ ProjectData = R6::R6Class("ProjectData",
     public = list(
         #' The constructor of the class.
         #'
-        #' @param project.conf the given 'project.conf' for this instance of the class
+        #' @param project.conf the given \code{ProjectConf} object for this instance of the class
         initialize = function(project.conf) {
 
             ## check arguments
@@ -284,7 +288,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the current project configuration.
         #'
-        #' @return the 'project.conf' of the current instance of the class
+        #' @return the \code{ProjectConf} object of the current instance of the class
         get.project.conf = function() {
             return(private$project.conf)
         },
@@ -350,9 +354,9 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
-        #' Get the absolute path to the result folder for pasta data.
+        #' Get the absolute path to the result folder for PaStA data.
         #'
-        #' @return the path to the pasta data
+        #' @return the path to the PaStA data
         get.data.path.pasta = function() {
             data.path = private$project.conf$get.value("datapath.pasta")
             return(data.path)
@@ -368,10 +372,15 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Get the list of commits without empty artifacts.
-        #' If it does not already exist call the filter method.
+        #' Get the list of commits without empty artifacts and filtered by the artifact kind configured
+        #' in the field \code{project.conf}.
+        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
+        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
+        #' to the filtered commit data.
+        #' If the list of filtered commits does not already exist, call the filter method.
         #'
-        #' @return the commit list without empty artifacts
+        #' @return the commit list without empty artifacts and containing only commit data related to the
+        #'         configured artifact and, if configured, without the base artifact
         get.commits.filtered.empty = function() {
             logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
 
@@ -383,10 +392,14 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered.empty)
         },
 
-        #' Get the list of commits without the base artifact.
-        #' If it does not already exist call the filter method.
+        #' Get the list of commits filtered by the artifact kind configured in the field \code{project.conf}.
+        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
+        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
+        #' to the filtered commit data.
+        #' If the list of filtered commits does not already exist, call the filter method.
         #'
-        #' @return the commit list without the base artifact
+        #' @return the commit list containing only commit data related to the configured artifact and,
+        #'         if configured, without the base artifact
         get.commits.filtered = function() {
             logging::loginfo("Getting commit data filtered by artifact.base.")
 
@@ -399,7 +412,9 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it does not already exist call the read method first.
+        #' If configured in the field \code{project.conf}, append the PaStA data to the commit data
+        #' by calling the setter function.
+        #' If the list of commits does not already exist, call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
@@ -407,16 +422,12 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                private$commits = read.commits(
+                commits.read = read.commits(
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
 
-                ## add pasta data if wanted
-                if(private$project.conf$get.value("pasta")) {
-                    logging::loginfo("Adding pasta data.")
-                    private$commits = private$add.pasta.data(private$commits)
-                }
+                self$set.commits(data = commits.read)
             }
             private$extract.timestamps(source = "commits")
 
@@ -424,7 +435,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the complete list of commits.
-        #' If it does not already exist call the read method first.
+        #' If it does not already exist, call the read method first.
         #'
         #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
         #'
@@ -434,12 +445,26 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Set the commit list of the project to a new one.
+        #' Add PaStA data if configured in the field \code{project.conf}.
         #'
         #' @param data the new list of commits
         set.commits = function(data) {
             logging::loginfo("Setting raw commit data.")
-            if (is.null(data)) data = data.frame()
+            if (is.null(data)) {
+                data = data.frame()
+            }
+            ## add PaStA data if wanted
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Adding PaStA data.")
+                data = private$add.pasta.data(data = data)
+            }
+
             private$commits = data
+
+            ## remove cached data for filtered commits as these need to be re-computed
+            ## after changing the data
+            private$commits.filtered = NULL
+            private$commits.filtered.empty = NULL
         },
 
         #' Set the commit list of the project to a new one.
@@ -478,10 +503,10 @@ ProjectData = R6::R6Class("ProjectData",
             private$synchronicity = data
         },
 
-        #' Get the pasta data.
+        #' Get the PaStA data.
         #' If it does not already exist call the read method.
         #'
-        #' @return the pasta data
+        #' @return the PaStA data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
@@ -493,17 +518,29 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$pasta)
         },
 
-        #' Set the pasta data to the given new data.
+        #' Set the PaStA data to the given new data and,
+        #' if configured in the field \code{project.conf},
+        #' also update it for the mail and commit data.
         #'
-        #' @param data the new pasta data
+        #' @param data the new PaStA data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
             private$pasta = data
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Updating PaStA data.")
+                if (!is.null(private$commits)) {
+                    self$set.commits(private$commits)
+                }
+                if (!is.null(private$mails)) {
+                    self$set.mails(private$mails)
+                }
+            }
         },
 
         #' Get the mail data.
         #' If it does not already exist call the read method.
-        #' Add pasta data if it is configured.
+        #' Call the setter function to set the data and add PaStA
+        #' data if configured in the field \code{project.conf}.
         #'
         #' @return the mail data
         get.mails = function() {
@@ -511,25 +548,30 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if mails are not read already, do this
             if (is.null(private$mails)) {
-                private$mails = read.mails(self$get.data.path())
+                mails.read = read.mails(self$get.data.path())
 
-                ## add pasta data if wanted
-                if(private$project.conf$get.value("pasta")) {
-                    logging::loginfo("Adding pasta data.")
-                    private$mails = private$add.pasta.data(private$mails)
-                }
+                self$set.mails(data = mails.read)
             }
             private$extract.timestamps(source = "mails")
 
             return(private$mails)
         },
 
-        #' Set the mail data to the given new data.
+        #' Set the mail data to the given new data and add PaStA data
+        #' if configured in the field \code{project.conf}.
         #'
         #' @param data the new mail data
         set.mails = function(data) {
             logging::loginfo("Setting e-mail data.")
-            if (is.null(data)) data = data.frame()
+            if (is.null(data)) {
+                data = data.frame()
+            }
+            ## add PaStA data if wanted
+            if (private$project.conf$get.value("pasta")) {
+                logging::loginfo("Adding PaStA data.")
+                data = private$add.pasta.data(data = data)
+            }
+
             private$mails = data
         },
 
@@ -603,7 +645,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(artifacts)
         },
 
-        #' Get single pasta items.
+        #' Get single PaStA items.
         #' For a given 'message.id', the associated 'commit.hash' is returned.
         #' For a given 'commit.hash', the associated 'message.id' or IDs are returned.
         #' If there is no assigned 'commit.hash' for the given 'message.id', "" is returned.
@@ -611,7 +653,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param message.id the message ID to get the corresponding commit hash
         #' @param commit.hash the commit hash to get the corresponding message ID
         #'
-        #' @return the selected pasta data
+        #' @return the selected PaStA data
         get.pasta.items = function(message.id = NULL, commit.hash = NULL) {
             #if neither message.id nor commit.hash are specified break the code
             if (is.null(message.id) && is.null(commit.hash)) {
@@ -619,7 +661,7 @@ ProjectData = R6::R6Class("ProjectData",
                 return()
             }
 
-            ## get pasta data
+            ## get PaStA data
             self$get.pasta()
 
             ## if a message.id is given just return the attached list of commit hashes
@@ -953,11 +995,11 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
     public = list(
 
         #' Constructor of the class. Constructs a new instance by calling the
-        #' constructor of 'ProjectData' with the given 'project.conf' and then
-        #' setting the 'range' and the 'revision.callgraph' to the given ones
+        #' constructor of \code{ProjectData} with the given \code{ProjectConf} object and then
+        #' setting the \code{range} and the \code{revision.callgraph} to the given ones
         #' if they exist.
         #'
-        #' @param project.conf the project configuration for the new instance
+        #' @param project.conf the \code{ProjectConf} object for the new instance
         #' @param range the range for the new instance
         #' @param revision.callgraph the revision callgraph for the new instance
         #'                           [default: ""]

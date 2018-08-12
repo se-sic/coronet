@@ -14,6 +14,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -51,13 +52,13 @@ test_that("Construction of the bipartite network for the feature artifact with a
     ## 1) construct expected vertices
     authors = data.frame(
         name = c("Björn", "Karl", "Olaf", "Thomas"),
-        type = TYPE.AUTHOR,
-        kind = TYPE.AUTHOR
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
     )
     artifacts = data.frame(
         name = c("A", "Base_Feature", "foo"),
-        type = TYPE.ARTIFACT,
-        kind = "Feature"
+        kind = "Feature",
+        type = TYPE.ARTIFACT
     )
     vertices = plyr::rbind.fill(authors, artifacts)
     ## 2) construct expected edge attributes
@@ -103,27 +104,28 @@ test_that("Construction of the bipartite network for the file artifact with auth
               ## construct expected network:
               ## 1) construct expected vertices
               authors = data.frame(
-                  name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  name = c("Björn", "Karl", "Olaf", "Thomas"),
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("test.c", "test2.c"),
-                  type = TYPE.ARTIFACT,
-                  kind = "File"
+                  name = c("test.c", "test3.c", "test2.c"),
+                  kind = "File",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Olaf", "Olaf", "Thomas"),
-                  to   = c("test.c", "test.c", "test2.c", "test2.c"),
-                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
+                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("File", "File", "File", "File"),
-                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                           "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("test.c", "test.c", "test2.c", "test2.c"),
+                  artifact.type = c("File", "File", "File", "File", "File"),
+                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "0a1a5c523d835459c42f33e863623138555e2526"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -155,27 +157,28 @@ test_that("Construction of the bipartite network for the function artifact with 
               ## construct expected network:
               ## 1) construct expected vertices
               authors = data.frame(
-                  name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  name = c("Björn", "Karl", "Olaf", "Thomas"),
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("File_Level"),
-                  type = TYPE.ARTIFACT,
-                  kind ="Function"
+                  name = c("File_Level", "test3.c::test_function"),
+                  kind = "Function",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Olaf", "Olaf", "Thomas"),
-                  to   = c("File_Level", "File_Level", "File_Level", "File_Level"),
-                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
+                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("Function", "Function", "Function", "Function"),
-                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                           "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
+                  artifact.type = c("Function", "Function", "Function", "Function", "Function"),
+                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "0a1a5c523d835459c42f33e863623138555e2526"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -206,13 +209,13 @@ test_that("Construction of the bipartite network for the featureexpression artif
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
-                  type = TYPE.ARTIFACT,
-                  kind = "FeatureExpression"
+                  kind = "FeatureExpression",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -257,13 +260,13 @@ test_that("Construction of the bipartite network for the feature artifact with a
               ## 1) construct expected vertices
               authors = data.frame(
                   name =c("Björn", "Karl", "Max", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
-                  type = TYPE.ARTIFACT,
-                  kind = "Issue"
+                  kind = "Issue",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -316,13 +319,13 @@ test_that("Construction of the directed bipartite network for the feature artifa
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Karl", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("A", "Base_Feature", "foo"),
-                  type = TYPE.ARTIFACT,
-                  kind = "Feature"
+                  kind = "Feature",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
@@ -368,27 +371,28 @@ test_that("Construction of the directed bipartite network for the file artifact 
               ## construct expected network:
               ## 1) construct expected vertices
               authors = data.frame(
-                  name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  name = c("Björn", "Karl", "Olaf", "Thomas"),
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("test.c", "test2.c"),
-                  type = TYPE.ARTIFACT,
-                  kind = "File"
+                  name = c("test.c", "test3.c", "test2.c"),
+                  kind = "File",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Olaf", "Olaf", "Thomas"),
-                  to   = c("test.c", "test.c", "test2.c", "test2.c"),
-                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
+                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("File", "File", "File", "File"),
-                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                           "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("test.c", "test.c", "test2.c", "test2.c"),
+                  artifact.type = c("File", "File", "File", "File", "File"),
+                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "0a1a5c523d835459c42f33e863623138555e2526"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -421,27 +425,28 @@ test_that("Construction of the directed bipartite network for the function artif
               ## construct expected network:
               ## 1) construct expected vertices
               authors = data.frame(
-                  name = c("Björn", "Olaf", "Thomas"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  name = c("Björn", "Karl", "Olaf", "Thomas"),
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("File_Level"),
-                  type = TYPE.ARTIFACT,
-                  kind = "Function"
+                  name = c("File_Level", "test3.c::test_function"),
+                  kind = "Function",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Olaf", "Olaf", "Thomas"),
-                  to   = c("File_Level", "File_Level", "File_Level", "File_Level"),
-                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
+                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("Function", "Function", "Function", "Function"),
-                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                           "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("File_Level", "File_Level", "File_Level", "File_Level"),
+                  artifact.type = c("Function", "Function", "Function", "Function", "Function"),
+                  hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "0a1a5c523d835459c42f33e863623138555e2526"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -474,13 +479,13 @@ test_that("Construction of the directed bipartite network for the featureexpress
               ## 1) construct expected vertices
               authors = data.frame(
                   name = c("Björn", "Olaf"),
-                  type = TYPE.AUTHOR,
-                  kind = TYPE.AUTHOR
+                  kind = TYPE.AUTHOR,
+                  type = TYPE.AUTHOR
               )
               artifacts = data.frame(
                   name = c("defined(A)", "Base_Feature"),
-                  type = TYPE.ARTIFACT,
-                  kind = "FeatureExpression"
+                  kind = "FeatureExpression",
+                  type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes

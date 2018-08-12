@@ -17,6 +17,7 @@
 ## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -522,7 +523,67 @@ get.committer.not.author.commit.count = function(range.data) {
     return(res)
 }
 
-#' Get the commit count per comitter in the given range data, where the committer
+#' Get the commit count per person in the given range data for commits where the author equals the committer.
+#'
+#' @param range.data The data to count on
+#'
+#' @return A data frame in descending order by the commit count
+get.committer.and.author.commit.count = function(range.data) {
+    logging::logdebug("get.committer.and.author.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if (all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute a query to get the commit count per person
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+                       WHERE `committer.name` = `author.name`
+                       GROUP BY `committer.name`, `author.name`
+                       ORDER BY `freq` DESC")
+
+    logging::logdebug("get.committer.and.author.commit.count: finished.")
+    return(res)
+}
+
+#' Get the commit count per person in the given range data where the person is committer or author or both.
+#'
+#' @param range.data The data to count on
+#'
+#' @return A data frame in descending order by the commit count
+get.committer.or.author.commit.count = function(range.data) {
+    logging::logdebug("get.committer.or.author.commit.count: starting.")
+
+    ## Get commit data
+    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+
+    ## Return NA in case no commit data is available
+    if (all(is.na(commits.df))) {
+        return(NA)
+    }
+
+    ## Execute queries to get the commit count per person
+    ungrouped = sqldf::sqldf("SELECT `committer.name` AS `name` FROM `commits.df`
+                             WHERE `committer.name` = `author.name`
+                                UNION ALL
+                             SELECT `author.name` AS `name` FROM `commits.df`
+                             WHERE `author.name` <> `committer.name`
+                                UNION ALL
+                             SELECT `committer.name` AS `name` FROM `commits.df`
+                             WHERE `author.name` <> `committer.name`")
+
+    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `ungrouped`
+                       GROUP BY `name`
+                       ORDER BY `freq` DESC")
+
+    logging::logdebug("get.committer.or.author.commit.count: finished.")
+    return(res)
+}
+
+#' Get the commit count per committer in the given range data, where the committer
 #' may match the author of the respective commits
 #'
 #' @param range.data The data to count on

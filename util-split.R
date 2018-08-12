@@ -14,7 +14,7 @@
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -132,7 +132,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.range.data$set.synchronicity(project.data$get.synchronicity())
         ## 5) ID--author mapping
         cf.range.data$set.authors(project.data$get.authors())
-        ## 6) pasta data
+        ## 6) PaStA data
         cf.range.data$set.pasta(project.data$get.pasta())
 
         return(cf.range.data)
@@ -555,11 +555,11 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 
 #' Discretizes a list of networks (using the edge attribute "date") according to the given 'time.period',
 #' using the very same bins for all networks. The procedure is as follows:
-#' 1) Identify the network in the list of \code{networks} with the smallest timestamp.
-#' 2) Use this identified network to compute the bins for splitting.
-#' 3) All networks are then split using the computed and, thus, very same bins using the
+#' 1) Use the earliest timestamp of all networks and the latest timestamp of all networks
+#'    to compute the bins for splitting.
+#' 2) All networks are then split using the computed and, thus, very same bins using the
 #'    function \code{split.network.time.based}.
-#' 4) The list of split networks is returned.
+#' 3) The list of split networks is returned.
 #'
 #' For further information, see the documentation of \code{split.network.time.based}.
 #'
@@ -584,15 +584,14 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
     ## get base network and obtain splitting information:
 
     ## 1) extract date attributes from edges
-    min.dates = sapply(networks, function(net) {
-        min.date = min(igraph::E(net)$date)
-        return(min.date)
+    networks.dates = sapply(networks, function(net) {
+        dates = igraph::E(net)$date
+        return(dates)
     })
-    net.idx = which.min(min.dates)
+    dates = unlist(networks.dates, recursive = FALSE)
+    dates = get.date.from.unix.timestamp(dates)
 
     ## 2) get bin information
-    base = networks[[net.idx]]
-    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(base, "date"))
     bins.info = split.get.bins.time.based(dates, time.period)
     bins.date = get.date.from.string(bins.info[["bins"]])
 

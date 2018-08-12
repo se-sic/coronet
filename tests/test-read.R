@@ -14,6 +14,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -48,9 +49,13 @@ test_that("Read the raw commit data with the feature artifact.", {
                                       author.email = c("bjoern@example.org", "bjoern@example.org", "olaf@example.org",
                                                      "olaf@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
                                                      "thomas@example.org", "thomas@example.org"),
-                                      committer.date = get.date.from.string(NA),
-                                      committer.name = NA,
-                                      committer.email = NA,
+                                      committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-20 10:00:44",
+                                                                              "2016-07-20 10:00:44", "2016-07-12 17:05:55", "2016-07-12 17:05:55",
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Björn", "Björn", "Thomas", "Thomas", "Karl", "Thomas", "Thomas"),
+                                      committer.email = c("bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org",
+                                                          "thomas@example.org", "thomas@example.org", "karl@example.org", "thomas@example.org",
+                                                          "thomas@example.org"),
                                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
                                              "5a5ec9675e98187e1e92561e1888aa6f04faa338", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                              "3a0ed78458b3976243db6829f63eba3eead26774", "3a0ed78458b3976243db6829f63eba3eead26774",
@@ -86,25 +91,28 @@ test_that("Read the raw commit data with the file artifact.", {
     commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32714, 32715)),
-                                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                                  "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                                      author.name = c("Björn", "Olaf", "Olaf", "Thomas"),
-                                      author.email = c("bjoern@example.org", "olaf@example.org",
-                                                     "olaf@example.org", "thomas@example.org"),
-                                      committer.date = get.date.from.string(NA),
-                                      committer.name = NA,
-                                      committer.email = NA,
+    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32715)),
+                                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                      author.name = c("Björn", "Olaf", "Olaf", "Karl", "Thomas"),
+                                      author.email = c("bjoern@example.org", "olaf@example.org", "olaf@example.org",
+                                                     "karl@example.org", "thomas@example.org"),
+                                      committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-20 10:00:44", "2016-07-12 17:05:55",
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Thomas", "Karl", "Thomas"),
+                                      committer.email = c("bjoern@example.org", "bjoern@example.org", "thomas@example.org",
+                                                        "karl@example.org", "thomas@example.org"),
                                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                                             "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                                      changed.files = as.integer(c(1, 1, 1, 1)),
-                                      added.lines = as.integer(c(1, 1, 1, 1)),
-                                      deleted.lines = as.integer(c(1, 0, 0, 0)),
-                                      diff.size = as.integer(c(2, 1, 1, 1)),
-                                      file = c("test.c", "test.c", "test2.c", "test2.c"),
-                                      artifact = c("test.c", "test.c", "test2.c", "test2.c"),
-                                      artifact.type = c("File", "File", "File", "File"),
-                                      artifact.diff.size = c(1, 1, 1, 1))
+                                             "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                             "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      changed.files = as.integer(c(1, 1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 0, 0, 0, 0)),
+                                      diff.size = as.integer(c(2, 1, 1, 1, 1)),
+                                      file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c"),
+                                      artifact = c("test.c", "test.c", "test2.c", "test3.c", "test2.c"),
+                                      artifact.type = c("File", "File", "File", "File", "File"),
+                                      artifact.diff.size = c(1, 1, 1, 1, 1))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
@@ -276,7 +284,7 @@ test_that("Read and parse the issue data.", {
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
         paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
-        digest::sha1
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
     ## set row names as integers
     attr(issue.data.expected, "row.names") = as.integer(c(1, 2, 3, 4, 5, 6, 8, 9, 18, 19, 20, 21, 22, 10, 11, 12, 13, 14, 7, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,

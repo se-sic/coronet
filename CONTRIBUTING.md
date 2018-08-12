@@ -1,4 +1,4 @@
-# Contributing to the Network Library
+# Contributing to the network library
 
 The following is a set of guidelines for contributing to the Network Library, which are hosted in the [se-passau](https://github.com/se-passau) organization on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
@@ -34,7 +34,7 @@ This section guides you through submitting a bug report for our project. Followi
 
 Before creating bug reports, please check [this list](#before-submitting-a-bug-report) as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible.
 
-    Note: If you find a `Closed` issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
+**Note**: If you find a `closed` issue that seems like it is the same thing that you are experiencing, open a new issue and include a link to the original issue in the body of your new one.
 
 #### Before Submitting A Bug Report
 
@@ -47,16 +47,16 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 
 #### How Do I Submit A (Good) Bug Report?
 
-Bugs are tracked as GitHub issues. Create an issue and provide needed information by filling in the template.
+Bugs are tracked as GitHub issues. Create an issue and provide needed information by filling in [the template](.github/ISSUE_TEMPLATE/issue.md).
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
 * **Use a clear and descriptive title** for the issue to identify the problem.
-* **Describe the exact steps which reproduce the problem** in as many details as possible. For example, start by explaining how you initalize the library in your code, e.g., which command exactly you used in in your script, or whether you modified the library code or not. Give also details on what your goal is, what you want to achieve by using the library.
+* **Describe the exact steps which reproduce the problem** in as many details as possible. For example, start by explaining how you initialize the library in your code, e.g., which command exactly you used in in your script, or whether you modified the library code or not. Give also details on what your goal is, what you want to achieve by using the library.
 * **Provide specific examples to demonstrate the steps**. Include links to files or GitHub projects, or copy/pasteable snippets, or even minimal working examples (MWEs) to reproduce the problem. Especially, include your project and network configurations so that we can understand your setting.
 * **Describe the behavior you observed after following the steps** and point out what exactly is the problem with that behavior.
 * **Explain which behavior you expected to see instead and why.**
-* **If you're reporting that the library's code crashed somehow**, include the R stacktrace if available.
+* **If you're reporting that the library's code crashed somehow**, include the R stack trace if available.
 
 Provide more context by answering these questions:
 
@@ -75,7 +75,7 @@ Include details about your configuration and environment:
 
 This section guides you through submitting an enhancement suggestion, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion and find related suggestions.
 
-Before creating enhancement suggestions, please check [this list](#before-submitting-an-enhancement-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](ISSUE_TEMPLATE.md), including the steps that you imagine you would take if the feature you're requesting existed.
+Before creating enhancement suggestions, please check [this list](#before-submitting-an-enhancement-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](.github/ISSUE_TEMPLATE/enhancement.md), including the steps that you imagine you would take if the feature you're requesting existed.
 
 #### Before Submitting An Enhancement Suggestion
 
@@ -85,12 +85,14 @@ Before creating enhancement suggestions, please check [this list](#before-submit
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
 
-Enhancements are tracked as GitHub issues. Create an issue and provide the needed information:
+Enhancements are tracked as GitHub issues, but slightly different information is needed for them. 
+
+Create an issue and provide the needed information:
 
 * **Use a clear and descriptive title** for the issue to identify the suggestion.
-* **Provide a step-by-step description of the suggested enhancement** in as many details as possible.
-* **Provide specific examples to demonstrate the steps**. Include copy/pasteable snippets which you use in those examples.
-* **Describe the current behavior** and **explain which behavior you expected to see instead** and why.
+* If possible, **provide a step-by-step description of the suggested enhancement** in as many details as possible.
+* **Provide specific examples to demonstrate the enhancement**. Include copy/pasteable snippets which you use in those examples.
+* **Describe the current behavior** and **explain which behavior you want to see instead** and why.
 * **Explain why this enhancement would be useful** to all users of the library and isn't something that can or should be implemented as a functionality in your code.
 * **Which version of the library are you using?** You can get the exact version by running `git rev-parse HEAD` and `git rev-parse --abbrev-ref HEAD` in your terminal.
 
@@ -127,6 +129,7 @@ The current build status is as follows:
   * Code must be reviewed by one other project member and, if needed, be properly adapted/fixed.
   * We add the `Reviewed-by` tag only for the merge commit.
 
+There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
 
 ## Style Conventions
 
