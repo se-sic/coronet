@@ -1,13 +1,13 @@
 # codeface-extraction-r – Changelog
 
 
-## Unversioned
+## 3.3
 
 ### Added
 - Possibility to add the commit count per person as vertex attribute, counting either commits, where the person is committer AND author, or committer OR author (#92 (second task), da87c06cf971559873fe1fef28aa035cf8c25c57, 0f0a90fd236b8fbf059275e637678b5411f356bd, 5df541d0662e71ed2bec4df9c04a1557301d25c9, 3f9739705e9b37c5383c60fa067cc21c880657e5)
 - Add method `metrics.is.scale.free()` to decide whether a network is scale-free or not (80f47512ce7634c81f3708865eb1697b0151f549, 97161b1228a157cbe747c2e98b88f27f572d695e)
-- Tests for comparing networks that are created differently (66d37ceb8227ba120e4e06fb7b8334a73b19c076, 4a9d6b9a543a18c2e2f38aa7e05592f84039a745, a37c27731bbd2e96bb0b3730a8e6b429616248f0)
-- Method `clear.edge.attributes` to clear the edge attributes list of the network configuration (15f7587ed6590637991c2f811a26f9e860229288)
+- Add tests for comparing networks that are created differently (66d37ceb8227ba120e4e06fb7b8334a73b19c076, 4a9d6b9a543a18c2e2f38aa7e05592f84039a745, a37c27731bbd2e96bb0b3730a8e6b429616248f0)
+- Add method `clear.edge.attributes` to clear the edge attributes list of the network configuration (15f7587ed6590637991c2f811a26f9e860229288)
 - Add network configuration parameter `author.respect.temporal.order` for determining the edge-construction algorithm (#6, 4fc59a0ff68c8600b574e868458e5d53dbdc405b, fd0b07da55a1ecdead7e5a5677bbd9ae810c391c)
 
 ### Changed/Improved
@@ -33,8 +33,7 @@
 - Retain network attributes in `simplify.network` (in `igraph` language, graph attributes) (424b2bce24a56ee594f5600327843fc240a376fd)
 - Fix showcase file regarding outdated plotting parameters (29d5ac6485d679d1b2cc42c0633ab4cd343c73b7)
 - Eliminate duplicated lines in the raw commit data (dec0005e8e6af1bdecd3028d074ddd2120c7b2cc)
-- Fix the `split.networks.time.based` method by now splitting the networks from the earliest timestamp to
-the latest (1f65db382396e701655812a8ef4e9def61e8981b)
+- Fix the `split.networks.time.based` method by now splitting the networks from the earliest timestamp to the latest (1f65db382396e701655812a8ef4e9def61e8981b)
 - Fix TravisCI build regarding `sudo` commands (baca08e33ff336fe91caaca5ca8ceb1cb77f3ded)
 - Fix direction of edges in exemplary network plot in README file (5c80c256b214e03bdc7881774ba8b1b9f43c21ed)
 
