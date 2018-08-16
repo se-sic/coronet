@@ -777,7 +777,7 @@ get.first.activity.data.list.over.all = function(first.activity.dataframe) {
 
 #' Helper function for first activity: Converts the given dataframe in a list containing the first activity per activity type and person.
 #'
-#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the coloums are activity type functions.
+#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the columns are activity type functions.
 #'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
 #'
 #' @return A list containing for each person in the given datafram a list containing for each activity type in the given dataframe the first activity.
