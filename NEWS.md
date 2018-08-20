@@ -1,6 +1,13 @@
 # codeface-extraction-r – Changelog
 
 
+## Unversioned
+
+### Changed/Improved
+- Add possibility to add multiple first activities for different activity types in one vertex attribute (04f18b3097d17fe6b3486c656a807133e0ac0a42)
+- Add possibility to decide, if first activity should be computed per activity type oder over all activity types when added as vertex attribute (86962a313ceeb09c0e0675dc509d91e10647d6b6)
+
+
 ## 3.3
 
 ### Added
