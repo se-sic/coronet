@@ -740,6 +740,14 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         minimums.per.person = lapply(range.data[[type]](),
                                      function(x) min(x[["date"]]))
 
+        ## catch special case if data is empty
+        if (length(minimums.per.person) == 0) {
+            ## put NA into data (with proper data class)
+            result[type] = get.date.from.unix.timestamp(NA)
+            ## ... and continue
+            next
+        }
+
         ## fill dataframe
         for (person in names(minimums.per.person)) {
             result[person, type] = minimums.per.person[person]
