@@ -64,6 +64,18 @@ EDGE.ATTR.HANDLING = list(
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
+
+## mapping of relation to data source
+RELATION.TO.DATASOURCE = list(
+    "cochange"  = "commits",
+    "callgraph" = "commits",
+    "mail"      = "mails",
+    "issue"     = "issues"
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkBuilder ----------------------------------------------------------
 
 NetworkBuilder = R6::R6Class("NetworkBuilder",

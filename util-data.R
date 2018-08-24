@@ -37,14 +37,6 @@ BASE.ARTIFACTS = c(
     "File_Level"
 )
 
-## mapping of relation to data source
-RELATION.TO.DATASOURCE = list(
-    "cochange"  = "commits",
-    "callgraph" = "commits",
-    "mail"      = "mails",
-    "issue"     = "issues"
-)
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
