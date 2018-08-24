@@ -31,6 +31,12 @@ requireNamespace("parallel") # for parallel computation
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Constants ---------------------------------------------------------------
 
+## base artifacts
+BASE.ARTIFACTS = c(
+    "Base_Feature",
+    "File_Level"
+)
+
 ## mapping of relation to data source
 RELATION.TO.DATASOURCE = list(
     "cochange"  = "commits",
@@ -139,7 +145,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
             if (private$project.conf$get.value("artifact.filter.base")) {
-                commit.data = subset(commit.data, !(artifact %in% c("Base_Feature", "File_Level")))
+                commit.data = subset(commit.data, !(artifact %in% BASE.ARTIFACTS))
             }
 
             ## append synchronicity data if wanted
