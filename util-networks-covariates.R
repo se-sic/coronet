@@ -380,7 +380,7 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
         function(range, range.data, net) {
             ## FIXME we need to implement this also for the other kinds of artifacts
             ## (get.author2artifact() gets only information on source-code artifacts!)
-            lapply(range.data$get.author2artifact(), function(x) {
+            lapply(range.data$get.author2artifact("commits"), function(x) {
                 length(unique(x[["artifact"]]))
             })
         }
@@ -448,7 +448,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         function(net.to.range) {
             ## FIXME support data-source-specific method AND all-sources method
             ## (we only use 'commits' source here)
-            names(net.to.range[["data"]]$get.author2commit())
+            unique(net.to.range[["data"]]$get.commits()[["author.name"]])
         }
     )
 
@@ -637,7 +637,7 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.artifact2author(), function(x) {
+            lapply(range.data$get.artifact2author("commits"), function(x) {
                 length(unique(x[["author.name"]]))
             })
         }
@@ -735,29 +735,19 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 
     ## parse given activity types to functions
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
-    activity.type.functions = lapply(parsed.activity.types,
-                                     function(activity.type) {
-                                         function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
-                                         activity.type.function = paste0("get.author2", function.suffix)
-                                         return(activity.type.function)
-                                     }
-    )
 
     ## get data for each activity type and extract minimal date for each author
-    activity.by.type = mapply(
-        parsed.activity.types, activity.type.functions, SIMPLIFY = FALSE,
-        FUN = function(type, type.function) {
-            ## compute minima
-            minima.per.person = lapply(range.data[[type.function]](), function(x) {
-                ## get first date
-                m = list(min(x[["date"]]))
-                ## add activity type as name to the list
-                names(m) = type
-                return(m)
-            })
-            return(minima.per.person)
-        }
-    )
+    activity.by.type = lapply(parsed.activity.types, function(type, type.function) {
+        ## compute minima
+        minima.per.person = lapply(range.data$get.author2artifact(type), function(x) {
+            ## get first date
+            m = list(min(x[["date"]]))
+            ## add activity type as name to the list
+            names(m) = type
+            return(m)
+        })
+        return(minima.per.person)
+    })
 
     ## accumulate/fold lists by adding all values of each list to an intermediate list (start with first list)
     result = Reduce(function(x, y) {

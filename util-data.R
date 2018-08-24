@@ -864,134 +864,76 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * processed data ----------------------------------------------
 
-        #' Map the corresponding authors to each artifact and return the list.
+        #' Map the authors corresponding to the given \code{data.source} to their touched artifacts.
         #'
-        #' @return the list of authors for each artifact
-        get.artifact2author = function() {
-            ## FIXME merge all functions into this one (and author2artifact)?!
+        #' @param data.source The specified data sources. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #'
+        #' @return the list of authors for each artifact (with additional data)
+        get.artifact2author = function(data.source = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact--author data.")
 
+            ## check given data source
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+
             ## store the authors per artifact
-            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "artifact", "author.name")
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), data.source.col, "author.name")
 
             return(mylist)
         },
 
-        #' Map the corresponding artifacts to each author and return the list.
+        #' Map the artifacts corresponding to the given \code{data.source} to each author.
         #'
-        #' @return the list of artifacts for every author
-        get.author2artifact = function() {
+        #' @param data.source The specified data sources. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #'
+        #' @return the list of artifacts for every author (with additional data)
+        get.author2artifact = function(data.source = c("commits", "mails", "issues")) {
             logging::loginfo("Getting author--artifact data.")
 
-            ## store the authors per artifact
-            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "author.name", "artifact")
+            ## check given data source
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+
+            ## store the artifacts per author
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), "author.name", data.source.col)
 
             return(mylist)
         },
 
-        #' Map the corresponding artifacts to each commit and return the list.
+        #' Group the data from the given \code{data.source} such that the data represents
+        #' related artifacts.
         #'
-        #' @return the list of artifacts for each commit
-        get.commit2artifact = function() {
-          logging::loginfo("Getting commit--artifact data.")
-
-          ## store the authors per artifact
-          mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "hash", "artifact")
-
-          return(mylist)
-        },
-
-        #' Map the corresponding authors to each mail thread and return the list.
+        #' Note: This method only makes sense right now if \code{data.source == "commits"}.
+        #' For the other data sources, the output is _similar_ to the output of the
+        #' method \code{get.artifact2author()}.
         #'
-        #' @return the list of authors for each mail thread
-        get.thread2author = function() {
-          logging::loginfo("Getting thread--author data.")
-
-          ## store the authors per thread
-          mylist = get.key.to.value.from.df(self$get.mails(), "thread", "author.name")
-
-          return(mylist)
-        },
-
-        #' Map the corresponding mails to each author and return the list.
+        #' @param data.source The specified data sources. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
         #'
-        #' @return the list of mails for each author
-        get.author2mail = function() {
-            logging::loginfo("Getting author--mail data.")
+        #' @return the list of related artifacts for each artifact (with additional data)
+        get.artifact2artifact = function(data.source = c("commits", "mails", "issues")) {
+            logging::loginfo("Getting artifact--artifact data.")
 
-            ## store the mails per author
-            mylist = get.key.to.value.from.df(self$get.mails(), "author.name", "message.id")
+            ## check given data source
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
 
-            return(mylist)
-        },
+            ## define on which column we group the data
+            grouping = switch(data.source,
+                commits = "hash",
+                mails = "thread",
+                issues = "issue.id"
+            )
 
-        #' Map the corresponding threads to each author and return the list.
-        #'
-        #' @return the list of threads for each author
-        get.author2thread = function() {
-            logging::loginfo("Getting author--thread data.")
-
-            ## store the threads per author
-            mylist = get.key.to.value.from.df(self$get.mails(), "author.name", "thread")
-
-            return(mylist)
-        },
-
-        #' Map the corresponding authors to each issue and return the list.
-        #'
-        #' @return the list of authors for each issue
-        get.issue2author = function() {
-            logging::loginfo("Getting issue--author data")
-
-            mylist = get.key.to.value.from.df(self$get.issues(), "issue.id", "author.name")
-
-            return(mylist)
-        },
-
-        #' Map the corresponding issues to each author and return the list.
-        #'
-        #' @return the list of issues for each author
-        get.author2issue = function() {
-            logging::loginfo("Getting author--issue data")
-
-            mylist = get.key.to.value.from.df(self$get.issues(), "author.name", "issue.id")
-
-            return(mylist)
-        },
-
-        #' Map the corresponding commits to each author and return the list.
-        #'
-        #' @return the list of commits for each author
-        get.author2commit = function() {
-          logging::loginfo("Getting author--commit data.")
-
-          ## store the authors per artifact
-          mylist = get.key.to.value.from.df(self$get.commits(), "author.name", "hash")
-          mylist = parallel::mclapply(mylist, unique)
-
-          return(mylist)
-        },
-
-        #' Map the corresponding files to each author and return the list.
-        #'
-        #' @return the list of files for each author
-        get.author2file = function() {
-            logging::loginfo("Getting author--file data.")
-
-            ## store the authors per artifact
-            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "author.name", "file")
-
-            return(mylist)
-        },
-
-        #' Map the corresponding files to each commit and return the list.
-        #'
-        #' @return the list of files for each commit
-        get.commit2file = function() {
-            logging::loginfo("Getting commit--file data.")
-
-            ## store the authors per artifact
-            mylist = get.key.to.value.from.df(self$get.commits.filtered.empty(), "hash", "file")
+            ## get the artifact--artifact data
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), grouping, data.source.col)
+            ## FIXME filter here appropriately when we really have related issues (see also issue #91
+            ##       and the note in the method documentation)! cache the data if appropriate!
 
             return(mylist)
         }

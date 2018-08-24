@@ -60,7 +60,7 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-proj.conf$update.value("artifact.filter.base", FALSE)
+proj.conf$update.value("artifact.filter.base", TRUE)
 # proj.conf$print()
 
 ## initialize network configuration
@@ -83,17 +83,14 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 # x.data$get.commits()
 # x.data$get.synchronicity()
-# x.data$get.author2artifact()
+# x.data$get.author2artifact("commits")
 # x.data$get.commits.filtered()
 # x.data$get.commits.filtered.empty()
 # x.data$get.mails()
 # x.data$get.authors()
 # x.data$get.data.path()
-# x.data$get.author2artifact()
-# x.data$get.author2file()
-# x.data$get.commit2artifact()
-# x.data$get.commit2file()
-# x.data$get.thread2author()
+# x.data$get.author2artifact("mails")
+# x.data$get.artifact2artifact("commits")
 
 ## * Network construction --------------------------------------------------
 
@@ -127,17 +124,14 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 # y.data$get.commits()
 # y.data$get.synchronicity()
-# y.data$get.author2artifact()
+# y.data$get.author2artifact("commits")
 # y.data$get.commits.filtered()
 # y.data$get.commits.filtered.empty()
 # y.data$get.mails()
 # y.data$get.authors()
 # y.data$get.data.path()
-# y.data$get.author2artifact()
-# y.data$get.author2file()
-# y.data$get.commit2artifact()
-# y.data$get.commit2file()
-# y.data$get.thread2author()
+# y.data$get.author2artifact("mails")
+# y.data$get.artifact2artifact("commits")
 
 ## * Network construction --------------------------------------------------
 

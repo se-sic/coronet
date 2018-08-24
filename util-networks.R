@@ -155,7 +155,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.artifact2author(),
+                private$proj.data$get.artifact2author("commits"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -190,10 +190,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-
             ## construct edge list based on thread2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.thread2author(),
+                private$proj.data$get.artifact2author("mails"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -225,7 +224,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on issue2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.issue2author(),
+                private$proj.data$get.artifact2author("issues"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -261,8 +260,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.cochange)
             }
 
-            ## construct edge list based on commit2artifact data
-            artifacts.net.data.raw = private$proj.data$get.commit2artifact()
+            ## construct edge list based on commit--artifact data
+            artifacts.net.data.raw = private$proj.data$get.artifact2artifact("commits")
             artifacts.net.data = construct.edge.list.from.key.value.list(
                 artifacts.net.data.raw,
                 network.conf = private$network.conf,
@@ -387,8 +386,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct empty network
             directed = private$network.conf$get.value("artifact.directed")
-            artifacts.net.data.raw = private$proj.data$get.thread2author()
-            artifacts = names(artifacts.net.data.raw) # thread IDs
+            artifacts = private$proj.data$get.artifacts("mails") # thread IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
 
             ## store network
@@ -420,8 +418,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct empty network
             directed = private$network.conf$get.value("artifact.directed")
-            artifacts.net.data.raw = private$proj.data$get.issue2author()
-            artifacts = names(artifacts.net.data.raw) # thread IDs
+            artifacts = private$proj.data$get.artifacts("issues") # issue IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
 
             ## store network
@@ -448,22 +445,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("Using bipartite relations '%s'.", relations)
 
             bip.relations = lapply(relations, function(relation) {
-                ## get the actual relation and the artifact type
-                switch(
-                    relation,
-                    cochange = {
-                        bip.relation = private$proj.data$get.author2artifact()
-                    },
-                    callgraph = {
-                        bip.relation = private$proj.data$get.author2artifact()
-                    },
-                    mail = {
-                        bip.relation = private$proj.data$get.author2thread()
-                    },
-                    issue = {
-                        bip.relation = private$proj.data$get.author2issue()
-                    }
-                )
+                ## get data for current bipartite relation
+                data.source = RELATION.TO.DATASOURCE[[relation]]
+                bip.relation = private$proj.data$get.author2artifact(data.source)
 
                 ## set vertex.kind and relation attributes
                 attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
