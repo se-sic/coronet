@@ -37,6 +37,21 @@ BASE.ARTIFACTS = c(
     "File_Level"
 )
 
+## mapping of data source to artifact column
+## (for commits: filter also empty, non-configured, and (potentially) base artifacts)
+DATASOURCE.TO.ARTIFACT.FUNCTION = list(
+    "commits" = "get.commits.filtered.empty",
+    "mails"   = "get.mails",
+    "issues"  = "get.issues"
+)
+
+## mapping of data source to artifact column
+DATASOURCE.TO.ARTIFACT.COLUMN = list(
+    "commits" = "artifact",
+    "mails"   = "thread",
+    "issues"  = "issue.id"
+)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
@@ -626,19 +641,28 @@ ProjectData = R6::R6Class("ProjectData",
             private$issues = data
         },
 
-        #' Get the list of artifacts of the project.
+        #' Get the list of artifacts from the given \code{data.source} of the project.
         #'
-        #' @return the list of artifacts
-        get.artifacts = function() {
-            ## FIXME the artifacts determination should be dependent on the artifact.relation (which is in the net.conf which itself is not available here!)
-            ## (see also get.author2artifact)
+        #' @param data.source The specified data sources. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #'
+        #' @return the character vector of unique artifacts (can be empty)
+        get.artifacts = function(data.source = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact data.")
 
-            commits = self$get.commits.filtered.empty()
+            ## check given data source
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
 
-            ## get artifacts (empty list if no commits exist)
-            artifacts = unique(commits[["artifact"]])
-            if (is.null(artifacts)) artifacts = list()
+            ## get actual artifact data
+            data = self[[data.source.func]]()
+            artifacts = unique(data[[data.source.col]])
+
+            ## empty vector if no data exist
+            if (is.null(artifacts)) {
+                artifacts = character(0)
+            }
 
             return(artifacts)
         },
@@ -844,6 +868,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of authors for each artifact
         get.artifact2author = function() {
+            ## FIXME merge all functions into this one (and author2artifact)?!
             logging::loginfo("Getting artifact--author data.")
 
             ## store the authors per artifact
@@ -856,8 +881,6 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of artifacts for every author
         get.author2artifact = function() {
-            ## FIXME the artifacts determination should be dependent on the artifact.relation
-            ## (see also get.artifacts)
             logging::loginfo("Getting author--artifact data.")
 
             ## store the authors per artifact

@@ -378,6 +378,8 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
+            ## FIXME we need to implement this also for the other kinds of artifacts
+            ## (get.author2artifact() gets only information on source-code artifacts!)
             lapply(range.data$get.author2artifact(), function(x) {
                 length(unique(x[["artifact"]]))
             })
