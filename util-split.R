@@ -41,8 +41,12 @@ requireNamespace("lubridate") # for date conversion
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' does
-#'             not make sense then either.
+#'             *exclusive* manner). If set, the 'time.period' and 'bins' parameters is ignored; consequently, 'split.basis' and
+#'             'sliding.window' do not make sense then either. [default: NULL]
+#' @param number.windows the number of consecutive data objects to get from this function, implying an equally
+#'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
+#'                       consequently, 'split.basis' and 'sliding.window' do not make sense then either.
+#'                       [default: NULL]
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: commits]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -50,7 +54,8 @@ requireNamespace("lubridate") # for date conversion
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
-                                 split.basis = c("commits", "mails", "issues"), sliding.window = FALSE) {
+                                 number.windows = NULL, split.basis = c("commits", "mails", "issues"),
+                                 sliding.window = FALSE) {
     ## get actual raw data
     data = list(
         commits = project.data$get.commits(),
@@ -63,10 +68,19 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
 
+    ## number of windows given (ignoring time period and bins)
+    if (!is.null(number.windows)) {
+        ## reset bins for the later algorithm
+        bins = NULL
+        ## remove sliding windows
+        sliding.window = FALSE
+    }
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
+        ## remove sliding windows
+        sliding.window = FALSE
         ## get bins based on split.basis
-        bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period)$bins
+        bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period, number.windows)$bins
         bins.labels = head(bins, -1)
         split.by.bins = FALSE
         ## logging
@@ -200,9 +214,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @param activity.type the type of activity used for splitting, either 'commits', 'mails', or 'issues'
 #'                      [default: commits]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
-#'                        specified by 'activity.type'
+#'                        specified by 'activity.type' [default: 5000]
 #' @param number.windows the number of consecutive data objects to get from this function
-#'                       (implying an equally distributed amount of data in each range)
+#'                       (implying an equally distributed amount of data in each range) [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
@@ -847,17 +861,23 @@ split.unify.range.names = function(ranges) {
 #'
 #' @param dates the dates that are to be split into several bins
 #' @param time.period the time period each bin lasts
+#' @param number.windows the number of consecutive time windows to get from this function. If set,
+#'                       the 'time.period' parameter is ignored. [default: NULL]
 #'
 #' @return a list,
 #'         the item 'vector': the bins each item in 'dates' belongs to,
 #'         the item 'bins': the bin labels, each spanning the length of 'time.period';
 #'             each item in the vector indicates the start of a bin, although the last
 #'             item indicates the end of the last bin
-split.get.bins.time.based = function(dates, time.period) {
+split.get.bins.time.based = function(dates, time.period, number.windows = NULL) {
     logging::logdebug("split.get.bins.time.based: starting.")
 
     ## generate date bins from given dates
-    dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+    if (is.null(number.windows)) {
+        dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+    } else {
+        dates.breaks = generate.date.sequence(min(dates), max(dates), length.out = number.windows)
+    }
     ## as the last bin bound is exclusive, we need to add a second to it
     dates.breaks[length(dates.breaks)] = max(dates) + 1
     ## generate charater strings for bins

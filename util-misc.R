@@ -261,16 +261,23 @@ get.date.string = function(input) {
 #' @param end The end time as string or POSIXct object
 #' @param by The time period describing the length of time between dates, a character
 #'           string, e.g., "3 mins" or "15 days"
+#' @param length.out The desired length of the sequence (an integer). If set, the
+#'                   'time.period' parameter is ignored. [default: NULL]
 #'
 #' @return the sequential dates as a vector
-generate.date.sequence = function(start.date, end.date, by) {
+generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
 
     ## convert dates
     start.date = get.date.from.string(start.date)
     end.date = get.date.from.string(end.date)
 
     ## convert time.period to duration
-    time.period = lubridate::duration(by)
+    if (is.null(length.out)) {
+        time.period = lubridate::duration(by)
+    } else {
+        time.complete = lubridate::as.duration(lubridate::interval(start.date, end.date))
+        time.period =  time.complete / length.out
+    }
 
     ## convenience function for next step
     get.next.step = function(date) {
