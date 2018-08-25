@@ -299,7 +299,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## check if revision for call-graphs is set
-            if (is.na(private$proj.data$get.revision.callgraph())) {
+            if (!("RangeData" %in% class(private$proj.data)) ||
+                is.na(private$proj.data$get.revision.callgraph())) {
+
                 logging::logerror("The call-graph revision is not set. Aborting...")
                 logging::logerror("This may be due to project-level analysis.
                                   The call-graph data is only available in range-level analysis.")
