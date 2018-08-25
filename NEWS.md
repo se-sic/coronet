@@ -3,9 +3,23 @@
 
 ## Unversioned
 
+### Added
+- Create global constant named 'BASE.ARTIFACTS' (7031d450cfbfdd17e07e3c18290d8b1ff6612181)
+- Split data into time-based equally-sized windows in function 'split.data.time.based' (#49, 40974bada77b9184b025e47ebd7f0c4fb98e1475)
+- Add function to delete authors without bipartite edges from networks (#76, b9319e3ed4c3b0ea6860b4fabea2993b97e186e0)
+
 ### Changed/Improved
-- Add possibility to add multiple first activities for different activity types in one vertex attribute (04f18b3097d17fe6b3486c656a807133e0ac0a42)
-- Add possibility to decide, if first activity should be computed per activity type oder over all activity types when added as vertex attribute (86962a313ceeb09c0e0675dc509d91e10647d6b6)
+- Add possibility to add multiple first activities for different activity types in one vertex attribute (#92, 04f18b3097d17fe6b3486c656a807133e0ac0a42)
+- Add possibility to decide whether first activity should be computed per activity type oder over all activity types when added as vertex attribute (#92, , 86962a313ceeb09c0e0675dc509d91e10647d6b6)
+- Refactor computation of vertex attribute 'first.activity' for better performance (40b7d879e323275d308c408cca4913b805ddacf8)
+- Move 'RELATION.TO.DATASOURCE' to module 'networks' (1ac09f64d202ba4279d05a9765bbbefdc57d4e1b)
+- Determine list of artifacts more reasonably in ProjectData (#97, 23a8aa3e8b20cd0d735cb4987e4a397b922e01ad)
+- Adapt 'ProjectData$get.artifacts' to work with all data sources (#97, 0d184b82dac1a6d7edb3a3339e8352343cbe020f)
+
+### Fixed
+- Fix computation of vertex attribute 'first.activity' to handle empty data sources (4a9ad23bc203fe756e11665ae5c11ee97e97ca8b, 425c46bc41ae3446bd00ae3c8f7eb39434b77a0b)
+- Fortify check on callgraph revision in NetworkBuilder (dcf56ad9f4a3390d58dfb369a6e5f4fa76d18523)
+- Move pull-request template to take effect (6df72e94c1ea9749e798ed8354a6100a59cb9fc9)
 
 
 ## 3.3
