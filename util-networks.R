@@ -1323,6 +1323,25 @@ extract.bipartite.network.from.network = function(network) {
     return(bip.network)
 }
 
+#' Delete author vertices from the given network that do not have bipartite edges.
+#'
+#' @param network the network from which the author vertices are to be removed
+#'
+#' @return the network without author vertices lacking bipartite edges
+delete.authors.without.bipartite.edges = function(network) {
+    ## get all authors
+    vertex.ids.author = as.numeric(igraph::V(network)[type == TYPE.AUTHOR])
+    ## get vertex IDs of all vertices with bipartite edges
+    vertex.ids.bip = as.vector(igraph::get.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER]))
+
+    ## compute all authors without bipartite edges as vertex IDs
+    vertex.ids.author.no.bip = setdiff(vertex.ids.author, vertex.ids.bip)
+    ## remove all authors without bipartite edges from network
+    network = igraph::delete.vertices(network, vertex.ids.author.no.bip)
+
+    return(network)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
