@@ -598,7 +598,7 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
     ## get base network and obtain splitting information:
 
     ## 1) extract date attributes from edges
-    networks.dates = sapply(networks, function(net) {
+    networks.dates = lapply(networks, function(net) {
         dates = igraph::E(net)$date
         return(dates)
     })

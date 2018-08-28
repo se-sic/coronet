@@ -1107,6 +1107,13 @@ test_that("Split a list of networks time-based.", {
     ## check whether the splitting information of the two split networks are identical
     expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
 
+    ## check whether this works also with one network in the list (if not, an error will occur)
+    net.split = split.networks.time.based(
+        networks = list(net.mail),
+        time.period = time.period,
+        sliding.window = FALSE
+    )
+
 })
 
 ## * * bins ----------------------------------------------------------------
