@@ -728,16 +728,24 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'                                           \code{activity.types} is of interest (instead of one value per type).
 #'                                           [default: FALSE]
 #'
-#' @return A data frame with rows named with persons and columns named with activity types, containing the time of the corresponding
-#'         first activity as POSIXct.
+#' @return A list with authors as keys and a POSIXct list in the following format as value:
+#'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
+#'         - otherwise, a list with length \code{length(acitivity.types)} and corresponding names
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    take.first.over.all.activity.types = FALSE) {
 
     ## parse given activity types to functions
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
-    ## get data for each activity type and extract minimal date for each author
-    activity.by.type = lapply(parsed.activity.types, function(type, type.function) {
+    ## get data for each activity type and extract minimal date for each author in each type,
+    ## resulting in a list of activity types with each item containing a list of authors
+    ## mapped to their first activity for the current activity type; for example:
+    ##    list(
+    ##        commits = list(authorA = list(commits = 1), authorB = list(commits = 0)),
+    ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
+    ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
+    ##    )
+    activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
         ## compute minima
         minima.per.person = lapply(range.data$get.author2artifact(type), function(x) {
             ## get first date
@@ -749,13 +757,20 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         return(minima.per.person)
     })
 
-    ## accumulate/fold lists by adding all values of each list to an intermediate list (start with first list)
+    ## accumulate/fold lists 'activity.by.type' by adding all values of each list
+    ## to an intermediate list (start with first list); for example:
+    ##     list(
+    ##        authorA = list(commits =  1, mails = NA, issues =  2),
+    ##        authorB = list(commits =  0, mails =  2, issues = NA),
+    ##        authorC = list(commits = NA, mails =  3, issues = NA),
+    ##        authorD = list(commits = NA, mails = NA, issues =  2)
+    ##     )
     result = Reduce(function(x, y) {
-        ## get names from both lists
+        ## get names from both lists, representing author names for the current activity types
         keys = union(names(x), names(y))
-        ## get current step (i.e., "loop" index)
+        ## get current step (i.e., "loop" index or, rather, "how many lists have we merged already?")
         depth = max(lengths(x), lengths(y))
-        ## get the list of names to use on sublists
+        ## get the list of activity types to use on sublists (after merging next list (i.e., y)!)
         names.list = activity.types[seq_len(depth + 1)]
 
         ## actually combine values for each key
@@ -765,7 +780,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
             ## get value from current list (use NA as default if not existing)
             value.y = if (is.null(y[[key]])) NA else y[[key]]
 
-            ## combine values and name them apropriately
+            ## combine values and name them appropriately
             combined.values = c(value.x, value.y)
             names(combined.values) = names.list
 
@@ -779,12 +794,14 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 
     }, activity.by.type)
 
-    ## find minima over all activity types if configured
+    ## find minima over all activity types if configured; for example:
+    ##     list(
+    ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
+    ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
+    ##     )
     if (take.first.over.all.activity.types) {
         result = parallel::mclapply(result, function(item.list) {
-            min.value = min(unlist(item.list), na.rm = TRUE)
-            ## convert to POSIXct object again (gets lost by unlist)
-            min.value = get.date.from.unix.timestamp(min.value)
+            min.value = min(do.call(c, item.list), na.rm = TRUE)
             return(list(all.activities = min.value))
         })
     }
