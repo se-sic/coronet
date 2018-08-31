@@ -11,7 +11,7 @@
 ### Changed/Improved
 - Add possibility to add multiple first activities for different activity types in one vertex attribute (#92, 04f18b3097d17fe6b3486c656a807133e0ac0a42)
 - Add possibility to decide whether first activity should be computed per activity type oder over all activity types when added as vertex attribute (#92, , 86962a313ceeb09c0e0675dc509d91e10647d6b6)
-- Refactor computation of vertex attribute 'first.activity' for better performance (40b7d879e323275d308c408cca4913b805ddacf8)
+- Refactor computation of vertex attribute 'first.activity' for better performance (40b7d879e323275d308c408cca4913b805ddacf8, f5188904e51ddc08558842f6e357f8fa8edbb105)
 - Move 'RELATION.TO.DATASOURCE' to module 'networks' (1ac09f64d202ba4279d05a9765bbbefdc57d4e1b)
 - Determine list of artifacts more reasonably in ProjectData (#97, 23a8aa3e8b20cd0d735cb4987e4a397b922e01ad)
 - Adapt 'ProjectData$get.artifacts' to work with all data sources (#97, 0d184b82dac1a6d7edb3a3339e8352343cbe020f)
@@ -20,6 +20,7 @@
 - Fix computation of vertex attribute 'first.activity' to handle empty data sources (4a9ad23bc203fe756e11665ae5c11ee97e97ca8b, 425c46bc41ae3446bd00ae3c8f7eb39434b77a0b)
 - Fortify check on callgraph revision in NetworkBuilder (dcf56ad9f4a3390d58dfb369a6e5f4fa76d18523)
 - Move pull-request template to take effect (6df72e94c1ea9749e798ed8354a6100a59cb9fc9)
+- Fix function 'split.networks.time.based' regarding case that provided list of networks only contains one element (010a9358c91ad4a2fd29aa27301b7723c2f6b6e2)
 
 
 ## 3.3
