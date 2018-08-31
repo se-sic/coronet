@@ -1067,10 +1067,11 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 merge.network.data = function(vertex.data, edge.data) {
     logging::logdebug("merge.network.data: starting.")
 
+    ## select only unique vertices
     vertices = plyr::rbind.fill(vertex.data)
-
-    ## select unique vertices
     vertices = unique.data.frame(vertices)
+
+    ## combine all edges via the edge lists
     edges = plyr::rbind.fill(edge.data)
 
     logging::logdebug("merge.network.data: finished.")
