@@ -15,6 +15,7 @@
 - Move 'RELATION.TO.DATASOURCE' to module 'networks' (1ac09f64d202ba4279d05a9765bbbefdc57d4e1b)
 - Determine list of artifacts more reasonably in ProjectData (#97, 23a8aa3e8b20cd0d735cb4987e4a397b922e01ad)
 - Adapt 'ProjectData$get.artifacts' to work with all data sources (#97, 0d184b82dac1a6d7edb3a3339e8352343cbe020f)
+- Improve function 'save.and.load' to work without assignment (7f6ab1a5220b555a8123ff04b01547f7704fb31b)
 
 ### Fixed
 - Fix computation of vertex attribute 'first.activity' to handle empty data sources (4a9ad23bc203fe756e11665ae5c11ee97e97ca8b, 425c46bc41ae3446bd00ae3c8f7eb39434b77a0b)
