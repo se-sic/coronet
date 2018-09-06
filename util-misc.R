@@ -149,35 +149,54 @@ get.stacktrace = function(calls) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Intermediate data -------------------------------------------------------
 
-#' Save the given 'variable' on the file system (in 'dump.path') if it does not exist already,
-#' and load the saved data if it exists.
-#'
-#' With skip, the check for data existance can be skipped (i.e., force a re-save).
-#'
 #' This function is for repetitive runs of the same script: It saves intermediate data to disk and
 #' loads it from a previous runs if possible. This way, computation time can be saved.
 #'
-#' @param variable a character naming the data variable to be saved to disk
-#' @param dump.path the path where the data is to be saved
-#' @param if.not.found if the data does not exist on disk, run this function ('variable' must be a variable there!)
+#' In detail, there are two possibilities:
+#' - The file with the path \code{dump.path} *does not exist*.
+#'
+#'   Save the return value of \code{if.not.found} under the variable name \code{variable}
+#'   in the environment from which this function is called and, additionally, save the variable's
+#'   value in the file \code{dump.path}.
+#'
+#' - The file with the path \code{dump.path} *exists already*.
+#'
+#'   Load the saved file and, thus, the inherently saved object and store the variable in the
+#'   calling environment.
+#'
+#' In both cases, the saved/loaded value is assigned to a variable named \code{variable}
+#' in the parent frame, i.e., in the calling environment. This means, the return value of this function
+#' does not need to be stored manually in a variable. However, for compatibility reasons, the
+#' value is returned invisibly so that assignment is possible (although, this does not disable the
+#' automatic storage in the parent environment!).
+#'
+#' Important: With the parameter \code{skip} set to \code{TRUE}, the check for data existance can be
+#' skipped (i.e., force a re-save to disk).
+#'
+#' @param variable a character naming the data variable to be saved to disk or loaded
+#' @param dump.path the path where the data is to be saved to or loaded from
+#' @param if.not.found if the data does not exist on disk, run this function whose return value is to be
+#'                     saved to disk into the file \code{dump.path}
 #' @param skip re-save although data exists on the disk? [default: FALSE]
 #'
-#' @return the data computed by 'if.not.found' or loaded from 'dump.path'
+#' @return the data named \code{variable}, either computed by \code{if.not.found} or loaded
+#'         from \code{dump.path}
 save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
     if (!skip && file.exists(dump.path)) {
         logging::logdebug("Load %s from previously dumped object: %s.", variable, dump.path)
-        load(file = dump.path) # load the list named "variable" into the current environment
+        ## load the dumped object into the environment calling this very function
+        load(file = dump.path, envir = parent.frame())
     } else {
         res = if.not.found()
 
-        assign(variable, res) # rewrite to variable name
+        assign(variable, res, envir = parent.frame()) # rewrite to variable name
         rm(res) # clear memory
 
         logging::logdebug("Dumping object %s to %s.", variable, dump.path)
-        save(list = variable, file = dump.path) # save automatically
+        save(list = variable, file = dump.path, envir = parent.frame()) # save automatically
     }
 
-    return(get0(variable))
+    return(invisible(get0(variable, envir = parent.frame())))
 }
 
 
