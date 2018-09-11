@@ -270,8 +270,9 @@ get.date.string = function(input) {
     return(result)
 }
 
-#' Construct a date sequence on the given start time, end time, and time period between the
-#' sequentially generated dates.
+#' Construct a date sequence on the given start time and end time, by either applying the given
+#' time period between the sequentially generated dates or by creating the given number of
+#' sequential windows.
 #'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
@@ -296,6 +297,9 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     } else {
         time.complete = lubridate::as.duration(lubridate::interval(start.date, end.date))
         time.period =  time.complete / length.out
+        ## to avoid rounding differences, we round the time period up
+        ## (otherwise, we may end up with another unwanted date in the sequence)
+        time.period = ceiling(time.period)
     }
 
     ## convenience function for next step

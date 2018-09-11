@@ -917,13 +917,8 @@ split.get.bins.time.based = function(dates, time.period, number.windows = NULL) 
 
     ## find bins for given dates
     dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
-    dates.bins = factor(dates.bins)
-    ## set factor's levels appropriately
-    levels(dates.bins) = dates.breaks.chr[ as.integer(levels(dates.bins)) ] # get the dates
-    levels(dates.bins) = c( # append all missing dates
-        levels(dates.bins),
-        dates.breaks.chr[ !(dates.breaks.chr %in% levels(dates.bins)) ]
-    )
+    ## convert to character factor and set factor's levels appropriately
+    dates.bins = factor(dates.breaks.chr[dates.bins], levels = dates.breaks.chr)
 
     logging::logdebug("split.get.bins.time.based: finished.")
 

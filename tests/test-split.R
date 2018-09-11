@@ -1451,6 +1451,23 @@ test_that("Get bins for network and data on low level (split.get.bins.time.based
     expect_equal(results, expected, info = "split.get.bins.time.based (2)")
 
     ##
+    ## split.get.bins.time.based (3)
+    ##
+
+    ## results
+    dates.unround = get.date.from.string(c("2004-01-01 00:00:00", "2004-01-01 00:00:14", "2004-01-01 00:00:22"))
+    expected.bins = c("2004-01-01 00:00:00", "2004-01-01 00:00:05", "2004-01-01 00:00:10",
+                      "2004-01-01 00:00:15", "2004-01-01 00:00:20", "2004-01-01 00:00:23") # adding 4.2 seconds each
+    expected = list(
+        vector = factor(head(expected.bins, -1))[ c(1, 3, 5) ],
+        bins = expected.bins
+    )
+    results = split.get.bins.time.based(dates.unround, number.windows = length.bins)
+
+    ## check result
+    expect_equal(results, expected, info = "split.get.bins.time.based (3)")
+
+    ##
     ## split.get.bins.activity.based (1)
     ##
 
