@@ -41,9 +41,9 @@ requireNamespace("lubridate") # for date conversion
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner). If set, the 'time.period' and 'bins' parameters is ignored; consequently, 'split.basis' and
+#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' and
 #'             'sliding.window' do not make sense then either. [default: NULL]
-#' @param number.windows the number of consecutive data objects to get from this function, implying an equally
+#' @param number.windows the number of consecutive data objects to get from this function, implying equally
 #'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
 #'                       consequently, 'split.basis' and 'sliding.window' do not make sense then either.
 #'                       [default: NULL]

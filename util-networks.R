@@ -1324,16 +1324,33 @@ extract.bipartite.network.from.network = function(network) {
     return(bip.network)
 }
 
-#' Delete author vertices from the given network that do not have bipartite edges.
+#' Delete author vertices from the given network that do not have adjacent edges of a specific type,
+#' i.e., bipartite and/or unipartite edges.
+#'
+#' *Use case*:
+#' When building multi-networks, we can make use of the configuration option \code{author.only.committers}.
+#' However, when we split a project-level multi-network into range-level networks, we can obtain authors
+#' in a certain time-range, that are only active on the mailing list in this range, but appear in the
+#' range-level multi-network as they appear in the project-level network since they are committer in,
+#' at least, one range. This function is able to remove the then-isolated author vertices from the
+#' range-level networks.
 #'
 #' @param network the network from which the author vertices are to be removed
+#' @param specific.edge.types the type of edges an author vertex needs to have to retain in the network;
+#'                            one or more of \code{TYPE.EDGES.INTER} and \code{TYPE.EDGES.INTRA}
+#'                            [default: TYPE.EDGES.INTER]
 #'
-#' @return the network without author vertices lacking bipartite edges
-delete.authors.without.bipartite.edges = function(network) {
+#' @return the network without author vertices lacking edges of the specified
+delete.authors.without.specific.edges = function(network, specific.edge.types =
+                                                     c(TYPE.EDGES.INTER, TYPE.EDGES.INTRA)) {
+
+    ## obtain the edge type to consider
+    edge.types = match.arg.or.default(specific.edge.types, several.ok = TRUE)
+
     ## get all authors
     vertex.ids.author = as.numeric(igraph::V(network)[type == TYPE.AUTHOR])
     ## get vertex IDs of all vertices with bipartite edges
-    vertex.ids.bip = as.vector(igraph::get.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER]))
+    vertex.ids.bip = as.vector(igraph::get.edges(network, igraph::E(network)[type %in% edge.types]))
 
     ## compute all authors without bipartite edges as vertex IDs
     vertex.ids.author.no.bip = setdiff(vertex.ids.author, vertex.ids.bip)

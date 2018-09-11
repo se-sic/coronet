@@ -730,7 +730,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'
 #' @return A list with authors as keys and a POSIXct list in the following format as value:
 #'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
-#'         - otherwise, a list with length \code{length(acitivity.types)} and corresponding names
+#'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    take.first.over.all.activity.types = FALSE) {
 

@@ -643,7 +643,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
         #'
-        #' @param data.source The specified data sources. One of \code{"commits"},
+        #' @param data.source The specified data source. One of \code{"commits"},
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
         #'
         #' @return the character vector of unique artifacts (can be empty)
@@ -866,7 +866,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Map the authors corresponding to the given \code{data.source} to their touched artifacts.
         #'
-        #' @param data.source The specified data sources. One of \code{"commits"},
+        #' @param data.source The specified data source. One of \code{"commits"},
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
         #'
         #' @return the list of authors for each artifact (with additional data)
