@@ -216,7 +216,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type' [default: 5000]
 #' @param number.windows the number of consecutive data objects to get from this function
-#'                       (implying an equally distributed amount of data in each range) [default: NULL]
+#'                       (implying an equally distributed amount of data in each range and
+#'                       'sliding.window = FALSE') [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
@@ -264,6 +265,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         }
         ## compute the amount of activity according to the number of specified windows
         activity.amount = ceiling(activity / number.windows)
+        ## remove sliding windows as they do not make sense here
+        sliding.window = FALSE
     }
 
     logging::loginfo("Splitting data '%s' into activity ranges of %s %s (%s windows).",
@@ -478,8 +481,8 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
 
-#' Discretizes a network (using the edge attribute "date") according to the given 'time.period'
-#' or to the given hard 'bins'.
+#' Discretizes a network (using the edge attribute "date") according to the given 'time.period',
+#' to the given hard 'bins', or the given number of windows ('number.windows').
 #'
 #' Important: For given 'time.period' parameters (e.g., 3-month windows), the last bin may be a lot smaller
 #' than the specified time period.
@@ -491,16 +494,29 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner). If set, the 'time.period' parameter is ignored.
+#'             *exclusive* manner). If set, the 'time.period' and 'sliding.window' parameters are ignored.
+#' @param number.windows the number of consecutive networks to get from this function, implying equally
+#'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
+#'                       consequently, 'sliding.window' does not make sense then either.
+#'                       [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one time period
 split.network.time.based = function(network, time.period = "3 months", bins = NULL,
-                                    sliding.window = FALSE, remove.isolates = TRUE) {
+                                    number.windows = NULL,  sliding.window = FALSE,
+                                    remove.isolates = TRUE) {
     ## extract date attributes from edges
     dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
+
+    ## number of windows given (ignoring time period and bins)
+    if (!is.null(number.windows)) {
+        ## reset bins for the later algorithm
+        bins = NULL
+        ## remove sliding windows
+        sliding.window = FALSE
+    }
 
     ## get bin information for all edges
     if (!is.null(bins)) {
@@ -510,7 +526,10 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         ## logging
         logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
     } else {
-        bins.info = split.get.bins.time.based(dates, time.period)
+        ## remove sliding windows
+        sliding.window = FALSE
+        ## get bins
+        bins.info = split.get.bins.time.based(dates, time.period, number.windows)
         bins.vector = bins.info[["vector"]]
         bins.date = get.date.from.string(bins.info[["bins"]])
         bins = head(bins.info[["bins"]], -1)
@@ -586,17 +605,19 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #' @param networks the igraph networks to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
+#' @param number.windows the number of consecutive networks to get for each network, implying equally
+#'                       time-sized windows for all ranges. If set, the 'time.period' parameter is ignored;
+#'                       consequently, 'sliding.window' does not make sense then either. [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
 #'         of networks, each itself referring to one time period
-split.networks.time.based = function(networks, time.period = "3 months", sliding.window = FALSE,
-                                     remove.isolates = TRUE) {
+split.networks.time.based = function(networks, time.period = "3 months", number.windows = NULL,
+                                     sliding.window = FALSE, remove.isolates = TRUE) {
 
     ## get base network and obtain splitting information:
-
     ## 1) extract date attributes from edges
     networks.dates = lapply(networks, function(net) {
         dates = igraph::E(net)$date
@@ -606,16 +627,22 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
     dates = get.date.from.unix.timestamp(dates)
 
     ## 2) get bin information
-    bins.info = split.get.bins.time.based(dates, time.period)
+    bins.info = split.get.bins.time.based(dates, time.period, number.windows)
     bins.date = get.date.from.string(bins.info[["bins"]])
 
-    ## 3) split all networks to the extracted bins
+    ## 3) number of windows given (ignoring time period)
+    if (!is.null(number.windows)) {
+        ## remove sliding windows
+        sliding.window = FALSE
+    }
+
+    ## split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
         split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
                                  remove.isolates = remove.isolates)
     })
 
-    ## 4) return the split networks
+    ## return the split networks
     return(networks.split)
 }
 
@@ -632,10 +659,10 @@ split.networks.time.based = function(networks, time.period = "3 months", sliding
 #' @param number.edges the amount of edges describing the size of the ranges
 #'                     (implying an open number of resulting ranges)
 #' @param number.windows the number of consecutive networks to get from this function
-#'                       (implying an equally distributed amount of edges in each range)
+#'                       (implying an equally distributed amount of edges in each range and
+#'                       'sliding.window = FALSE) [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using
-#'                       a sliding-window approach (increases 'number.windows' accordingly)
-#'                       [default: FALSE]
+#'                       a sliding-window approach [default: FALSE]
 #' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of igraph networks, each referring to one period of activity
@@ -664,6 +691,8 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         }
         ## compute the amount of activity according to the number of specified windows
         number.edges = ceiling(edge.count / number.windows)
+        ## remove sliding windows as they do not make sense here
+        sliding.window = FALSE
     }
 
     logging::loginfo("Splitting network into activity ranges of %s edges, yielding %s windows.",
@@ -858,6 +887,9 @@ split.unify.range.names = function(ranges) {
 ## Bin identification ------------------------------------------------------
 
 #' Compute bin information for a time-based splitting based on the given time period.
+#'
+#' Note: As the last bound of a bin is exclusive, the end of the last bin is always
+#' set to \code{max(dates) + 1} to include the last date!
 #'
 #' @param dates the dates that are to be split into several bins
 #' @param time.period the time period each bin lasts
