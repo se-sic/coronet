@@ -1338,7 +1338,7 @@ extract.bipartite.network.from.network = function(network) {
 #' @param network the network from which the author vertices are to be removed
 #' @param specific.edge.types the type of edges an author vertex needs to have to retain in the network;
 #'                            one or more of \code{TYPE.EDGES.INTER} and \code{TYPE.EDGES.INTRA}
-#'                            [default: TYPE.EDGES.INTER]
+#'                            [default: c(TYPE.EDGES.INTER, TYPE.EDGES.INTRA)]
 #'
 #' @return the network without author vertices lacking edges of the specified
 delete.authors.without.specific.edges = function(network, specific.edge.types =
