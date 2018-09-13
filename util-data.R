@@ -936,6 +936,31 @@ ProjectData = R6::R6Class("ProjectData",
             ##       and the note in the method documentation)! cache the data if appropriate!
 
             return(mylist)
+        },
+
+        #' Group/split the data from the given \code{data.source} regarding the given data \code{column}.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param column The column name in the given \code{data.source} to group by, resulting in
+        #'               corresponding list names [default: "author.name"]
+        #'
+        #' @return a list in the following way:
+        #'         - keys: unique entries in the given \code{column} of the given \code{data.source}, and
+        #'         - values: all entries of the specified \code{data.source} belonging to the current group.
+        group.data.source.by.column = function(data.source = c("commits", "mails", "issues"),
+                                               column = "author.name") {
+
+            ## check given data source
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            ## TODO use all commit data here (and not the filtered version)?
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+
+            ## get the artifact--artifact data
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), column, "author.name")
+
+            return(mylist)
         }
     )
 )
