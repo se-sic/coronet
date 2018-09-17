@@ -1327,7 +1327,7 @@ extract.bipartite.network.from.network = function(network) {
 #' Delete author vertices from the given network that do not have adjacent edges of a specific type,
 #' i.e., bipartite and/or unipartite edges.
 #'
-#' *Use case*:
+#' *Use case for \code{specific.edge.types = "TYPE.EDGES.INTER"}*:
 #' When building multi-networks, we can make use of the configuration option \code{author.only.committers}.
 #' However, when we split a project-level multi-network into range-level networks, we can obtain authors
 #' in a certain time-range, that are only active on the mailing list in this range, but appear in the
@@ -1345,17 +1345,17 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
                                                      c(TYPE.EDGES.INTER, TYPE.EDGES.INTRA)) {
 
     ## obtain the edge type to consider
-    edge.types = match.arg.or.default(specific.edge.types, several.ok = TRUE)
+    specific.edge.types = match.arg.or.default(specific.edge.types, several.ok = TRUE)
 
     ## get all authors
     vertex.ids.author = as.numeric(igraph::V(network)[type == TYPE.AUTHOR])
-    ## get vertex IDs of all vertices with bipartite edges
-    vertex.ids.bip = as.vector(igraph::get.edges(network, igraph::E(network)[type %in% edge.types]))
+    ## get vertex IDs of all vertices with specific edges
+    vertex.ids.specific = as.vector(igraph::get.edges(network, igraph::E(network)[type %in% specific.edge.types]))
 
-    ## compute all authors without bipartite edges as vertex IDs
-    vertex.ids.author.no.bip = setdiff(vertex.ids.author, vertex.ids.bip)
-    ## remove all authors without bipartite edges from network
-    network = igraph::delete.vertices(network, vertex.ids.author.no.bip)
+    ## compute all authors without specific edges as vertex IDs
+    vertex.ids.author.no.specific = setdiff(vertex.ids.author, vertex.ids.specific)
+    ## remove all authors without specific edges from network
+    network = igraph::delete.vertices(network, vertex.ids.author.no.specific)
 
     return(network)
 }
