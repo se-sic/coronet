@@ -83,14 +83,14 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 # x.data$get.commits()
 # x.data$get.synchronicity()
-# x.data$get.author2artifact("commits")
+# x.data$group.artifacts.by.data.column("commits", "author.name")
 # x.data$get.commits.filtered()
 # x.data$get.commits.filtered.empty()
 # x.data$get.mails()
 # x.data$get.authors()
 # x.data$get.data.path()
-# x.data$get.author2artifact("mails")
-# x.data$get.artifact2artifact("commits")
+# x.data$group.artifacts.by.data.column("mails", "author.name")
+# x.data$group.artifacts.by.data.column("commits", "hash")
 
 ## * Network construction --------------------------------------------------
 
@@ -124,14 +124,14 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 # y.data$get.commits()
 # y.data$get.synchronicity()
-# y.data$get.author2artifact("commits")
+# y.data$group.artifacts.by.data.column("commits", "author.name")
 # y.data$get.commits.filtered()
 # y.data$get.commits.filtered.empty()
 # y.data$get.mails()
 # y.data$get.authors()
 # y.data$get.data.path()
-# y.data$get.author2artifact("mails")
-# y.data$get.artifact2artifact("commits")
+# y.data$group.artifacts.by.data.column("mails", "author.name")
+# y.data$group.artifacts.by.data.column("commits", "hash")
 
 ## * Network construction --------------------------------------------------
 

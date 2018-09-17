@@ -864,101 +864,155 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * processed data ----------------------------------------------
 
-        #' Map the authors corresponding to the given \code{data.source} to their touched artifacts.
+        #' Group the authors of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{"author.name"} is duplicated and prepended to each
+        #' group's data as first column (see below for details).
+        #'
+        #' Example: To obtain the artifacts which has been touched by an author,
+        #' call \code{group.authors.by.data.column("commits", "artifact")}.
         #'
         #' @param data.source The specified data source. One of \code{"commits"},
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the authors of the given \code{data.source} by
+        #'                     [default: "artifact"]
         #'
-        #' @return the list of authors for each artifact (with additional data)
-        get.artifact2author = function(data.source = c("commits", "mails", "issues")) {
-            logging::loginfo("Getting artifact--author data.")
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with the column \code{"author.name"} duplicated
+        #'         as first column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        group.authors.by.data.column = function(data.source = c("commits", "mails", "issues"),
+                                                group.column = "artifact") {
+            logging::loginfo("Grouping authors by data column.")
 
-            ## check given data source
-            data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
-
-            ## store the authors per artifact
-            mylist = get.key.to.value.from.df(self[[data.source.func]](), data.source.col, "author.name")
+            ## store the authors per group that is determined by 'group.column'
+            mylist = self$group.data.by.column(data.source, group.column, "author.name")
 
             return(mylist)
         },
 
-        #' Map the artifacts corresponding to the given \code{data.source} to each author.
+        #' Group the authors of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{"author.name"} is duplicated and prepended to each
+        #' group's data as first column (see below for details).
         #'
-        #' @param data.source The specified data sources. One of \code{"commits"},
-        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' Example: To obtain the artifacts which has been touched by an author,
+        #' call \code{group.authors.by.data.column("commits", "artifact")}.
         #'
-        #' @return the list of artifacts for every author (with additional data)
-        get.author2artifact = function(data.source = c("commits", "mails", "issues")) {
-            logging::loginfo("Getting author--artifact data.")
-
-            ## check given data source
-            data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
-
-            ## store the artifacts per author
-            mylist = get.key.to.value.from.df(self[[data.source.func]](), "author.name", data.source.col)
-
-            return(mylist)
-        },
-
-        #' Group the data from the given \code{data.source} such that the data represents
-        #' related artifacts.
-        #'
-        #' Note: This method only makes sense right now if \code{data.source == "commits"}.
-        #' For the other data sources, the output is _similar_ to the output of the
-        #' method \code{get.artifact2author()}.
-        #'
-        #' @param data.source The specified data sources. One of \code{"commits"},
-        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
-        #'
-        #' @return the list of related artifacts for each artifact (with additional data)
-        get.artifact2artifact = function(data.source = c("commits", "mails", "issues")) {
-            logging::loginfo("Getting artifact--artifact data.")
-
-            ## check given data source
-            data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
-
-            ## define on which column we group the data
-            grouping = switch(data.source,
-                commits = "hash",
-                mails = "thread",
-                issues = "issue.id"
-            )
-
-            ## get the artifact--artifact data
-            mylist = get.key.to.value.from.df(self[[data.source.func]](), grouping, data.source.col)
-            ## FIXME filter here appropriately when we really have related issues (see also issue #91
-            ##       and the note in the method documentation)! cache the data if appropriate!
-
-            return(mylist)
-        },
-
-        #' Group/split the data from the given \code{data.source} regarding the given data \code{column}.
+        #' Note: This method is a delegate for \code{ProjectData$group.authors.by.data.column}.
+        #' It is deprecated and may be removed in any later version.
         #'
         #' @param data.source The specified data source. One of \code{"commits"},
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
-        #' @param column The column name in the given \code{data.source} to group by, resulting in
-        #'               corresponding list names [default: "author.name"]
+        #' @param group.column The column to group the authors of the given \code{data.source} by
+        #'                     [default: "artifact"]
         #'
-        #' @return a list in the following way:
-        #'         - keys: unique entries in the given \code{column} of the given \code{data.source}, and
-        #'         - values: all entries of the specified \code{data.source} belonging to the current group.
-        group.data.source.by.column = function(data.source = c("commits", "mails", "issues"),
-                                               column = "author.name") {
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with the column \code{"author.name"} duplicated
+        #'         as first column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        get.artifact2author = function(data.source = c("commits", "mails", "issues"), group.column) {
+            logging::logwarn("The method 'ProjectData$get.artifact2author' is deprecated!")
+            return(self$group.authors.by.data.column(data.source, group.column))
+        },
+
+
+        #' Group the artifacts of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+        #' data as first column (see below for details).
+        #'
+        #' Example: To obtain the authors who touched the same source-code artifact,
+        #' call \code{group.artifacts.by.data.column("commits", "artifact")}.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the artifacts of the given \code{data.source} by
+        #'                     [default: "author.name"]
+        #' @param data.column The column that gets duplicated as first column \code{data.vertices}.
+        #'                    If \code{NULL}, the column is automatically determined based on the
+        #'                    given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
+        #'                    for details). [default: NULL]
+        #'
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+        #'         column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        group.artifacts.by.data.column = function(data.source = c("commits", "mails", "issues"),
+                                                  group.column = "author.name",
+                                                  artifact.column = NULL) {
+            logging::loginfo("Grouping artifacts by data column.")
+
+            ## determine the artifact column if not given explicitly
+            if (is.null(artifact.column)) {
+                artifact.column = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+            }
+
+            ## store the artifacts per group that is determined by 'group.column'
+            mylist = self$group.data.by.column(data.source, group.column, artifact.column)
+
+            return(mylist)
+        },
+
+        #' Group the artifacts of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+        #' data as first column (see below for details).
+        #'
+        #' Example: To obtain the authors who touched the same source-code artifact,
+        #' call \code{group.artifacts.by.data.column("commits", "artifact")}.
+        #'
+        #' Note: This method is a delegate for \code{ProjectData$group.artifacts.by.data.column}.
+        #' It is deprecated and may be removed in any later version.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the artifacts of the given \code{data.source} by
+        #'                     [default: "author.name"]
+        #' @param data.column The column that gets duplicated as first column \code{data.vertices}.
+        #'                    If \code{NULL}, the column is automatically determined based on the
+        #'                    given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
+        #'                    for details). [default: NULL]
+        #'
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+        #'         column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        get.author2artifact = function(data.source = c("commits", "mails", "issues"),
+                                                  group.column = "author.name",
+                                                  artifact.column = NULL) {
+            logging::logwarn("The method 'ProjectData$get.author2artifact' is deprecated!")
+            return(self$group.artifacts.by.data.column(data.source, group.column, artifact.column))
+        },
+
+        #' Group the data items of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+        #' data as first column (see \code{get.key.to.value.from.df} for details).
+        #'
+        #' Example: To obtain the authors who touched the same source-code artifact,
+        #' call \code{group.data.by.column("commits", "artifact", "author.name")}.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the data of the given \code{data.source} by
+        #' @param data.column The column that gets duplicated as first column \code{data.vertices}
+        #'
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+        #'         column (with name \code{"data.vertices"})
+        #'
+        #' @seealso get.key.to.value.from.df
+        group.data.by.column = function(data.source = c("commits", "mails", "issues"),
+                                        group.column, data.column) {
+            logging::loginfo("Grouping artifacts by data column.")
 
             ## check given data source
             data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            ## TODO use all commit data here (and not the filtered version)?
+            ## TODO use filtered commit data here (and not the filtered.empty version)? → try filtered!
             data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
 
-            ## get the artifact--artifact data
-            mylist = get.key.to.value.from.df(self[[data.source.func]](), column, "author.name")
+            ## get the key-value mapping/list for the given parameters
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
 
             return(mylist)
         }
@@ -1104,7 +1158,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 #' Transform the 'base data' data.frame to a list in order to execute
 #' the following tasks:
 #'  - split by column given by key
-#'  - use value as first column in sublist items
+#'  - use value as first column in sublist items with name 'data.vertices'
 #'  - append all other existing columns (including key and value)
 #'  - each item in the results list gets attributes:
 #'   - group.type (i.e., value) and

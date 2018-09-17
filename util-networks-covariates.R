@@ -379,10 +379,11 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
             ## FIXME we need to implement this also for the other kinds of artifacts
-            ## (get.author2artifact() gets only information on source-code artifacts!)
-            lapply(range.data$get.author2artifact("commits"), function(x) {
-                length(unique(x[["artifact"]]))
-            })
+            lapply(range.data$group.artifacts.by.data.column("commits", "author.name"),
+                   function(x) {
+                       length(unique(x[["artifact"]]))
+                   }
+            )
         }
     )
 
@@ -637,9 +638,11 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.artifact2author("commits"), function(x) {
-                length(unique(x[["author.name"]]))
-            })
+            lapply(range.data$group.authors.by.data.column("commits", "artifact"),
+                   function(x) {
+                       length(unique(x[["author.name"]]))
+                   }
+            )
         }
     )
 
@@ -747,13 +750,16 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     ##    )
     activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
         ## compute minima
-        minima.per.person = lapply(range.data$get.author2artifact(type), function(x) {
-            ## get first date
-            m = list(min(x[["date"]]))
-            ## add activity type as name to the list
-            names(m) = type
-            return(m)
-        })
+        minima.per.person = lapply(
+            range.data$group.artifacts.by.data.column(type, "author.name"),
+            function(x) {
+                ## get first date
+                m = list(min(x[["date"]]))
+                ## add activity type as name to the list
+                names(m) = type
+                return(m)
+            }
+        )
         return(minima.per.person)
     })
 

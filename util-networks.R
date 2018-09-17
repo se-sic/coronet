@@ -155,7 +155,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.artifact2author("commits"),
+                private$proj.data$group.authors.by.data.column("commits", "artifact"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -192,7 +192,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on thread2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.artifact2author("mails"),
+                private$proj.data$group.authors.by.data.column("mails", "thread"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -224,7 +224,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on issue2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.artifact2author("issues"),
+                private$proj.data$group.authors.by.data.column("issues", "issue.id"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -261,7 +261,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## construct edge list based on commit--artifact data
-            artifacts.net.data.raw = private$proj.data$get.artifact2artifact("commits")
+            artifacts.net.data.raw = private$proj.data$group.artifacts.by.data.column("commits", "hash")
+
             artifacts.net.data = construct.edge.list.from.key.value.list(
                 artifacts.net.data.raw,
                 network.conf = private$network.conf,
@@ -449,7 +450,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             bip.relations = lapply(relations, function(relation) {
                 ## get data for current bipartite relation
                 data.source = RELATION.TO.DATASOURCE[[relation]]
-                bip.relation = private$proj.data$get.author2artifact(data.source)
+                bip.relation = private$proj.data$group.artifacts.by.data.column(data.source, "author.name")
 
                 ## set vertex.kind and relation attributes
                 attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
