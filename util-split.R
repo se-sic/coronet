@@ -77,8 +77,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     }
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
-        ## remove sliding windows
-        sliding.window = FALSE
         ## get bins based on split.basis
         bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period, number.windows)$bins
         bins.labels = head(bins, -1)
@@ -89,6 +87,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     }
     ## when bins are given explicitly
     else {
+        ## remove sliding windows
+        sliding.window = FALSE
         ## get bins based on parameter
         split.basis = NULL
         bins = get.date.from.string(bins)
@@ -519,15 +519,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     }
 
     ## get bin information for all edges
-    if (!is.null(bins)) {
-        bins.date = get.date.from.string(bins)
-        bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
-        bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
-        ## logging
-        logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
-    } else {
-        ## remove sliding windows
-        sliding.window = FALSE
+    if (is.null(bins)) {
         ## get bins
         bins.info = split.get.bins.time.based(dates, time.period, number.windows)
         bins.vector = bins.info[["vector"]]
@@ -536,6 +528,15 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         ## logging
         logging::loginfo("Splitting network into time ranges [%s].",
                          paste(bins.info[["bins"]], collapse = ", "))
+    } else {
+        ## remove sliding windows
+        sliding.window = FALSE
+        ## find bins for dates
+        bins.date = get.date.from.string(bins)
+        bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
+        bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
+        ## logging
+        logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
     }
 
     nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
