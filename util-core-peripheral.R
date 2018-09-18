@@ -446,18 +446,20 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
 
     ## Get eigenvectors for all authors
     ## The method ignores the directed parameter if the given network is undirected
-    eigen.centrality = tryCatch({
-                                    igraph::eigen_centrality(network, directed = TRUE)
-                                }, error=function(e) {
-                                    logwarn(e)
-                                    logwarn("As of the error above, adjust ARPACK options 'maxiter' and 'tol'...")
-                                    adjusted.options = list(maxiter = 5000, tol = 0.1)
-                                    adjusted.computation = igraph::eigen_centrality(network, directed = TRUE,
-                                                                                    options = adjusted.options)
-                                    loginfo("eigen_centrality with adjusted ARPACK options finished successfully.")
-                                    return(adjusted.computation)
-                                })
-    centrality.vec = sort(eigen.centrality$vector, decreasing = TRUE)
+    eigen.centrality = tryCatch(
+        igraph::eigen_centrality(network, directed = TRUE),
+        error = function(e) {
+            logging::logwarn(e)
+            logging::logwarn("As of the error above, adjust ARPACK options 'maxiter' and 'tol'...")
+            adjusted.options = list(maxiter = 5000, tol = 0.1)
+            adjusted.computation = igraph::eigen_centrality(network, directed = TRUE,
+                                                            options = adjusted.options)
+            logging::loginfo("eigen_centrality with adjusted ARPACK options finished successfully.")
+            eigen.centrality = adjusted.computation
+            return(adjusted.computation)
+        }
+    )
+    centrality.vec = sort(eigen.centrality[["vector"]], decreasing = TRUE)
 
     ## In case no collaboration occured, all centrality values are set to 0
     if (igraph::ecount(network) == 0) {
