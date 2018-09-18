@@ -597,44 +597,55 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #'
 #' For further information, see the documentation of \code{split.network.time.based}.
 #'
-#' Note: If you want to split a set of networks to a fixed set of bins (i.e., use the 'bins' argument of
-#' \code{split.network.time.based}), use \code{lapply} right away.
-#'
 #' Important notice: This function only works for unsimplified networks, where no edges have been
 #' contracted, which would combine edge attributes, especially the "date" attribute.
 #'
 #' @param networks the igraph networks to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days"
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner). If set, the 'time.period' and 'sliding.window' parameters are ignored.
 #' @param number.windows the number of consecutive networks to get for each network, implying equally
-#'                       time-sized windows for all ranges. If set, the 'time.period' parameter is ignored;
-#'                       consequently, 'sliding.window' does not make sense then either. [default: NULL]
+#'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
+#'                       consequently, 'sliding.window' does not make sense then either.
+#'                       [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of network-splitting results (of length \code{length(networks)}), each item referring to a list
 #'         of networks, each itself referring to one time period
-split.networks.time.based = function(networks, time.period = "3 months", number.windows = NULL,
-                                     sliding.window = FALSE, remove.isolates = TRUE) {
+split.networks.time.based = function(networks, time.period = "3 months", bins = NULL,
+                                     number.windows = NULL, sliding.window = FALSE,
+                                     remove.isolates = TRUE) {
 
-    ## get base network and obtain splitting information:
-    ## 1) extract date attributes from edges
-    networks.dates = lapply(networks, function(net) {
-        dates = igraph::E(net)$date
-        return(dates)
-    })
-    dates = unlist(networks.dates, recursive = FALSE)
-    dates = get.date.from.unix.timestamp(dates)
 
-    ## 2) get bin information
-    bins.info = split.get.bins.time.based(dates, time.period, number.windows)
-    bins.date = get.date.from.string(bins.info[["bins"]])
-
-    ## 3) number of windows given (ignoring time period)
+    ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
+        ## reset bins for the later algorithm
+        bins = NULL
         ## remove sliding windows
         sliding.window = FALSE
+    }
+
+    if (is.null(bins)) {
+        ## get base network and obtain splitting information:
+        ## 1) extract date attributes from edges
+        networks.dates = lapply(networks, function(net) {
+            dates = igraph::E(net)$date
+            return(dates)
+        })
+        dates = unlist(networks.dates, recursive = FALSE)
+        dates = get.date.from.unix.timestamp(dates)
+
+        ## 2) get bin information
+        bins.info = split.get.bins.time.based(dates, time.period, number.windows)
+        bins.date = get.date.from.string(bins.info[["bins"]])
+    } else {
+        ## remove sliding windows
+        sliding.window = FALSE
+        ## set the bins to use
+        bins.date = bins
     }
 
     ## split all networks to the extracted bins
