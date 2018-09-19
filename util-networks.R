@@ -1060,19 +1060,28 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' Merges a list vertex data frame and merges a list of edge
 #' data frames
 #'
-#' @param vertex.data the list of vertex data frames
+#' @param vertex.data the list of vertex data frames, may be \code{NULL}
 #' @param edge.data the list of edge data frames
 #'
 #' @return list containing one edge data frame and one vertex data frame
 merge.network.data = function(vertex.data, edge.data) {
     logging::logdebug("merge.network.data: starting.")
 
-    ## select only unique vertices
+    ## combine vertices and select only unique vertices
     vertices = plyr::rbind.fill(vertex.data)
     vertices = unique.data.frame(vertices)
 
-    ## combine all edges via the edge lists
-    edges = plyr::rbind.fill(edge.data)
+    ## combine all edges via the edge lists:
+    ## 1) remove empty instances of edge data
+    edge.data.filtered = Filter(function(ed) {
+        return(nrow(ed) > 0)
+    }, edge.data)
+    ## 2) call rbind
+    edges = plyr::rbind.fill(edge.data.filtered)
+    ## 3) correct empty results
+    if (is.null(edges)) {
+        edges = data.frame(from = character(0), to = character(0))
+    }
 
     logging::logdebug("merge.network.data: finished.")
     return(list(
