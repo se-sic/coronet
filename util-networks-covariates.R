@@ -734,7 +734,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    take.first.over.all.activity.types = FALSE) {
 
-    ## parse given activity types to functions
+    ## check given activity types
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
     ## get data for each activity type and extract minimal date for each author in each type,
