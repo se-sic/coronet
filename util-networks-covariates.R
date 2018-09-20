@@ -438,49 +438,63 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 #' @param list.of.networks The network list
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "active.ranges"]
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues}. [default: c("mails", "commits", "issues")]
 #' @param default.value The default value to add if a vertex has no matching value [default: list()]
+#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges",
-                                              default.value = list()) {
+                                              activity.types = c("mails", "commits", "issues"),
+                                              default.value = NA,
+                                              take.first.over.all.activity.types = FALSE) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
-    range.to.authors = lapply(
-        net.to.range.list,
-        function(net.to.range) {
-            ## FIXME support data-source-specific method AND all-sources method
-            ## (we only use 'commits' source here)
-            unique(net.to.range[["data"]]$get.commits()[["author.name"]])
-        }
-    )
+    # a list with elements representing the parsed activity types, each containing a list of elements
+    #   representing the ranges the data was split by, each containing a list of authors who were active
+    #   for the corresponding activity type and range.
+    range.to.authors.per.activity.type = lapply(parsed.activity.types, function(type) {
+        type.function = paste0("get.", type)
+        lapply(net.to.range.list, function(net.to.range) {
 
-    author.names = unique(unlist(range.to.authors))
+            # get author information per activity.type
+            type.data = net.to.range[["data"]][[type.function]]()
 
-    active.ranges = lapply(
-        author.names,
-        function(author) {
-            filter.by.author = Filter(function(range) author %in% range,
-                                      range.to.authors)
+            # remove unnecessary information and potentially resulting duplicats
+            clean.type.data = unique(type.data[["author.name"]])
 
-            active.ranges.of.author = names(filter.by.author)
+            return(as.list(clean.type.data))
+        })
+    })
+    names(range.to.authors.per.activity.type) = parsed.activity.types
 
-            ## vector for one vertex needs to be wrapped into a list due to multiple values per vertex
-            return(list(active.ranges.of.author))
-        }
-    )
+    #switch t-r-a to a-t-r
+    y = list.by.inner.level(range.to.authors.per.activity.type)
 
-    names(active.ranges) = author.names
+    # if there's no activity data for a type, an empty list named with the type is added instead.
+    z = lapply(y, function(ranges.per.type) {
+        ranges.for.all.types = lapply(parsed.activity.types, function(type) {
+            if (type %in% names(ranges.per.type)) {
+                return(ranges.per.type[[type]])
+            } else {
+                return(list())
+            }
+        })
+        names(ranges.for.all.types) = parsed.activity.types
+        return(list(ranges.for.all.types))
+    })
 
     ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
     list.default.value = list(default.value)
 
-    nets.with.attr = add.vertex.attribute(
-        net.to.range.list, name, list.default.value,
+    nets.with.attr = add.vertex.attribute(net.to.range.list, name, list.default.value,
         function(range, range.data, net) {
-            active.ranges
+            z
         }
     )
-
     return(nets.with.attr)
 }
 
@@ -813,5 +827,65 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         })
     }
 
+    return(result)
+}
+
+# switch hierarchy levels
+switch.levels = function(list.of.lists) {
+    inner.list.elements = unique(unlist(list.of.lists, recursive = FALSE))
+
+    result = lapply(
+        inner.list.elements,
+        function(inner.list.element) {
+            # collect all inner lists containing the specific element
+            outer.filtered.by.inner = Filter(function(outer.list.element) inner.list.element %in% outer.list.element,
+                                             list.of.lists)
+
+            # only the names of the collected inner lists are of interest
+            resulting.inner.list = names(outer.filtered.by.inner)
+
+            return(resulting.inner.list)
+        }
+    )
+
+    names(result) = inner.list.elements
+    return(result)
+}
+
+
+list.by.inner.level = function(nested.list) {
+    list.by = unique(unlist(nested.list, use.names = FALSE))
+
+    get.structure.for = function(structure, name, innerst.element) {
+
+        if (length(structure) == 0) {
+            return(list())
+        } else if (is.list(structure[[1]])) {
+            recursive = lapply(names(structure), function(substructure.name) {
+                substructure = structure[[substructure.name]]
+                called = get.structure.for(substructure, substructure.name, innerst.element)
+                return(called)
+            })
+            names(recursive) = names(structure)
+
+            # remove NA values from recursively obtained structure
+            na.removed = recursive[sapply(recursive, function(x) any(!is.na(x)))]
+
+            return(na.removed)
+
+        } else { #Abbruchfall: structure ist eine einfache Liste, die Elemente sind also keine Listen mehr.
+            if (innerst.element %in% structure) {
+                return(name)
+            } else {
+                return(NA)
+            }
+        }
+    }
+
+    result = lapply(list.by, function(element) {
+    return(get.structure.for(nested.list, "not used", element))
+    })
+
+    names(result) = list.by
     return(result)
 }
