@@ -67,7 +67,7 @@ test_that("Merge networks", {
     g = add.edges.for.bipartite.relation(base.net, bip.relations, net.conf)
 
     ## simplify the network without any errors (hopefully)
-    expect_output(str(simplify.network(g)), "IGRAPH", fixed = TRUE)
+    expect_error(simplify.network(g), NA) # expect that no error occurs
 
 
     ##
@@ -75,7 +75,7 @@ test_that("Merge networks", {
     ##
 
     network.empty = create.empty.network(directed = FALSE)
-    expect_output(str(merge.networks(list(network.empty, network.empty))), "IGRAPH", fixed = TRUE)
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
 
 })
 
