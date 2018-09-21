@@ -1185,6 +1185,14 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
         return(list())
     }
 
+    ## check key and value columns for existence
+    if (!all(c(key, value) %in% colnames(base.data))) {
+        logging::logerror("Trying to group data by non-existent columns (either '%s' or '%s').", key, value)
+        logging::logerror(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
+        logging::logdebug("get.key.to.value.from.df: stopped.")
+        stop("Trying to group data by non-existent columns.")
+    }
+
     ## re-arrange columns and use things as first columns
     cols.old = colnames(base.data)
     base.data = base.data[c(key, value, cols.old)]
