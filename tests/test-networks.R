@@ -30,11 +30,13 @@ ARTIFACT = "feature" # function, feature, file, featureexpression
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 
-test_that("Merge networks", {
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Simplification ----------------------------------------------------------
+
+test_that("Simplify network with more than one relation", {
 
     ##
     ## Simplify networks with two relations, but only one loop edge
-    ## (i.e., merge two networks without any edges)
     ##
 
     ## create network configuration
@@ -44,7 +46,7 @@ test_that("Merge networks", {
     ## create author network (relation = "mail") and artifact network and join them
     author.net =
         igraph::make_empty_graph(n = 0, directed = FALSE) +
-        igraph::vertices(LETTERS[1:3], type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
+        igraph::vertices("A", "B", "C", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
         igraph::edges("A", "A", type = TYPE.EDGES.INTRA, relation = "mail")
     artifact.net =
         igraph::make_empty_graph(n = 0, directed = FALSE) +
@@ -68,7 +70,17 @@ test_that("Merge networks", {
 
     ## simplify the network without any errors (hopefully)
     expect_error(simplify.network(g), NA) # expect that no error occurs
+    expect_identical(igraph::V(simplify.network(g))$name, c("A", "B", "C", "Base_Feature")) # vertices
+    expect_identical(igraph::ecount(simplify.network(g)), 1) # edges
+    expect_true(igraph::are.connected(simplify.network(g), "A", "Base_Feature")) # specific edge
 
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Merge -------------------------------------------------------------------
+
+test_that("Merge networks", {
 
     ##
     ## Merge two empty networks (i.e., no vertices at all)
@@ -76,6 +88,8 @@ test_that("Merge networks", {
 
     network.empty = create.empty.network(directed = FALSE)
     expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
 
 })
 

@@ -868,7 +868,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' For each group, the column \code{"author.name"} is duplicated and prepended to each
         #' group's data as first column (see below for details).
         #'
-        #' Example: To obtain the artifacts which has been touched by an author,
+        #' Example: To obtain the authors who touched the same source-code artifact,
         #' call \code{group.authors.by.data.column("commits", "artifact")}.
         #'
         #' @param data.source The specified data source. One of \code{"commits"},
@@ -895,7 +895,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' For each group, the column \code{"author.name"} is duplicated and prepended to each
         #' group's data as first column (see below for details).
         #'
-        #' Example: To obtain the artifacts which has been touched by an author,
+        #' Example: To obtain the authors who touched the same source-code artifact,
         #' call \code{group.authors.by.data.column("commits", "artifact")}.
         #'
         #' Note: This method is a delegate for \code{ProjectData$group.authors.by.data.column}.
@@ -918,29 +918,29 @@ ProjectData = R6::R6Class("ProjectData",
 
 
         #' Group the artifacts of the given \code{data.source} by the given \code{group.column}.
-        #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+        #' For each group, the column \code{artifact.column} is duplicated and prepended to each group's
         #' data as first column (see below for details).
         #'
-        #' Example: To obtain the authors who touched the same source-code artifact,
-        #' call \code{group.artifacts.by.data.column("commits", "artifact")}.
+        #' Example: To obtain the artifacts that have been touched by each author,
+        #' call \code{group.artifacts.by.data.column("commits", "author.name")}.
         #'
         #' @param data.source The specified data source. One of \code{"commits"},
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
         #' @param group.column The column to group the artifacts of the given \code{data.source} by
         #'                     [default: "author.name"]
-        #' @param data.column The column that gets duplicated as first column \code{data.vertices}.
-        #'                    If \code{NULL}, the column is automatically determined based on the
-        #'                    given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
-        #'                    for details). [default: NULL]
+        #' @param artifact.column The column that gets duplicated as first column \code{data.vertices}.
+        #'                        If \code{NULL}, the column is automatically determined based on the
+        #'                        given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
+        #'                        for details). [default: DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]]
         #'
         #' @return a list mapping each distinct item in \code{group.column} to all corresponding
-        #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+        #'         data items from \code{data.source}, with \code{artifact.column} duplicated as first
         #'         column (with name \code{"data.vertices"})
         #'
         #' @seealso ProjectData$group.data.by.column
         group.artifacts.by.data.column = function(data.source = c("commits", "mails", "issues"),
                                                   group.column = "author.name",
-                                                  artifact.column = NULL) {
+                                                  artifact.column = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]) {
             logging::loginfo("Grouping artifacts by data column.")
 
             ## determine the artifact column if not given explicitly
@@ -955,11 +955,11 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Group the artifacts of the given \code{data.source} by the given \code{group.column}.
-        #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+        #' For each group, the column \code{artifact.column} is duplicated and prepended to each group's
         #' data as first column (see below for details).
         #'
-        #' Example: To obtain the authors who touched the same source-code artifact,
-        #' call \code{group.artifacts.by.data.column("commits", "artifact")}.
+        #' Example: To obtain the artifacts that have been touched by each author,
+        #' call \code{group.artifacts.by.data.column("commits", "author.name")}.
         #'
         #' Note: This method is a delegate for \code{ProjectData$group.artifacts.by.data.column}.
         #' It is deprecated and may be removed in any later version.
@@ -968,19 +968,19 @@ ProjectData = R6::R6Class("ProjectData",
         #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
         #' @param group.column The column to group the artifacts of the given \code{data.source} by
         #'                     [default: "author.name"]
-        #' @param data.column The column that gets duplicated as first column \code{data.vertices}.
-        #'                    If \code{NULL}, the column is automatically determined based on the
-        #'                    given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
-        #'                    for details). [default: NULL]
+        #' @param artifact.column The column that gets duplicated as first column \code{data.vertices}.
+        #'                        If \code{NULL}, the column is automatically determined based on the
+        #'                        given \code{data.source} (see \code{DATASOURCE.TO.ARTIFACT.COLUMN}
+        #'                        for details). [default: DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]]
         #'
         #' @return a list mapping each distinct item in \code{group.column} to all corresponding
-        #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+        #'         data items from \code{data.source}, with \code{artifact.column} duplicated as first
         #'         column (with name \code{"data.vertices"})
         #'
         #' @seealso ProjectData$group.data.by.column
         get.author2artifact = function(data.source = c("commits", "mails", "issues"),
                                                   group.column = "author.name",
-                                                  artifact.column = NULL) {
+                                                  artifact.column = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]) {
             logging::logwarn("The method 'ProjectData$get.author2artifact' is deprecated!")
             return(self$group.artifacts.by.data.column(data.source, group.column, artifact.column))
         },

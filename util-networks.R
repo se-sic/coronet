@@ -1062,9 +1062,10 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' data frames
 #'
 #' @param vertex.data the list of vertex data frames, may be \code{NULL}
-#' @param edge.data the list of edge data frames
+#' @param edge.data the list of edge data frames, may be \code{NULL}
 #'
-#' @return list containing one edge data frame and one vertex data frame
+#' @return list containing one edge data frame (name \code{edges}) and
+#'         one vertex data frame (named \code{vertices})
 merge.network.data = function(vertex.data, edge.data) {
     logging::logdebug("merge.network.data: starting.")
 

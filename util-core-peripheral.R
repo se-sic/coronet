@@ -455,7 +455,6 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
             adjusted.computation = igraph::eigen_centrality(network, directed = TRUE,
                                                             options = adjusted.options)
             logging::loginfo("eigen_centrality with adjusted ARPACK options finished successfully.")
-            eigen.centrality = adjusted.computation
             return(adjusted.computation)
         }
     )
