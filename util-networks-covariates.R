@@ -17,6 +17,14 @@
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
+requireNamespace("plyr") # for ldply function
+requireNamespace("igraph") # networks
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility functions -------------------------------------------------------
@@ -370,9 +378,12 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.author2artifact(), function(x) {
-                length(unique(x[["artifact"]]))
-            })
+            ## FIXME we need to implement this also for the other kinds of artifacts
+            lapply(range.data$group.artifacts.by.data.column("commits", "author.name"),
+                   function(x) {
+                       length(unique(x[["artifact"]]))
+                   }
+            )
         }
     )
 
@@ -409,12 +420,8 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                take.first.over.all.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     compute.attr = function(range, range.data, net) {
-        df = get.first.activity.data(range.data, activity.types)
-        if (take.first.over.all.activity.types) {
-            return(get.first.activity.data.list.over.all(df))
-        } else {
-            return(get.first.activity.data.list.single.types(df))
-        }
+        data = get.first.activity.data(range.data, activity.types, take.first.over.all.activity.types)
+        return(data)
     }
 
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
@@ -442,7 +449,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         function(net.to.range) {
             ## FIXME support data-source-specific method AND all-sources method
             ## (we only use 'commits' source here)
-            names(net.to.range[["data"]]$get.author2commit())
+            unique(net.to.range[["data"]]$get.commits()[["author.name"]])
         }
     )
 
@@ -631,9 +638,11 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.artifact2author(), function(x) {
-                length(unique(x[["author.name"]]))
-            })
+            lapply(range.data$group.authors.by.data.column("commits", "artifact"),
+                   function(x) {
+                       length(unique(x[["author.name"]]))
+                   }
+            )
         }
     )
 
@@ -718,87 +727,90 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #' @param activity.types The activity types to compute information for. They determine the columns of the returned data frame.
 #'                       [default: c("mails", "commits", "issues")]
 #' @param range.data The data to base the computation on.
+#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
 #'
-#' @return A data frame with rows named with persons and columns named with activity types, containing the time of the corresponding
-#'         first activity as POSIXct.
-get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues")) {
+#' @return A list with authors as keys and a POSIXct list in the following format as value:
+#'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
+#'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
+get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
+                                   take.first.over.all.activity.types = FALSE) {
 
-    ## parse given activity types to functions
+    ## check given activity types
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
-    activity.type.functions = lapply(parsed.activity.types,
-                    function(activity.type) {
-                        function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
-                        activity.type.function = paste0("get.author2", function.suffix)
-                        return(activity.type.function)
-                    }
-    )
 
-    result = data.frame()
-    for (type in activity.type.functions) {
+    ## get data for each activity type and extract minimal date for each author in each type,
+    ## resulting in a list of activity types with each item containing a list of authors
+    ## mapped to their first activity for the current activity type; for example:
+    ##    list(
+    ##        commits = list(authorA = list(commits = 1), authorB = list(commits = 0)),
+    ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
+    ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
+    ##    )
+    activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
+        ## compute minima
+        minima.per.person = lapply(
+            range.data$group.artifacts.by.data.column(type, "author.name"),
+            function(x) {
+                ## get first date
+                m = list(min(x[["date"]]))
+                ## add activity type as name to the list
+                names(m) = type
+                return(m)
+            }
+        )
+        return(minima.per.person)
+    })
 
-        ## compute minimums
-        minimums.per.person = lapply(range.data[[type]](),
-                                     function(x) min(x[["date"]]))
+    ## accumulate/fold lists 'activity.by.type' by adding all values of each list
+    ## to an intermediate list (start with first list); for example:
+    ##     list(
+    ##        authorA = list(commits =  1, mails = NA, issues =  2),
+    ##        authorB = list(commits =  0, mails =  2, issues = NA),
+    ##        authorC = list(commits = NA, mails =  3, issues = NA),
+    ##        authorD = list(commits = NA, mails = NA, issues =  2)
+    ##     )
+    result = Reduce(function(x, y) {
+        ## get names from both lists, representing author names for the current activity types
+        keys = union(names(x), names(y))
+        ## get current step (i.e., "loop" index or, rather, "how many lists have we merged already?")
+        depth = max(lengths(x), lengths(y))
+        ## get the list of activity types to use on sublists (after merging next list (i.e., y)!)
+        names.list = activity.types[seq_len(depth + 1)]
 
-        ## fill dataframe
-        for (person in names(minimums.per.person)) {
-            result[person, type] = minimums.per.person[person]
-        }
+        ## actually combine values for each key
+        result = parallel::mclapply(keys, function(key) {
+            ## get value from intermediate list (pre-fill with right length if not existing)
+            value.x = if (is.null(x[[key]])) rep(list(NA), times = depth) else x[[key]]
+            ## get value from current list (use NA as default if not existing)
+            value.y = if (is.null(y[[key]])) NA else y[[key]]
 
-        ## format dataframe elements to POSIXct
-        result[type] = get.date.from.unix.timestamp(result[[type]])
+            ## combine values and name them appropriately
+            combined.values = c(value.x, value.y)
+            names(combined.values) = names.list
+
+            ## convert to POSIXct object again (which can be lost if is.null(x[[key]]) == TRUE)
+            combined.values = lapply(combined.values, get.date.from.unix.timestamp)
+
+            return(combined.values)
+        })
+        names(result) = keys
+        return(result)
+
+    }, activity.by.type)
+
+    ## find minima over all activity types if configured; for example:
+    ##     list(
+    ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
+    ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
+    ##     )
+    if (take.first.over.all.activity.types) {
+        result = parallel::mclapply(result, function(item.list) {
+            min.value = min(do.call(c, item.list), na.rm = TRUE)
+            return(list(all.activities = min.value))
+        })
     }
-    return(result)
-}
 
-#' Helper function for first activity: Converts the given dataframe in a list containing the first activity of all activity types per person. For
-#' compatibility with the single first activity calculation (see function \code{get.first.activity.data.list.single.types}), the values are each wrapped in an inner list.
-#'
-#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the columns are activity type functions.
-#'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
-#'
-#' @return A list containing for each person in the given dataframe a list containing the first activity of all activity types in the given dataframe.
-get.first.activity.data.list.over.all = function(first.activity.dataframe) {
-
-    ## Compute the minimum per person. The function apply is called with MARGIN = 1, as we are looking for the minimum per row, and na.rm = TRUE, as
-    ## we don't want to consider NA values for the computation.
-    min.per.person = apply(first.activity.dataframe, MARGIN = 1, min, na.rm = TRUE)
-
-    ## Wrap each list element in its own list for compatibility with the single first activity calculation.
-    wrapped.min.per.person = lapply(min.per.person, function(element) {
-        listed.element = list(element)
-        names(listed.element) = c("all.activities")
-        return(listed.element)
-    })
-
-    names(wrapped.min.per.person) = rownames(first.activity.dataframe)
-    return(wrapped.min.per.person)
-}
-
-#' Helper function for first activity: Converts the given dataframe in a list containing the first activity per activity type and person.
-#'
-#' @param first.activity.dataframe A dataframe with the first activity data. The rows are persons, the columns are activity type functions.
-#'                                 A correctly formatted dataframe can easily be created by the function \code{compute.first.activities.dataframe}.
-#'
-#' @return A list containing for each person in the given datafram a list containing for each activity type in the given dataframe the first activity.
-get.first.activity.data.list.single.types = function(first.activity.dataframe) {
-
-    result = lapply(rownames(first.activity.dataframe), function(person) {
-
-        ## get first activities as list from dataframe
-        first.activity.for.person = lapply(colnames(first.activity.dataframe), function(activity.type) {
-            return(first.activity.dataframe[person, activity.type])
-        })
-
-        ## get readable name from dataframe column names as names for first.activity.for.person
-        names(first.activity.for.person) = lapply(colnames(first.activity.dataframe), function(activity.type) {
-            return(paste0(substr(activity.type, 12, nchar(activity.type)), "s"))
-        })
-
-        return(first.activity.for.person)
-
-    })
-
-    names(result) = rownames(first.activity.dataframe)
     return(result)
 }

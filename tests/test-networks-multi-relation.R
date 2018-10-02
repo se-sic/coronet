@@ -13,6 +13,7 @@
 ##
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -205,7 +206,7 @@ test_that("Construction of the multi network for the feature artifact with autho
     ## build expected network
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                 "Base_Feature", "foo", "A", "<issue-2>", "<issue-48>", "<issue-51>", "<issue-57>"),
+                 "Base_Feature", "foo", "A", "<issue-2>", "<issue-51>", "<issue-48>", "<issue-57>"),
         kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 4)),
         type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7))
     )

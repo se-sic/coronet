@@ -64,6 +64,18 @@ EDGE.ATTR.HANDLING = list(
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
+
+## mapping of relation to data source
+RELATION.TO.DATASOURCE = list(
+    "cochange"  = "commits",
+    "callgraph" = "commits",
+    "mail"      = "mails",
+    "issue"     = "issues"
+)
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkBuilder ----------------------------------------------------------
 
 NetworkBuilder = R6::R6Class("NetworkBuilder",
@@ -143,7 +155,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.artifact2author(),
+                private$proj.data$group.authors.by.data.column("commits", "artifact"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -178,10 +190,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.mail)
             }
 
-
             ## construct edge list based on thread2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.thread2author(),
+                private$proj.data$group.authors.by.data.column("mails", "thread"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -213,7 +224,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct edge list based on issue2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$get.issue2author(),
+                private$proj.data$group.authors.by.data.column("issues", "issue.id"),
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
@@ -249,8 +260,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.cochange)
             }
 
-            ## construct edge list based on commit2artifact data
-            artifacts.net.data.raw = private$proj.data$get.commit2artifact()
+            ## construct edge list based on commit--artifact data
+            artifacts.net.data.raw = private$proj.data$group.artifacts.by.data.column("commits", "hash")
+
             artifacts.net.data = construct.edge.list.from.key.value.list(
                 artifacts.net.data.raw,
                 network.conf = private$network.conf,
@@ -288,7 +300,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## check if revision for call-graphs is set
-            if (is.na(private$proj.data$get.revision.callgraph())) {
+            if (!("RangeData" %in% class(private$proj.data)) ||
+                is.na(private$proj.data$get.revision.callgraph())) {
+
                 logging::logerror("The call-graph revision is not set. Aborting...")
                 logging::logerror("This may be due to project-level analysis.
                                   The call-graph data is only available in range-level analysis.")
@@ -375,8 +389,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct empty network
             directed = private$network.conf$get.value("artifact.directed")
-            artifacts.net.data.raw = private$proj.data$get.thread2author()
-            artifacts = names(artifacts.net.data.raw) # thread IDs
+            artifacts = private$proj.data$get.artifacts("mails") # thread IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
 
             ## store network
@@ -408,8 +421,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct empty network
             directed = private$network.conf$get.value("artifact.directed")
-            artifacts.net.data.raw = private$proj.data$get.issue2author()
-            artifacts = names(artifacts.net.data.raw) # thread IDs
+            artifacts = private$proj.data$get.artifacts("issues") # issue IDs
             artifacts.net = create.empty.network(directed = directed) + igraph::vertices(artifacts)
 
             ## store network
@@ -436,22 +448,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("Using bipartite relations '%s'.", relations)
 
             bip.relations = lapply(relations, function(relation) {
-                ## get the actual relation and the artifact type
-                switch(
-                    relation,
-                    cochange = {
-                        bip.relation = private$proj.data$get.author2artifact()
-                    },
-                    callgraph = {
-                        bip.relation = private$proj.data$get.author2artifact()
-                    },
-                    mail = {
-                        bip.relation = private$proj.data$get.author2thread()
-                    },
-                    issue = {
-                        bip.relation = private$proj.data$get.author2issue()
-                    }
-                )
+                ## get data for current bipartite relation
+                data.source = RELATION.TO.DATASOURCE[[relation]]
+                bip.relation = private$proj.data$group.artifacts.by.data.column(data.source, "author.name")
 
                 ## set vertex.kind and relation attributes
                 attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
@@ -1062,18 +1061,29 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' Merges a list vertex data frame and merges a list of edge
 #' data frames
 #'
-#' @param vertex.data the list of vertex data frames
-#' @param edge.data the list of edge data frames
+#' @param vertex.data the list of vertex data frames, may be \code{NULL}
+#' @param edge.data the list of edge data frames, may be \code{NULL}
 #'
-#' @return list containing one edge data frame and one vertex data frame
+#' @return list containing one edge data frame (name \code{edges}) and
+#'         one vertex data frame (named \code{vertices})
 merge.network.data = function(vertex.data, edge.data) {
     logging::logdebug("merge.network.data: starting.")
 
+    ## combine vertices and select only unique vertices
     vertices = plyr::rbind.fill(vertex.data)
-
-    ## select unique vertices
     vertices = unique.data.frame(vertices)
-    edges = plyr::rbind.fill(edge.data)
+
+    ## combine all edges via the edge lists:
+    ## 1) remove empty instances of edge data
+    edge.data.filtered = Filter(function(ed) {
+        return(nrow(ed) > 0)
+    }, edge.data)
+    ## 2) call rbind
+    edges = plyr::rbind.fill(edge.data.filtered)
+    ## 3) correct empty results
+    if (is.null(edges)) {
+        edges = data.frame(from = character(0), to = character(0))
+    }
 
     logging::logdebug("merge.network.data: finished.")
     return(list(
@@ -1323,6 +1333,42 @@ extract.bipartite.network.from.network = function(network) {
     ## only retain all bipartite edges and induced vertices
     bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
     return(bip.network)
+}
+
+#' Delete author vertices from the given network that do not have adjacent edges of a specific type,
+#' i.e., bipartite and/or unipartite edges.
+#'
+#' *Use case for \code{specific.edge.types = "TYPE.EDGES.INTER"}*:
+#' When building multi-networks, we can make use of the configuration option \code{author.only.committers}.
+#' However, when we split a project-level multi-network into range-level networks, we can obtain authors
+#' in a certain time-range, that are only active on the mailing list in this range, but appear in the
+#' range-level multi-network as they appear in the project-level network since they are committer in,
+#' at least, one range. This function is able to remove the then-isolated author vertices from the
+#' range-level networks.
+#'
+#' @param network the network from which the author vertices are to be removed
+#' @param specific.edge.types the type of edges an author vertex needs to have to retain in the network;
+#'                            one or more of \code{TYPE.EDGES.INTER} and \code{TYPE.EDGES.INTRA}
+#'                            [default: c(TYPE.EDGES.INTER, TYPE.EDGES.INTRA)]
+#'
+#' @return the network without author vertices lacking edges of the specified
+delete.authors.without.specific.edges = function(network, specific.edge.types =
+                                                     c(TYPE.EDGES.INTER, TYPE.EDGES.INTRA)) {
+
+    ## obtain the edge type to consider
+    specific.edge.types = match.arg.or.default(specific.edge.types, several.ok = TRUE)
+
+    ## get all authors
+    vertex.ids.author = as.numeric(igraph::V(network)[type == TYPE.AUTHOR])
+    ## get vertex IDs of all vertices with specific edges
+    vertex.ids.specific = as.vector(igraph::get.edges(network, igraph::E(network)[type %in% specific.edge.types]))
+
+    ## compute all authors without specific edges as vertex IDs
+    vertex.ids.author.no.specific = setdiff(vertex.ids.author, vertex.ids.specific)
+    ## remove all authors without specific edges from network
+    network = igraph::delete.vertices(network, vertex.ids.author.no.specific)
+
+    return(network)
 }
 
 

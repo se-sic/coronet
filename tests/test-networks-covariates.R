@@ -59,6 +59,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
 
     ## retrieve project data and network builder
     project.data = ProjectData$new(proj.conf)
+    project.data$set.issues(NULL)
 
     ## split data
     input.data = split.data.time.based(project.data, bins = mybins)
@@ -80,7 +81,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 15:58:40 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
@@ -94,7 +95,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 16:05:37 UTC",
                     commits = "2016-07-12 16:05:41 UTC",
-                    issues = "2016-07-27 22:25:25 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
@@ -104,7 +105,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = NA,
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-14 02:03:14 UTC"
+                    issues = NA
                 )
             )
         ),
@@ -113,7 +114,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 15:58:40 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
@@ -127,7 +128,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2016-07-27 22:25:25 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
@@ -137,7 +138,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             )
         ),
@@ -146,21 +147,21 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 15:58:40 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2016-07-27 22:25:25 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2016-07-27 22:25:25 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
@@ -170,7 +171,7 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             )
         ),
@@ -179,31 +180,31 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2004-10-09 18:38:13 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
                     commits = "2016-07-12 16:06:10 UTC",
-                    issues = "2013-04-21 23:52:09 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             )
         ),
@@ -212,31 +213,31 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2004-10-09 18:38:13 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
                     commits = "2016-07-12 16:06:10 UTC",
-                    issues = "2013-04-21 23:52:09 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             )
         ),
@@ -245,31 +246,31 @@ get.expected.first.activity = function() {
                 list(
                     mails = "2004-10-09 18:38:13 UTC",
                     commits = "2016-07-12 15:58:59 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 )
             ),
             list(
                 list(
                     mails = "2016-07-12 15:58:50 UTC",
                     commits = "2016-07-12 16:00:45 UTC",
-                    issues = "2013-05-25 20:02:08 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = NA,
                     commits = "2016-07-12 16:06:10 UTC",
-                    issues = "2013-04-21 23:52:09 UTC"
+                    issues = NA
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
                     commits = "2016-07-12 16:06:32 UTC",
-                    issues = "2016-07-12 15:59:25 UTC"
+                    issues = NA
                 )
             )
         )
@@ -536,7 +537,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
             list(list(all.activities = "2016-07-12 15:58:50 UTC")),
             list(list(all.activities = "2016-07-12 15:58:50 UTC"),
                  list(all.activities = "2016-07-12 16:06:10 UTC"),
-                 list(all.activities = "2016-07-12 15:59:25 UTC")
+                 list(all.activities = "2016-07-12 16:04:40 UTC")
             )
         ),
         all.ranges = network.covariates.test.build.expected(
@@ -544,31 +545,31 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
             list(list(all.activities = "2016-07-12 15:58:50 UTC")),
             list(list(all.activities = "2016-07-12 15:58:50 UTC"),
                  list(all.activities = "2016-07-12 16:06:10 UTC"),
-                 list(all.activities = "2016-07-12 15:59:25 UTC")
+                 list(all.activities = "2016-07-12 16:04:40 UTC")
             )
         ),
         project.cumulative = network.covariates.test.build.expected(
             list(list(all.activities = "2004-10-09 18:38:13 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
-                 list(all.activities = "2013-04-21 23:52:09 UTC"),
-                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            list(list(all.activities = "2016-07-12 15:58:50 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 16:04:40 UTC")
             )
         ),
         project.all.ranges = network.covariates.test.build.expected(
             list(list(all.activities = "2004-10-09 18:38:13 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
-                 list(all.activities = "2013-04-21 23:52:09 UTC"),
-                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            list(list(all.activities = "2016-07-12 15:58:50 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 16:04:40 UTC")
             )
         ),
         complete = network.covariates.test.build.expected(
             list(list(all.activities = "2004-10-09 18:38:13 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC")),
-            list(list(all.activities = "2013-05-25 20:02:08 UTC"),
-                 list(all.activities = "2013-04-21 23:52:09 UTC"),
-                 list(all.activities = "2016-07-12 15:59:25 UTC")
+            list(list(all.activities = "2016-07-12 15:58:50 UTC")),
+            list(list(all.activities = "2016-07-12 15:58:50 UTC"),
+                 list(all.activities = "2016-07-12 16:06:10 UTC"),
+                 list(all.activities = "2016-07-12 16:04:40 UTC")
             )
         )
     )
