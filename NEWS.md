@@ -1,7 +1,7 @@
 # codeface-extraction-r – Changelog
 
 
-## Unversioned
+## 3.4
 
 ### Added
 - Create global constant named `BASE.ARTIFACTS` (7031d450cfbfdd17e07e3c18290d8b1ff6612181)
