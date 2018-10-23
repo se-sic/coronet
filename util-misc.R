@@ -149,35 +149,54 @@ get.stacktrace = function(calls) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Intermediate data -------------------------------------------------------
 
-#' Save the given 'variable' on the file system (in 'dump.path') if it does not exist already,
-#' and load the saved data if it exists.
-#'
-#' With skip, the check for data existance can be skipped (i.e., force a re-save).
-#'
 #' This function is for repetitive runs of the same script: It saves intermediate data to disk and
 #' loads it from a previous runs if possible. This way, computation time can be saved.
 #'
-#' @param variable a character naming the data variable to be saved to disk
-#' @param dump.path the path where the data is to be saved
-#' @param if.not.found if the data does not exist on disk, run this function ('variable' must be a variable there!)
+#' In detail, there are two possibilities:
+#' - The file with the path \code{dump.path} *does not exist*.
+#'
+#'   Save the return value of \code{if.not.found} under the variable name \code{variable}
+#'   in the environment from which this function is called and, additionally, save the variable's
+#'   value in the file \code{dump.path}.
+#'
+#' - The file with the path \code{dump.path} *exists already*.
+#'
+#'   Load the saved file and, thus, the inherently saved object and store the variable in the
+#'   calling environment.
+#'
+#' In both cases, the saved/loaded value is assigned to a variable named \code{variable}
+#' in the parent frame, i.e., in the calling environment. This means, the return value of this function
+#' does not need to be stored manually in a variable. However, for compatibility reasons, the
+#' value is returned invisibly so that assignment is possible (although, this does not disable the
+#' automatic storage in the parent environment!).
+#'
+#' Important: With the parameter \code{skip} set to \code{TRUE}, the check for data existance can be
+#' skipped (i.e., force a re-save to disk).
+#'
+#' @param variable a character naming the data variable to be saved to disk or loaded
+#' @param dump.path the path where the data is to be saved to or loaded from
+#' @param if.not.found if the data does not exist on disk, run this function whose return value is to be
+#'                     saved to disk into the file \code{dump.path}
 #' @param skip re-save although data exists on the disk? [default: FALSE]
 #'
-#' @return the data computed by 'if.not.found' or loaded from 'dump.path'
+#' @return the data named \code{variable}, either computed by \code{if.not.found} or loaded
+#'         from \code{dump.path}
 save.and.load = function(variable, dump.path, if.not.found, skip = FALSE) {
     if (!skip && file.exists(dump.path)) {
         logging::logdebug("Load %s from previously dumped object: %s.", variable, dump.path)
-        load(file = dump.path) # load the list named "variable" into the current environment
+        ## load the dumped object into the environment calling this very function
+        load(file = dump.path, envir = parent.frame())
     } else {
         res = if.not.found()
 
-        assign(variable, res) # rewrite to variable name
+        assign(variable, res, envir = parent.frame()) # rewrite to variable name
         rm(res) # clear memory
 
         logging::logdebug("Dumping object %s to %s.", variable, dump.path)
-        save(list = variable, file = dump.path) # save automatically
+        save(list = variable, file = dump.path, envir = parent.frame()) # save automatically
     }
 
-    return(get0(variable))
+    return(invisible(get0(variable, envir = parent.frame())))
 }
 
 
@@ -251,8 +270,9 @@ get.date.string = function(input) {
     return(result)
 }
 
-#' Construct a date sequence on the given start time, end time, and time period between the
-#' sequentially generated dates.
+#' Construct a date sequence on the given start time and end time, by either applying the given
+#' time period between the sequentially generated dates or by creating the given number of
+#' sequential windows.
 #'
 #' Note: You may want to use the function \code{ProjectData$get.data.timestamps} with this
 #' function here.
@@ -261,16 +281,26 @@ get.date.string = function(input) {
 #' @param end The end time as string or POSIXct object
 #' @param by The time period describing the length of time between dates, a character
 #'           string, e.g., "3 mins" or "15 days"
+#' @param length.out The desired length of the sequence (an integer). If set, the
+#'                   'time.period' parameter is ignored. [default: NULL]
 #'
 #' @return the sequential dates as a vector
-generate.date.sequence = function(start.date, end.date, by) {
+generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
 
     ## convert dates
     start.date = get.date.from.string(start.date)
     end.date = get.date.from.string(end.date)
 
     ## convert time.period to duration
-    time.period = lubridate::duration(by)
+    if (is.null(length.out)) {
+        time.period = lubridate::duration(by)
+    } else {
+        time.complete = lubridate::as.duration(lubridate::interval(start.date, end.date))
+        time.period =  time.complete / length.out
+        ## to avoid rounding differences, we round the time period up
+        ## (otherwise, we may end up with another unwanted date in the sequence)
+        time.period = ceiling(time.period)
+    }
 
     ## convenience function for next step
     get.next.step = function(date) {

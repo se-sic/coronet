@@ -1,6 +1,36 @@
 # codeface-extraction-r – Changelog
 
 
+## 3.4
+
+### Added
+- Create global constant named `BASE.ARTIFACTS` (7031d450cfbfdd17e07e3c18290d8b1ff6612181)
+- Split data into time-based equally-sized windows in function `split.data.time.based` (#49, 40974bada77b9184b025e47ebd7f0c4fb98e1475, a17475368e0beb3a4a9a71c9e6ec02a763e2bc32)
+- Split networks into time-based equally-sized windows in functions `split.network(s).time.based` (#49, 94cc87bd1789b211aff13b7c26235ccee77c2b7b, a17475368e0beb3a4a9a71c9e6ec02a763e2bc32, 5ac149262fa15a661748ebbee0d31c775bc41dd0)
+- Add function to delete authors without specific edges from networks `delete.authors.without.specific.edges` (#76, b9319e3ed4c3b0ea6860b4fabea2993b97e186e0, 107854c27f555ac9ba8439e041e1485d58d97c1c, 4e211f0ea559b3affea09becb8e846bab9836682, 4850666a46a086649faebee4aa3829005fad95af)
+- Add methods `ProjectData$group.authors.by.data.column` and `ProjectData$group.artifacts.by.data.column` (#97, 11f71899a514910c1f44ed1d9648127e93057ea2)
+- Add method `ProjectData$group.data.by.column` (b78f54fd36b5152bc64db5eaa0d2627e142dcf7f, 11f71899a514910c1f44ed1d9648127e93057ea2, related to #97)
+
+### Changed/Improved
+- Add possibility to add multiple first activities for different activity types in one vertex attribute (#92, 04f18b3097d17fe6b3486c656a807133e0ac0a42)
+- Add possibility to decide whether first activity should be computed per activity type or over all activity types when added as vertex attribute (#92, , 86962a313ceeb09c0e0675dc509d91e10647d6b6)
+- Refactor computation of vertex attribute `first.activity` for better performance (40b7d879e323275d308c408cca4913b805ddacf8, f5188904e51ddc08558842f6e357f8fa8edbb105)
+- Move `RELATION.TO.DATASOURCE` to module 'networks' (1ac09f64d202ba4279d05a9765bbbefdc57d4e1b)
+- Determine list of artifacts more reasonably in ProjectData (#97, 23a8aa3e8b20cd0d735cb4987e4a397b922e01ad, 11f71899a514910c1f44ed1d9648127e93057ea2)
+- Adapt `ProjectData$get.artifacts` to work with all data sources (#97, 0d184b82dac1a6d7edb3a3339e8352343cbe020f)
+- Improve function `save.and.load` to work without assignment (7f6ab1a5220b555a8123ff04b01547f7704fb31b)
+- Handle incorrect keys and values in `get.key.to.value.from.df` (5b74038bb5abc7748b2f2b7f1da1b5c2169717bd, related to #97)
+
+### Fixed
+- Fix computation of vertex attribute `first.activity` to handle empty data sources (4a9ad23bc203fe756e11665ae5c11ee97e97ca8b, 425c46bc41ae3446bd00ae3c8f7eb39434b77a0b)
+- Fortify check on callgraph revision in NetworkBuilder (dcf56ad9f4a3390d58dfb369a6e5f4fa76d18523)
+- Move pull-request template to take effect (6df72e94c1ea9749e798ed8354a6100a59cb9fc9)
+- Fix function `split.networks.time.based` regarding case that provided list of networks only contains one element (010a9358c91ad4a2fd29aa27301b7723c2f6b6e2)
+- Fix problem with fractional time periods in `generate.date.sequence` (8d80fa9939e6c5d95a7881a774c92764250f9341)
+- Handle ARPACK errors in eigen-centrality calculation (c5413c24f643c9981d35991db3f4a5b5f6b9b194, f213648bd4f1fa1056fef4d6e250f9e5b2aeb3c1)
+- Allow merge of empty networks (edges and/or vertices) (#142, 26e3bef6cc82c0705894384571775eba4e44010a)
+
+
 ## 3.3
 
 ### Added

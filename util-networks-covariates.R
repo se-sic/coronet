@@ -17,6 +17,14 @@
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
+requireNamespace("logging") # for logging
+requireNamespace("parallel") # for parallel computation
+requireNamespace("plyr") # for ldply function
+requireNamespace("igraph") # networks
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Utility functions -------------------------------------------------------
@@ -49,12 +57,12 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                 "project.cumulative", "project.all.ranges",
                                                                 "complete"),
-                                          default.value, compute.attr) {
+                                          default.value, compute.attr, list.attributes = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr)
+    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr, list.attributes)
     return(nets.with.attr)
 }
 
@@ -72,7 +80,7 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #'                     with the names being the name of the vertex.
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr) {
+add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr, list.attributes = FALSE) {
 
     nets.with.attr = mapply(
         names(net.to.range.list), net.to.range.list,
@@ -99,7 +107,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
                 attributes = unlist(attributes)
             }
             ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
-            else {
+            else if (!list.attributes) {
                 attributes = unlist(attributes, recursive = FALSE)
             }
 
@@ -370,9 +378,12 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.author2artifact(), function(x) {
-                length(unique(x[["artifact"]]))
-            })
+            ## FIXME we need to implement this also for the other kinds of artifacts
+            lapply(range.data$group.artifacts.by.data.column("commits", "author.name"),
+                   function(x) {
+                       length(unique(x[["artifact"]]))
+                   }
+            )
         }
     )
 
@@ -381,43 +392,40 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 
 ## * Activity --------------------------------------------------------------
 
-#' Add first activity attribute
+#' Add first activity attribute.
 #'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param activity.type The kind of activity to use as basis.
-#'                      One of \code{mails}, \code{commits}, and \code{issues}. [default: "mails"]
-#' @param name The attribute name to add [default: "first.activity"]
+#' @param list.of.networks The network list.
+#' @param project.data The project data.
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues}. [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add. [default: "first.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param default.value The default value to add if a vertex has no matching value. [default: NA].
+#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
 #'
-#' @return A list of networks with the added attribute
+#' @return A list of networks with the added attribute.
 add.vertex.attribute.first.activity = function(list.of.networks, project.data,
-                                               activity.type = c("mails", "commits", "issues"),
+                                               activity.types = c("mails", "commits", "issues"),
                                                name = "first.activity",
                                                aggregation.level = c("range", "cumulative", "all.ranges",
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
-                                               default.value = NA) {
+                                               default.value = NA,
+                                               take.first.over.all.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
-    activity.type = match.arg.or.default(activity.type)
-    ## TODO support getting first activity over all available activity types
-    function.suffix = substr(activity.type, 1, nchar(activity.type) - 1)
-    activity.type.function = paste0("get.author2", function.suffix)
+    compute.attr = function(range, range.data, net) {
+        data = get.first.activity.data(range.data, activity.types, take.first.over.all.activity.types)
+        return(data)
+    }
 
-    nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range, range.data, net) {
-            lapply(range.data[[activity.type.function]](),
-                   function(x) min(x[["date"]])
-            )
-        }
-    )
-
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+                                                    compute.attr, list.attributes = TRUE)
     return(nets.with.attr)
 }
 
@@ -441,7 +449,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         function(net.to.range) {
             ## FIXME support data-source-specific method AND all-sources method
             ## (we only use 'commits' source here)
-            names(net.to.range[["data"]]$get.author2commit())
+            unique(net.to.range[["data"]]$get.commits()[["author.name"]])
         }
     )
 
@@ -630,9 +638,11 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$get.artifact2author(), function(x) {
-                length(unique(x[["author.name"]]))
-            })
+            lapply(range.data$group.authors.by.data.column("commits", "artifact"),
+                   function(x) {
+                       length(unique(x[["author.name"]]))
+                   }
+            )
         }
     )
 
@@ -707,4 +717,100 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
         }
     )
     return(nets.with.attr)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper ------------------------------------------------------------------
+
+#' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
+#'
+#' @param activity.types The activity types to compute information for. They determine the columns of the returned data frame.
+#'                       [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on.
+#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
+#'
+#' @return A list with authors as keys and a POSIXct list in the following format as value:
+#'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
+#'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
+get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
+                                   take.first.over.all.activity.types = FALSE) {
+
+    ## check given activity types
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
+
+    ## get data for each activity type and extract minimal date for each author in each type,
+    ## resulting in a list of activity types with each item containing a list of authors
+    ## mapped to their first activity for the current activity type; for example:
+    ##    list(
+    ##        commits = list(authorA = list(commits = 1), authorB = list(commits = 0)),
+    ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
+    ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
+    ##    )
+    activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
+        ## compute minima
+        minima.per.person = lapply(
+            range.data$group.artifacts.by.data.column(type, "author.name"),
+            function(x) {
+                ## get first date
+                m = list(min(x[["date"]]))
+                ## add activity type as name to the list
+                names(m) = type
+                return(m)
+            }
+        )
+        return(minima.per.person)
+    })
+
+    ## accumulate/fold lists 'activity.by.type' by adding all values of each list
+    ## to an intermediate list (start with first list); for example:
+    ##     list(
+    ##        authorA = list(commits =  1, mails = NA, issues =  2),
+    ##        authorB = list(commits =  0, mails =  2, issues = NA),
+    ##        authorC = list(commits = NA, mails =  3, issues = NA),
+    ##        authorD = list(commits = NA, mails = NA, issues =  2)
+    ##     )
+    result = Reduce(function(x, y) {
+        ## get names from both lists, representing author names for the current activity types
+        keys = union(names(x), names(y))
+        ## get current step (i.e., "loop" index or, rather, "how many lists have we merged already?")
+        depth = max(lengths(x), lengths(y))
+        ## get the list of activity types to use on sublists (after merging next list (i.e., y)!)
+        names.list = activity.types[seq_len(depth + 1)]
+
+        ## actually combine values for each key
+        result = parallel::mclapply(keys, function(key) {
+            ## get value from intermediate list (pre-fill with right length if not existing)
+            value.x = if (is.null(x[[key]])) rep(list(NA), times = depth) else x[[key]]
+            ## get value from current list (use NA as default if not existing)
+            value.y = if (is.null(y[[key]])) NA else y[[key]]
+
+            ## combine values and name them appropriately
+            combined.values = c(value.x, value.y)
+            names(combined.values) = names.list
+
+            ## convert to POSIXct object again (which can be lost if is.null(x[[key]]) == TRUE)
+            combined.values = lapply(combined.values, get.date.from.unix.timestamp)
+
+            return(combined.values)
+        })
+        names(result) = keys
+        return(result)
+
+    }, activity.by.type)
+
+    ## find minima over all activity types if configured; for example:
+    ##     list(
+    ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
+    ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
+    ##     )
+    if (take.first.over.all.activity.types) {
+        result = parallel::mclapply(result, function(item.list) {
+            min.value = min(do.call(c, item.list), na.rm = TRUE)
+            return(list(all.activities = min.value))
+        })
+    }
+
+    return(result)
 }
