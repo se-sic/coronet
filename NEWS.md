@@ -1,5 +1,10 @@
 # codeface-extraction-r – Changelog
 
+## Unversioned
+
+### Changed/Improved
+- Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
+
 
 ## 3.4
 
