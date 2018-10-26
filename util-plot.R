@@ -13,6 +13,7 @@
 ##
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -170,7 +171,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
         ggplot2::guides(
             ## reduce size of symbols in legend
             shape = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND)),
-            color = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND))
+            color = ggplot2::guide_legend(override.aes = list(size = PLOT.VERTEX.SIZE.LEGEND, shape = 15))
         ) +
         ggplot2::theme(
             legend.position = "bottom",
