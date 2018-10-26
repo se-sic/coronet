@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -324,7 +324,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #         plot.title = ggplot2::element_text(hjust = 0.5, size = 15),
 #         plot.margin = ggplot2::unit(c(0.5, 0.5, 0.5, 0.5), "cm")
 #     )
-# ggplot2::ggsave("plot-multi.png", plot = p)
+# ggplot2::ggsave("plot-multi.png", plot = p, width = 6.57, height = 4.114)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
