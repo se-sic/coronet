@@ -420,8 +420,10 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                default.value = NA,
                                                take.first.over.all.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
+
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, activity.types, take.first.over.all.activity.types)
+        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types)
         return(data)
     }
 
@@ -453,48 +455,15 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
-    # a list with elements representing the parsed activity types, each containing a list of elements
-    #   representing the ranges the data was split by, each containing a list of authors who were active
-    #   for the corresponding activity type and range.
-    range.to.authors.per.activity.type = lapply(parsed.activity.types, function(type) {
-        type.function = paste0("get.", type)
-        lapply(net.to.range.list, function(net.to.range) {
-
-            # get author information per activity.type
-            type.data = net.to.range[["data"]][[type.function]]()
-
-            # remove unnecessary information and potentially resulting duplicats
-            clean.type.data = unique(type.data[["author.name"]])
-
-            return(as.list(clean.type.data))
-        })
-    })
-    names(range.to.authors.per.activity.type) = parsed.activity.types
-
-    #switch t-r-a to a-t-r
-    y = list.by.inner.level(range.to.authors.per.activity.type)
-
-    # if there's no activity data for a type, an empty list named with the type is added instead.
-    z = lapply(y, function(ranges.per.type) {
-        ranges.for.all.types = lapply(parsed.activity.types, function(type) {
-            if (type %in% names(ranges.per.type)) {
-                return(ranges.per.type[[type]])
-            } else {
-                return(list())
-            }
-        })
-        names(ranges.for.all.types) = parsed.activity.types
-        return(list(ranges.for.all.types))
-    })
+    compute.attr = function(range, range.data, net) {
+        data = get.active.ranges.data(parsed.activity.types, net.to.range.list)
+        return(data)
+    }
 
     ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
     list.default.value = list(default.value)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, name, list.default.value,
-        function(range, range.data, net) {
-            z
-        }
-    )
+    nets.with.attr = add.vertex.attribute(net.to.range.list, name, list.default.value, compute.attr)
     return(nets.with.attr)
 }
 
@@ -752,9 +721,6 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    take.first.over.all.activity.types = FALSE) {
 
-    ## check given activity types
-    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
-
     ## get data for each activity type and extract minimal date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
     ## mapped to their first activity for the current activity type; for example:
@@ -763,7 +729,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
     ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
     ##    )
-    activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
+    activity.by.type = parallel::mclapply(activity.types, function(type) {
         ## compute minima
         minima.per.person = lapply(
             range.data$group.artifacts.by.data.column(type, "author.name"),
@@ -828,6 +794,42 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     }
 
     return(result)
+}
+
+get.active.ranges.data = function(activity.types, net.to.range.list) {
+    # a list with elements representing the parsed activity types, each containing a list of elements
+    #   representing the ranges the data was split by, each containing a list of authors who were active
+    #   for the corresponding activity type and range.
+    range.to.authors.per.activity.type = lapply(activity.types, function(type) {
+        type.function = paste0("get.", type)
+        lapply(net.to.range.list, function(net.to.range) {
+
+            # get author information per activity.type
+            type.data = net.to.range[["data"]][[type.function]]()
+
+            # remove unnecessary information and potentially resulting duplicats
+            clean.type.data = unique(type.data[["author.name"]])
+
+            return(as.list(clean.type.data))
+        })
+    })
+    names(range.to.authors.per.activity.type) = activity.types
+
+    #switch t-r-a to a-t-r
+    y = list.by.inner.level(range.to.authors.per.activity.type)
+
+    # if there's no activity data for a type, an empty list named with the type is added instead.
+    z = lapply(y, function(ranges.per.type) {
+        ranges.for.all.types = lapply(activity.types, function(type) {
+            if (type %in% names(ranges.per.type)) {
+                return(ranges.per.type[[type]])
+            } else {
+                return(list())
+            }
+        })
+        names(ranges.for.all.types) = activity.types
+        return(list(ranges.for.all.types))
+    })
 }
 
 
