@@ -830,62 +830,56 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     return(result)
 }
 
-# switch hierarchy levels
-switch.levels = function(list.of.lists) {
-    inner.list.elements = unique(unlist(list.of.lists, recursive = FALSE))
 
-    result = lapply(
-        inner.list.elements,
-        function(inner.list.element) {
-            # collect all inner lists containing the specific element
-            outer.filtered.by.inner = Filter(function(outer.list.element) inner.list.element %in% outer.list.element,
-                                             list.of.lists)
-
-            # only the names of the collected inner lists are of interest
-            resulting.inner.list = names(outer.filtered.by.inner)
-
-            return(resulting.inner.list)
-        }
-    )
-
-    names(result) = inner.list.elements
-    return(result)
-}
-
-
+#' This function takes a named nested list, for example \code{l = list(outer1 = list(middle11 = list("innerA", "innerB"),
+#' middle12 = list("innerB")), outer2 = list("innerA"))}. For every distinct innermost element (every element of the
+#' nested list, that isn't itself a list, in the example list l \code{"innerA" and "innerB"}), the whole nested list
+#' structure is searched for the specific element. Every part of the list structure, that doesn't contain the specific
+#' innermost element, is removed. For \code{"innerB"} in l for example, the whole \code{outer2} is removed. The resulting
+#' list structures are combined to a list named with the corresponding (previous) innermost elements and returned. Called
+#' with the example list l, this function returns a list like \code{list(innerA=list(outer1=list(middle11 = "middle11"),
+#' outer2 = "outer2"), innerB = list(outer1 = list(middle11 = "middle11", middle12 = "middle12")))}.
+#'
+#' @param nested.list A list nested AT LEAST ONCE, that means: the elements of the outermost list are also lists.
+#'
+#' @return The nested list with the innermost level as new outermost level.
 list.by.inner.level = function(nested.list) {
     list.by = unique(unlist(nested.list, use.names = FALSE))
 
-    get.structure.for = function(structure, name, innerst.element) {
+    ## Returns the given structure of nested lists with all parts removed, that do not contain the given
+    ## innerst.element.
+    get.structure.for = function(innerst.element, structure, name="default") {
 
+        ## Base case 1: an empty list is returned as it is.
         if (length(structure) == 0) {
             return(list())
-        } else if (is.list(structure[[1]])) {
-            recursive = lapply(names(structure), function(substructure.name) {
-                substructure = structure[[substructure.name]]
-                called = get.structure.for(substructure, substructure.name, innerst.element)
-                return(called)
-            })
-            names(recursive) = names(structure)
 
-            # remove NA values from recursively obtained structure
-            na.removed = recursive[sapply(recursive, function(x) any(!is.na(x)))]
-
-            return(na.removed)
-
-        } else { #Abbruchfall: structure ist eine einfache Liste, die Elemente sind also keine Listen mehr.
+        ## Base case 2: if the structure isn't nested itself, it is only returned, if it contains the given innerst.element.
+        ##           Otherwise, NA is returned.
+        } else if (!is.list(structure[[1]])) {
             if (innerst.element %in% structure) {
                 return(name)
             } else {
                 return(NA)
             }
+
+        ## Recursive case: for every substructure, the function is called recursively. From the results, the list is
+        ##                 reconstructed, named and returned.
+        } else {
+            result.of.recursive.calls = lapply(names(structure), function(substructure.name) {
+                substructure = structure[[substructure.name]]
+                call.result = get.structure.for(innerst.element, substructure, substructure.name)
+                return(call.result)
+            })
+            names(result.of.recursive.calls) = names(structure)
+
+            ## remove NA values from recursively obtained structure
+            na.removed = result.of.recursive.calls[sapply(result.of.recursive.calls, function(x) any(!is.na(x)))]
+            return(na.removed)
         }
     }
 
-    result = lapply(list.by, function(element) {
-    return(get.structure.for(nested.list, "not used", element))
-    })
-
+    result = lapply(list.by, function(element) get.structure.for(element, nested.list))
     names(result) = list.by
     return(result)
 }
