@@ -706,10 +706,9 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper ------------------------------------------------------------------
 
-#' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
+#' Helper function for first activity: computes first activity information per person and activity type.
 #'
-#' @param activity.types The activity types to compute information for. They determine the columns of the returned data frame.
-#'                       [default: c("mails", "commits", "issues")]
+#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
 #' @param range.data The data to base the computation on.
 #' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
@@ -796,18 +795,26 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     return(result)
 }
 
-get.active.ranges.data = function(activity.types, net.to.range.list) {
-    # a list with elements representing the parsed activity types, each containing a list of elements
-    #   representing the ranges the data was split by, each containing a list of authors who were active
-    #   for the corresponding activity type and range.
+#' Helper function for active ranges: computes the active ranges per author and activity.type.
+#'
+#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
+#' @param net.to.range.list The data to base the computation on, split by networks.
+#'
+#' @return A list with elements representing the authors, each containing a list of elements representing the activity
+#'         types, each containing a list of active ranges.
+get.active.ranges.data = function(activity.types = c("mails", "commits", "issues"), net.to.range.list) {
+
+    ## a list with elements representing the parsed activity types, each containing a list of elements
+    ## representing the ranges the data was split by, each containing a list of authors who were active
+    ## for the corresponding activity type and range.
     range.to.authors.per.activity.type = lapply(activity.types, function(type) {
         type.function = paste0("get.", type)
         lapply(net.to.range.list, function(net.to.range) {
 
-            # get author information per activity.type
+            ## get author information per activity.type
             type.data = net.to.range[["data"]][[type.function]]()
 
-            # remove unnecessary information and potentially resulting duplicats
+            ## remove unnecessary information and potentially resulting duplicats
             clean.type.data = unique(type.data[["author.name"]])
 
             return(as.list(clean.type.data))
@@ -815,11 +822,11 @@ get.active.ranges.data = function(activity.types, net.to.range.list) {
     })
     names(range.to.authors.per.activity.type) = activity.types
 
-    #switch t-r-a to a-t-r
-    y = list.by.inner.level(range.to.authors.per.activity.type)
+    ## Switch the list levels from "type - range - author" to "author - range - type".
+    active.ranges = list.by.inner.level(range.to.authors.per.activity.type)
 
-    # if there's no activity data for a type, an empty list named with the type is added instead.
-    z = lapply(y, function(ranges.per.type) {
+    ## For every author: if there's no activity data for a type, an empty list named with the type is added instead.
+    active.ranges = lapply(active.ranges, function(ranges.per.type) {
         ranges.for.all.types = lapply(activity.types, function(type) {
             if (type %in% names(ranges.per.type)) {
                 return(ranges.per.type[[type]])
@@ -830,6 +837,8 @@ get.active.ranges.data = function(activity.types, net.to.range.list) {
         names(ranges.for.all.types) = activity.types
         return(list(ranges.for.all.types))
     })
+
+    return(active.ranges)
 }
 
 
