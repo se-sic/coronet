@@ -289,7 +289,6 @@ ProjectData = R6::R6Class("ProjectData",
             private$commits.filtered = NULL
             private$commits.filtered.empty = NULL
             private$commits = NULL
-            private$artifacts = NULL
             private$synchronicity = NULL
             private$mails = NULL
             private$authors = NULL
