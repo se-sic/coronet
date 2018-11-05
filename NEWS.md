@@ -5,6 +5,9 @@
 ### Changed/Improved
 - Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
 
+### Fixed
+- Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
+
 
 ## 3.4
 
