@@ -67,18 +67,18 @@ COMMITS.LIST.DATA.TYPES = c(
 
 ## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
 ISSUES.LIST.COLUMNS = c(
-    "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-    "author.name", "author.email", # author information
-    "date", # the date
-    "ref.name", "event.name" # the event describing the row's entry
+    "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
+    "event.type", # event type
+    "author.name", "author.email", # auhtor information
+    "event.date", "event.info.1", "event.info.2" # event details
 )
 
 ## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
 ISSUES.LIST.DATA.TYPES = c(
-    "character", "character", "POSIXct", "POSIXct", "logical",
+    "character", "character", "character", "character" ,"character","POSIXct", "POSIXct", "character",
+    "character",
     "character", "character",
-    "POSIXct",
-    "character", "character"
+    "POSIXct", "character", "character"
 )
 
 ## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
@@ -445,7 +445,6 @@ read.pasta = function(data.path) {
     return(result.df)
 }
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Issue data --------------------------------------------------------------
 
@@ -454,7 +453,7 @@ read.pasta = function(data.path) {
 #' @param data.path the path to the issue data
 #'
 #' @return the read and parsed issue data
-read.issues = function(data.path) {
+read.issues_old = function(data.path) {
     logging::logdebug("read.issues: starting.")
 
     ## get file name of issue data
@@ -493,6 +492,62 @@ read.issues = function(data.path) {
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
         paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
+    )
+
+    logging::logdebug("read.issues: finished.")
+    return(issue.data)
+}
+
+read.issues = function(data.path) {
+    logging::logdebug("read.issues_new: starting.")
+
+    ## get file name of issue data
+    filepath = file.path(data.path, "new_issues.list")
+
+    ## read issues from disk [can be empty]
+    issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
+                                encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the list of commits is empty
+    if (inherits(issue.data, "try-error")) {
+        logging::logwarn("There are no Github issue data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(data.frame())
+    }
+
+    ## set proper column names
+    colnames(issue.data) = c(
+        "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date",
+        "issue.components", "event.type", "author.name", "author.email", "event.date", "event.info.1", "event.info.2"
+    )
+
+    ## set pattern for issue ID for better recognition
+    issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
+
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    issue.data["artifact.type"] = "IssueEvent"
+
+    ## convert issue 'type', 'resolution' and 'components' to vectors
+    issue.data[["issue.type"]] = as.vector(issue.data[["issue.type"]])
+    issue.data[["issue.resolution"]] = as.vector(issue.data[["issue.resolution"]])
+    issue.data[["issue.components"]] = as.vector(issue.data[["issue.components"]])
+
+    ## convert 'event.info.2' for created and comment events to vector
+    if (issue.data[["event.type"]] == "created" || issue.data[["event.type"]] == "commented"){
+        issue.data[["event.info.1"]] = as.vector(issue.data[["event.info.2"]])
+    }
+
+    ## convert dates and sort by 'date' column
+    issue.data[["event.date"]] = get.date.from.string(issue.data[["event.date"]])
+    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
+    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
+    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+    issue.data = issue.data[order(issue.data[["event.date"]], decreasing = FALSE), ] # sort!
+
+    ## generate a unique event ID from issue ID, author, and date
+    issue.data[["event.id"]] = sapply(
+        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["event.date"]], sep = "_"),
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
