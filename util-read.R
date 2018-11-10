@@ -457,7 +457,7 @@ read.issues_old = function(data.path) {
     logging::logdebug("read.issues: starting.")
 
     ## get file name of issue data
-    filepath = file.path(data.path, "issues.list")
+    filepath = file.path(data.path, "old_issues.list")
 
     ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
@@ -503,7 +503,7 @@ read.issues = function(data.path) {
     logging::logdebug("read.issues_new: starting.")
 
     ## get file name of issue data
-    filepath = file.path(data.path, "new_issues.list")
+    filepath = file.path(data.path, "issues.list")
 
     ## read issues from disk [can be empty]
     issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
@@ -535,7 +535,7 @@ read.issues = function(data.path) {
 
     ## convert 'event.info.2' for created and comment events to vector
     if (issue.data[["event.type"]] == "created" || issue.data[["event.type"]] == "commented"){
-        issue.data[["event.info.1"]] = as.vector(issue.data[["event.info.2"]])
+        issue.data[["event.info.2"]] = as.vector(issue.data[["event.info.2"]])
     }
 
     ## convert dates and sort by 'date' column
