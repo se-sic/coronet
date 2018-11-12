@@ -454,52 +454,6 @@ read.pasta = function(data.path) {
 #' @param data.path the path to the issue data
 #'
 #' @return the read and parsed issue data
-read.issues_old = function(data.path) {
-    logging::logdebug("read.issues: starting.")
-
-    ## get file name of issue data
-    filepath = file.path(data.path, "old_issues.list")
-
-    ## read issues from disk [can be empty]
-    issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
-
-    ## handle the case that the list of commits is empty
-    if (inherits(issue.data, "try-error")) {
-        logging::logwarn("There are no Github issue data available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(create.empty.issues.list())
-    }
-
-    ## set proper column names
-    colnames(issue.data) = ISSUES.LIST.COLUMNS
-
-    ## set pattern for issue ID for better recognition
-    issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
-
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueEvent"
-
-    ## convert 'is.pull.request' column to logicals
-    issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
-
-    ## convert dates and sort by 'date' column
-    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
-    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
-    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
-    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
-
-    ## generate a unique event ID from issue ID, author, and date
-    issue.data[["event.id"]] = sapply(
-        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
-        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
-    )
-
-    logging::logdebug("read.issues: finished.")
-    return(issue.data)
-}
-
 read.issues = function(data.path) {
     logging::logdebug("read.issues_new: starting.")
 
@@ -514,14 +468,11 @@ read.issues = function(data.path) {
     if (inherits(issue.data, "try-error")) {
         logging::logwarn("There are no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.issues.list())
     }
 
     ## set proper column names
-    colnames(issue.data) = c(
-        "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date",
-        "issue.components", "event.type", "author.name", "author.email", "event.date", "event.info.1", "event.info.2"
-    )
+    colnames(issue.data) = ISSUES.LIST.COLUMNS
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
