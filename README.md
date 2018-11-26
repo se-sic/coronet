@@ -59,7 +59,7 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder - which can result from consecutive runs of  `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] -  needs to have the following structure (roughly):
+The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
@@ -413,7 +413,8 @@ There is no way to update the entries, except for the revision-based parameters.
 - `description`
     * The description of the project from the Codeface configuration file
 - `mailinglists`
-    * A list of the mailinglists of the project containing their name, type and source
+    * A list of the mailing lists of the project containing their name, type and source
+    * **Note:** In this configuration parameter, a list of mailing-list information (names etc.) is stored. The enumerating IDs of this list are part of the thread IDs of the data source `mails` (e.g., an entry `13#5` for the column `thread` corresponds to thread ID `5` on mailing list `13`).
 
 #### Artifact-related information
 
