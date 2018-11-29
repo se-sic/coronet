@@ -446,16 +446,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits)
         },
 
-        #' Get the complete list of commits.
-        #' If it does not already exist, call the read method first.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
-        #'
-        #' @return the list of commits
-        get.commits.raw = function() {
-            return(self$get.commits())
-        },
-
         #' Set the commit list of the project to a new one.
         #' Add PaStA data if configured in the field \code{project.conf}.
         #'
