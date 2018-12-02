@@ -146,10 +146,6 @@ ProjectData = R6::R6Class("ProjectData",
                 return(private$commits.filtered)
             }
 
-            ## only process commits with the artifact listed in the configuration or missing
-            commit.data = subset(commit.data, artifact.type %in%
-                                     c(private$project.conf$get.value("artifact.codeface"), ""))
-
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
             if (private$project.conf$get.value("artifact.filter.base")) {
                 commit.data = subset(commit.data, !(artifact %in% BASE.ARTIFACTS))
@@ -404,14 +400,14 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered.empty)
         },
 
-        #' Get the list of commits filtered by the artifact kind configured in the field \code{project.conf}.
+        #' Get the list of commits returned by the get.commits method and apply additional filters on them.
         #' If configured in \code{project.conf}, get the list of commits without the base artifact.
         #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
         #' to the filtered commit data.
         #' If the list of filtered commits does not already exist, call the filter method.
         #'
-        #' @return the commit list containing only commit data related to the configured artifact and,
-        #'         if configured, without the base artifact
+        #' @return the commit list returned by get.commits with configured filters applied and optionally added PaSta or
+        #'         synchronicity data
         get.commits.filtered = function() {
             logging::loginfo("Getting commit data filtered by artifact.base.")
 
@@ -423,23 +419,28 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered)
         },
 
-        #' Get the complete list of commits.
+        #' Get the complete list of commits filtered by the artifact kind which was configured in the
+        #' \code{project.conf}.
         #' If configured in the field \code{project.conf}, append the PaStA data to the commit data
         #' by calling the setter function.
         #' If the list of commits does not already exist, call the read method first.
         #'
         #' @return the list of commits
         get.commits = function() {
-            logging::loginfo("Getting raw commit data.")
+            logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                commits.read = read.commits(
+                commit.data = read.commits(
                     self$get.data.path(),
                     private$project.conf$get.value("artifact")
                 )
 
-                self$set.commits(data = commits.read)
+                ## only process commits with the artifact listed in the configuration or missing
+                commit.data = subset(commit.data, artifact.type %in%
+                                       c(private$project.conf$get.value("artifact.codeface"), ""))
+
+                self$set.commits(data = commit.data)
             }
             private$extract.timestamps(source = "commits")
 
