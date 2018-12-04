@@ -47,13 +47,6 @@ read.commits = function(data.path, artifact) {
     commit.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                  encoding = "UTF-8"), silent = TRUE)
 
-    ## handle the case that the list of commits is empty
-    if (inherits(commit.data, "try-error")) {
-        logging::logwarn("There are no commits available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
-    }
-
     ## set proper column names based on Codeface extraction:
     ##
     ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitDate,
@@ -61,12 +54,23 @@ read.commits = function(data.path, artifact) {
     ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
     ## cd.file, cd.entityId, cd.entityType, cd.size
     commit.data.columns = c(
-        "commit.id", # id
-        "date", "author.name", "author.email", # author information
-        "committer.date", "committer.name", "committer.email", # committer information
-        "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
-        "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
+      "commit.id", # id
+      "date", "author.name", "author.email", # author information
+      "committer.date", "committer.name", "committer.email", # committer information
+      "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
+      "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
+
+    ## handle the case that the list of commits is empty
+    if (inherits(commit.data, "try-error")) {
+        logging::logwarn("There are no commits available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        # return a dataframe with the correct columns but zero rows
+        commit.data = data.frame(matrix(nrow = 0, ncol = length(commit.data.columns)))
+        colnames(commit.data) = commit.data.columns
+        return(commit.data)
+    }
     colnames(commit.data) = commit.data.columns
 
     ## remove duplicated lines (even if they contain different commit ids but the same commit hash)
