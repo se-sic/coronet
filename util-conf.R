@@ -338,6 +338,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            filter.untracked.files = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             synchronicity = list(
                 default = FALSE,
                 type = "logical",

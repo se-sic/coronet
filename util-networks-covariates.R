@@ -672,7 +672,7 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            artifact.to.commit = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "hash")
+            artifact.to.commit = get.key.to.value.from.df(range.data$get.commits.filtered(), "artifact", "hash")
             artifact.change.count = lapply(artifact.to.commit, function(x) {
                 length(unique(x[["hash"]]))
             })
@@ -709,7 +709,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            artifact.to.dates = get.key.to.value.from.df(range.data$get.commits.filtered.empty(), "artifact", "date")
+            artifact.to.dates = get.key.to.value.from.df(range.data$get.commits.filtered(), "artifact", "date")
             artifact.to.first = lapply(artifact.to.dates, function(a) {
                 min(a[["date"]])
             })

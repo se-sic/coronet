@@ -125,6 +125,10 @@ read.commits = function(data.path, artifact) {
         commit.data["artifact"] = artifacts.new
     }
 
+    ## Commits to files that are not tracked by Codeface have the empty string in the file column
+    ## To better indicate this, the column value is changed to 'untracked.file'
+    commit.data["file"] = ifelse(commit.data[["file"]] == "", "untracked.file", commit.data[["file"]])
+
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
