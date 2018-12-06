@@ -408,15 +408,6 @@ ProjectData = R6::R6Class("ProjectData",
             private$commits.filtered = NULL
         },
 
-        #' Set the commit list of the project to a new one.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$set.commits(data)}.
-        #'
-        #' @param data the new list of commits
-        set.commits.raw = function(data) {
-            self$set.commits(data)
-        },
-
         #' Get the synchronicity data.
         #' If it does not already exist call the read method.
         #'

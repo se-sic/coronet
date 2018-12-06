@@ -143,18 +143,6 @@ read.commits = function(data.path, artifact) {
     return(commit.data)
 }
 
-#' Read the commits from the 'commits.list' file.
-#'
-#' @param data.path the path to the commit list
-#' @param artifact the artifact whose commits are read
-#'
-#' Note: This is just a delegate for \code{read.commits(data.path, artifact)}.
-#'
-#' @return the read commits
-read.commits.raw = function(data.path, artifact) {
-    return(read.commits(data.path = data.path, artifact = artifact))
-}
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Synchronicity data ------------------------------------------------------

@@ -88,7 +88,7 @@ test_that("Read the raw commit data with the file artifact.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
 
     ## read the actual data
-    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+    commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
     commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32715)),
