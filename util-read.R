@@ -67,8 +67,10 @@ read.commits = function(data.path, artifact) {
         logging::logwarn("Datapath: %s", data.path)
 
         # return a dataframe with the correct columns but zero rows
-        commit.data = data.frame(matrix(nrow = 0, ncol = length(commit.data.columns)))
-        colnames(commit.data) = commit.data.columns
+        commit.data = get.empty.dataframe(commit.data.columns, data.types =
+                                              c("character", "POSIXct", "character", "character", "POSIXct",
+                                                "character", "character", "character", "numeric", "numeric", "numeric",
+                                                "numeric", "character", "character", "character", "numeric"))
         return(commit.data)
     }
     colnames(commit.data) = commit.data.columns

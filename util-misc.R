@@ -132,6 +132,58 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
     }
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Empty dataframe creation-------------------------------------------------
+
+#' Create an empty data.frame with the specified columns. Unless all columns should have to default datatype
+#' \code{logical}, the second parameter \code{data.types} should specify the datatypes.
+#'
+#' @param columns a character vector containing all the column names
+#' @param data.types a character vector of the same length as \code{columns}, the datatypes can be \code{integer},
+#'                   \code{numeric},\code{POSIXct},\code{character}, \code{factor} or \code{logical}
+#'
+#' @return the newly created empty data.frame
+get.empty.dataframe = function(columns, data.types = NULL) {
+    if (!is.null(data.types) && length(data.types) != length(columns)) {
+        stop("If specified, the length of the two given vectors columns and data.types must be the same.")
+    }
+
+    data.frame = data.frame(matrix(nrow = 0, ncol = length(columns)))
+    colnames(data.frame) = columns
+
+    if (length(data.types) > 0) {
+
+        for (i in 1:length(data.types)) {
+            column = data.frame[[i]]
+            switch(tolower(data.types[i]),
+                   "posixct" = {
+                       column = as.POSIXct(column)
+                   },
+                   "integer" = {
+                       column = as.integer(column)
+                   },
+                   "numeric" = {
+                       column = as.numeric(column)
+                   },
+                   "logical" = {
+                       column = as.logical(column)
+                   },
+                   "character" = {
+                       column = as.character(column)
+                   },
+                   "factor" = {
+                       column = as.factor(column)
+                   },
+                   {
+                       stop(paste("Unknown datatype specified:", data.types[[i]]))
+                   }
+            )
+            data.frame[[i]] = column
+        }
+    }
+
+    return(data.frame)
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
