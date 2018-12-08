@@ -697,6 +697,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            base.artifact.edges = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             edge.attributes = list(
                 default = c(
                     "date", "artifact.type", # general

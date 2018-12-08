@@ -99,7 +99,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## filter out the untracked files
             if (remove.untracked.files) {
-                commit.data = subset(commit.data, artifact != "")
+                commit.data = subset(commit.data, artifact != "untracked.file")
             }
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
