@@ -14,6 +14,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
