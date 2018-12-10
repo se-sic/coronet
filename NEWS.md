@@ -2,8 +2,17 @@
 
 ## Unversioned
 
+### Added
+- In addition to the ProjectConf parameter `artifact.filter.base`, which configured wether the base artifact should be
+included in the `get.commits.filtered` method, there is now the similiar parameter `filter.untracked.files` which does
+the same thing for untracked files (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- Edges are not being constructed in the author network between authors that only modify untracked files. For authors
+it can be configured if the edges should be created or not using the new NetworkConf parameter `base.artifact.edges`
+(c60c2f6e44b6f34cccb2714eccc7674158c83dde)
+
 ### Changed/Improved
 - Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
+- Rename `empty artifact` to `untracked files`
 
 ### Fixed
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
