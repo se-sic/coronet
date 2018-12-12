@@ -14,6 +14,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -121,7 +122,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
          type = TYPE.AUTHOR
      )
     issues = data.frame(
-         name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
+         name = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>"),
          kind = "Issue",
          type = TYPE.ARTIFACT
     )
@@ -132,54 +133,60 @@ test_that("Construction of the bipartite network for the feature artifact with a
             type = TYPE.ARTIFACT
     )
     vertices = plyr::rbind.fill(authors1, issues, authors2, threads)
-    ## 2) construct expected edge attributes
+    ## 2) construct expected edge attributes (data sorted by 'author.name')
     network.expected.data = data.frame(
-                  from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Karl", "Max", # issue
-                           "Olaf", "Olaf", "Olaf", "Thomas", "Thomas",
+                  from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Karl", "Max", # issue
+                           "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas",
                            "Björn", "Björn", "Björn",  "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans", # mail
                            "Hans", "Hans", "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
-                  to   = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                           "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>", "<issue-48>", "<issue-51>",
-                           "<issue-51>", "<issue-48>", "<issue-48>", "<thread-1>",
-                           "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>",
-                           "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>",
-                           "<thread-9>", "<thread-9>", "<thread-3>"),
-                  date = get.date.from.string(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48", # issue
-                                                "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
-                                                "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
-                                                "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
-                                                "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57",
+                  to   = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # issue
+                           "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                           "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                           "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                           "<issue-ZEPPELIN-328>", "<issue-6>",
+                           "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>", # mail
+                           "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
+                           "<thread-9>", "<thread-3>"),
+                  date = get.date.from.string(c("2015-09-29 21:46:30", "2015-09-29 21:49:21", "2015-09-29 21:49:34", # issue
+                                                "2015-09-30 01:04:34", "2015-09-30 03:48:41", "2015-09-30 04:08:07",
+                                                "2015-10-01 14:21:10", "2015-10-01 19:55:39", "2018-08-06 16:30:37",
+                                                "2017-02-21 12:16:49", "2015-10-01 20:07:47", "2015-10-01 20:12:08",
+                                                "2015-10-03 06:27:52", "2015-09-30 03:25:06", "2015-09-30 06:06:53",
+                                                "2015-09-30 06:22:23", "2015-09-30 06:50:26", "2015-09-29 21:44:21",
+                                                "2017-07-27 15:30:02",
                                                 "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40", # mail
                                                 "2010-07-12 11:05:35", "2010-07-12 12:05:34", "2010-07-12 12:05:40",
                                                 "2010-07-12 12:05:41", "2010-07-12 12:05:42", "2010-07-12 12:05:43",
                                                 "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2010-07-12 12:05:46",
                                                 "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
                                                 "2010-07-12 10:05:36")),
-                  artifact.type = c(rep("IssueEvent", 15), rep("Mail", 16)),
-                  issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
-                               "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
-                               "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>",
-                               rep(NA,16)),
-                  event.name = c(rep("commented", 15),
+                  artifact.type = c(rep("IssueEvent", 19), rep("Mail", 16)),
+                  issue.id = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                               "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-328>", "<issue-6>", rep(NA,16)),
+                  event.name = c(rep("commented", 19),
                                  rep(NA, 16)),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
-                  relation = c(rep("issue", 15), rep("mail", 16)),
-                  message.id = c(rep(NA, 15),
+                  relation = c(rep("issue", 19), rep("mail", 16)),
+                  message.id = c(rep(NA, 19),
                                  "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<1107974989.17910.6.camel@jmcmullan>",
                                  "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                  "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<dfhglkjdgjkhnwrd@mail.gmail.com>",
-                                 "<hans1@mail.gmail.com>", "<hans2@mail.gmail.com>","<hans3@mail.gmail.com>",
+                                 "<hans1@mail.gmail.com>", "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
                                  "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>", "<hans6@mail.gmail.com>",
                                  "<hans7@mail.gmail.com>", "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
                                  "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>", "<65a1sf31sagd684dfv31@mail.gmail.com>",
                                  "<asddghdswqeasdasd@mail.gmail.com>"),
-                  thread = c(rep(NA, 15),
+                  thread = c(rep(NA, 19),
                              "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
                              "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
                              "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>")
     )
-    ## 3) construct expected network
+
+    ## 3) build expected network
     network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
@@ -203,27 +210,32 @@ test_that("Construction of the multi network for the feature artifact with autho
     ## build network
     network.built = network.builder$get.multi.network()
 
-    ## build expected network
+    ## construct expected network:
+     ## 1) construct expected vertices
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                 "Base_Feature", "foo", "A", "<issue-2>", "<issue-51>", "<issue-48>", "<issue-57>"),
+                 "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-3>", "<issue-6>"),
         kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 4)),
         type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7))
     )
     row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                            "Base_Feature", "foo", "A", "<issue-2>", "<issue-48>", "<issue-51>", "<issue-57>")
+                            "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-3>", "<issue-6>")
 
+    ## 2) construct expected edge attributes (data sorted by 'author.name')
     edges = data.frame(from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", # author cochange
                                 "Björn", "Björn", "Olaf", "Olaf", # author mail
                                 "Base_Feature", "Base_Feature",   # artifact cochange
                                 "Björn", "Olaf", "Olaf", "Karl", "Thomas", "Thomas", # bipartite cochange
-                                rep("Björn",8), rep("Olaf",3), "Karl", "Thomas", "Thomas"), # bipartite issue
+                                "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", # bipartite issue
+                                "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Thomas", "Thomas"),
                        to = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas", # author cochange
                               "Olaf", "Olaf", "Thomas", "Thomas", # author mail
                               "foo", "foo", # artifact cochange
                               "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", # bipartite cochange
-                              "<issue-51>", "<issue-48>", rep("<issue-51>", 4), rep("<issue-57>", 2), "<issue-48>",
-                              rep("<issue-51>", 2), "<issue-2>", rep("<issue-48>", 2)), # bipartite issue
+                              "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # bipartite issue
+                              "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                              "<issue-6>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                              "<issue-3>", "<issue-ZEPPELIN-328>", "<issue-6>"),
                        date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", # author cochange
                                                      "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
                                                      "2016-07-12 16:06:10", "2016-07-12 16:06:32",
@@ -232,16 +244,14 @@ test_that("Construction of the multi network for the feature artifact with autho
                                                      "2016-07-12 16:06:32", "2016-07-12 16:06:32",                        # artifact cochange
                                                      "2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", # bipartite cochange
                                                      "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
-                                                     "2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48", # bipartite issue
-                                                     "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
-                                                     "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2016-07-27 22:25:25",
-                                                     "2016-10-05 01:07:46", "2016-12-07 15:37:21", "2013-05-05 23:28:57",
-                                                     "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
-                        artifact.type = c(rep("Feature", 8),
-                                          rep("Mail", 4),
-                                          rep("Feature", 2),
-                                          rep("Feature", 6),
-                                          rep("IssueEvent", 14)),
+                                                     "2015-09-29 21:46:30", "2015-09-29 21:49:21", "2015-09-29 21:49:34", # bipartite issue
+                                                     "2015-09-30 01:04:34", "2015-09-30 03:48:41", "2015-09-30 04:08:07",
+                                                     "2015-10-01 14:21:10", "2015-10-01 19:55:39", "2018-08-06 16:30:37",
+                                                     "2015-09-30 03:25:06", "2015-09-30 06:06:53", "2015-09-30 06:22:23",
+                                                     "2015-09-30 06:50:26", "2017-02-21 12:16:49", "2015-09-29 21:44:21",
+                                                     "2017-07-27 15:30:02")),
+                        artifact.type = c(rep("Feature", 8), rep("Mail", 4), rep("Feature", 2), rep("Feature", 6),
+                                          rep("IssueEvent", 16)),
                         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", # author cochange
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
@@ -251,41 +261,40 @@ test_that("Construction of the multi network for the feature artifact with autho
                                  "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", # bipartite cochange
                                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                                  "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
-                                 rep(NA, 14)),                                                                           # bipartite issue
+                                 rep(NA, 16)),                                                                           # bipartite issue
                         file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c", # author cochange
                                  NA, NA, NA, NA,
                                  "test2.c", "test2.c",                                                                 # artifact cochange
                                  "test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c",                       # bipartite cochange
-                                 rep(NA, 14)),
+                                 rep(NA, 16)),
                         artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", # author cochange
                                      "Base_Feature",
                                      rep(NA, 4),
                                      "Base_Feature", "foo", # bipartite cochange
                                      "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", # bipartite cochange
-                                     rep(NA, 14)),
+                                     rep(NA, 16)),
                         weight = 1,
-                        type = c(rep(TYPE.EDGES.INTRA, 14), rep(TYPE.EDGES.INTER, 20)),
-                        relation = c(rep("cochange", 8),
-                                     rep("mail", 4),
-                                     rep("cochange", 2),
-                                     rep("cochange", 6),
-                                     rep("issue", 14)),
+                        type = c(rep(TYPE.EDGES.INTRA, 14), rep(TYPE.EDGES.INTER, 22)),
+                        relation = c(rep("cochange", 8), rep("mail", 4), rep("cochange", 2), rep("cochange", 6),
+                                     rep("issue", 16)),
                         message.id = c(rep(NA, 8),
                                        "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                        "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
                                        "<65a1sf31sagd684dfv31@mail.gmail.com>",
                                        "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
-                                       rep(NA, 22)),
+                                       rep(NA, 24)),
                         thread = c(rep(NA, 8),
                                    "<thread-8>", "<thread-8>", "<thread-9>", "<thread-9>",
-                                   rep(NA, 22)),
+                                   rep(NA, 24)),
                         issue.id = c(rep(NA, 20),
-                                     "<issue-51>", "<issue-48>","<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-57>", "<issue-57>", "<issue-48>", "<issue-51>", "<issue-51>",
-                                     "<issue-2>",  "<issue-48>", "<issue-48>"),
-                        event.name = c(rep(NA, 20), rep("commented", 14))
+                                     "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # bipartite issue
+                                     "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                                     "<issue-6>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                                     "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-328>", "<issue-6>"),
+                        event.name = c(rep(NA, 20), rep("commented", 16))
      )
 
+    ## 3) build expected network
     network.expected = igraph::graph.data.frame(edges, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 

@@ -16,6 +16,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -265,30 +266,31 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("<issue-51>", "<issue-48>", "<issue-57>", "<issue-2>"),
+                  name = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>"),
                   kind = "Issue",
                   type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
-              ## 2) construct expected edge attributes
+
+              ## 2) construct expected edge attributes (issues ordered by 'author.name')
               network.expected.data = data.frame(
-                  from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Karl", "Max", "Olaf", "Olaf", "Olaf",
-                           "Thomas", "Thomas"),
-                  to   = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
-                           "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
-                           "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
-                  date = get.date.from.string(c("2016-07-12 16:05:47", "2016-07-14 17:42:52", "2016-08-31 18:21:48",
-                                                "2016-10-13 15:33:56", "2016-12-06 14:03:42", "2016-12-07 15:53:02",
-                                                "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2013-05-05 23:28:57",
-                                                "2017-05-23 12:32:39", "2016-07-27 22:25:25", "2016-10-05 01:07:46",
-                                                "2016-12-07 15:37:21", "2016-07-14 02:03:14", "2016-07-15 08:37:57")),
+                  from = c("Björn","Björn","Björn","Björn","Björn","Björn","Björn","Björn","Björn","Karl","Max",
+                           "Max", "Max","Olaf","Olaf","Olaf","Olaf","Thomas","Thomas"),
+                  to   = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>",
+                           "<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-6>","<issue-3>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>",
+                           "<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-6>"),
+                  date = get.date.from.string(c("2015-09-29 21:46:30", "2015-09-29 21:49:21", "2015-09-29 21:49:34",
+                                                "2015-09-30 01:04:34", "2015-09-30 03:48:41", "2015-09-30 04:08:07",
+                                                "2015-10-01 14:21:10", "2015-10-01 19:55:39", "2018-08-06 16:30:37",
+                                                "2017-02-21 12:16:49", "2015-10-01 20:07:47", "2015-10-01 20:12:08",
+                                                "2015-10-03 06:27:52", "2015-09-30 03:25:06", "2015-09-30 06:06:53",
+                                                "2015-09-30 06:22:23", "2015-09-30 06:50:26", "2015-09-29 21:44:21",
+                                                "2017-07-27 15:30:02")),
                   artifact.type = "IssueEvent",
-                  issue.id = c("<issue-51>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>",
-                               "<issue-51>", "<issue-57>", "<issue-57>", "<issue-2>", "<issue-57>",
-                               "<issue-48>", "<issue-51>", "<issue-51>", "<issue-48>", "<issue-48>"),
-                  event.name = c("commented", "commented", "commented", "commented", "commented",
-                                 "commented", "commented", "commented", "commented", "commented",
-                                 "commented", "commented", "commented", "commented", "commented"),
+                  issue.id = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-6>","<issue-3>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>",
+                               "<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-6>"),
+                  event.name = "commented",
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "issue"
