@@ -69,9 +69,9 @@ COMMITS.LIST.DATA.TYPES = c(
 ## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
 ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
-    "event.type", # event type
+    "event.name", # event type
     "author.name", "author.email", # auhtor information
-    "event.date", "event.info.1", "event.info.2" # event details
+    "date", "event.info.1", "event.info.2" # event details
 )
 
 ## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
@@ -455,7 +455,7 @@ read.pasta = function(data.path) {
 #'
 #' @return the read and parsed issue data
 read.issues = function(data.path) {
-    logging::logdebug("read.issues_new: starting.")
+    logging::logdebug("read.issues: starting.")
 
     ## get file name of issue data
     filepath = file.path(data.path, "issues.list")
@@ -486,20 +486,20 @@ read.issues = function(data.path) {
     issue.data[["issue.components"]] = as.vector(issue.data[["issue.components"]])
 
     ## convert 'event.info.2' for created and comment events to vector
-    if (issue.data[["event.type"]] == "created" || issue.data[["event.type"]] == "commented"){
+    if (issue.data[["event.name"]] == "created" || issue.data[["event.name"]] == "commented"){
         issue.data[["event.info.2"]] = as.vector(issue.data[["event.info.2"]])
     }
 
     ## convert dates and sort by 'date' column
-    issue.data[["event.date"]] = get.date.from.string(issue.data[["event.date"]])
+    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
-    issue.data = issue.data[order(issue.data[["event.date"]], decreasing = FALSE), ] # sort!
+    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
-        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["event.date"]], sep = "_"),
+        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
