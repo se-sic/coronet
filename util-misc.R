@@ -136,51 +136,59 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Empty dataframe creation-------------------------------------------------
 
-#' Create an empty data.frame with the specified columns. Unless all columns should have to default datatype
+#' Create an empty data.frame with the specified columns. Unless all columns should have the default datatype
 #' \code{logical}, the second parameter \code{data.types} should specify the datatypes.
 #'
 #' @param columns a character vector containing all the column names
 #' @param data.types a character vector of the same length as \code{columns}, the datatypes can be \code{integer},
-#'                   \code{numeric},\code{POSIXct},\code{character}, \code{factor} or \code{logical}
+#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor} or \code{logical}
 #'
 #' @return the newly created empty data.frame
 get.empty.dataframe = function(columns, data.types = NULL) {
+
+    ## if the vector data.types is specified, its length must match the length of the corresponding column names
     if (!is.null(data.types) && length(data.types) != length(columns)) {
         stop("If specified, the length of the two given vectors columns and data.types must be the same.")
     }
 
+    ## create the empty data frame (with zero rows), but the given number of columns
     data.frame = data.frame(matrix(nrow = 0, ncol = length(columns)))
     colnames(data.frame) = columns
 
-    if (length(data.types) > 0) {
+    ## assign the datatypes to the data frame columns by indivdually swapping the columns with new columns that possess
+    ## the correct data type
+    for (i in seq_along(data.types)) {
 
-        for (i in 1:length(data.types)) {
-            column = data.frame[[i]]
-            switch(tolower(data.types[i]),
-                   "posixct" = {
-                       column = as.POSIXct(column)
-                   },
-                   "integer" = {
-                       column = as.integer(column)
-                   },
-                   "numeric" = {
-                       column = as.numeric(column)
-                   },
-                   "logical" = {
-                       column = as.logical(column)
-                   },
-                   "character" = {
-                       column = as.character(column)
-                   },
-                   "factor" = {
-                       column = as.factor(column)
-                   },
-                   {
-                       stop(paste("Unknown datatype specified:", data.types[[i]]))
-                   }
-            )
-            data.frame[[i]] = column
-        }
+        ## get the column
+        column = data.frame[[i]]
+
+        ## replace column with column of correct type
+        switch(tolower(data.types[i]),
+               "posixct" = {
+                   column = as.POSIXct(column)
+               },
+               "integer" = {
+                   column = as.integer(column)
+               },
+               "numeric" = {
+                   column = as.numeric(column)
+               },
+               "logical" = {
+                   column = as.logical(column)
+               },
+               "character" = {
+                   column = as.character(column)
+               },
+               "factor" = {
+                   column = as.factor(column)
+               },
+               {
+                   stop(paste("Unknown datatype specified:", data.types[[i]]))
+               }
+        )
+
+        ## set the column back into the dataframe
+        data.frame[[i]] = column
     }
 
     return(data.frame)

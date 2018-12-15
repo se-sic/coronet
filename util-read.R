@@ -48,18 +48,18 @@ read.commits = function(data.path, artifact) {
     commit.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                  encoding = "UTF-8"), silent = TRUE)
 
-    ## set proper column names based on Codeface extraction:
+    ## prepare proper column names based on Codeface extraction:
     ##
     ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitDate,
     ## acom.name, acom.email1, c.commitHash,
     ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
     ## cd.file, cd.entityId, cd.entityType, cd.size
     commit.data.columns = c(
-      "commit.id", # id
-      "date", "author.name", "author.email", # author information
-      "committer.date", "committer.name", "committer.email", # committer information
-      "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
-      "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
+        "commit.id", # id
+        "date", "author.name", "author.email", # author information
+        "committer.date", "committer.name", "committer.email", # committer information
+        "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
+        "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
     )
 
     ## handle the case that the list of commits is empty
@@ -69,11 +69,15 @@ read.commits = function(data.path, artifact) {
 
         # return a dataframe with the correct columns but zero rows
         commit.data = get.empty.dataframe(commit.data.columns, data.types =
-                                              c("character", "POSIXct", "character", "character", "POSIXct",
-                                                "character", "character", "character", "numeric", "numeric", "numeric",
-                                                "numeric", "character", "character", "character", "numeric"))
+                                              c("character",
+                                                "POSIXct", "character", "character",
+                                                "POSIXct", "character", "character",
+                                                "character", "numeric", "numeric", "numeric", "numeric",
+                                                "character", "character", "character", "numeric"))
         return(commit.data)
     }
+
+    ## assign prepared column names to the dataframe
     colnames(commit.data) = commit.data.columns
 
     ## remove duplicated lines (even if they contain different commit ids but the same commit hash)
@@ -128,10 +132,10 @@ read.commits = function(data.path, artifact) {
         commit.data["artifact"] = artifacts.new
     }
 
-    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column
-    ## To better indicate this, the 'artifact' and 'file' column value is changed to 'untracked.file'
-    commit.data["file"] = ifelse(commit.data[["file"]] == "", "untracked.file", commit.data[["file"]])
-    commit.data["artifact"] = ifelse(commit.data[["artifact"]] == "", "untracked.file", commit.data[["artifact"]])
+    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
+    ## To better indicate this, the 'artifact' and 'file' column value is changed to 'untracked.file'.
+    commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
+    commit.data["artifact"] = ifelse(commit.data[["artifact"]] == "", UNTRACKED.FILE, commit.data[["artifact"]])
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])

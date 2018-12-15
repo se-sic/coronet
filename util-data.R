@@ -32,10 +32,14 @@ requireNamespace("parallel") # for parallel computation
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Constants ---------------------------------------------------------------
 
+## untracked file
+UNTRACKED.FILE = "<untracked.file>"
+
 ## base artifacts
 BASE.ARTIFACTS = c(
     "Base_Feature",
-    "File_Level"
+    "File_Level",
+    UNTRACKED.FILE
 )
 
 ## mapping of data source to artifact column
@@ -100,7 +104,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## filter out the untracked files
             if (remove.untracked.files) {
-                commit.data = subset(commit.data, artifact != "untracked.file")
+                commit.data = subset(commit.data, file != UNTRACKED.FILE)
             }
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
@@ -266,6 +270,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Set  a value of the project configuration and reset the environment
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
+            self$reset.environment()
         },
 
         #' Update the project configuration based on the given list
@@ -324,10 +329,9 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Return the commits retrieved by the \code{get.commits} method by removing untracked files and removing the
         #' base artifact (if configured in the \code{project.conf}, see parameters \code{filter.untracked.files} and
-        #' \code{artifact.filter.base}). This method uses caching.
+        #' \code{artifact.filter.base}).
         #'
-        #' @param remove.untracked.files configures if untracked files should be kept or removed
-        #' @param remove.base.artifact configures if the base artifact should be kept or removed
+        #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
         #' @return the commits retrieved by the \code{get.commits} method after all filters have been applied
         #'
@@ -343,8 +347,10 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Return the commits retrieved by the \code{get.commits} method by removing untracked files and removing the
-        #' base artifact (see parameters). This method doesn't use caching. If you want to use caching, please use the
-        #' \code{get.commits.filtered} method instead.
+        #' base artifact (see parameters).
+        #'
+        #' This method doesn't use caching. If you want to use caching, please use the \code{get.commits.filtered}
+        #' method instead.
         #'
         #' @param remove.untracked.files configures if untracked files should be kept or removed
         #' @param remove.base.artifact configures if the base artifact should be kept or removed
@@ -357,7 +363,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
-        #' If the list of commits is not cached, call the read method first.        #'
+        #' If the list of commits is not cached in the field \code{commits}, call the read method first.
         #' If configured in the field \code{project.conf}, add PaStA and synchronicity data.
         #'
         #' @return the list of commits
@@ -372,7 +378,8 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.data = subset(commit.data, artifact.type %in%
                                          c(private$project.conf$get.value("artifact.codeface"), ""))
 
-                ## saves the commit.data to the commits cache field after PaStA and synchronicity data is added
+                ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
+                ## the field 'commits' afterwards
                 self$set.commits(commit.data)
             }
             private$extract.timestamps(source = "commits")
