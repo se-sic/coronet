@@ -38,8 +38,7 @@ UNTRACKED.FILE = "<untracked.file>"
 ## base artifacts
 BASE.ARTIFACTS = c(
     "Base_Feature",
-    "File_Level",
-    UNTRACKED.FILE
+    "File_Level"
 )
 
 ## mapping of data source to artifact column
@@ -941,6 +940,27 @@ ProjectData = R6::R6Class("ProjectData",
             mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
 
             return(mylist)
+        },
+
+        #' Get the list of authors by only looking at the specified data source. The constant
+        #' \code{DATASOURCE.TO.ARTIFACT.FUNCTION} describes the mapping between data source and the method which is
+        #' retrieving the data for each data source.
+        #'
+        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"} or \code{"issues"}
+        #'
+        #' @return the list of authors extracted from the specified data source
+        get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
+            if (is.null(data.source)) {
+                stop ("Data source can't be null.")
+            }
+
+            data.source = match.arg(data.source)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            data = self[[data.source.func]]()[c("author.name", "author.email")]
+            names(data) = c("name", "email")
+
+            return (data)
         }
     )
 )

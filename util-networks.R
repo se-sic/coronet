@@ -156,33 +156,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             list = private$proj.data$group.authors.by.data.column("commits", "artifact")
 
-            # split untracked.files subgroup into multiple subgroups which only contain one author each to prohibit edge
-            # edge construction between authors of this subgroup
-            if (!is.null(list[["untracked.files"]])) {
-                for (i in 1:nrow(list[["untracked.files"]])) {
-                    row  = list[["untracked.files"]][i, ]
-                    list[[paste0("untracked.files_", i)]] = row
-                }
-                list[["untracked.files"]] = NULL
+            ## if configured in the network conf, remove base artifacts, so that no edges are created in the next step
+            if (!private$network.conf$get.value("base.artifact.edges")) {
+               list = list[!(names(list) %in% BASE.ARTIFACTS)]
             }
 
-            # split base feature subgroup into multiple subgroups which only contain one author each to prohibit edge
-            # edge construction between authors of this subgroup
-            if (!is.null(list[["Base_Feature"]]) && !private$network.conf$get.value("base.artifact.edges")) {
-                for (i in 1:nrow(list[["Base_Feature"]])) {
-                    row  = list[["Base_Feature"]][i, ]
-                    list[[paste0("Base_Feature_", i)]] = row
-                }
-                list[["Base_Feature"]] = NULL
-            }
-
-            if (!is.null(list[["File_Level"]]) && !private$network.conf$get.value("base.artifact.edges")) {
-                for (i in 1:nrow(list[["File_Level"]])) {
-                    row  = list[["File_Level"]][i, ]
-                    list[[paste0("File_Level_", i)]] = row
-                }
-                list[["File_Level"]] = NULL
-            }
+            ## remove untracked files, so that no edges are created in the next step
+            list = list[names(list) != UNTRACKED.FILE]
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
@@ -191,6 +171,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
+
+            ## Add author vertices back into the graph. Previously the untracked file commiters and - if configured -
+            ## the base artifact commiters have been removed to avoid edge creation among them.
+            authors = proj.data$get.authors.by.data.source(data.source = "commits")
+            author.net.data[["vertices"]] = authors["name"]
 
             ## construct network from obtained data
             author.net = construct.network.from.edge.list(
