@@ -1069,7 +1069,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     ## if we have nodes to create, but no edges
     if (is.null(edge.list) || nrow(edge.list) == 0) {
         ## create network with only the vertices
-        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(nodes.processed)
+        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(t(nodes.processed))
     }
     ## if we have nodes and edges
     else {
