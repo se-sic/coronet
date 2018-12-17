@@ -41,7 +41,8 @@ UNTRACKED.FILE.EMPTY.ARTIFACT = ""
 ## base artifacts
 BASE.ARTIFACTS = c(
     "Base_Feature",
-    "File_Level"
+    "File_Level",
+    UNTRACKED.FILE
 )
 
 ## mapping of data source to artifact column
