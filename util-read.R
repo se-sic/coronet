@@ -135,7 +135,11 @@ read.commits = function(data.path, artifact) {
     ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
     ## To better indicate this, the 'artifact' and 'file' column value is changed to 'untracked.file'.
     commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
-    commit.data["artifact"] = ifelse(commit.data[["artifact"]] == "", UNTRACKED.FILE, commit.data[["artifact"]])
+
+    ## copy the file column if file level analysis is performed
+    if (artifact == "file") {
+        commit.data["artifact"] = commit.data[["file"]]
+    }
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])

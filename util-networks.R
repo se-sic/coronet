@@ -162,7 +162,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## remove untracked files, so that no edges are created in the next step
-            list = list[names(list) != UNTRACKED.FILE]
+            list = list[names(list) != UNTRACKED.FILE.EMPTY.ARTIFACT]
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(

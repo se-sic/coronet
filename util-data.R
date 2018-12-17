@@ -35,6 +35,9 @@ requireNamespace("parallel") # for parallel computation
 ## untracked file
 UNTRACKED.FILE = "<untracked.file>"
 
+# the empty string which resides in the artifact column when artifact == feature or artifact == file
+UNTRACKED.FILE.EMPTY.ARTIFACT = ""
+
 ## base artifacts
 BASE.ARTIFACTS = c(
     "Base_Feature",
@@ -373,9 +376,11 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$commits)) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
-                ## only process commits with the artifact listed in the configuration or missing
+                ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
+                ## untracked files
                 commit.data = subset(commit.data, artifact.type %in%
-                                         c(private$project.conf$get.value("artifact.codeface"), ""))
+                                         c(private$project.conf$get.value("artifact.codeface"),
+                                           UNTRACKED.FILE.EMPTY.ARTIFACT))
 
                 ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
                 ## the field 'commits' afterwards
