@@ -1053,17 +1053,15 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
         return(create.empty.network(directed = directed))
     }
 
-    ## if we have nodes to create, but no edges
+    ## if we have nodes to create, but no edges, create an empty edge list
     if (is.null(edge.list) || nrow(edge.list) == 0) {
-        ## create network with only the vertices
-        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(t(nodes.processed))
-    }
-    ## if we have nodes and edges
-    else {
-        ## construct network from edge list
-        net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+        edge.list = create.empty.edge.list()
     }
 
+    ## construct network from edge list
+    net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+
+    ## initialize edge weights
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     ## transform multiple edges to edge weights
@@ -1100,7 +1098,7 @@ merge.network.data = function(vertex.data, edge.data) {
     edges = plyr::rbind.fill(edge.data.filtered)
     ## 3) correct empty results
     if (is.null(edges)) {
-        edges = data.frame(from = character(0), to = character(0))
+        edges = create.empty.edge.list()
     }
 
     logging::logdebug("merge.network.data: finished.")

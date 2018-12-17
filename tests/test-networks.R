@@ -93,3 +93,57 @@ test_that("Merge networks", {
 
 })
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construction of edgeless networks ---------------------------------------
+
+test_that("Construction of edgeless networks", {
+
+    ## create data structures and network configuration as a basis
+    edge.list = data.frame(from = c("D1", "D2"), to   = c("D2", "D1"))
+    edge.list.as.sequence = as.vector(as.matrix(edge.list))
+    vertices = data.frame(name = c("D1", "D2"))
+    vertices.as.sequence = vertices[["name"]]
+    directed = FALSE # directedness does not matter for this test, but should be consistent
+    net.conf = NetworkConf$new()
+
+    ## construct edgeless network
+    net.edgeless = igraph::graph.empty(n = 0, directed = directed) +
+        igraph::vertices(vertices.as.sequence) +
+        igraph::edges(NULL, weight = 1)
+
+    ##
+    ## normal network
+    ##
+
+    net.constructed = construct.network.from.edge.list(vertices, edge.list, net.conf)
+    net.expected = igraph::graph.empty(n = 0, directed = directed) +
+        igraph::vertices(vertices.as.sequence) +
+        igraph::edges(edge.list.as.sequence, weight = 1)
+
+    ## check equality
+    expect_true(igraph::identical_graphs(net.constructed, net.expected), label = "normal network construction")
+
+    ##
+    ## edgeless network: NULL
+    ##
+
+    net.constructed = construct.network.from.edge.list(vertices, NULL, net.conf)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "edgeless network: NULL")
+
+    ##
+    ## edgeless network: create.empty.edge.list()
+    ##
+
+    net.constructed = construct.network.from.edge.list(vertices, create.empty.edge.list(), net.conf)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "edgeless network: create.empty.edge.list()")
+
+    ##
+    ## edgeless network: empty data.frame
+    ##
+
+    net.constructed = construct.network.from.edge.list(vertices, data.frame(), net.conf)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "edgeless network: empty data.frame")
+
+})
+
