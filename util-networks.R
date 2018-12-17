@@ -172,8 +172,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
-            ## Add author vertices back into the graph. Previously the untracked file commiters and - if configured -
-            ## the base artifact commiters have been removed to avoid edge creation among them.
+            ## Add author vertices back into the graph. Previously, commit information on untracked files
+            ## ('UNTRACKED.FILE') and, if configured, the base artifact ('BASE.ARTIFACTS') has been removed and, hence,
+            ## also corresponding author information. Re-add author vertices back to the network now by accessing the
+            ## complete author list.
             authors = proj.data$get.authors.by.data.source(data.source = "commits")
             author.net.data[["vertices"]] = authors["name"]
 
