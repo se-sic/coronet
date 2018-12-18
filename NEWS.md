@@ -3,32 +3,42 @@
 ## Unversioned
 
 ### Added
-- In addition to the ProjectConf parameter `artifact.filter.base`, which configured whether the base artifact should be
-included in the `get.commits.filtered` method, there is now the similiar parameter `filter.untracked.files` which does
-the same thing for untracked files (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- In addition to the ProjectConf parameter `commits.filter.base.artifact` (previously called `artifact.filter.base`),
+which configured whether the base artifact should be included in the `get.commits.filtered` method, there is now a
+similiar parameter called `commits.filter.untracked.files` which does the same thing for untracked files
+(11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - Edges are not being constructed in the author network between authors that only modify untracked files. For authors
-it can be configured if the edges should be created or not using the new NetworkConf parameter `base.artifact.edges`
-(c60c2f6e44b6f34cccb2714eccc7674158c83dde)
-- The public `get.commits.filtered.uncached` method was added which allows for external filtering of the commits by
+it can be configured if the edges should be created or not using the new NetworkConf parameter
+`edges.for.base.artifacts` (c60c2f6e44b6f34cccb2714eccc7674158c83dde)
+- The public `get.commits.filtered.uncached` method is added which allows for external filtering of the commits by
 specifying if untracked files and/or the base artifact should be filtered (this method does not take advantage of
 caching, whereas the `get.commits.filtered` method does) (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- The helper function `get.empty.dataframe` is introduced which returns empty dataframes (0 rows) with correct columnns
+and, if specified, all the correct datatypes. In the future, functions, that return data in dataframes, should always
+return dataframes of the same shape (regarding columns and datatypes) - especially when they are empty - because this
+makes later case distinctions easier or unncessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb)
 
 ### Changed/Improved
 - Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
-- Commits that do not change any artifact are considered to be carried out on a metafile called `untracked.file`
+- The ProjectConf's configuration parameter `artifact.filter.base` is renamed to `commits.filter.base.artifact`
+(466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- Commits that do not change any artifact are considered to be carried out on a metafile called `<untracked.file>`
 (11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - Remove `get.commits.raw`, `set.commits.raw` and `read.commits.raw` functions (64a94863c9e70ac8c75e443bc15cd7facbf2111d,
 c26e582e4ad6bf1eaeb08202fc3e00394332a013)
-- Removed `get.commits.filtered.empty` and corresponding `filter.commits.empty` method, the functionality has been moved
-to the altered `get.commits.filtered` and `filter.commits` method respectively (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- Remove `get.commits.filtered.empty` and corresponding `filter.commits.empty` method, the functionality is moved to the
+altered `get.commits.filtered` and `filter.commits` method respectively (11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - The `filter.commits` method now takes parameters which configure if untracked files and/or the base artifact should be
 filtered out (11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - Filtering by artifact kind (e.g. filtering out either Feature or FeatureExpression) is now being done in the
 `get.commits` method instead of the `get.commits.filtered` method (894c9a5c181fef14dcb71fa23699bebbcbcd2b4f)
+- The `NetworkConf` and the `ProjectConf` now print out an error message and stop whenever it is attempted to set
+non-existing configuration parameters (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
 
 ### Fixed
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
-
+- Fix bug which lead to wrong network construction in the case of networks with more than one node but no edges
+(#150, 0d7c2226da67f3537f3ff9d013607fe19df8a4c0)
 
 ## 3.4
 
