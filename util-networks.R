@@ -175,9 +175,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## Add author vertices back into the graph. Previously, commit information on untracked files
             ## ('UNTRACKED.FILE') and, if configured, the base artifact ('BASE.ARTIFACTS') has been removed and, hence,
             ## also corresponding author information. Re-add author vertices back to the network now by accessing the
-            ## complete author list.
-            authors = proj.data$get.authors.by.data.source(data.source = "commits")
-            author.net.data[["vertices"]] = authors["name"]
+            ## complete author list:
+            ## 1) get all authors on commits
+            authors = private$proj.data$get.authors.by.data.source(data.source = "commits")
+            ## 2) only select author names
+            authors = authors["author.name"]
+            ## 3) rename single column to "name" to correct mapping to vertex attribute "name"
+            colnames(authors) = "name"
+            ## 4) set author list as vertices
+            author.net.data[["vertices"]] = authors
 
             ## construct network from obtained data
             author.net = construct.network.from.edge.list(

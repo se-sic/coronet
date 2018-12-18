@@ -948,13 +948,16 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        #' Get the list of authors by only looking at the specified data source. The constant
-        #' \code{DATASOURCE.TO.ARTIFACT.FUNCTION} describes the mapping between data source and the method which is
-        #' retrieving the data for each data source.
+        #' Get the list of authors by only looking only at the specified data source.
         #'
-        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"} or \code{"issues"}
+        #' *Note*: The constant \code{DATASOURCE.TO.ARTIFACT.FUNCTION} denotes the mapping between
+        #' data source and the method which is retrieving the data for each data source.
         #'
-        #' @return the list of authors extracted from the specified data source
+        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"},
+        #'                    or \code{"issues"}
+        #'
+        #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
+        #'         extracted from the specified data source
         get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
             if (is.null(data.source)) {
                 stop ("Data source can't be null.")
@@ -962,9 +965,10 @@ ProjectData = R6::R6Class("ProjectData",
 
             data.source = match.arg(data.source)
             data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-
             data = self[[data.source.func]]()[c("author.name", "author.email")]
-            names(data) = c("name", "email")
+
+            ## remove duplicates
+            data = unique(data)
 
             return (data)
         }
