@@ -14,10 +14,11 @@
 ## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
-## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
+## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -414,6 +415,12 @@ get.author.class.network.hierarchy = function(network = NULL, result.limit = NUL
 
     hierarchy.base.df = metrics.hierarchy(network)
     hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
+
+    ## fix all authors whose clustering coefficient is '0', since their hierarchy value
+    ## is 'Inf'. We do not get any complications here because there are no authors with
+    ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
+    ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
+    hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
 
     hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
 
@@ -1080,7 +1087,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     ## Remove rows with invalid calculation base values
     if (any(is.na(author.data[[calc.base.name]]))) {
         logging::logwarn("Some authors' activity indicator (%s) is NA. Setting the activity to 0...", calc.base.name)
-        author.data[is.na(author.data[[calc.base.name]]), calc.base.name, drop = FALSE] = 0
+        author.data[is.na(author.data[[calc.base.name]]), calc.base.name] = 0
     }
 
     ## Get the threshold depending on all calculation base values
