@@ -157,7 +157,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             list = private$proj.data$group.authors.by.data.column("commits", "artifact")
 
             ## if configured in the network conf, remove base artifacts, so that no edges are created in the next step
-            if (!private$network.conf$get.value("base.artifact.edges")) {
+            if (!private$network.conf$get.value("edges.for.base.artifacts")) {
                list = list[!(names(list) %in% BASE.ARTIFACTS)]
             }
 
@@ -1402,7 +1402,7 @@ get.sample.network = function() {
 
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
-    proj.conf$update.values(list(artifact.filter.base = FALSE))
+    proj.conf$update.values(list(commits.filter.base.artifact = FALSE))
 
     ## RangeData object
     range = proj.conf$get.value("ranges")[1]

@@ -36,7 +36,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(artifact.relation = "cochange"))
 

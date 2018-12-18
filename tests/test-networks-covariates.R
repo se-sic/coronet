@@ -52,7 +52,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))

@@ -139,7 +139,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
                 ## configurations
                 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-                proj.conf$update.value("artifact.filter.base", FALSE)
+                proj.conf$update.value("commits.filter.base.artifact", FALSE)
                 net.conf = NetworkConf$new()
 
                 ## update network configuration
@@ -198,7 +198,7 @@ test_that("Network construction of the undirected author-cochange network", {
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange"))
 
@@ -243,7 +243,7 @@ test_that("Network construction of the undirected but temorally ordered author-c
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = FALSE,
                                                  author.respect.temporal.order = TRUE))
@@ -285,7 +285,7 @@ test_that("Network construction of the directed author-cochange network", {
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE))
 
@@ -326,7 +326,7 @@ test_that("Network construction of the directed author-cochange network without 
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE,
                                                  author.respect.temporal.order = FALSE))
@@ -372,7 +372,7 @@ test_that("Network construction of the undirected simplified author-cochange net
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", simplify = TRUE))
 
@@ -420,7 +420,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "issue"))
@@ -511,7 +511,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "issue"))
 

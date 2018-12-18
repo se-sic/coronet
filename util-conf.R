@@ -329,13 +329,13 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         ## * * attributes ---------------------------------------------------
 
         attributes = list(
-            artifact.filter.base = list(
+            commits.filter.base.artifact = list(
                 default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
-            filter.untracked.files = list(
+            commits.filter.untracked.files = list(
                 default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
@@ -696,7 +696,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
-            base.artifact.edges = list(
+            edges.for.base.artifacts = list(
                 default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),

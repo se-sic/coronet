@@ -45,8 +45,8 @@ BASE.ARTIFACTS = c(
     UNTRACKED.FILE
 )
 
-## mapping of data source to artifact column
-## (for commits: filter also empty, non-configured, and (potentially) base artifacts)
+## mapping of data source to artifact column (for commits: filter artifacts based on the configuration options
+## 'commits.filter.base.artifact' and 'commits.filter.untracked.files' of the corresponding 'ProjectConf' object)
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
     "commits" = "get.commits.filtered",
     "mails"   = "get.mails",
@@ -331,8 +331,8 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         #' Return the commits retrieved by the \code{get.commits} method by removing untracked files and removing the
-        #' base artifact (if configured in the \code{project.conf}, see parameters \code{filter.untracked.files} and
-        #' \code{artifact.filter.base}).
+        #' base artifact (if configured in the \code{project.conf}, see parameters \code{commits.filter.untracked.files}
+        #' and \code{commits.filter.base.artifact}).
         #'
         #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
@@ -342,8 +342,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.commits.filtered = function() {
             if (is.null(private$commits.filtered)) {
                 private$commits.filtered = private$filter.commits(
-                    private$project.conf$get.value("filter.untracked.files"),
-                    private$project.conf$get.value("artifact.filter.base")
+                    private$project.conf$get.value("commits.filter.untracked.files"),
+                    private$project.conf$get.value("commits.filter.base.artifact")
                 )
             }
             return(private$commits.filtered)

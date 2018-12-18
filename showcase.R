@@ -61,7 +61,7 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-proj.conf$update.value("artifact.filter.base", TRUE)
+proj.conf$update.value("commits.filter.base.artifact", TRUE)
 # proj.conf$print()
 
 ## initialize network configuration
