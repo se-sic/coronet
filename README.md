@@ -482,9 +482,11 @@ There is no way to update the entries, except for the revision-based parameters.
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
-- `artifact.filter.base`
-    * Remove all artifact information regarding the base artifact
-    (`"Base_Feature"` or `"File_Level"` for features and functions, respectively, as artifacts)
+- `commits.filter.base.artifact`
+    * Remove all information concerning the base artifact from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commit information about changes to the base artifact. Networks built on top of this `ProjectData` do also not contain any base artifact information anymore.
+    * [*`TRUE`*, `FALSE`]
+- `commits.filter.untracked.files`
+    * Remove all information concerning untracked files from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commits that solely changed untracked files. Networks built on top of this `ProjectData` do also not contain any information about untracked files.
     * [*`TRUE`*, `FALSE`]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
@@ -552,6 +554,9 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * **Note**: `"date"` and `"artifact.type"` are always included as this information is needed for several parts of the library, e.g., time-based splitting.
     * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
     * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
+- `edges.for.base.artifacts`
+    * Controls whether edges should be drawn between authors for being involved in committing to the base artifact
+    * [*`TRUE`*, `FALSE`]
 - `simplify`
     * Perform edge contraction to retrieve a simplified network
     * [`TRUE`, *`FALSE`*]
