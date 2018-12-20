@@ -48,44 +48,24 @@ read.commits = function(data.path, artifact) {
     commit.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                  encoding = "UTF-8"), silent = TRUE)
 
-    ## prepare proper column names based on Codeface extraction:
-    ##
-    ## SELECT c.id, c.authorDate, a.name, a.email1, c.commitDate,
-    ## acom.name, acom.email1, c.commitHash,
-    ## c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
-    ## cd.file, cd.entityId, cd.entityType, cd.size
-    commit.data.columns = c(
-        "commit.id", # id
-        "date", "author.name", "author.email", # author information
-        "committer.date", "committer.name", "committer.email", # committer information
-        "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
-        "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
-    )
-
     ## handle the case that the list of commits is empty
     if (inherits(commit.data, "try-error")) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
         # return a dataframe with the correct columns but zero rows
-        commit.data = get.empty.dataframe(commit.data.columns, data.types =
-                                              c("character",
-                                                "POSIXct", "character", "character",
-                                                "POSIXct", "character", "character",
-                                                "character", "numeric", "numeric", "numeric", "numeric",
-                                                "character", "character", "character", "numeric"))
-        return(commit.data)
+        return(create.empty.commits.list())
     }
 
     ## assign prepared column names to the dataframe
-    colnames(commit.data) = commit.data.columns
+    colnames(commit.data) = COMMITS.LIST.COLUMNS
 
     ## remove duplicated lines (even if they contain different commit ids but the same commit hash)
     commit.data = commit.data[rownames(unique(commit.data[, -1])), ]
 
     ## aggregate lines which are identical except for the "artifact.diff.size" column (ignoring the commit id)
     ## 1) select columns which have to be identical
-    primary.columns = commit.data.columns[!(commit.data.columns %in% c("commit.id", "artifact.diff.size"))]
+    primary.columns = COMMITS.LIST.COLUMNS[!(COMMITS.LIST.COLUMNS %in% c("commit.id", "artifact.diff.size"))]
     ## 2) aggregate "artifact.diff.size" for identical rows of the selected columns
     commit.data.without.id = aggregate(commit.data["artifact.diff.size"],
                                        commit.data[primary.columns],
@@ -97,7 +77,7 @@ read.commits = function(data.path, artifact) {
     ## 4) merge the data again to have both "commit.id" and "artifact.diff.size" in one data.frame again
     commit.data = merge(commit.data.without.id, commit.data.without.artifact.diff.size)
     ## 5) reorder the columns of the data.frame as their order might be changed during aggregating and merging
-    commit.data = commit.data[, commit.data.columns]
+    commit.data = commit.data[, COMMITS.LIST.COLUMNS]
 
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
@@ -222,17 +202,11 @@ read.mails = function(data.path) {
     if (inherits(mail.data, "try-error")) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.mails.list())
     }
 
-    ## set proper column names based on Codeface extraction:
-    ##
-    ## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
-    colnames(mail.data) = c(
-        "author.name", "author.email", # author information
-        "message.id", "date", "date.offset", "subject", # meta information
-        "thread" # thread ID
-    )
+
+    colnames(mail.data) = MAILS.LIST.COLUMNS
 
     ## set pattern for thread ID for better recognition
     mail.data[["thread"]] = sprintf("<thread-%s>", mail.data[["thread"]])
@@ -292,15 +266,11 @@ read.authors = function(data.path) {
         stop("Stopped due to missing authors.")
     }
 
-    ## set proper column names based on Codeface extraction:
-    ##
-    ## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
-    authors.df.columns = c("author.id", "author.name", "author.email")
     ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != length(authors.df.columns)) {
+    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
         authors.df[3] = NA
     }
-    colnames(authors.df) = authors.df.columns
+    colnames(authors.df) = AUTHORS.LIST.COLUMNS
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -397,16 +367,11 @@ read.issues = function(data.path) {
     if (inherits(issue.data, "try-error")) {
         logging::logwarn("There are no Github issue data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.issues.list())
     }
 
     ## set proper column names
-    colnames(issue.data) = c(
-        "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-        "author.name", "author.email", # author information
-        "date", # the date
-        "ref.name", "event.name" # the event describing the row's entry
-    )
+    colnames(issue.data) = ISSUES.LIST.COLUMNS
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])

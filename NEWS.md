@@ -13,10 +13,10 @@ it can be configured if the edges should be created or not using the new Network
 - The public `get.commits.filtered.uncached` method is added which allows for external filtering of the commits by
 specifying if untracked files and/or the base artifact should be filtered (this method does not take advantage of
 caching, whereas the `get.commits.filtered` method does) (11428d9847fd44f982cd094a3248bd13fb6b7b58)
-- The helper function `get.empty.dataframe` is introduced which returns empty dataframes (0 rows) with correct columnns
-and, if specified, all the correct datatypes. In the future, functions, that return data in dataframes, should always
-return dataframes of the same shape (regarding columns and datatypes) - especially when they are empty - because this
-makes later case distinctions easier or unncessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb)
+- The helper function `create.empty.data.frame` is introduced which returns empty dataframes (0 rows) with correct
+columnns and, if specified, all the correct datatypes. In the future, functions, that return data in dataframes, should
+always return dataframes of the same shape (regarding columns and datatypes) - especially when they are empty - because
+this makes later case distinctions easier or unncessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb)
 
 ### Changed/Improved
 - Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
