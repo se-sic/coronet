@@ -645,31 +645,21 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return a vector containing all the names
         get.cached.data.sources = function() {
-            result = c()
+            data.sources = c(
+                ## main data sources
+                "commits",
+                "mails",
+                "issues",
+                ## author data
+                "authors",
+                ## additional data sources
+                "synchronicity",
+                "pasta"
+            )
 
-            ## main data sources
-            if (!is.null(private$commits)) {
-                result = c(result, "commits")
-            }
-            if (!is.null(private$mails)) {
-                result = c(result, "mails")
-            }
-            if (!is.null(private$issues)) {
-                result = c(result, "issues")
-            }
-
-            ## author data
-            if (!is.null(private$authors)) {
-                result = c(result, "authors")
-            }
-
-            ## additional data sources
-            if (!is.null(private$synchronicity)) {
-                result = c(result, "synchronicity")
-            }
-            if (!is.null(private$pasta)) {
-                result = c(result, "pasta")
-            }
+            result = Filter(function (ds) {
+                return(!is.null(private[[ds]]))
+            }, data.sources)
 
             return(result)
         },
