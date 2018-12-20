@@ -154,19 +154,22 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.cochange)
             }
 
-            list = private$proj.data$group.authors.by.data.column("commits", "artifact")
-
-            ## if configured in the network conf, remove base artifacts, so that no edges are created in the next step
+            ## Get a list of all artifacts extracted from the commit data. Each artifact in this group is again a list
+            ## of all authors that were involved in making changes to this artifact. In the following two steps some of
+            ## the artifacts are filtered from this list, which removes all information (including author information)
+            ## about these artifacts. Since we only want to lose the edge information and not the information about
+            ## authors, they will explicitly be added in a later step.
+            author.groups = private$proj.data$group.authors.by.data.column("commits", "artifact")
+            ## 1) if configured in the 'NetworkConf, remove the base artifact
             if (!private$network.conf$get.value("edges.for.base.artifacts")) {
-               list = list[!(names(list) %in% BASE.ARTIFACTS)]
+                author.groups = author.groups[!(names(author.groups) %in% BASE.ARTIFACTS)]
             }
-
-            ## remove untracked files, so that no edges are created in the next step
-            list = list[names(list) != UNTRACKED.FILE.EMPTY.ARTIFACT]
+            ## 2) in any case, remove the untracked files
+            author.groups = author.groups[names(author.groups) != UNTRACKED.FILE.EMPTY.ARTIFACT]
 
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                list,
+                author.groups,
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
