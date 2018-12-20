@@ -400,20 +400,23 @@ ProjectData = R6::R6Class("ProjectData",
         set.commits = function(commit.data) {
             logging::loginfo("Setting commit data.")
 
-            if (!is.null(commit.data)) {
+            # TODO: Also check for correct shape (column names and data types) of the passed data
 
-                ## append synchronicity data if wanted
-                if (private$project.conf$get.value("synchronicity")) {
-                    synchronicity.data = self$get.synchronicity()
-                    commit.data = merge(commit.data, synchronicity.data,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
-                }
+            if (is.null(commit.data)) {
+                commit.data = create.empty.commits.list();
+            }
 
-                ## add PaStA data if wanted
-                if (private$project.conf$get.value("pasta")) {
-                    self$get.pasta()
-                    commit.data = private$add.pasta.data(commit.data)
-                }
+            ## append synchronicity data if wanted
+            if (private$project.conf$get.value("synchronicity")) {
+                synchronicity.data = self$get.synchronicity()
+                commit.data = merge(commit.data, synchronicity.data,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+            }
+
+            ## add PaStA data if wanted
+            if (private$project.conf$get.value("pasta")) {
+                self$get.pasta()
+                commit.data = private$add.pasta.data(commit.data)
             }
 
             private$commits = commit.data
@@ -960,11 +963,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
         #'         extracted from the specified data source
         get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
-            if (is.null(data.source)) {
-                stop ("Data source can not be null.")
-            }
 
             data.source = match.arg(data.source)
+
+            ## retrieve author names from chosen data source
             data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
             data = self[[data.source.func]]()[c("author.name", "author.email")]
 
