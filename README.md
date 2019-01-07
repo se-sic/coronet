@@ -555,7 +555,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * **Note**: For each type of network that can be built, only the applicable part of the given vector of names is respected.
     * **Note**: For the edge attributes `"pasta"` and `"synchronicity"`, the project configuration's parameters `pasta` and `synchronicity` need to be set to `TRUE`, respectively (see below).
 - `edges.for.base.artifacts`
-    * Controls whether edges should be drawn between authors for being involved in committing to the base artifact
+    * Controls whether edges should be drawn between authors for being involved in authoring commits to the base artifact. This parameter does not have any effect if the base artifact was filtered beforehand (e.g., when `commits.filter.base.artifact == TRUE`, or, when `commits.filter.untracked.files == TRUE` and `artifact == FILE`; all of these options can be configured in the `ProjectConf`; warning: `commits.filter.base.artifact` and `commits.filter.untracked.files` are `TRUE` by default).
     * [*`TRUE`*, `FALSE`]
 - `simplify`
     * Perform edge contraction to retrieve a simplified network
