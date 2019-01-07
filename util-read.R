@@ -31,6 +31,112 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
+
+## column names of a dataframe containing authors (based on the Codeface extraction, see the following SQL statement)
+##
+## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
+AUTHORS.LIST.COLUMNS = c(
+    "author.id", "author.name", "author.email"
+)
+
+## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
+AUTHORS.LIST.DATA.TYPES = c(
+    "character", "character", "character"
+)
+
+## column names of a dataframe containing commits (based on the Codeface extraction, see the following SQL statement)
+##
+## SELECT c.id, c.authorDate, a.name, a.email1,
+## c.commitDate, acom.name, acom.email1,
+## c.commitHash, c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
+## cd.file, cd.entityId, cd.entityType, cd.size
+COMMITS.LIST.COLUMNS = c(
+    "commit.id", # id
+    "date", "author.name", "author.email", # author information
+    "committer.date", "committer.name", "committer.email", # committer information
+    "hash", "changed.files", "added.lines", "deleted.lines", "diff.size", # commit information
+    "file", "artifact", "artifact.type", "artifact.diff.size" ## commit-dependency information
+)
+
+## declare the datatype for each column in the constant 'COMMITS.LIST.COLUMNS'
+COMMITS.LIST.DATA.TYPES = c(
+    "character",
+    "POSIXct", "character", "character",
+    "POSIXct", "character", "character",
+    "character", "numeric", "numeric", "numeric", "numeric",
+    "character", "character", "character", "numeric"
+)
+
+## column names of a dataframe containing issues
+ISSUES.LIST.COLUMNS = c(
+    "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
+    "author.name", "author.email", # author information
+    "date", # the date
+    "ref.name", "event.name" # the event describing the row's entry
+)
+
+## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
+ISSUES.LIST.DATA.TYPES = c(
+    "character", "character", "POSIXct", "POSIXct", "logical",
+    "character", "character",
+    "POSIXct",
+    "character", "character"
+)
+
+## column names of a dataframe containing mails (based on the Codeface extraction, see the following SQL statement)
+##
+## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
+MAILS.LIST.COLUMNS = c(
+    "author.name", "author.email", # author information
+    "message.id", "date", "date.offset", "subject", # meta information
+    "thread" # thread ID
+)
+
+## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
+MAILS.LIST.DATA.TYPES = c(
+    "character", "character",
+    "character", "POSIXct", "numeric", "character",
+    "numeric"
+)
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Empty dataframe creation-------------------------------------------------
+
+#' Create an empty dataframe which has the same shape as a dataframe containing authors. The dataframe has the column
+#' names and column datatypes defined in \code{AUTHORS.LIST.COLUMNS} and \code{AUTHORS.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.authors.list = function() {
+    return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing commits. The dataframe has the column
+#' names and column datatypes defined in \code{COMMITS.LIST.COLUMNS} and \code{COMMITS.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.commits.list = function() {
+    return (create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
+#' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.issues.list = function() {
+    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing mails. The dataframe has the column
+#' names and column datatypes defined in \code{MAILS.LIST.COLUMNS} and \code{MAILS.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.mails.list = function() {
+    return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit data -------------------------------------------------------------
 
 #' Read the commits from the 'commits.list' file.

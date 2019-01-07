@@ -155,7 +155,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## Get a list of all artifacts extracted from the commit data. Each artifact in this group is again a list
-            ## of all authors that were involved in making changes to this artifact. In the following two steps some of
+            ## of all authors that were involved in making changes to this artifact. In the following two steps, some of
             ## the artifacts are filtered from this list, which removes all information (including author information)
             ## about these artifacts. Since we only want to lose the edge information and not the information about
             ## authors, they will explicitly be added in a later step.
