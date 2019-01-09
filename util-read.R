@@ -33,9 +33,11 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Constants ---------------------------------------------------------------
 
-## column names of a dataframe containing authors (based on the Codeface extraction, see the following SQL statement)
-##
-## SELECT a.name AS authorName, a.email1, m.creationDate, m.subject, m.threadId
+## The following definition of column names for each individual data source corresponds to the individual extraction
+## process of the tool 'codeface-extraction' (https://github.com/se-passau/codeface-extraction; use commit 0700f94 or
+## compatible later commit).
+
+## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
     "author.id", "author.name", "author.email"
 )
@@ -45,12 +47,7 @@ AUTHORS.LIST.DATA.TYPES = c(
     "character", "character", "character"
 )
 
-## column names of a dataframe containing commits (based on the Codeface extraction, see the following SQL statement)
-##
-## SELECT c.id, c.authorDate, a.name, a.email1,
-## c.commitDate, acom.name, acom.email1,
-## c.commitHash, c.ChangedFiles, c.AddedLines, c.DeletedLines, c.DiffSize,
-## cd.file, cd.entityId, cd.entityType, cd.size
+## column names of a dataframe containing commits (see file 'commits.list' and function \code{read.commits})
 COMMITS.LIST.COLUMNS = c(
     "commit.id", # id
     "date", "author.name", "author.email", # author information
@@ -68,7 +65,7 @@ COMMITS.LIST.DATA.TYPES = c(
     "character", "character", "character", "numeric"
 )
 
-## column names of a dataframe containing issues
+## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
 ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
     "author.name", "author.email", # author information
@@ -84,9 +81,7 @@ ISSUES.LIST.DATA.TYPES = c(
     "character", "character"
 )
 
-## column names of a dataframe containing mails (based on the Codeface extraction, see the following SQL statement)
-##
-## SELECT a.name AS authorName, a.messageId, a.email1, m.creationDate, m.subject, m.threadId
+## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
 MAILS.LIST.COLUMNS = c(
     "author.name", "author.email", # author information
     "message.id", "date", "date.offset", "subject", # meta information
