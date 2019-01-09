@@ -181,6 +181,10 @@ read.commits = function(data.path, artifact) {
     ## 5) reorder the columns of the data.frame as their order might be changed during aggregating and merging
     commit.data = commit.data[, COMMITS.LIST.COLUMNS]
 
+    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
+    ## To better indicate this, the 'file' column value is changed to 'untracked.file'.
+    commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
+
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
     if (artifact == "file") {
@@ -195,7 +199,9 @@ read.commits = function(data.path, artifact) {
 
         ## copy columns to match proper layout for further analyses
         commit.data["artifact"] = commit.data[["file"]]
-        commit.data["artifact.type"] = "File"
+        commit.data["artifact.type"] = ifelse(commit.data[["file"]] == UNTRACKED.FILE,
+                                              UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                              "File")
         commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
         commit.data["diffsum"] = NULL # remove
     }
@@ -214,14 +220,14 @@ read.commits = function(data.path, artifact) {
         commit.data["artifact"] = artifacts.new
     }
 
-    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
-    ## To better indicate this, the 'artifact' and 'file' column value is changed to 'untracked.file'.
-    commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
-
-    ## copy the file column if file level analysis is performed
-    if (artifact == "file") {
-        commit.data["artifact"] = commit.data[["file"]]
-    }
+    ## Commits to files that are not tracked by Codeface have the empty string in the file, artifact, and
+    ## artifact-type column. To better indicate this, the correpsonding column values are adapted.
+    commit.data["artifact"] = ifelse(commit.data[["artifact"]] == "",
+                                     UNTRACKED.FILE.EMPTY.ARTIFACT,
+                                     commit.data[["artifact"]])
+    commit.data["artifact.type"] = ifelse(commit.data[["artifact.type"]] == "",
+                                          UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                          commit.data[["artifact.type"]])
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])

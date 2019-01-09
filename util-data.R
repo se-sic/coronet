@@ -38,6 +38,7 @@ UNTRACKED.FILE = "<untracked.file>"
 ## the empty string which resides in the artifact column when artifact == feature or artifact == function
 ## in the 'ProjectConf'
 UNTRACKED.FILE.EMPTY.ARTIFACT = ""
+UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE = ""
 
 ## base artifacts (which one actually applies, depends on the artifact parameter in the 'ProjectConf')
 BASE.ARTIFACTS = c(
@@ -382,7 +383,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## untracked files
                 commit.data = subset(commit.data, artifact.type %in%
                                          c(private$project.conf$get.value("artifact.codeface"),
-                                           UNTRACKED.FILE.EMPTY.ARTIFACT))
+                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE))
 
                 ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
                 ## the field 'commits' afterwards
