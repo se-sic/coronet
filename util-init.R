@@ -30,6 +30,11 @@ if (Sys.info()['sysname'] == "Windows") {
 Sys.setenv(TZ = "UTC")
 options(stringsAsFactors = FALSE)
 
+## for proper initialization of the package 'logging', the base package 'methods' needs
+## to be attached properly (see #153)
+
+library(methods)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sourcing library files --------------------------------------------------
