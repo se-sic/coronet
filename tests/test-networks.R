@@ -105,6 +105,149 @@ test_that("Merge networks", {
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construction of networks without data -----------------------------------
+
+test_that("Construction of networks without data", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
+    net.conf = NetworkConf$new()
+    net.conf$clear.edge.attributes() # remove all but the mandatory edge attributes
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    proj.data$set.commits(NULL) # remove all commit data!
+    proj.data$set.mails(NULL) # remove all mail data!
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ##
+    ## single author relation
+    ##
+
+    network.builder$update.network.conf(updated.values = list(author.relation = "cochange"))
+
+    ## test construction
+    expect_error(network.builder$get.author.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.author.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## several author relations
+    ##
+
+    network.builder$update.network.conf(updated.values = list(author.relation = c("cochange", "mail")))
+
+    ## test construction
+    expect_error(network.builder$get.author.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.author.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## single artifact relation
+    ##
+
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
+
+    ## test construction
+    expect_error(network.builder$get.artifact.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.artifact.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## several artifact relations
+    ##
+
+    network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange", "mail")))
+
+    ## test construction
+    expect_error(network.builder$get.artifact.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.artifact.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## single bipartite relation
+    ##
+
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
+
+    ## test construction
+    expect_error(network.builder$get.bipartite.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.bipartite.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## several artifact relations
+    ##
+
+    network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange", "mail")))
+
+    ## test construction
+    expect_error(network.builder$get.bipartite.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.bipartite.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## single multi-network relation
+    ##
+
+    network.builder$update.network.conf(updated.values = list(author.relation = "cochange",
+                                                              artifact.relation = "cochange"))
+
+    ## test construction
+    expect_error(network.builder$get.multi.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.multi.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## several multi-network relations
+    ##
+
+    network.builder$update.network.conf(updated.values = list(author.relation = c("cochange", "mail"),
+                                                              artifact.relation = c("cochange", "mail")))
+
+    ## test construction
+    expect_error(network.builder$get.multi.network(), NA) # expect that no error occurs
+
+    ## test emptiness
+    network.empty = network.builder$get.multi.network()
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Construction of edgeless networks ---------------------------------------
 
 test_that("Construction of edgeless networks", {
