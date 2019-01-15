@@ -31,6 +31,7 @@ were added, namely `create.empty.authors.list`, `create.empty.commits.list`, `cr
 `create.empty.mails.list` as well as corresponding constants holding columns and associated datatypes for all these
 empty dataframes (5f0f52936b4433f64fd9b1c9b2571eb26f66395f, 523daef8cf4642a2360396b11f0d74bce565b0f0)
 - Add method `ProjectData$get.authors.by.data.source` to retrieve authors by given data-source name (#149, 65804276dd2ada9b2f00b2cab7b6ad0cecbe733e, 137d8337bc35f5a83aa16a48ef8e47fc0d36b36c)
+- Add a note on mailing-list threads to README (fe66498319f65870bc6c37d1d1fb0a68b527a6f2)
 
 ### Changed/Improved
 - Rename `ProjectConf` parameter `artifact.filter.base` to `commits.filter.base.artifact` (PR #149, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
