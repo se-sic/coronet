@@ -274,7 +274,7 @@ Analogously, these edge-construction algorithms apply also for all other relatio
 
 #### Vertex and edge attributes
 
-There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional.
+There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional and will be added in all cases when using instances of the class `NetworkBuilder` to obtain networks.
 
 - Mandatory *vertex* attributes
     * `type`
@@ -296,6 +296,8 @@ There are some mandatory attributes that are added to vertices and edges in the 
     * `artifact.type`
         - The specific artifact type associated with the event causing the respective edge
         - [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
+    * `weight`
+        - The weight of the respective edge
     * `date`
         - The date of the event causing the respective edge
 
