@@ -15,6 +15,7 @@
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -37,7 +38,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
 
@@ -90,7 +91,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
 
@@ -143,7 +144,7 @@ test_that("Construction of the bipartite network for the function artifact with 
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
 
@@ -194,7 +195,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "featureexpression")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
 
@@ -245,7 +246,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "issue"))
 
@@ -303,7 +304,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange",
                                                            author.directed = TRUE))
@@ -356,7 +357,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange",
                                                            author.directed = TRUE))
@@ -410,7 +411,7 @@ test_that("Construction of the directed bipartite network for the function artif
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange",
                                                            author.directed = TRUE))
@@ -463,7 +464,7 @@ test_that("Construction of the directed bipartite network for the featureexpress
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "featureexpression")
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange",
                                                            author.directed = TRUE))

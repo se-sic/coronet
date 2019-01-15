@@ -17,6 +17,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -31,16 +32,24 @@ requireNamespace("parallel") # for parallel computation
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Constants ---------------------------------------------------------------
 
-## base artifacts
+## untracked file
+UNTRACKED.FILE = "<untracked.file>"
+
+## the empty string which resides in the artifact column when artifact == feature or artifact == function
+## in the 'ProjectConf'
+UNTRACKED.FILE.EMPTY.ARTIFACT = ""
+
+## base artifacts (which one actually applies, depends on the artifact parameter in the 'ProjectConf')
 BASE.ARTIFACTS = c(
-    "Base_Feature",
-    "File_Level"
+    "Base_Feature", ## when artifact == feature
+    "File_Level",   ## when artifact == function
+    UNTRACKED.FILE  ## when artifact == file
 )
 
-## mapping of data source to artifact column
-## (for commits: filter also empty, non-configured, and (potentially) base artifacts)
+## mapping of data source to artifact column (for commits: filter artifacts based on the configuration options
+## 'commits.filter.base.artifact' and 'commits.filter.untracked.files' of the corresponding 'ProjectConf' object)
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
-    "commits" = "get.commits.filtered.empty",
+    "commits" = "get.commits.filtered",
     "mails"   = "get.mails",
     "issues"  = "get.issues"
 )
@@ -70,7 +79,6 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## commits and commit data
         commits.filtered = NULL, # data.frame
-        commits.filtered.empty = NULL, #data.frame
         commits = NULL, # data.frame
         synchronicity = NULL, # data.frame
         pasta = NULL, # data.frame
@@ -85,92 +93,31 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * filtering commits -------------------------------------------
 
-        #' Filter commits with empty artifacts from the already filtered commit list and
-        #' save the new list to 'commits.filtered.empty'.
+        #' Filter commits retrieved by the method \code{get.commits} after potentially removing untracked files and the
+        #' base artifact (see parameters).
         #'
-        #' @seealso \code{get.commits.filtered}
-        filter.commits.empty = function() {
-
-            logging::logdebug("filter.commits.empty: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$commits.filtered.empty)) {
-                logging::logdebug("filter.commits.empty: finished. (already existing)")
-                return(private$commits.filtered.empty)
-            }
-
-            ## get raw commit data
-            commit.data = self$get.commits.filtered()
-
-            ## break if the list of commits is empty
-            if (nrow(commit.data) == 0) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.filtered.empty = data.frame()
-                return(private$commits.filtered.empty)
-            }
-
-            ## only process commits with non-empty artifact
-            commit.data = subset(commit.data, artifact != "")
-
-            ## store the commit data
-            private$commits.filtered.empty = commit.data
-            logging::logdebug("filter.commits.empty: finished.")
-        },
-
-        #' Filter the data from the commit list which does not belong to the artifact listed in the field
-        #' \code{project.conf}.
-        #' If configured in \code{project.conf}, filter the commits from the commit list that touch the base artifact.
-        #' Add synchronicity and PaStA data if configured in \code{project.conf}.
-        #' Finally, save the new list to the field \code{commits.filtered}.
-        filter.commits = function() {
-
+        #' @param remove.untracked.files flag whether untracked files are kept or removed
+        #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #'
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        filter.commits = function(remove.untracked.files, remove.base.artifact) {
             logging::logdebug("filter.commits: starting.")
 
-            ## do not compute anything more than once
-            if (!is.null(private$commits.filtered)) {
-                logging::logdebug("filter.commits: finished. (already existing)")
-                return(private$commits.filtered)
-            }
-
-            ## get raw commit data
+            ## get commit data
             commit.data = self$get.commits()
 
-            ## break if the list of commits is empty
-            if (nrow(commit.data) == 0) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.filtered = data.frame()
-                return(private$commits.filtered)
+            ## filter out the untracked files
+            if (remove.untracked.files) {
+                commit.data = subset(commit.data, file != UNTRACKED.FILE)
             }
 
-            ## only process commits with the artifact listed in the configuration or missing
-            commit.data = subset(commit.data, artifact.type %in%
-                                     c(private$project.conf$get.value("artifact.codeface"), ""))
-
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$project.conf$get.value("artifact.filter.base")) {
+            if (remove.base.artifact) {
                 commit.data = subset(commit.data, !(artifact %in% BASE.ARTIFACTS))
             }
 
-            ## append synchronicity data if wanted
-            if (private$project.conf$get.value("synchronicity")) {
-                synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
-            }
-
-            ## add PaStA data if wanted
-            if (private$project.conf$get.value("pasta")) {
-                self$get.pasta()
-                commit.data = private$add.pasta.data(commit.data)
-            }
-
-            ## store the commit data
-            private$commits.filtered = commit.data
             logging::logdebug("filter.commits: finished.")
+            return(commit.data)
         },
 
         ## * * PaStA data --------------------------------------------------
@@ -287,7 +234,6 @@ ProjectData = R6::R6Class("ProjectData",
         #' changed.
         reset.environment = function() {
             private$commits.filtered = NULL
-            private$commits.filtered.empty = NULL
             private$commits = NULL
             private$synchronicity = NULL
             private$mails = NULL
@@ -328,6 +274,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Set  a value of the project configuration and reset the environment
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
+            self$reset.environment()
         },
 
         #' Update the project configuration based on the given list
@@ -384,108 +331,98 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Get the list of commits without empty artifacts and filtered by the artifact kind configured
-        #' in the field \code{project.conf}.
-        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
-        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
-        #' to the filtered commit data.
-        #' If the list of filtered commits does not already exist, call the filter method.
+        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' base artifact (if configured in the \code{project.conf}, see parameters \code{commits.filter.untracked.files}
+        #' and \code{commits.filter.base.artifact}).
         #'
-        #' @return the commit list without empty artifacts and containing only commit data related to the
-        #'         configured artifact and, if configured, without the base artifact
-        get.commits.filtered.empty = function() {
-            logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
-
-            ## if commits are not read already, do this
-            if (is.null(private$commits.filtered.empty)) {
-                private$filter.commits.empty()
-            }
-
-            return(private$commits.filtered.empty)
-        },
-
-        #' Get the list of commits filtered by the artifact kind configured in the field \code{project.conf}.
-        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
-        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
-        #' to the filtered commit data.
-        #' If the list of filtered commits does not already exist, call the filter method.
+        #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
-        #' @return the commit list containing only commit data related to the configured artifact and,
-        #'         if configured, without the base artifact
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #'
+        #' @seealso get.commits.filtered.uncached
         get.commits.filtered = function() {
-            logging::loginfo("Getting commit data filtered by artifact.base.")
-
-            ## if commits are not read already, do this
             if (is.null(private$commits.filtered)) {
-                private$filter.commits()
+                private$commits.filtered = private$filter.commits(
+                    private$project.conf$get.value("commits.filter.untracked.files"),
+                    private$project.conf$get.value("commits.filter.base.artifact")
+                )
             }
-
             return(private$commits.filtered)
         },
 
-        #' Get the complete list of commits.
-        #' If configured in the field \code{project.conf}, append the PaStA data to the commit data
-        #' by calling the setter function.
-        #' If the list of commits does not already exist, call the read method first.
+        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' base artifact (see parameters).
+        #'
+        #' This method does not use caching. If you want to use caching, please use the method
+        #' \code{get.commits.filtered} instead.
+        #'
+        #' @param remove.untracked.files flag whether untracked files are kept or removed
+        #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #'
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #'
+        #' @seealso get.commits.filtered
+        get.commits.filtered.uncached = function(remove.untracked.files, remove.base.artifact) {
+            return (private$filter.commits(remove.untracked.files, remove.base.artifact))
+        },
+
+        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
+        #' If the list of commits is not cached in the field \code{commits}, call the read method first.
+        #' If configured in the \code{project.conf}, add PaStA and synchronicity data.
         #'
         #' @return the list of commits
         get.commits = function() {
-            logging::loginfo("Getting raw commit data.")
+            logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                commits.read = read.commits(
-                    self$get.data.path(),
-                    private$project.conf$get.value("artifact")
-                )
+                commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
-                self$set.commits(data = commits.read)
+                ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
+                ## untracked files
+                commit.data = subset(commit.data, artifact.type %in%
+                                         c(private$project.conf$get.value("artifact.codeface"),
+                                           UNTRACKED.FILE.EMPTY.ARTIFACT))
+
+                ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
+                ## the field 'commits' afterwards
+                self$set.commits(commit.data)
             }
             private$extract.timestamps(source = "commits")
 
             return(private$commits)
         },
 
-        #' Get the complete list of commits.
-        #' If it does not already exist, call the read method first.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
-        #'
-        #' @return the list of commits
-        get.commits.raw = function() {
-            return(self$get.commits())
-        },
-
         #' Set the commit list of the project to a new one.
-        #' Add PaStA data if configured in the field \code{project.conf}.
+        #' Add PaStA and sychronicity data if configured in the \code{project.conf}.
         #'
-        #' @param data the new list of commits
-        set.commits = function(data) {
-            logging::loginfo("Setting raw commit data.")
-            if (is.null(data)) {
-                data = data.frame()
+        #' @param commit.data the new list of commits
+        set.commits = function(commit.data) {
+            logging::loginfo("Setting commit data.")
+
+            # TODO: Also check for correct shape (column names and data types) of the passed data
+
+            if (is.null(commit.data)) {
+                commit.data = create.empty.commits.list();
             }
+
+            ## append synchronicity data if wanted
+            if (private$project.conf$get.value("synchronicity")) {
+                synchronicity.data = self$get.synchronicity()
+                commit.data = merge(commit.data, synchronicity.data,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+            }
+
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                logging::loginfo("Adding PaStA data.")
-                data = private$add.pasta.data(data = data)
+                self$get.pasta()
+                commit.data = private$add.pasta.data(commit.data)
             }
 
-            private$commits = data
+            private$commits = commit.data
 
-            ## remove cached data for filtered commits as these need to be re-computed
-            ## after changing the data
+            ## remove cached data for filtered commits as these need to be re-computed after changing the data
             private$commits.filtered = NULL
-            private$commits.filtered.empty = NULL
-        },
-
-        #' Set the commit list of the project to a new one.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$set.commits(data)}.
-        #'
-        #' @param data the new list of commits
-        set.commits.raw = function(data) {
-            self$set.commits(data)
         },
 
         #' Get the synchronicity data.
@@ -1007,13 +944,36 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## check given data source
             data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            ## TODO use filtered commit data here (and not the filtered.empty version)? → try filtered!
             data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
 
             ## get the key-value mapping/list for the given parameters
             mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
 
             return(mylist)
+        },
+
+        #' Get the list of authors by only looking only at the specified data source.
+        #'
+        #' *Note*: The constant \code{DATASOURCE.TO.ARTIFACT.FUNCTION} denotes the mapping between
+        #' data source and the method which is retrieving the data for each data source.
+        #'
+        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"},
+        #'                    or \code{"issues"}
+        #'
+        #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
+        #'         extracted from the specified data source
+        get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
+
+            data.source = match.arg(data.source)
+
+            ## retrieve author names from chosen data source
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data = self[[data.source.func]]()[c("author.name", "author.email")]
+
+            ## remove duplicates
+            data = unique(data)
+
+            return (data)
         }
     )
 )

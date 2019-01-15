@@ -2,12 +2,57 @@
 
 ## Unversioned
 
+### Added
+- In addition to the ProjectConf parameter `commits.filter.base.artifact` (previously called `artifact.filter.base`),
+which configured whether the base artifact should be included in the `get.commits.filtered` method, there is now a
+similiar parameter called `commits.filter.untracked.files` doing the same thing for untracked files
+(11428d9847fd44f982cd094a3248bd13fb6b7b58, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- The public `get.commits.filtered.uncached` method is added which allows for external filtering of the commits by
+specifying if untracked files and/or the base artifact should be filtered (this method does not take advantage of
+caching, whereas the `get.commits.filtered` method does) (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- Commits that do not change any artifact are considered to be carried out on a metafile called `<untracked.file>`.
+The constant `UNTRACKED.FILE` was added to the file `util-data.R` and holds the string constant `<untracked.file>`.
+(11428d9847fd44f982cd094a3248bd13fb6b7b58, 5ea65b9ac5a22967de87d7fd4ac66b0bc8e07238)
+- In an author network, edges do not get constructed anymore between authors for solely modifying untracked files. For
+authors involved in changing the base artifact, it can be configured whether edges should be created or not using the
+new NetworkConf parameter `edges.for.base.artifacts`
+(c60c2f6e44b6f34cccb2714eccc7674158c83dde, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- A new constant named `UNTRACKED.FILE.EMPTY.ARTIFACT` has been introduced in the `util-data.R` which simply holds an
+empty string. If used in the intended context, this constant (and thus this empty string) denominates the empty artifact,
+which is now called `<untracked.file>` (see the constant `UNTRACKED.FILE`). The empty string was chosen, as this is the
+way that untracked files were named in the file `commits.list` coming from the tool `codeface-extraction`
+(dde0dd7c6b36b49aa2b6c91395be8ea6e0cd7969)
+- The helper function `create.empty.data.frame` is introduced which returns empty dataframes (0 rows) with correct
+columnns and, if specified, all the correct datatypes. In the future, functions, that return data in dataframes, should
+always return dataframes of the same shape (regarding columns and datatypes) - especially when they are empty - because
+this makes later case distinctions easier or unncessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb)
+- For the most common types of dataframes (dataframes of commits, mails, issues and authors) four more utility methods
+were added, namely `create.empty.authors.list`, `create.empty.commits.list`, `create.empty.issues.list`,
+`create.empty.mails.list` as well as corresponding constants holding columns and associated datatypes for all these
+empty dataframes (5f0f52936b4433f64fd9b1c9b2571eb26f66395f, 523daef8cf4642a2360396b11f0d74bce565b0f0)
+- Add method `ProjectData$get.authors.by.data.source` to retrieve authors by given data-source name (#149, 65804276dd2ada9b2f00b2cab7b6ad0cecbe733e, 137d8337bc35f5a83aa16a48ef8e47fc0d36b36c)
+
 ### Changed/Improved
+- Rename `ProjectConf` parameter `artifact.filter.base` to `commits.filter.base.artifact` (PR #149, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
 - Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
+- Remove `get.commits.raw`, `set.commits.raw` and `read.commits.raw` functions (64a94863c9e70ac8c75e443bc15cd7facbf2111d,
+c26e582e4ad6bf1eaeb08202fc3e00394332a013)
+- Filtering by artifact kind (e.g. filtering out either Feature or FeatureExpression) is now being done in the
+`get.commits` method instead of the `get.commits.filtered` method (894c9a5c181fef14dcb71fa23699bebbcbcd2b4f)
+- Remove `get.commits.filtered.empty` and corresponding `filter.commits.empty` method, the functionality is now included
+into the methods `get.commits.filtered` and `filter.commits` respectively (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- The constant `BASE.ARTIFACTS` in the file `util-data.R` was extended by adding untracked files (i.e. the new metafile
+`UNTRACKED.FILE`), which is now considered to be a new base artifact in the case of file level analyses. This implies,
+that in case of file level anlyses the base artifact and the untracked files fall together, while in feature and
+function level analyzes they are treated differently (d11d0fb585397fdb3a2641484248f74752db9331)
+- The `filter.commits` method now takes parameters which configure if untracked files and/or the base artifact should be
+filtered out (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), default parameters are not validated anymore to avoid confusion by logging output (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
+- In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), `stop` is called on errors during parameter updates now (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
 
 ### Fixed
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
-
+- Fix vertices for networks without edges (#150, PR #149, 0d7c2226da67f3537f3ff9d013607fe19df8a4c0, 7e27a182de282f054f08e3a2fb04d852c2c55102)
 
 ## 3.4
 

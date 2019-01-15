@@ -15,6 +15,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -88,7 +89,7 @@ test_that("Read the raw commit data with the file artifact.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
 
     ## read the actual data
-    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+    commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
     commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32715)),

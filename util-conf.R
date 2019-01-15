@@ -17,6 +17,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -75,7 +76,7 @@ Conf = R6::R6Class("Conf",
                 return(self$get.value(att))
             })
             names(current.values) = names(private$attributes)
-            self$update.values(current.values, stop.on.error = TRUE)
+            self$update.values(current.values)
         },
 
         #' Check whether the given 'value' is the correct datatype
@@ -124,8 +125,8 @@ Conf = R6::R6Class("Conf",
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
-            ## FIXME do we need this?
-            private$check.values()
+            # ## check the default values for validity
+            # private$check.values()
         },
 
         ## * * printing ----------------------------------------------------
@@ -165,8 +166,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param entry the entry name for the value
         #' @param value the new value
-        #' @param error call stop() on an error? [default: FALSE]
-        update.value = function(entry, value, stop.on.error = FALSE) {
+        update.value = function(entry, value) {
             ## construct list for updating
             updating = list(value)
             names(updating) = entry
@@ -178,10 +178,9 @@ Conf = R6::R6Class("Conf",
         #' 'updated.values' list.
         #'
         #' @param updated.values the new values for the attributes to be updated
-        #' @param error call stop() on an error? [default: FALSE]
-        update.values = function(updated.values = list(), stop.on.error = FALSE) {
+        update.values = function(updated.values = list()) {
             ## determine the function executed on an error
-            error.function = ifelse(stop.on.error, stop, logging::logwarn)
+            error.function = stop
 
             ## check values to update
             names.to.update = c()
@@ -218,9 +217,7 @@ Conf = R6::R6Class("Conf",
 
                     } else {
                         message = paste0(
-                            "Updating network-configuration attribute '%s' failed.",
-                            if (!stop.on.error) " The failure is ignored!\n",
-                            # "Current value: %s\n",
+                            "Updating network-configuration attribute '%s' failed.\n",
                             "Allowed values (%s of type '%s'): %s\n",
                             "Given value (of type '%s'): %s"
                         )
@@ -332,7 +329,13 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         ## * * attributes ---------------------------------------------------
 
         attributes = list(
-            artifact.filter.base = list(
+            commits.filter.base.artifact = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commits.filter.untracked.files = list(
                 default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
@@ -469,6 +472,10 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'                 and \code{featureexpression}) [default: "feature"]
         initialize = function(data, selection.process, casestudy, artifact = c("feature", "file",
                                                                                "function", "featureexpression")) {
+
+            logging::loginfo("Construct project configuration: starting.")
+
+            ## call super constructor
             super$initialize()
 
             ## verify arguments using match.arg
@@ -478,8 +485,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             private$selection.process = verify.argument.for.parameter(selection.process, "character", class(self)[1])
             private$casestudy = verify.argument.for.parameter(casestudy, "character", class(self)[1])
             private$artifact = verify.argument.for.parameter(artifact, "character", class(self)[1])
-
-            logging::loginfo("Construct project configuration: starting.")
 
             ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
@@ -691,6 +696,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            edges.for.base.artifacts = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             edge.attributes = list(
                 default = c(
                     "date", "artifact.type", # general
@@ -749,16 +760,20 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
-            # private$check.values()
+            logging::loginfo("Construct network configuration: starting.")
+
+            ## call super constructor
+            super$initialize()
+
+            logging::loginfo("Construct network configuration: finished.")
         },
 
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
         #' @param updated.values the new values for the attributes to be updated
-        #' @param error call stop() on an error? [default: FALSE]
-        update.values = function(updated.values = list(), stop.on.error = FALSE) {
-            super$update.values(updated.values = updated.values, stop.on.error = stop.on.error)
+        update.values = function(updated.values = list()) {
+            super$update.values(updated.values = updated.values)
 
             ## 1) "date" and "artifact.type" always as edge attribute
             name = "edge.attributes"

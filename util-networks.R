@@ -16,6 +16,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -153,13 +154,39 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$authors.network.cochange)
             }
 
+            ## Get a list of all artifacts extracted from the commit data. Each artifact in this group is again a list
+            ## of all authors that were involved in making changes to this artifact. In the following two steps, some of
+            ## the artifacts are filtered from this list, which removes all information (including author information)
+            ## about these artifacts. Since we only want to lose the edge information and not the information about
+            ## authors, they will explicitly be added in a later step.
+            author.groups = private$proj.data$group.authors.by.data.column("commits", "artifact")
+            ## 1) if configured in the 'NetworkConf, remove the base artifact
+            if (!private$network.conf$get.value("edges.for.base.artifacts")) {
+                author.groups = author.groups[!(names(author.groups) %in% BASE.ARTIFACTS)]
+            }
+            ## 2) in any case, remove the untracked files
+            author.groups = author.groups[names(author.groups) != UNTRACKED.FILE.EMPTY.ARTIFACT]
+
             ## construct edge list based on artifact2author data
             author.net.data = construct.edge.list.from.key.value.list(
-                private$proj.data$group.authors.by.data.column("commits", "artifact"),
+                author.groups,
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
+
+            ## Add author vertices back into the graph. Previously, commit information on untracked files
+            ## ('UNTRACKED.FILE') and, if configured, the base artifact ('BASE.ARTIFACTS') has been removed and, hence,
+            ## also corresponding author information. Re-add author vertices back to the network now by accessing the
+            ## complete author list:
+            ## 1) get all authors on commits
+            authors = private$proj.data$get.authors.by.data.source(data.source = "commits")
+            ## 2) only select author names
+            authors = authors["author.name"]
+            ## 3) rename single column to "name" to correct mapping to vertex attribute "name"
+            colnames(authors) = "name"
+            ## 4) set author list as vertices
+            author.net.data[["vertices"]] = authors
 
             ## construct network from obtained data
             author.net = construct.network.from.edge.list(
@@ -1035,17 +1062,15 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
         return(create.empty.network(directed = directed))
     }
 
-    ## if we have nodes to create, but no edges
+    ## if we have nodes to create, but no edges, create an empty edge list
     if (is.null(edge.list) || nrow(edge.list) == 0) {
-        ## create network with only the vertices
-        net = igraph::graph.empty(n = 0, directed = directed) + igraph::vertices(nodes.processed)
-    }
-    ## if we have nodes and edges
-    else {
-        ## construct network from edge list
-        net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+        edge.list = create.empty.edge.list()
     }
 
+    ## construct network from edge list
+    net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+
+    ## initialize edge weights
     net = igraph::set.edge.attribute(net, "weight", value = 1)
 
     ## transform multiple edges to edge weights
@@ -1082,7 +1107,7 @@ merge.network.data = function(vertex.data, edge.data) {
     edges = plyr::rbind.fill(edge.data.filtered)
     ## 3) correct empty results
     if (is.null(edges)) {
-        edges = data.frame(from = character(0), to = character(0))
+        edges = create.empty.edge.list()
     }
 
     logging::logdebug("merge.network.data: finished.")
@@ -1384,7 +1409,7 @@ get.sample.network = function() {
 
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
-    proj.conf$update.values(list(artifact.filter.base = FALSE))
+    proj.conf$update.values(list(commits.filter.base.artifact = FALSE))
 
     ## RangeData object
     range = proj.conf$get.value("ranges")[1]

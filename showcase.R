@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -60,7 +61,7 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-proj.conf$update.value("artifact.filter.base", TRUE)
+proj.conf$update.value("commits.filter.base.artifact", TRUE)
 # proj.conf$print()
 
 ## initialize network configuration
@@ -85,7 +86,7 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # x.data$get.synchronicity()
 # x.data$group.artifacts.by.data.column("commits", "author.name")
 # x.data$get.commits.filtered()
-# x.data$get.commits.filtered.empty()
+# x.data$get.commits.filtered.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
 # x.data$get.mails()
 # x.data$get.authors()
 # x.data$get.data.path()
@@ -126,7 +127,7 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # y.data$get.synchronicity()
 # y.data$group.artifacts.by.data.column("commits", "author.name")
 # y.data$get.commits.filtered()
-# y.data$get.commits.filtered.empty()
+# y.data$get.commits.filtered.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
 # y.data$get.mails()
 # y.data$get.authors()
 # y.data$get.data.path()
