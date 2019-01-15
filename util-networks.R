@@ -1215,7 +1215,12 @@ create.empty.network = function(directed = TRUE) {
     # set proper attributes
     net = igraph::set.vertex.attribute(net, "name", value = "")
     net = igraph::set.vertex.attribute(net, "type", value = 3)
+    net = igraph::set.vertex.attribute(net, "kind", value = 3)
     net = igraph::set.edge.attribute(net, "type", value = 6)
+    net = igraph::set.edge.attribute(net, "relation", value = "")
+    net = igraph::set.edge.attribute(net, "artifact.type", value = "")
+    net = igraph::set.edge.attribute(net, "weight", value = 0)
+    net = igraph::set.edge.attribute(net, "date", value = get.date.from.unix.timestamp(0))
 
     return(net)
 }
