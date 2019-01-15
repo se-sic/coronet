@@ -86,6 +86,16 @@ test_that("Merge networks", {
     ## Merge two empty networks (i.e., no vertices at all)
     ##
 
+    network.empty = igraph::graph.empty(0, directed = TRUE)
+        #create.empty.network(directed = FALSE)
+    expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
+    expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
+    expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
+
+    ##
+    ## Merge two empty networks (i.e., no vertices at all, but with vertex attributes)
+    ##
+
     network.empty = create.empty.network(directed = FALSE)
     expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
     expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices

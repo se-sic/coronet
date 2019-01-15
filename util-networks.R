@@ -1125,6 +1125,11 @@ merge.network.data = function(vertex.data, edge.data) {
 merge.networks = function(networks) {
     logging::logdebug("merge.networks: starting.")
 
+    if (length(networks) == 1) {
+        logging::logdebug("Only one network given, so a merge is not necessary.")
+        return(networks[[1]])
+    }
+
     ## list with all vertex data frames
     vertex.data = lapply(networks, function(network) {
         return(igraph::as_data_frame(network, what = "vertices"))
@@ -1137,6 +1142,11 @@ merge.networks = function(networks) {
 
     ## merge all edge and vertex data frames
     new.network.data = merge.network.data(vertex.data, edge.data)
+
+    ## catch case where no vertices (and no vertex attributes) are given
+    if (ncol(new.network.data[["vertices"]]) == 0) {
+        new.network.data[["vertices"]] = NULL # igraph::graph.data.frame can handle this
+    }
 
     ## build whole network form edge and vertex data frame
     whole.network = igraph::graph.data.frame(
