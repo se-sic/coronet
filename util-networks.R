@@ -1247,9 +1247,17 @@ create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
 }
 
 #' Create an empty data frame that does not break the algorithms and
+#' represents a vertex list.
+#'
+#' @return a single-column data.frame (column 'name')
+create.empty.vertex.list = function() {
+    return(data.frame(name = character(0)))
+}
+
+#' Create an empty data frame that does not break the algorithms and
 #' represents an edge list.
 #'
-#' @return the new empty data frame as edge list
+#' @return a two-column data.frame (columns 'from' and 'to')
 create.empty.edge.list = function() {
     return(data.frame(from = character(0), to = character(0)))
 }
