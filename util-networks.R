@@ -1057,7 +1057,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' If \code{directed}, the direction of edges in the edge list is respected and the 'edge.attr's hold the
 #' vector of possible edge attributes in the given list.
 #'
-#' @param vertices data frame with vertex data
+#' @param vertices data frame with vertex data (can be \code{NULL})
 #' @param edge.list list of edges
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
@@ -1070,9 +1070,9 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     ## get unique list of vertices to produce
     nodes.processed = unique(vertices)
 
-    ## if we do not have nodes AND the edge.list is empty, return rightaway
-    if (length(nodes.processed) == 0) {
-        return(create.empty.network(directed = directed))
+    ## if we do not have nodes, return rightaway
+    if (!is.null(nodes.processed) && length(nodes.processed) == 0) {
+        nodes.processed = create.empty.vertex.list()
     }
 
     ## if we have nodes to create, but no edges, create an empty edge list
