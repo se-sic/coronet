@@ -1143,7 +1143,7 @@ get.threshold = function(data.list) {
     data.threshold.base = sum(data.list)
 
     ## Check which authors can be treated as core based on the data
-    data.threshold = round(CORE.THRESHOLD * data.threshold.base)
+    data.threshold = CORE.THRESHOLD * data.threshold.base
 
     logging::logdebug("get.threshold: finished.")
     return(data.threshold)
