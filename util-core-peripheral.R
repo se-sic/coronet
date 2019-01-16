@@ -14,7 +14,7 @@
 ## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
-## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>

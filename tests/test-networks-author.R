@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
