@@ -248,9 +248,9 @@ test_that("Construction of networks without data", {
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Construction of edgeless networks ---------------------------------------
+## Construction of networks with empty edge list ---------------------------
 
-test_that("Construction of edgeless networks", {
+test_that("Construction of networks from empty edge list (with vertices)", {
 
     ## create data structures and network configuration as a basis
     edge.list = data.frame(from = c("D1", "D2"), to   = c("D2", "D1"))
@@ -261,9 +261,9 @@ test_that("Construction of edgeless networks", {
     net.conf = NetworkConf$new()
 
     ## construct edgeless network
-    net.edgeless = igraph::graph.empty(n = 0, directed = directed) +
-        igraph::vertices(vertices.as.sequence) +
-        igraph::edges(NULL, weight = 1)
+    net.edgeless = create.empty.network(directed = directed) + igraph::vertices(vertices.as.sequence)
+    ## add attribute 'weight' which is always added by 'construct.network.from.edge.list'
+    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
 
     ##
     ## normal network
@@ -297,6 +297,42 @@ test_that("Construction of edgeless networks", {
 
     net.constructed = construct.network.from.edge.list(vertices, data.frame(), net.conf)
     expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "edgeless network: empty data.frame")
+
+})
+
+test_that("Construction of networks from empty edge list (without vertices)", {
+
+    ## create data structures and network configuration as a basis
+    edge.list = create.empty.edge.list()
+    directed = FALSE # directedness does not matter for this test, but should be consistent
+    net.conf = NetworkConf$new()
+
+    ## construct edgeless network
+    net.edgeless = create.empty.network(directed = directed)
+    ## add attribute 'weight' which is always added by 'construct.network.from.edge.list'
+    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
+
+    ##
+    ## vertices: NULL
+    ##
+
+    net.constructed = construct.network.from.edge.list(vertices = NULL, edge.list, net.conf, directed = directed)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "vertices: NULL")
+
+    ##
+    ## vertices: empty data.frame with columns
+    ##
+
+    vertices = create.empty.data.frame("name", "character")
+    net.constructed = construct.network.from.edge.list(vertices, edge.list, net.conf)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "edgeless network: empty data.frame")
+
+    ##
+    ## vertices: empty data.frame
+    ##
+
+    net.constructed = construct.network.from.edge.list(data.frame(), edge.list, net.conf, directed = directed)
+    expect_true(igraph::identical_graphs(net.constructed, net.edgeless), label = "vertices: empty data.frame")
 
 })
 
