@@ -304,6 +304,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 directed = FALSE
             )
 
+            ## remove the artifact vertices stemming from untracked files if existing
+            if ("name" %in% igraph::list.vertex.attributes(artifacts.net) &&
+                length(igraph::V(artifacts.net)[name == UNTRACKED.FILE.EMPTY.ARTIFACT]) > 0) {
+
+                artifacts.net = igraph::delete.vertices(artifacts.net, UNTRACKED.FILE.EMPTY.ARTIFACT)
+            }
+
             ## store network
             private$artifacts.network.cochange = artifacts.net
             logging::logdebug("get.artifact.network.cochange: finished.")
@@ -728,8 +735,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(vertices)
             })
 
-            ## Merge network data and construct a vertex-only network for now
+            ## Merge network data and construct a vertex-only network for now:
+            ## 1) construct vertex data (without edges)
             vertex.data = merge.network.data(vertex.data = vertex.data, edge.data = NULL)[["vertices"]]
+            ## 2) remove empty artifact, if names are available
+            if ("name" %in% colnames(vertex.data)) {
+                vertex.data = subset(vertex.data, !(name == UNTRACKED.FILE.EMPTY.ARTIFACT & type == TYPE.ARTIFACT))
+            }
+            ## 3) construct network without edges
             vertex.network = igraph::graph.data.frame(
                 d = create.empty.edge.list(),
                 vertices = vertex.data,
@@ -1177,7 +1190,12 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 
         ## construct edges (i.e., a vertex sequence with c(source, target, source, target, ...))
         vertex.sequence.for.edges = parallel::mcmapply(function(d, a.df) {
+            ## get list of artifacts from edge list
             a = a.df[["data.vertices"]]
+
+            ## remove empty artifact
+            a = a[a != UNTRACKED.FILE.EMPTY.ARTIFACT]
+
             new.edges = lapply(a, function(vert) {
                 igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
             })

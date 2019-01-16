@@ -35,25 +35,13 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 test_that("Network construction of the undirected artifact-cochange network", {
 
-    ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("commits.filter.base.artifact", FALSE)
-    net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(artifact.relation = "cochange"))
-
-    ## construct objects
-    proj.data = ProjectData$new(project.conf = proj.conf)
-    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
-
-    ## build network
-    network.built = network.builder$get.artifact.network()
-
-    ## vertex attributes
+    ## build expected network:
+    ## 1) vertices
     vertices = data.frame(name = c("Base_Feature", "foo", "A"),
                           kind = "Feature",
                           type = TYPE.ARTIFACT)
-
-    data = data.frame(
+    ## 2) edges
+    edges = data.frame(
         from = c("Base_Feature", "Base_Feature"),
         to = c("foo", "foo"),
         date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
@@ -65,9 +53,50 @@ test_that("Network construction of the undirected artifact-cochange network", {
         type = TYPE.EDGES.INTRA,
         relation = "cochange"
     )
+    ## 3) build expected network
+    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-    ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = vertices)
 
+    ##
+    ## without untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.artifact.network()
+
+    ## test
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+
+
+    ##
+    ## with untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.artifact.network()
+
+    ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })

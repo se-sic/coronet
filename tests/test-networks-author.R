@@ -142,6 +142,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
                 ## configurations
                 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
                 proj.conf$update.value("commits.filter.base.artifact", FALSE)
+                proj.conf$update.value("commits.filter.untracked.files", TRUE)
                 net.conf = NetworkConf$new()
 
                 ## update network configuration
@@ -198,25 +199,13 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
 test_that("Network construction of the undirected author-cochange network", {
 
-    ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("commits.filter.base.artifact", FALSE)
-    net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "cochange"))
-
-    ## construct objects
-    proj.data = ProjectData$new(project.conf = proj.conf)
-    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
-
-    ## build network
-    network.built = network.builder$get.author.network()
-
-    ## vertex attributes
+    ## build expected network:
+    ## 1) vertices
     authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
                          kind = TYPE.AUTHOR,
                          type = TYPE.AUTHOR)
 
-    ## edge attributes
+    ## 2) edges
     data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
                       comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
@@ -234,10 +223,51 @@ test_that("Network construction of the undirected author-cochange network", {
                       type = TYPE.EDGES.INTRA,
                       relation = "cochange"
     )
-
-    ## build expected network
+    ## 3) build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
 
+
+    ##
+    ## without untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## test
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+
+
+    ##
+    ## with untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
 
@@ -555,5 +585,38 @@ test_that("Network construction of the undirected author-issue network with just
     ## build expected network
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+
+test_that("Network construction with only untracked files (no edges expected)", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects and keep just commits on untracked files
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    commit.data = subset(proj.data$get.commits(), artifact == UNTRACKED.FILE.EMPTY.ARTIFACT)
+    proj.data$set.commits(commit.data)
+
+    ## build network
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.author.network()
+
+    ## build expected network (two vertices, no edges)
+    vertices = data.frame(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    edges = create.empty.edge.list()
+    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    ## add missing edge attributes
+    network.expected = igraph::set.edge.attribute(network.expected, "weight", value = as.numeric(NA))
+    network.expected = igraph::set.edge.attribute(network.expected, "type", value = as.character(NA))
+    network.expected = igraph::set.edge.attribute(network.expected, "relation", value = as.character(NA))
+
+    ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
