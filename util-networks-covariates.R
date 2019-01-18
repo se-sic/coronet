@@ -886,6 +886,12 @@ list.by.inner.level = function(nested.list) {
 
             ## remove NA values from recursively obtained structure
             na.removed = result.of.recursive.calls[sapply(result.of.recursive.calls, function(x) any(!is.na(x)))]
+
+            ## if element names equal content values in the recursive result, remove names
+            if(identical(unlist(na.removed, use.names = FALSE), names(na.removed))) {
+                na.removed = unname(na.removed)
+            }
+
             return(na.removed)
         }
     }
