@@ -292,6 +292,26 @@ get.expected.first.activity = function() {
     return(expected.attributes)
 }
 
+#' Helper for tests of the function add.vertex.attribute.active.ranges: Returns the expected active ranges per range,
+#' author and data source as a nested list.
+#'
+#' @return A list with elements that represent the range (the test data is split to build one network per range), each
+#'         containing a list with elements that represent authors, the networks vertices, each containing a list of active
+#'         ranges per data source.
+get.expected.active.ranges = function() {
+
+    ## expected active ranges per person and data source
+    bjoern = list("mails" = list(myranges[1]), "commits" = list(myranges[1]), "issues" = list())
+    olaf = list("mails" = list(myranges[1], myranges[3]), "commits" = list(myranges[2], myranges[3]), "issues" = list())
+    karl = list("mails" = list(), "commits" = list(myranges[3]) , "issues" = list())
+    thomas = list("mails" = list(myranges[2]), "commits" = list(myranges[3]), "issues" = list())
+
+    ## list of expected vertex attributes per network range containing active ranges for the corresponding persons.
+    expected.attributes = network.covariates.test.build.expected(
+        list(bjoern), list(olaf), list(olaf, karl, thomas)
+    )
+}
+
 #' Get splitted test data
 #'
 #' @return splitted test data for each level
@@ -663,18 +683,14 @@ test_that("Test add.vertex.attribute.active.ranges", {
 
     networks.and.data = get.network.covariates.test.networks()
 
-    expected.attributes = network.covariates.test.build.expected(
-        list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
-    )
-
     ## Test
 
     networks.with.attr = add.vertex.attribute.active.ranges(
         networks.and.data[["networks"]], networks.and.data[["project.data"]]
     )
-
     actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
 
+    expected.attributes = get.expected.active.ranges()
     expect_identical(expected.attributes, actual.attributes)
 })
 
