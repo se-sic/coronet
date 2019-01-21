@@ -262,12 +262,12 @@ test_that("Read and parse the issue data.", {
                                      issue.state = c(rep("closed", 13), rep("open", 6), rep("closed", 7), rep("open", 10)),
                                      issue.resolution = c(rep("['fixed']", 13), rep("['unresolved']", 6), rep("[]", 7),
                                                           rep("[]", 10)),
-                                     creation.date = get.date.from.string(c(rep("2015-09-29 21:44:21", 13),
-                                                                            rep("2015-10-01 14:21:10", 6),
-                                                                            rep("2017-02-21 12:02:34", 7),
-                                                                            rep("2017-03-08 14:27:05", 10))),
-                                     closing.date = get.date.from.string(c(rep("2015-10-15 06:23:06", 13), rep(NA, 6),
-                                                                           rep("2017-02-27 13:51:09", 7), rep(NA, 10))),
+                                     creation.date = get.date.from.string(c(rep("2013-04-21 23:52:09", 13),
+                                                                            rep("2016-04-17 02:06:38", 6),
+                                                                            rep("2016-07-12 15:59:25", 7),
+                                                                            rep("2016-07-12 14:30:13", 10))),
+                                     closing.date = get.date.from.string(c(rep("2013-05-25 20:02:08", 13), rep(NA, 6),
+                                                                           rep("2016-12-07 15:37:02", 7), rep(NA, 10))),
                                      issue.components = c(rep("['GUI', 'Interpreters']", 13), rep("['Interpreters']", 6),
                                                           rep("[]", 7), rep("[]", 10)),
                                      event.name = c("created", "commented", "commented", "commented", "commented", "commented",
@@ -292,24 +292,24 @@ test_that("Read and parse the issue data.", {
                                                       "udo@example.org", "thomas@example.org", "bjoern@example.org",
                                                       "bjoern@example.org", "thomas@example.org", "bjoern@example.org",
                                                       "bjoern@example.org","olaf@example.org", "bjoern@example.org"),
-                                     date = get.date.from.string(c("2015-09-29 21:44:21","2015-09-29 21:44:21",
-                                                                   "2015-09-29 21:46:30","2015-09-29 21:49:21",
-                                                                   "2015-09-29 21:49:34","2015-09-30 01:04:34",
-                                                                   "2015-09-30 03:25:06","2015-09-30 03:48:41",
-                                                                   "2015-09-30 04:08:07","2015-09-30 06:06:53",
-                                                                   "2015-09-30 06:22:23","2015-09-30 06:50:26",
-                                                                   "2015-10-01 06:23:06","2015-10-01 14:21:10",
-                                                                   "2015-10-01 14:21:10","2015-10-01 19:55:39",
-                                                                   "2015-10-01 20:07:47","2015-10-01 20:12:08",
-                                                                   "2015-10-03 06:27:52","2017-02-21 12:02:34",
-                                                                   "2017-02-21 12:02:34","2017-02-21 12:16:49",
-                                                                   "2017-02-27 13:51:09","2017-02-27 13:51:09",
-                                                                   "2017-02-27 16:45:09","2017-02-27 16:45:09",
-                                                                   "2017-07-27 15:30:02","2017-07-27 15:30:02",
-                                                                   "2017-07-27 15:30:02","2017-07-27 15:30:02",
-                                                                   "2017-07-27 15:30:02","2017-07-27 15:30:02",
-                                                                   "2017-07-27 15:30:02","2017-07-27 15:30:02",
-                                                                   "2017-08-03 14:30:20","2018-08-06 16:30:37")),
+                                     date = get.date.from.string(c("2013-04-21 23:52:09","2013-04-21 23:52:09",
+                                                                   "2013-05-05 21:46:30","2013-05-05 21:49:21",
+                                                                   "2013-05-05 21:49:34","2013-05-06 01:04:34",
+                                                                   "2013-05-25 03:25:06","2013-05-25 03:48:41",
+                                                                   "2013-05-25 04:08:07","2013-05-25 06:06:53",
+                                                                   "2013-05-25 06:22:23","2013-06-01 06:50:26",
+                                                                   "2013-06-01 06:53:06","2016-07-12 16:01:30",
+                                                                   "2016-07-12 16:02:30","2016-07-15 19:55:39",
+                                                                   "2016-07-15 20:07:47","2016-07-27 20:12:08",
+                                                                   "2016-07-28 06:27:52","2016-07-12 15:59:25",
+                                                                   "2016-07-12 15:59:25","2016-07-12 15:59:59",
+                                                                   "2016-07-12 16:06:30","2016-08-07 15:37:02",
+                                                                   "2016-08-31 16:45:09","2016-10-05 16:45:09",
+                                                                   "2016-07-12 15:30:02","2016-07-12 15:30:02",
+                                                                   "2016-07-12 16:03:59","2016-08-31 15:30:02",
+                                                                   "2016-10-05 15:30:02","2016-10-13 15:30:02",
+                                                                   "2016-12-07 15:30:02","2016-12-07 15:30:02",
+                                                                   "2017-05-23 12:31:34","2017-05-23 12:32:39")),
                                     event.info.1 = c("open","open","open","open","open","open","open","open","open",
                                                      "open","open","open","fixed","open","open","open","open","open",
                                                      "open","open","","open","closed","930af63a030fb92e48eddff01f53284c3eeba80e",
@@ -325,13 +325,18 @@ test_that("Read and parse the issue data.", {
                                                       "udo@example.org","","[]"),
                                      artifact.type = "IssueEvent"
                                      )
+
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
         paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
+
     ## set row names as integers
     attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = 36, by = 1))
+
+    ## sort by date
+    issue.data.expected = issue.data.expected[order(issue.data.expected[["date"]], decreasing = FALSE), ]
 
     ## check the results
     expect_identical(issue.data.read, issue.data.expected, info = "Issue data.")

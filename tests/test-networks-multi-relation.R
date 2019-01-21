@@ -147,13 +147,13 @@ test_that("Construction of the bipartite network for the feature artifact with a
                            "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>", # mail
                            "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
                            "<thread-9>", "<thread-3>"),
-                  date = get.date.from.string(c("2015-09-29 21:46:30", "2015-09-29 21:49:21", "2015-09-29 21:49:34", # issue
-                                                "2015-09-30 01:04:34", "2015-09-30 03:48:41", "2015-09-30 04:08:07",
-                                                "2015-10-01 14:21:10", "2015-10-01 19:55:39", "2018-08-06 16:30:37",
-                                                "2017-02-21 12:16:49", "2015-10-01 20:07:47", "2015-10-01 20:12:08",
-                                                "2015-10-03 06:27:52", "2015-09-30 03:25:06", "2015-09-30 06:06:53",
-                                                "2015-09-30 06:22:23", "2015-09-30 06:50:26", "2015-09-29 21:44:21",
-                                                "2017-07-27 15:30:02",
+                  date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34", # issue
+                                                "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2017-05-23 12:32:39",
+                                                "2016-07-12 15:59:59", "2016-07-15 20:07:47", "2016-07-27 20:12:08",
+                                                "2016-07-28 06:27:52", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
+                                                "2013-05-25 06:22:23", "2013-06-01 06:50:26", "2013-04-21 23:52:09",
+                                                "2016-07-12 16:03:59",
                                                 "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40", # mail
                                                 "2010-07-12 11:05:35", "2010-07-12 12:05:34", "2010-07-12 12:05:40",
                                                 "2010-07-12 12:05:41", "2010-07-12 12:05:42", "2010-07-12 12:05:43",
@@ -214,12 +214,12 @@ test_that("Construction of the multi network for the feature artifact with autho
      ## 1) construct expected vertices
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                 "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-3>", "<issue-6>"),
+                 "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-6>"),
         kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 4)),
         type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7))
     )
     row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                            "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-3>", "<issue-6>")
+                            "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-6>")
 
     ## 2) construct expected edge attributes (data sorted by 'author.name')
     edges = data.frame(from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", # author cochange
@@ -244,12 +244,12 @@ test_that("Construction of the multi network for the feature artifact with autho
                                                      "2016-07-12 16:06:32", "2016-07-12 16:06:32",                        # artifact cochange
                                                      "2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", # bipartite cochange
                                                      "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
-                                                     "2015-09-29 21:46:30", "2015-09-29 21:49:21", "2015-09-29 21:49:34", # bipartite issue
-                                                     "2015-09-30 01:04:34", "2015-09-30 03:48:41", "2015-09-30 04:08:07",
-                                                     "2015-10-01 14:21:10", "2015-10-01 19:55:39", "2018-08-06 16:30:37",
-                                                     "2015-09-30 03:25:06", "2015-09-30 06:06:53", "2015-09-30 06:22:23",
-                                                     "2015-09-30 06:50:26", "2017-02-21 12:16:49", "2015-09-29 21:44:21",
-                                                     "2017-07-27 15:30:02")),
+                                                     "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34", # bipartite issue
+                                                     "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                     "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2017-05-23 12:32:39",
+                                                     "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
+                                                     "2013-06-01 06:50:26", "2016-07-12 15:59:59", "2013-04-21 23:52:09",
+                                                     "2016-07-12 16:03:59")),
                         artifact.type = c(rep("Feature", 8), rep("Mail", 4), rep("Feature", 2), rep("Feature", 6),
                                           rep("IssueEvent", 16)),
                         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", # author cochange
