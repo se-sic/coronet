@@ -58,24 +58,31 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ##
 ## For count-based network metrics, the raw data has to be given. For network-based metrics,
 ## the network has to be given.
-get.author.class.by.type = function(network = NULL, data = NULL,
+get.author.class.by.type = function(network = NULL, proj.data = NULL,
                                     type = c("network.degree", "network.eigen", "network.hierarchy",
                                              "commit.count", "loc.count")) {
     logging::logdebug("get.author.class.by.type: starting.")
 
     type = match.arg(type)
 
-    if (is.null(network) && is.null(data)) {
-        logging::logerror("Neither network nor raw data were given.")
-        stop("Either network or raw data needs to be given.")
+    if (startsWith(type, "network")) {
+        if (is.null(network)) {
+            logging::logerror("For network-based classifications the parameter 'network' must not be null.")
+            stop("For network-based classifications the parameter 'network' must not be null.")
+        }
+    } else {
+        if (is.null(proj.data)) {
+            logging::logerror("For commit-based classifications the parameter 'proj.data' must not be null.")
+            stop("For commit-based classifications the parameter 'proj.data' must not be null.")
+        }
     }
 
     result = switch(type,
                     "network.degree" = get.author.class.network.degree(network = network),
                     "network.eigen" = get.author.class.network.eigen(network = network),
                     "network.hierarchy" = get.author.class.network.hierarchy(network = network),
-                    "commit.count" = get.author.class.commit.count(range.data = data),
-                    "loc.count" = get.author.class.loc.count(range.data = data))
+                    "commit.count" = get.author.class.commit.count(range.data = proj.data),
+                    "loc.count" = get.author.class.loc.count(range.data = proj.data))
 
     logging::logdebug("get.author.class.by.type: finished.")
     return(result)
@@ -93,47 +100,39 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
 
     type = match.arg(type)
 
-    if (is.null(range.data.list) && (type == "commit.count" || type == "loc.count")) {
-        logging::logerror("For count-based metric evolution, a list of RangeData objects is needed.")
-        stop("For the count-based metrics, the raw data has to be given.")
+    if (startsWith(type, "network")) {
+        if (is.null(network.list)) {
+            logging::logerror("For network-based classifications the parameter 'network.list' must not be null.")
+            stop("For network-based classifications the parameter 'network.list' must not be null.")
+        }
 
-    } else if (is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
-        logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
-        stop("For the network-based metrics, the network list has to be given.")
+        data.list = network.list
+    } else {
+        if (is.null(range.data.list)) {
+            logging::logerror("For commit-based classifications the parameter 'range.data.list' must not be null.")
+            stop("For commit-based classifications the parameter 'range.data.list' must not be null.")
+        }
+        data.list = range.data.list
     }
 
     res = list()
-    if (!is.null(range.data.list)) {
-        for (i in 1:length(range.data.list)) {
-            range.data = range.data.list[[i]]
-            range.name = names(range.data.list)[[i]]
+    for (i in seq_along(data.list)) {
 
-            ## Get classification data of the current range
-            range.class =
-                get.author.class.by.type(data = range.data, type = type)
+        ## Get classification data of the current range
+        data = data.list[[i]]
+        range.name = names(data.list)[[i]]
 
-            ## Save in list of classifications
-            if (!is.null(range.name)) {
-                res[[range.name]] = range.class
-            } else {
-                res = c(res, list(range.class))
-            }
+        if (startsWith(type, "network")) {
+            range.class = get.author.class.by.type(network = data, type = type)
+        } else {
+            range.class = get.author.class.by.type(proj.data = data, type = type)
         }
-    } else { # use network list as data
-        for (i in 1:length(network.list)) {
-            range.network = network.list[[i]]
-            range.name = names(network.list)[[i]]
 
-            ## Get classification data of the current range
-            range.class =
-                get.author.class.by.type(network = range.network, type = type)
-
-            ## save in list of clasifications
-            if (!is.null(range.name)) {
-                res[[range.name]] = range.class
-            } else {
-                res = c(res, list(range.class))
-            }
+        ## Save in list of classifications
+        if (!is.null(range.name)) {
+            res[[range.name]] = range.class
+        } else {
+            res = c(res, list(range.class))
         }
     }
 
