@@ -81,8 +81,8 @@ get.author.class.by.type = function(network = NULL, proj.data = NULL,
                     "network.degree" = get.author.class.network.degree(network = network),
                     "network.eigen" = get.author.class.network.eigen(network = network),
                     "network.hierarchy" = get.author.class.network.hierarchy(network = network),
-                    "commit.count" = get.author.class.commit.count(range.data = proj.data),
-                    "loc.count" = get.author.class.loc.count(range.data = proj.data))
+                    "commit.count" = get.author.class.commit.count(proj.data = proj.data),
+                    "loc.count" = get.author.class.loc.count(proj.data = proj.data))
 
     logging::logdebug("get.author.class.by.type: finished.")
     return(result)
@@ -404,7 +404,7 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(network = NULL, range.data = NULL, result.limit = NULL) {
+get.author.class.network.eigen = function(network = NULL, result.limit = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
     if (is.null(network)) {
@@ -490,11 +490,11 @@ get.author.class.network.hierarchy = function(network = NULL, result.limit = NUL
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the number of commits made withing a version range.
-get.author.class.commit.count = function(range.data, result.limit = NULL) {
+get.author.class.commit.count = function(proj.data, result.limit = NULL) {
     logging::logdebug("get.author.class.commit.count: starting.")
 
     ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(range.data)
+    author.commit.count = get.author.commit.count(proj.data)
 
     ## Get the author classification based on the commit counts
     res = get.author.class(author.commit.count, "freq", result.limit = result.limit)
@@ -617,11 +617,11 @@ get.committer.commit.count = function(range.data) {
 
 ## Get the commit count per author of the specified version range
 ## as a data frame ordered by the commit count.
-get.author.commit.count = function(range.data) {
+get.author.commit.count = function(proj.data) {
     logging::logdebug("get.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data)[[1]]
+    commits.df = get.commit.data(proj.data)[[1]]
 
     ## Return NA in case no commit data is available
     if (all(is.na(commits.df))) {
@@ -640,11 +640,11 @@ get.author.commit.count = function(range.data) {
 
 ## Classify the authors of the specified version range into core and peripheral
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(range.data, result.limit = NULL) {
+get.author.class.loc.count = function(proj.data, result.limit = NULL) {
     logging::logdebug("get.author.class.loc.count: starting.")
 
     ## Get the changed lines (loc counts) per author
-    author.loc.count = get.author.loc.count(range.data)
+    author.loc.count = get.author.loc.count(proj.data)
 
     ## Get the author classification based on the loc counts
     res = get.author.class(author.loc.count, "loc", result.limit = result.limit)
@@ -655,12 +655,12 @@ get.author.class.loc.count = function(range.data, result.limit = NULL) {
 
 ## Get the changed lines per author of the specified version range
 ## as a data frame ordered by the changed lines.
-get.author.loc.count = function(range.data) {
+get.author.loc.count = function(proj.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(
-        range.data,
+        proj.data,
         columns = c("author.name", "author.email", "added.lines", "deleted.lines")
     )[[1]]
 
