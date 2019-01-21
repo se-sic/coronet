@@ -503,19 +503,6 @@ get.author.class.commit.count = function(range.data, result.limit = NULL) {
     return(res)
 }
 
-## Get the commit count threshold  of the specified version range
-## on which a author can be classified as core.
-get.commit.count.threshold = function(range.data) {
-    logging::logdebug("get.commit.count.threshold: starting.")
-
-    ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(range.data)
-    threshold = get.threshold(author.commit.count$freq)
-
-    logging::logdebug("get.commit.count.threshold: finished.")
-    return(threshold)
-}
-
 #' Get the commit count per comitter in the given range data, where the committer
 #' does not match the author of the respective commits
 #'
@@ -664,20 +651,6 @@ get.author.class.loc.count = function(range.data, result.limit = NULL) {
 
     logging::logdebug("get.author.class.loc.count: finished.")
     return(res)
-}
-
-## Get the loc count threshold of the specified version range
-## on which a author can be classified as core.
-get.loc.count.threshold = function(range.data) {
-    logging::logdebug("get.loc.count.threshold: starting.")
-
-    ## Get the loc per author
-    author.loc.count = get.author.loc.count(range.data)
-
-    threshold = get.threshold(author.loc.count$loc)
-
-    logging::logdebug("get.loc.count.threshold: finished.")
-    return(threshold)
 }
 
 ## Get the changed lines per author of the specified version range
