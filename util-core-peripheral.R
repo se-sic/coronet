@@ -398,38 +398,6 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
     return(res)
 }
 
-get.author.class.network.hierarchy = function(network = NULL, result.limit = NULL) {
-
-    logging::logdebug("get.author.class.network.hierarchy: starting.")
-
-    if(is.null(network)) {
-        logging::logerror("For the network-based hierarchy-centrality analysis, the network is needed.")
-        stop("The network has to be given for this analysis.")
-    } else if(igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
-        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
-                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
-    }
-
-    hierarchy.base.df = metrics.hierarchy(network)
-    hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
-
-    ## fix all authors whose clustering coefficient is '0', since their hierarchy value
-    ## is 'Inf'. We do not get any complications here because there are no authors with
-    ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
-    ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
-    hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
-
-    hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
-
-    ## Get the author classification based on the centrality
-    res = get.author.class(hierarchy.df, "hierarchy", result.limit = result.limit)
-
-    logging::logdebug("get.author.class.network.hierarchy: finished.")
-    return(res)
-}
-
 ## * Eigenvector-based classification --------------------------------------
 
 ## Classify the authors of the specified version range into core and peripheral
@@ -477,6 +445,40 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
     res = get.author.class(centrality.df, "centrality", result.limit = result.limit)
 
     logging::logdebug("get.author.class.network.eigen: finished.")
+    return(res)
+}
+
+## * Hierarchy-based classification ----------------------------------------
+
+get.author.class.network.hierarchy = function(network = NULL, result.limit = NULL) {
+
+    logging::logdebug("get.author.class.network.hierarchy: starting.")
+
+    if(is.null(network)) {
+        logging::logerror("For the network-based hierarchy-centrality analysis, the network is needed.")
+        stop("The network has to be given for this analysis.")
+    } else if(igraph::vcount(network) == 0) {
+        logging::logwarn("The given network is empty. Returning empty classification...")
+        ## return an empty classification
+        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
+                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
+    }
+
+    hierarchy.base.df = metrics.hierarchy(network)
+    hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
+
+    ## fix all authors whose clustering coefficient is '0', since their hierarchy value
+    ## is 'Inf'. We do not get any complications here because there are no authors with
+    ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
+    ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
+    hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
+
+    hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
+
+    ## Get the author classification based on the centrality
+    res = get.author.class(hierarchy.df, "hierarchy", result.limit = result.limit)
+
+    logging::logdebug("get.author.class.network.hierarchy: finished.")
     return(res)
 }
 
