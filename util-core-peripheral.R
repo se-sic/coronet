@@ -373,15 +373,14 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
 ## based on the degree centrality.
 ##
 ## This function takes an igraph object.
-get.author.class.network.degree = function(network = NULL, result.limit = NULL) {
+get.author.class.network.degree = function(network, result.limit = NULL) {
     logging::logdebug("get.author.class.network.degree: starting.")
 
-    if (is.null(network)) {
-        logging::logerror("For the network-based degree-centrality analysis, the network is needed.")
-        stop("The network has to be given for this analysis.")
-    } else if (igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
+    ## Ensure that the parameter 'network' is given and of type 'igraph'
+    verify.argument.for.parameter(network, "igraph", "get.author.class.network.degree")
+
+    if (igraph::vcount(network) == 0) {
+        logging::logwarn("The specified network is empty. Returning an empty classification.")
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
                     "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
     }
@@ -404,16 +403,14 @@ get.author.class.network.degree = function(network = NULL, result.limit = NULL) 
 ## based on the eigenvector centrality.
 ##
 ## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(network = NULL, result.limit = NULL) {
+get.author.class.network.eigen = function(network, result.limit = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
-    if (is.null(network)) {
-        logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
-        stop("The network has to be given for this analysis.")
+    ## Ensure that the parameter 'network' is given and of type 'igraph'
+    verify.argument.for.parameter(network, "igraph", "get.author.class.network.eigen")
 
-    } else if (igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
+    if (igraph::vcount(network) == 0) {
+        logging::logwarn("The specified network is empty. Returning an empty classification.")
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
                     "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
     }
@@ -450,16 +447,15 @@ get.author.class.network.eigen = function(network = NULL, result.limit = NULL) {
 
 ## * Hierarchy-based classification ----------------------------------------
 
-get.author.class.network.hierarchy = function(network = NULL, result.limit = NULL) {
+get.author.class.network.hierarchy = function(network, result.limit = NULL) {
 
     logging::logdebug("get.author.class.network.hierarchy: starting.")
 
-    if(is.null(network)) {
-        logging::logerror("For the network-based hierarchy-centrality analysis, the network is needed.")
-        stop("The network has to be given for this analysis.")
-    } else if(igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
+    ## Ensure that the parameter 'network' is given and of type 'igraph'
+    verify.argument.for.parameter(network, "igraph", "get.author.class.network.hierarchy")
+
+    if (igraph::vcount(network) == 0) {
+        logging::logwarn("The specified network is empty. Returning an empty classification.")
         return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
                     "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
     }
@@ -492,6 +488,9 @@ get.author.class.network.hierarchy = function(network = NULL, result.limit = NUL
 ## based on the number of commits made withing a version range.
 get.author.class.commit.count = function(proj.data, result.limit = NULL) {
     logging::logdebug("get.author.class.commit.count: starting.")
+
+    ## Ensure that the parameter 'proj.data' is given and of type 'ProjectData'
+    verify.argument.for.parameter(proj.data, "ProjectData", "get.author.class.commit.count")
 
     ## Get the commit counts per author
     author.commit.count = get.author.commit.count(proj.data)
@@ -642,6 +641,9 @@ get.author.commit.count = function(proj.data) {
 ## based on the sum of added and deleted lines of code a author has committed within a version range.
 get.author.class.loc.count = function(proj.data, result.limit = NULL) {
     logging::logdebug("get.author.class.loc.count: starting.")
+
+    ## Ensure that the parameter 'proj.data' is given and of type 'ProjectData'
+    verify.argument.for.parameter(proj.data, "ProjectData", "get.author.class.loc.count")
 
     ## Get the changed lines (loc counts) per author
     author.loc.count = get.author.loc.count(proj.data)
