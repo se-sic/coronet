@@ -455,7 +455,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 #' @return A list of networks with the added attribute
 add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges",
                                               activity.types = c("mails", "commits", "issues"),
-                                              default.value = NA,
+                                              default.value = list(),
                                               take.first.over.all.activity.types = FALSE) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
@@ -465,10 +465,14 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         return(data)
     }
 
-    ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
-    list.default.value = list(default.value)
+    if (!take.first.over.all.activity.types) {
+        default.value = rep(list(default.value), length(parsed.activity.types))
+        names(default.value) = parsed.activity.types
+    }
+    ## default value for one vertex needs to be wrapped in a list due to multiple values per vertex
+    default.value = list(default.value)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, name, list.default.value, compute.attr)
+    nets.with.attr = add.vertex.attribute(net.to.range.list, name, default.value, compute.attr)
     return(nets.with.attr)
 }
 
