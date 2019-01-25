@@ -718,7 +718,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
 #'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
-                                   take.first.over.all.activity.types = FALSE) {
+                                   take.first.over.all.activity.types = FALSE, default.value = NA) {
 
     ## get data for each activity type and extract minimal date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
@@ -762,9 +762,9 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         ## actually combine values for each key
         result = parallel::mclapply(keys, function(key) {
             ## get value from intermediate list (pre-fill with right length if not existing)
-            value.x = if (is.null(x[[key]])) rep(list(NA), times = depth) else x[[key]]
+            value.x = if (is.null(x[[key]])) rep(list(default.value), times = depth) else x[[key]]
             ## get value from current list (use NA as default if not existing)
-            value.y = if (is.null(y[[key]])) NA else y[[key]]
+            value.y = if (is.null(y[[key]])) default.value else y[[key]]
 
             ## combine values and name them appropriately
             combined.values = c(value.x, value.y)
