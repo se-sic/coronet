@@ -427,6 +427,11 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
         return(data)
     }
 
+    if (!take.first.over.all.activity.types) {
+        default.value = rep(list(default.value), length(parsed.activity.types))
+        names(default.value) = parsed.activity.types
+    }
+
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
                                                     compute.attr, list.attributes = TRUE)
     return(nets.with.attr)
