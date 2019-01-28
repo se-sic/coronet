@@ -518,9 +518,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         initialize = function(project.data, network.conf) {
 
             ## check arguments
-            private$proj.data.original = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
+            private$proj.data.original = verify.argument.for.parameter(project.data, "ProjectData", "NetworkBuilder$new")
             private$proj.data = project.data$clone()
-            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
+            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", "NetworkBuilder$new")
 
             ## cut data if needed
             if (private$network.conf$get.value("unify.date.ranges")) {

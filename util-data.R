@@ -232,7 +232,7 @@ ProjectData = R6::R6Class("ProjectData",
         initialize = function(project.conf) {
 
             ## check arguments
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", "ProjectData$new")
 
             ## if we have a direct subclass of ProjectData here,
             ## log this accordingly
@@ -283,7 +283,8 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param reset.environment parameter to determine whether the environment
         #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf",
+                                                                 "ProjectData$set.project.conf")
 
             if (reset.environment) {
                 self$reset.environment()
@@ -1088,8 +1089,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             super$initialize(project.conf)
 
             ## check arguments
-            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
-            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+            private$range = verify.argument.for.parameter(range, "character", "RangeData$new")
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", "RangeData$new")
 
             ## correct revision.callgraph variable
             if (revision.callgraph == "") {
