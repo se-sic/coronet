@@ -100,6 +100,17 @@ MAILS.LIST.DATA.TYPES = c(
     "character"
 )
 
+## column names of a dataframe containing PaStA data (see function \code{read.pasta})
+PASTA.LIST.COLUMNS = c(
+    "message.id", "commit.hash", "revision.set.id"
+)
+
+## declare the datatype for each column in the constant 'PASTA.LIST.COLUMNS'
+PASTA.LIST.DATA.TYPES = c(
+    "character", "character", "character"
+)
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Empty dataframe creation-------------------------------------------------
 
@@ -133,6 +144,15 @@ create.empty.issues.list = function() {
 #' @return the empty dataframe
 create.empty.mails.list = function() {
     return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing PaStA data.
+#' The dataframe has the column names and column datatypes defined in \code{PASTA.LIST.COLUMNS}
+#' and \code{PASTA.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.pasta.list = function() {
+    return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
 }
 
 
@@ -415,7 +435,7 @@ read.pasta = function(data.path) {
     if (inherits(lines, "try-error")) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.pasta.list())
     }
 
     result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {

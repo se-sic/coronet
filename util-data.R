@@ -81,14 +81,17 @@ ProjectData = R6::R6Class("ProjectData",
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits = NULL, # data.frame
-        synchronicity = NULL, # data.frame
-        pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
-        ## authors
-        authors = NULL, # data.frame
         ## issues
         issues = NULL, #data.frame
+        ## authors
+        authors = NULL, # data.frame
+        ## additional data sources
+        synchronicity = NULL, # data.frame
+        pasta = NULL, # data.frame
+        pasta.mails = NULL, # data.frame
+        pasta.commits = NULL, # data.frame
         ## timestamps of mail, issue and commit data
         data.timestamps = NULL, #data.frame
 
@@ -123,30 +126,49 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * PaStA data --------------------------------------------------
 
-        #' Add the PaStA data to the given data.frame for further analysis.
+        #' Aggregate PaStA data for convenient merging to main data sources.
         #'
-        #' @param data the base data as data.frame to append the PaStA data to.
+        #' In detail, the given PaStA data is independently aggregated by both the
+        #' columns \code{commit.hash} and \code{message.id}. The resulting data.frames
+        #' are stored in the fields \code{pasta.commits} and \code{pasta.mails},
+        #' respectively.
         #'
-        #' @return the augmented data.frame
-        add.pasta.data = function(data) {
-            logging::loginfo("Adding PaStA data.")
-            data[, "pasta"] = NA
-            if ("message.id" %in% colnames(data)) {
-                for (i in 1:nrow(data)) {
-                    pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
-                    if (!length(pasta.item) == 0) {
-                        data$pasta[i] = I(list(pasta.item))
-                    }
-                }
-            } else if ("hash" %in% colnames(data)) {
-                for (i in 1:nrow(data)) {
-                    pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
-                    if (!length(pasta.item) == 0) {
-                        data$pasta[i] = I(list(pasta.item))
-                    }
-                }
+        #' **Note**: The column \code{commit.hash} gets renamed to \code{hash} to match
+        #' the corresponding column in the commit data (see \code{read.commits}).
+        #'
+        #' @param pasta.data a data.frame of PaStA data as retrieved from
+        #'                   \code{ProjectData$get.pasta.data}
+        aggregate.pasta.data = function(pasta.data) {
+            logging::logdebug("aggregate.pasta.data: starting.")
+
+            ## check for data first
+            if (nrow(pasta.data) == 0) {
+                ## take (empty) input data and no rows from it
+                private$pasta.mails = pasta.data[0, ]
+                private$pasta.commits = pasta.data[0, ]
+            } else {
+                ## compute aggregated data.frames for easier merging
+                ## 1) define group function (determines result in aggregated data.frame cells)
+                group.fun = unname # unique
+                ## 2) aggregate by message ID
+                group.col = "message.id"
+                private$pasta.mails = aggregate(
+                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    group.fun, na.action = na.pass
+                )
+                ## 3) aggregate by commit hash
+                group.col = "commit.hash"
+                private$pasta.commits = aggregate(
+                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    group.fun, na.action = na.pass
+                )
             }
-            return(data)
+
+            ## set column names consistent to main data
+            colnames(private$pasta.mails) = c("message.id", "pasta", "revision.set.id")
+            colnames(private$pasta.commits) = c("hash", "pasta", "revision.set.id")
+
+            logging::logdebug("aggregate.pasta.data: finished.")
         },
 
         ## * * timestamps --------------------------------------------------
@@ -236,10 +258,13 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits = NULL
-            private$synchronicity = NULL
             private$mails = NULL
+            private$issues = NULL
             private$authors = NULL
+            private$synchronicity = NULL
             private$pasta = NULL
+            private$pasta.mails = NULL
+            private$pasta.commits = NULL
             private$data.timestamps = NULL
         },
 
@@ -404,11 +429,12 @@ ProjectData = R6::R6Class("ProjectData",
             # TODO: Also check for correct shape (column names and data types) of the passed data
 
             if (is.null(commit.data)) {
-                commit.data = create.empty.commits.list();
+                commit.data = create.empty.commits.list()
             }
 
             ## append synchronicity data if wanted
             if (private$project.conf$get.value("synchronicity")) {
+                logging::loginfo("Adding synchronicity data.")
                 synchronicity.data = self$get.synchronicity()
                 commit.data = merge(commit.data, synchronicity.data,
                                     by = "hash", all.x = TRUE, sort = FALSE)
@@ -416,13 +442,26 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                self$get.pasta()
-                commit.data = private$add.pasta.data(commit.data)
+                logging::loginfo("Adding PaStA data.")
+                ## get data
+                self$get.pasta() # no assignment because we just want to trigger the read-in
+                ## remove previous PaStA data
+                if ("pasta" %in% colnames(commit.data)) {
+                    commit.data["pasta"] = NULL
+                    commit.data["revision.set.id"] = NULL
+                }
+                ## merge PaStA data
+                commit.data = merge(commit.data, private$pasta.commits,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
+
+            ## sort by date again (because 'merge' is doing bullshit!)
+            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
             private$commits = commit.data
 
-            ## remove cached data for filtered commits as these need to be re-computed after changing the data
+            ## remove cached data for filtered commits as these need to be re-computed after
+            ## changing the data
             private$commits.filtered = NULL
         },
 
@@ -462,7 +501,10 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if commits are not read already, do this
             if (is.null(private$pasta)) {
-                private$pasta = read.pasta(self$get.data.path.pasta())
+                pasta.data = read.pasta(self$get.data.path.pasta())
+
+                ## set actual data
+                self$set.pasta(pasta.data)
             }
 
             return(private$pasta)
@@ -475,7 +517,14 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new PaStA data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
+
+            ## set the actual data
             private$pasta = data
+
+            ## aggregate by message IDs and commit hashes
+            private$aggregate.pasta.data(private$pasta)
+
+            ## add PaStA data to commit and mail data if configured
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Updating PaStA data.")
                 if (!is.null(private$commits)) {
@@ -521,8 +570,20 @@ ProjectData = R6::R6Class("ProjectData",
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding PaStA data.")
-                data = private$add.pasta.data(data = data)
+                ## get data
+                self$get.pasta() # no assignment because we just want to trigger the read-in
+                ## remove previous PaStA data
+                if ("pasta" %in% colnames(data)) {
+                    data["pasta"] = NULL
+                    data["revision.set.id"] = NULL
+                }
+                ## merge PaStA data
+                data = merge(data, private$pasta.mails,
+                             by = "message.id", all.x = TRUE, sort = FALSE)
             }
+
+            ## sort by date again (because 'merge' is doing bullshit!)
+            data = data[order(data[["date"]], decreasing = FALSE), ] # sort!
 
             private$mails = data
         },
