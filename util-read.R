@@ -71,15 +71,17 @@ ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
     "event.name", # event type
     "author.name", "author.email", # auhtor information
-    "date", "event.info.1", "event.info.2" # event details
+    "date", "event.info.1", "event.info.2", "event.id", # event details
+    "artifact.type" # artifact type
 )
 
 ## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
 ISSUES.LIST.DATA.TYPES = c(
-    "character", "character", "character", "character" ,"character","POSIXct", "POSIXct", "character",
+    "character", "character", "list()", "character", "list()", "POSIXct", "POSIXct", "list()",
     "character",
     "character", "character",
-    "POSIXct", "character", "character"
+    "POSIXct", "character", "list()", "character",
+    "character"
 )
 
 ## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
@@ -478,22 +480,24 @@ read.issues = function(data.path) {
         return(create.empty.issues.list())
     }
 
+    ## create (now empty) column 'event.id' to properly set column names
+    ## (this column is reset later)
+    issue.data["event.id"] = NA
+
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    issue.data["artifact.type"] = "IssueEvent"
+
     ## set proper column names
     colnames(issue.data) = ISSUES.LIST.COLUMNS
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
 
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueEvent"
-
+    ## properly parse and store data in list-type columns
     issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
     issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
     issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-
-    ## convert 'event.info.2' for created and comment events to vector
-    rows_with_list = which(issue.data[["event.name"]] == "created" | issue.data[["event.name"]] == "commented")
-    issue.data[rows_with_list, "event.info.2"] = I(list(unname(lapply(issue.data[rows_with_list, "event.info.2"], jsonlite::parse_json))))
+    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])

@@ -141,8 +141,8 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
 #' \code{logical}, the second parameter \code{data.types} should specify the datatypes.
 #'
 #' @param columns a character vector containing all the column names
-#' @param data.types a character vector of the same length as \code{columns}, the datatypes can be \code{integer},
-#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor} or \code{logical}
+#' @param data.types a character vector of the same length as \code{columns}; the datatypes can be \code{integer},
+#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor}, \code{logical}, and \code{list()}
 #'
 #' @return the newly created empty dataframe
 create.empty.data.frame = function(columns, data.types = NULL) {
@@ -182,6 +182,9 @@ create.empty.data.frame = function(columns, data.types = NULL) {
                },
                "factor" = {
                    column = as.factor(column)
+               },
+               "list()" = {
+                   column = I(as.list(column))
                },
                {
                    stop(paste("Unknown datatype specified:", data.types[[i]]))

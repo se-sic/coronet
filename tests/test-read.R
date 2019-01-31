@@ -254,7 +254,6 @@ test_that("Read and parse the pasta data.", {
 })
 
 test_that("Read and parse the issue data.", {
-    ## FIXME @Roger1995: update issues.list with a more recent content!
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -326,11 +325,12 @@ test_that("Read and parse the issue data.", {
                                                      "open", "open", "", "open", "closed", "930af63a030fb92e48eddff01f53284c3eeba80e",
                                                      "", "", "Thomas", "Thomas", "open", "Thomas", "Thomas", "fb52357f05958007b867da06f4077abdc04fa0d8",
                                                      "udo", "udo", "decided", "open"),
-                                     event.info.2 = NA, # is assigned later
-                                     artifact.type = "IssueEvent"
-                                     )
+                                    event.info.2 = NA, # is assigned later
+                                    event.id = NA, # is assigned later
+                                    artifact.type = "IssueEvent"
+                                    )
 
-    issue.data.expected[["event.info.2"]] = list(
+    issue.data.expected[["event.info.2"]] = I(list(
                                                 list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
                                                 list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
                                                 list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
@@ -339,7 +339,7 @@ test_that("Read and parse the issue data.", {
                                                 "commit", "", "", "thomas@example.org", "thomas@example.org", list(),
                                                 "thomas@example.org", "thomas@example.org", "commit", "udo@example.org",
                                                 "udo@example.org", "", list()
-                                            )
+                                            ))
 
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
