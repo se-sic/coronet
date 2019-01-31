@@ -86,14 +86,16 @@ ISSUES.LIST.DATA.TYPES = c(
 MAILS.LIST.COLUMNS = c(
     "author.name", "author.email", # author information
     "message.id", "date", "date.offset", "subject", # meta information
-    "thread" # thread ID
+    "thread", # thread ID
+    "artifact.type" # artifact type
 )
 
 ## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
 MAILS.LIST.DATA.TYPES = c(
     "character", "character",
     "character", "POSIXct", "numeric", "character",
-    "numeric"
+    "character",
+    "character"
 )
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -313,14 +315,13 @@ read.mails = function(data.path) {
         return(create.empty.mails.list())
     }
 
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    mail.data["artifact.type"] = "Mail"
 
     colnames(mail.data) = MAILS.LIST.COLUMNS
 
     ## set pattern for thread ID for better recognition
     mail.data[["thread"]] = sprintf("<thread-%s>", mail.data[["thread"]])
-
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    mail.data["artifact.type"] = "Mail"
 
     ## remove mails without a proper date as they mess up directed mail-based networks
     ## this basically only applies for project-level analysis

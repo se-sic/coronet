@@ -100,7 +100,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:8, ]
         ),
         mails = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data.frame(),
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[rownames(data$mails) == 16, ],
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 17, ]
         ),
@@ -180,7 +180,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
         mails = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[rownames(data$mails) %in% 3:12, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data.frame(),
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$mails[0, ],
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
         ),
         issues = list(
@@ -258,9 +258,9 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$commits[0, ]
         ),
         mails = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data.frame(),
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[rownames(data$mails) %in% 14:17, ],
-            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data.frame()
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         issues = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
@@ -512,8 +512,8 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data.frame(),
-            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data.frame()
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$mails[0, ],
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$mails[0, ]
         ),
         issues = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
@@ -606,7 +606,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data.frame()
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ]
         ),
         issues = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
@@ -882,10 +882,10 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$commits[0, ]
         ),
         mails = list(
-            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data.frame(),
+            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$mails[0, ],
             "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$mails[rownames(data$mails) %in% 14:15, ],
             "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data.frame()
+            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         issues = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$issues[rownames(data$issues) %in% 1:10, ],

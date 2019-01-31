@@ -513,9 +513,11 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new mail data
         set.mails = function(data) {
             logging::loginfo("Setting e-mail data.")
+
             if (is.null(data)) {
-                data = data.frame()
+                data = create.empty.mails.list()
             }
+
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding PaStA data.")
