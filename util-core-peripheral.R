@@ -151,7 +151,7 @@ get.author.class.by.type = function(network = NULL,
 
     if (type == "network.degree") {
         ## Get node degrees for all authors
-        node.degree.vec = sort(igraph::degree(network), decreasing = TRUE)
+        node.degree.vec = igraph::degree(network)
 
         ## Construct centrality dataframe
         centrality.dataframe = data.frame(author.name = names(node.degree.vec), centrality = as.vector(node.degree.vec))
@@ -171,7 +171,7 @@ get.author.class.by.type = function(network = NULL,
             }
         )
 
-        eigen.centrality.vec = sort(eigen.centrality.vec[["vector"]], decreasing = TRUE)
+        eigen.centrality.vec = eigen.centrality.vec[["vector"]]
 
         ## In case no collaboration occured, all centrality values are set to 0
         if (igraph::ecount(network) == 0) {
