@@ -17,6 +17,8 @@
 - Add tests for construction of networks without vertices (6eb214c1aca0899567529aa514352440f3005d5c)
 - Add a note on mailing-list threads to README (c6dca275c3571e396529a0178c8300de8cd8aa26)
 - Add cutting functionality to README descriptions (fb40c506d8dd838cc8853d426e83840ed93b10d4)
+- Add the parameter `restrict.classification.to.authors` to the functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. The parameter allows to perform classifications on a limited group of authors whose names are specified in this parameter. (2492dd0de5909c41031541ffb365eee40a342b65, #148)
+- Add test cases for `util-core-peripheral.R` by adding the new file `test-core-peripheral.R` along with test cases (2627d6c9aaa4b066cf3043f9cf167fb470bdec6c)
 
 ### Changed/Improved
 - Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)
@@ -35,6 +37,9 @@
 - Refactor `ProjectData$get.cached.data.sources` to be more concise (a4e7a213dce6d4709e92e22d2f55971b7bde8037)
 - Update contribution guide regarding `roxygen2` conventions (#157, fbc2d5487fe08d072f22578c4954601315f8aee7)
 - Update README regarding mandatory edge attributes (641624b077d403a34b52718c7aaea25dd1ce626d)
+- Rename misleading parameter names for functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. Most importantly, the parameter `range.data` was renamed to `proj.data` for these functions. (587ef99c1eb93751180bba6037c7f2fe6e24aca5, 81568b12ffdc7637bd0d5a05d0f56a96a88ee6ac, #70)
+- Remove the unused functions `get.commit.count.threshold` and `get.loc.count.threshold`. (2534d73283b6e7f9703b22f605298eaa2c158d93, #70)
+- The function `verify.argument.for.parameter` was adjusted to be suitable in more general use-cases (557bdcd65940d7a098354b19a5c24cec018e3533)
 
 ### Fixed
 - Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)
@@ -46,7 +51,8 @@
 - Fix handling of empty vertex list in `construct.network.from.edge.list` (01f31d685f7e324c7e2fdd16cd376e764afcdec9)
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
 - Fix missing time-zone attribute `tzone` on `POSIXct` items (5f6cc6922b95bf5cbdd9b2cbf16be4bf4937d0db)
-
+- Fix author classification which was incorrect in certain situations and adjust test cases to this change (9294a37d98f9ff3d14756d56300b0d171f3f3b4c, c7288c3690b68f367a9f451bec7c584897971a31)
+- Fix wrong behaviour of 'get.author.class' when using 'result.limit' (9437b4f07da599fde017596af2290b24601f9f8d)
 
 ## 3.4
 
