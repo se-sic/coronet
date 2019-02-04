@@ -480,15 +480,13 @@ read.issues = function(data.path) {
     ## set proper artifact type for proper vertex attribute 'artifact.type'
     issue.data["artifact.type"] = "IssueEvent"
 
-    ## convert issue 'type', 'resolution' and 'components' to vectors
-    issue.data[["issue.type"]] = as.vector(issue.data[["issue.type"]])
-    issue.data[["issue.resolution"]] = as.vector(issue.data[["issue.resolution"]])
-    issue.data[["issue.components"]] = as.vector(issue.data[["issue.components"]])
+    issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
+    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
+    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
 
     ## convert 'event.info.2' for created and comment events to vector
-    if (issue.data[["event.name"]] == "created" || issue.data[["event.name"]] == "commented"){
-        issue.data[["event.info.2"]] = as.vector(issue.data[["event.info.2"]])
-    }
+    rows_with_list = which(issue.data[["event.name"]] == "created" | issue.data[["event.name"]] == "commented")
+    issue.data[rows_with_list, "event.info.2"] = I(list(unname(lapply(issue.data[rows_with_list, "event.info.2"], jsonlite::parse_json))))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])

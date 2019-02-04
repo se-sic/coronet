@@ -35,7 +35,8 @@ packages = c(
     "ggraph",
     "markovchain",
     "lubridate",
-    "viridis"
+    "viridis",
+    "jsonlite"
 )
 
 
