@@ -422,17 +422,23 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
+    ## the given default.value is interpreted as default per author and type.
+    type.default = default.value
+
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types)
+        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types, type.default)
         return(data)
     }
 
+    ## the default value appended to vertices where no data is available is structured
+    ## and named analogously to the vertex attributes containing available data.
+    vertex.default = default.value
     if (!take.first.over.all.activity.types) {
-        default.value = rep(list(default.value), length(parsed.activity.types))
-        names(default.value) = parsed.activity.types
+        vertex.default = rep(list(vertex.default), length(parsed.activity.types))
+        names(vertex.default) = parsed.activity.types
     }
 
-    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, vertex.default,
                                                     compute.attr, list.attributes = TRUE)
     return(nets.with.attr)
 }
@@ -460,19 +466,24 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
+    ## the given default.value is interpreted as default per author and type.
+    type.default = default.value
+
     compute.attr = function(range, range.data, net) {
-        data = get.active.ranges.data(parsed.activity.types, net.to.range.list)
+        data = get.active.ranges.data(parsed.activity.types, net.to.range.list, type.default)
         return(data)
     }
 
+    ## the default value appended to vertices where no data is available is structured
+    ## and named analogously to the vertex attributes containing available data.
+    vertex.default = default.value
     if (!take.first.over.all.activity.types) {
-        default.value = rep(list(default.value), length(parsed.activity.types))
-        names(default.value) = parsed.activity.types
+        vertex.default = rep(list(default.value), length(parsed.activity.types))
+        names(vertex.default) = parsed.activity.types
     }
-    ## default value for one vertex needs to be wrapped in a list due to multiple values per vertex
-    default.value = list(default.value)
+    vertex.default = list(vertex.default)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, name, default.value, compute.attr)
+    nets.with.attr = add.vertex.attribute(net.to.range.list, name, vertex.default, compute.attr)
     return(nets.with.attr)
 }
 
@@ -811,7 +822,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 #'
 #' @return A list with elements representing the authors, each containing a list of elements representing the activity
 #'         types, each containing a list of active ranges.
-get.active.ranges.data = function(activity.types = c("mails", "commits", "issues"), net.to.range.list) {
+get.active.ranges.data = function(activity.types = c("mails", "commits", "issues"), net.to.range.list, default.value = list()) {
 
     ## a list with elements representing the parsed activity types, each containing a list of elements
     ## representing the ranges the data was split by, each containing a list of authors who were active
@@ -840,7 +851,7 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
             if (type %in% names(ranges.per.type)) {
                 return(ranges.per.type[[type]])
             } else {
-                return(list())
+                return(default.value)
             }
         })
         names(ranges.for.all.types) = activity.types
