@@ -105,6 +105,76 @@ test_that("Merge networks", {
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Extraction of sub-networks ----------------------------------------------
+
+test_that("Extraction of sub-networks", {
+
+    base.net = get.sample.network()
+    base.net = igraph::delete_graph_attr(base.net, "layout")
+
+    ##
+    ## extraction of author networks
+    ##
+
+    ## construct original author network
+    author.net.built = extract.author.network.from.network(base.net, remove.isolates = FALSE)
+
+    ## construct expected author network (by removing artifact vertices and adjacent edges)
+    author.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[type == TYPE.ARTIFACT])
+
+    expect_true(igraph::identical_graphs(author.net.built, author.net.expected), info = "author-network extraction")
+
+    ##
+    ## extraction of bipartite networks
+    ##
+
+    ## construct original author network
+    bip.net.built = extract.bipartite.network.from.network(base.net)
+
+    ## construct expected author network (by removing artifact vertices and adjacent edges)
+    bip.net.expected = igraph::delete.edges(base.net, igraph::E(base.net)[1:9])
+    bip.net.expected = igraph::delete.vertices(bip.net.expected, "A2")
+
+    expect_true(igraph::identical_graphs(bip.net.built, bip.net.expected), info = "bipartite-network extraction")
+
+    ##
+    ## extraction of artifact networks
+    ##
+
+    ## construct original author network
+    art.net.built = extract.artifact.network.from.network(base.net, remove.isolates = FALSE)
+
+    ## construct expected author network (by removing artifact vertices and adjacent edges)
+    art.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[type == TYPE.AUTHOR])
+
+    expect_true(igraph::identical_graphs(art.net.built, art.net.expected), info = "artifact-network extraction")
+
+    ##
+    ## edge cases for functions
+    ##
+
+    ## extract bipartite from empty network (no error)
+    expect_error(extract.bipartite.network.from.network(create.empty.network()), NA,
+                 info = "extract bipartite network from empty network (no vertices, no edges)")
+
+
+    ## extract bipartite from network without edge attribute 'type' (error!)
+    expect_error(extract.bipartite.network.from.network(create.empty.network() + igraph::vertices(1)),
+                 info = "extract bipartite network from network without edge attribute 'type'")
+
+    ## extract bipartite from edgeless network (no error)
+    edgeless.net = base.net - igraph::edges(seq_len(igraph::ecount(base.net)))
+    expect_error(extract.bipartite.network.from.network(edgeless.net), NA,
+                 info = "extract bipartite network from edgeless network")
+    ## the extracted network should be empty then (but with all attributes!)
+    expect_true(igraph::identical_graphs(
+        extract.bipartite.network.from.network(edgeless.net),
+        base.net - igraph::vertices(seq_len(igraph::vcount(base.net)))
+    ), info = "extracted bipartite network is empty for edgeless base network")
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Construction of networks without data -----------------------------------
 
 test_that("Construction of networks without data", {

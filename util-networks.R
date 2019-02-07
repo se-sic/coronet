@@ -1395,12 +1395,27 @@ extract.artifact.network.from.network = function(network, remove.isolates = FALS
 #' Extract the bipartite-network part from the given (multi) network, i.e.,
 #' return the subgraph induced by the edges of type TYPE.EDGES.INTER.
 #'
+#' **Note**: This function throws an error when the edge attribute 'type' is missing.
+#'
 #' @param network the (multi) network to reduce
 #'
 #' @return the bipartite-edge-induced subgraph of \code{network}
 extract.bipartite.network.from.network = function(network) {
+
+    ## check whether there are vertices in the network, otherwise skip the extraction
+    if (igraph::vcount(network) == 0) {
+        return(network)
+    }
+
+    ## check whether there is an edge attibute 'type'
+    if (!("type" %in% igraph::list.edge.attributes(network))) {
+        logging::logerror("Extraction of an bipartite network without the edge attribute 'type' does not work!")
+        stop("Failed extraction of bipartite network.")
+    }
+
     ## only retain all bipartite edges and induced vertices
     bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
+
     return(bip.network)
 }
 
