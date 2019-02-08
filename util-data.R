@@ -732,6 +732,27 @@ ProjectData = R6::R6Class("ProjectData",
             return(result)
         },
 
+        #' Extract the data classes (i.e., data columns and their classes) available in
+        #' the given data source.
+        #'
+        #' @param data.source The specified data source. One of \code{"mails"},
+        #'                    \code{"commits"}, and \code{"issues"}.
+        #'
+        #' @return a named list of data classes, with the corresponding data columns as names
+        get.data.columns.for.data.source = function(data.source = c("mails", "commits", "issues")) {
+
+            ## check arguments
+            data.source = match.arg(arg = data.source, several.ok = FALSE)
+
+            ## get the needed data method first
+            data.fun = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            ## get the column classes with corresponding names
+            columns = lapply(self[[data.fun]](), class)
+
+            return(columns)
+        },
+
         #' Compares two ProjectData objects by first comparing the names of the
         #' cached data sources of the two.
         #' Then, it compares the ProjectConf objects and, in the end, the cached data

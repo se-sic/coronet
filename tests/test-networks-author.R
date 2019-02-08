@@ -609,13 +609,9 @@ test_that("Network construction with only untracked files (no edges expected)", 
     network.built = network.builder$get.author.network()
 
     ## build expected network (two vertices, no edges)
-    vertices = data.frame(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
-    edges = create.empty.edge.list()
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
-    ## add missing edge attributes
-    network.expected = igraph::set.edge.attribute(network.expected, "weight", value = as.numeric(NA))
-    network.expected = igraph::set.edge.attribute(network.expected, "type", value = as.character(NA))
-    network.expected = igraph::set.edge.attribute(network.expected, "relation", value = as.character(NA))
+    vertices = list(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
+    network.expected = igraph::add.vertices(network.expected, nv = max(lengths(vertices)), attr = vertices)
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))

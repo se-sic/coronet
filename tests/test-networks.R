@@ -379,7 +379,8 @@ test_that("Construction of networks from empty edge list (without vertices)", {
 
     ## construct edgeless network
     net.edgeless = create.empty.network(directed = directed)
-    ## add attribute 'weight' which is always added by 'construct.network.from.edge.list'
+    ## add attributes 'name' and 'weight' which is always added by 'construct.network.from.edge.list'
+    net.edgeless = igraph::set.vertex.attribute(net.edgeless, "name", value = "name")
     net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
 
     ##
@@ -406,3 +407,293 @@ test_that("Construction of networks from empty edge list (without vertices)", {
 
 })
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Edge attributes ---------------------------------------------------------
+
+test_that("Addition of edge attributes regardless of empty data", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$clear.edge.attributes() # remove all but the mandatory edge attributes
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    proj.data$set.commits(NULL)
+    proj.data$set.mails(NULL)
+    proj.data$set.issues(NULL)
+    ## construct network builder
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## expected empty network with correct mandatory attributes
+    network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
+
+    ##
+    ## author networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "cochange"))
+    network.built = network.builder$get.author.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+    network.built = network.builder$get.author.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "issue"))
+    network.built = network.builder$get.author.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – issue")
+
+    ##
+    ## bipartite networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange")))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – issue")
+
+    ##
+    ## artifact networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – issue")
+
+
+    ##
+    ## multi networks
+    ##
+
+    ## cochange-based artifact network, cochange-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "cochange", author.relation = "cochange"))
+    network.built = network.builder$get.multi.network()
+    ## 2) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – cochange/cochange"
+    )
+
+    ## mail-based artifact network, mail-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "mail", author.relation = "mail"))
+    network.built = network.builder$get.multi.network()
+    ## 2) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – mail/mail"
+    )
+
+    ## issue-based artifact network, cochange-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "issue", author.relation = "cochange"))
+    network.built = network.builder$get.multi.network()
+    ## 2) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – issue/cochange"
+    )
+
+})
+
+
+test_that("Addition of edge attributes with data", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$clear.edge.attributes() # remove all but the mandatory edge attributes
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    ## construct network builder
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## expected empty network with correct mandatory attributes
+    network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
+
+    ##
+    ## author networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "cochange"))
+    network.built = network.builder$get.author.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+    network.built = network.builder$get.author.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(author.relation = "issue"))
+    network.built = network.builder$get.author.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – issue")
+
+    ##
+    ## bipartite networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange")))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
+    network.built = network.builder$get.bipartite.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – issue")
+
+    ##
+    ## artifact networks
+    ##
+
+    ## cochange-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – cochange")
+
+    ## mail-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – mail")
+
+    ## issue-based network:
+    ## 1) build network
+    network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
+    network.built = network.builder$get.artifact.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – issue")
+
+    ##
+    ## multi networks
+    ##
+
+    ## cochange-based artifact network, cochange-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "cochange", author.relation = "cochange"))
+    network.built = network.builder$get.multi.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – cochange/cochange"
+    )
+
+    ## mail-based artifact network, mail-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "mail", author.relation = "mail"))
+    network.built = network.builder$get.multi.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – mail/mail"
+    )
+
+    ## issue-based artifact network, cochange-based author network:
+    ## 1) build network
+    network.builder$update.network.conf(list(artifact.relation = "issue", author.relation = "cochange"))
+    network.built = network.builder$get.multi.network()
+    ## 2) remove all vertices since we only care about the attributes
+    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    ## 3) check attributes against expected network
+    expect_identical(
+        igraph::as_data_frame(network.built, what = "both"),
+        igraph::as_data_frame(network.expected, what = "both"),
+        info = "multi network – issue/cochange"
+    )
+
+})
