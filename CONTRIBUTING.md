@@ -180,7 +180,13 @@ There will be another checklist for you when you open an actual pull request pro
 * To handle dates and date objects (i.e. mainly, `POSIXct` objects in R), always use the functions `get.date.from.string`, `get.date.from.unix.timestamp`, and `get.date.string`. This ensures proper date handling in all parts of the code. If you need to modify dates (e.g., to add a week), always use the `lubridate` package.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
-    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details).
+    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details). In particular, we settle on the following style of the **`roxygen2`** function documentation:
+        * The introductory sentence(s) which describes the function in general should always end with a period.
+        * Descriptions of a parameter (`@param parameter.name`) should *not* end with a period unless there is a multi-sentence description for one parameter. If the description of one parameter covers multiple lines, all but the first lines are indentend along the end of the parameter name. This applies similarly for descriptions using `@return`.
+        * Variable names, class names, or other code snippets which are part of the function documentation should be placed within `\code{...}`.
+        **Note:** This does not hold for inline documentation within a function. There we only use `'...'` for variable names, class names, and other code snippets.
+        * For parameters that take a default value, the default value should be placed directly after the description of the parameter using the following format: `[default: value]`.
+        **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
     * We use **networks**, not "graphs".
     * We talk about **authors**, not developers.
 * Also **add tests** to the test suite for each new functionality you add!
