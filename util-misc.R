@@ -388,6 +388,8 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     }
     ## 4) add end date to sequence
     dates = c(dates, end.date)
+    ## 5) explicitly re-add time-zone attribute 'tzone' (as 'c.POSIXct' loses it)
+    dates = lubridate::with_tz(dates, tzone = TIMEZONE)
 
     return(dates)
 }
@@ -592,8 +594,11 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
             bin.end = end.date
         }
 
-        ## return the tuple of bin start and bin end
-        return(c(bin.start, bin.end))
+        ## construct current bin as the tuple of bin start and bin end
+        current.bin = c(bin.start, bin.end)
+        ## explicitly set time-zone attribute 'tzone' again (as 'c.POSIXct' loses it)
+        current.bin = lubridate::with_tz(current.bin, tzone = TIMEZONE)
+        return(current.bin)
     })
 
     # if wanted, check for imperfect range in the end:

@@ -22,12 +22,21 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## System variables and R settings -----------------------------------------
 
+## * Locale ----------------------------------------------------------------
+
 if (Sys.info()['sysname'] == "Windows") {
     Sys.setlocale(category = "LC_ALL", locale = "english-us")
 } else {
     Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
 }
-Sys.setenv(TZ = "UTC")
+
+## * Universal time zone ---------------------------------------------------
+
+TIMEZONE = "UTC"
+Sys.setenv(TZ = TIMEZONE)
+
+## * Other stuff -----------------------------------------------------------
+
 options(stringsAsFactors = FALSE)
 
 ## for proper initialization of the package 'logging', the base package 'methods' needs

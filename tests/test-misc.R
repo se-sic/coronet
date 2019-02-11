@@ -120,28 +120,28 @@ test_that("Parse date from a string.", {
     date.string = "2018-02-22 10:44:27"
     date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H:%M:%S"))
     ## 1) from string
-    expect_equal(get.date.from.string(date.string), date.posixct, info = "From string.")
+    expect_identical(get.date.from.string(date.string), date.posixct, info = "From string.")
     ## 2) from POSIXct
-    expect_equal(get.date.from.string(date.posixct), date.posixct, info = "From POSIXct.")
+    expect_identical(get.date.from.string(date.posixct), date.posixct, info = "From POSIXct.")
 
     ## partial date:
     ## 1) no seconds
     date.string = "2018-02-22 10:22"
     date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H:%M"))
-    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds).")
+    expect_identical(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds).")
     ## 2) no seconds, no minutes
     date.string = "2018-02-22 10"
     date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d %H"))
-    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds, no minutes).")
+    expect_identical(get.date.from.string(date.string), date.posixct, info = "Partial date (no seconds, no minutes).")
     ## 3) no time
     date.string = "2018-02-22"
     date.posixct = as.POSIXct(strptime(date.string, format = "%Y-%m-%d"))
-    expect_equal(get.date.from.string(date.string), date.posixct, info = "Partial date (no time).")
+    expect_identical(get.date.from.string(date.string), date.posixct, info = "Partial date (no time).")
 
     ## date string with time zone (which will be ignored as we treat it like UTC anyway)
     date.string = "2018-02-22 10:02:03 CET"
     date.posixct = as.POSIXct(strptime("2018-02-22 10:02:03", tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
-    expect_equal(get.date.from.string(date.string), date.posixct, info = "Date with (ignored) time-zone")
+    expect_identical(get.date.from.string(date.string), date.posixct, info = "Date with (ignored) time-zone")
 
 })
 
@@ -155,7 +155,7 @@ test_that("Parse date from a UNIX timestamp.", {
     date.string = "2018-02-22 10:44:27"
     date.posixct = get.date.from.string(date.string)
 
-    expect_equal(get.date.from.unix.timestamp(date.numeric), date.posixct, info = "From string.")
+    expect_identical(get.date.from.unix.timestamp(date.numeric), date.posixct, info = "From string.")
 
 })
 
@@ -178,17 +178,17 @@ test_that("Format a POSIXct object.", {
     date.string = "2018-02-22 10:44"
     date.string.formatted = "2018-02-22 10:44:00"
     date.posixct = get.date.from.string(date.string)
-    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds).")
+    expect_identical(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds).")
     ## 2) no seconds, no minutes
     date.string = "2018-02-22 10"
     date.string.formatted = "2018-02-22 10:00:00"
     date.posixct = get.date.from.string(date.string)
-    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds, no minutes).")
+    expect_identical(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no seconds, no minutes).")
     ## 3) no time
     date.string = "2018-02-22"
     date.string.formatted = "2018-02-22 00:00:00"
     date.posixct = get.date.from.string(date.string)
-    expect_equal(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no time).")
+    expect_identical(get.date.string(date.posixct), date.string.formatted, info = "Partial date (no time).")
 
 })
 
@@ -214,13 +214,13 @@ test_that("Generate a date sequence.", {
                                       "2018-02-22 06:05:01"))
     ## 2) From string.
     result = generate.date.sequence(start.date, end.date.short, time.period)
-    expect_equal(result, expected, info = "Date sequence from strings.")
+    expect_identical(result, expected, info = "Date sequence from strings.")
     ## 3) From POSIXct.
     result = generate.date.sequence(start.date.posixct, end.date.short.posixct, time.period)
-    expect_equal(result, expected, info = "Date sequence from dates.")
+    expect_identical(result, expected, info = "Date sequence from dates.")
     ## 4) With lubridate::duration.
     result = generate.date.sequence(start.date.posixct, end.date.short.posixct, time.period.duration)
-    expect_equal(result, expected, info = "Date sequence with lubridate::duration")
+    expect_identical(result, expected, info = "Date sequence with lubridate::duration")
 
     ## precise last range:
     end.date.precise = "2018-02-22 06:00:00"
@@ -230,13 +230,13 @@ test_that("Generate a date sequence.", {
                                       "2018-02-22 04:00:00", "2018-02-22 06:00:00"))
     ## 2) From string.
     result = generate.date.sequence(start.date, end.date.precise, time.period)
-    expect_equal(result, expected, info = "Date sequence from strings.")
+    expect_identical(result, expected, info = "Date sequence from strings.")
     ## 3) From POSIXct.
     result = generate.date.sequence(start.date.posixct, end.date.precise.posixct, time.period)
-    expect_equal(result, expected, info = "Date sequence from dates.")
+    expect_identical(result, expected, info = "Date sequence from dates.")
     ## 4) With lubridate::duration.
     result = generate.date.sequence(start.date.posixct, end.date.precise.posixct, time.period.duration)
-    expect_equal(result, expected, info = "Date sequence with lubridate::duration")
+    expect_identical(result, expected, info = "Date sequence with lubridate::duration")
 
 })
 
@@ -271,8 +271,7 @@ test_that("Construct consecutive and overlapping ranges.", {
     expect_identical(result.formatted, expected.formatted, info = "Standard overlapping ranges (formatted).")
     ## 3) raw
     result.raw = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes", raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Standard overlapping ranges (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Standard overlapping ranges (raw).")
 
     ## overlapping ranges without imperfect ranges:
     ## 1) expected results
@@ -291,9 +290,8 @@ test_that("Construct consecutive and overlapping ranges.", {
     ## 3) raw
     result.raw = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
                                               imperfect.range.ratio = 1.0, raw = TRUE)
-    expect_equal(result.raw, expected.raw,
-                 info = "Overlapping ranges without imperfect ranges (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw,
+                     info = "Overlapping ranges without imperfect ranges (raw).")
 
     ## overlapping ranges with imperfect ranges that last at least 8% of the time period:
     ## 1) expected results
@@ -313,9 +311,8 @@ test_that("Construct consecutive and overlapping ranges.", {
     ## 3) raw
     result.raw = construct.overlapping.ranges(start, end, time.period = "2 hours", overlap = "30 minutes",
                                               imperfect.range.ratio = 0.08, raw = TRUE)
-    expect_equal(result.raw, expected.raw,
-                 info = "Overlapping ranges with imperfect ranges (at least 8% of the time period) (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw,
+                     info = "Overlapping ranges with imperfect ranges (at least 8% of the time period) (raw).")
 
     ## non-overlapping/consecutive ranges:
     ## 1) expected results
@@ -332,11 +329,10 @@ test_that("Construct consecutive and overlapping ranges.", {
     expect_identical(result.formatted, expected.formatted, info = "Non-overlapping ranges (formatted).")
     ## 3) raw
     result.raw = construct.overlapping.ranges(start.date, end.date, time.period = "2 hours", overlap = 0, raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Non-overlapping ranges (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Non-overlapping ranges (raw).")
     ## 4) matching with consecutive ranges
     results.raw = construct.consecutive.ranges(start.date, end.date, time.period = "2 hours", raw = FALSE)
-    expect_equal(result.raw, expected.raw, info = "Non-overlapping ranges (consecutive).")
+    expect_identical(result.raw, expected.raw, info = "Non-overlapping ranges (consecutive).")
 
     ## non-overlapping/consecutive ranges without imperfect ranges and exclusive end:
     ## 1) expected results
@@ -355,14 +351,13 @@ test_that("Construct consecutive and overlapping ranges.", {
     ## 3) raw
     result.raw = construct.overlapping.ranges(start.date, end.date, time.period = "2 hours", overlap = 0,
                                               imperfect.range.ratio = 1.0, include.end.date = FALSE, raw = TRUE)
-    expect_equal(result.raw, expected.raw,
-                 info = "Non-overlapping ranges without imperfect ranges and exclusive end (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw,
+                     info = "Non-overlapping ranges without imperfect ranges and exclusive end (raw).")
     ## 4) matching with consecutive ranges
     results.raw = construct.consecutive.ranges(start.date, end.date, time.period = "2 hours",
                                                imperfect.range.ratio = 1.0, include.end.date = FALSE, raw = FALSE)
-    expect_equal(result.raw, expected.raw,
-                 info = "Non-overlapping ranges without imperfect ranges and exclusive end (consecutive).")
+    expect_identical(result.raw, expected.raw,
+                     info = "Non-overlapping ranges without imperfect ranges and exclusive end (consecutive).")
 
     ## illegal overlap
     expect_error(
@@ -398,8 +393,7 @@ test_that("Construct cumulative ranges.", {
     expect_identical(result.formatted, expected.formatted, info = "Cumulative ranges (formatted).")
     ## 3) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours", raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Cumulative ranges (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Cumulative ranges (raw).")
 
     ## cumulative ranges without imperfect ranges:
     ## 1) expected results
@@ -418,9 +412,8 @@ test_that("Construct cumulative ranges.", {
     ## 3) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "2 hours",
                                              imperfect.range.ratio = 1.0, raw = TRUE)
-    expect_equal(result.raw, expected.raw,
-                 info = "Cumulative ranges without imperfect ranges (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw,
+                     info = "Cumulative ranges without imperfect ranges (raw).")
 
 })
 
@@ -447,8 +440,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
     expect_identical(result.formatted, expected.formatted, info = "Consecutive range (formatted).")
     ## 2) raw
     result.raw = construct.consecutive.ranges(start, end, time.period = "1 week", raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Consecutive range (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Consecutive range (raw).")
 
     ## cumulative
     ## 1) formatted
@@ -456,8 +448,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
     expect_identical(result.formatted, expected.formatted, info = "Cumulative range (formatted).")
     ## 2) raw
     result.raw = construct.cumulative.ranges(start, end, time.period = "1 week", raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Cumulative range (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Cumulative range (raw).")
 
     ## overlapping
     ## 1) formatted
@@ -467,8 +458,7 @@ test_that("Construct ranges when difference between start and end is smaller tha
     ## 2) raw
     result.raw = construct.overlapping.ranges(start, end, time.period = "1 week",
                                               overlap = "5 days", raw = TRUE)
-    expect_equal(result.raw, expected.raw, info = "Overlapping range (raw).")
-    ## TODO use expect_identical here? why failing?
+    expect_identical(result.raw, expected.raw, info = "Overlapping range (raw).")
 })
 
 ##
@@ -569,6 +559,6 @@ test_that("Parse range", {
 
     actual.output = lapply(range.input, get.range.bounds)
 
-    expect_equal(actual.output, expected.output, "Parsed Range")
+    expect_identical(actual.output, expected.output, "Parsed Range")
 })
 
