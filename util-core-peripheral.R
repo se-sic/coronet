@@ -1268,16 +1268,6 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
 
-    ## Return empty classification in case no data is available
-    if (all(is.na(author.data.frame))) {
-        logging::logwarn("There is no data to use for the classification. Returning empty classification...")
-
-        empty.df = data.frame(character(0), numeric(0))
-        names(empty.df) = c("author.name", calc.base.name)
-        return(list("core" = empty.df,
-                    "peripheral" = empty.df))
-    }
-
     ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
 
