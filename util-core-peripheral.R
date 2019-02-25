@@ -1107,7 +1107,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
             sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
     )
     if (is.infinite(min(buffer.value))) {
-        author.class.threshold.idx = 0
+        author.class.threshold.idx = nrow(author.data)
     } else {
         author.class.threshold.idx = min(buffer.value)
     }
