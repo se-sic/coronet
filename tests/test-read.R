@@ -16,7 +16,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2018 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -251,8 +251,7 @@ test_that("Read and parse the issue data.", {
     issue.data.read = read.issues(proj.conf$get.value("datapath.issues"))
 
     ## build the expected data.frame
-    issue.data.expected = data.frame(issue.id = sprintf("<issue-%s>", c(rep("ZEPPELIN-328", 13), rep( "ZEPPELIN-332", 6)
-                                                                        , rep(3, 7),rep(6,10))),
+    issue.data.expected = data.frame(issue.id = sprintf("<issue-%s>", c(rep("ZEPPELIN-328", 13), rep( "ZEPPELIN-332", 6), rep(3, 7),rep(6,10))),
                                      issue.title = c(rep("[ZEPPELIN-328] Interpreter page should clarify the % magic syntax for interpreter group.name", 13),
                                                      rep("[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table", 6),
                                                      rep("Error in construct.networks.from.list for openssl function networks", 7),

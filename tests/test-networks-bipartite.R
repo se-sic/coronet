@@ -16,7 +16,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2018 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -266,7 +266,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>"),
+                  name = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>"),
                   kind = "Issue",
                   type = TYPE.ARTIFACT
               )
@@ -274,11 +274,11 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               ## 2) construct expected edge attributes (issues ordered by 'author.name')
               network.expected.data = data.frame(
-                  from = c("Björn","Björn","Björn","Björn","Björn","Björn","Björn","Björn","Björn","Karl","Max",
-                           "Max", "Max","Olaf","Olaf","Olaf","Olaf","Thomas","Thomas"),
-                  to   = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>",
-                           "<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-6>","<issue-3>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>",
-                           "<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-6>"),
+                  from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Karl", "Max",
+                           "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas"),
+                  to   = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                           "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                           "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-6>"),
                   date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
                                                 "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                                 "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2017-05-23 12:32:39",
@@ -287,9 +287,9 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2013-05-25 06:22:23", "2013-06-01 06:50:26", "2013-04-21 23:52:09",
                                                 "2016-07-12 16:03:59")),
                   artifact.type = "IssueEvent",
-                  issue.id = c("<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>",
-                               "<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-6>","<issue-3>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>","<issue-ZEPPELIN-332>",
-                               "<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-ZEPPELIN-328>","<issue-6>"),
+                  issue.id = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-6>"),
                   event.name = "commented",
                   weight = 1,
                   type = TYPE.EDGES.INTER,
@@ -333,7 +333,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf","Thomas", "Thomas"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas"),
                   to   = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                                 "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),

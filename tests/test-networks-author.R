@@ -17,7 +17,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2018 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -525,14 +525,14 @@ test_that("Network construction of the undirected author-issue network with just
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c( rep("Thomas", 2), # <issue-6>
-                                 rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-ZEPPELIN-328>
-                                 rep("Björn", 5) # <issue-ZEPPELIN-332>
-                                 ),
-                       to = c( rep("Björn", 2), # <issue-6>
-                               rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-ZEPPELIN-328>
-                               rep("Max", 5) # <issue-ZEPPELIN-332>
-                                 ),
+    edges = data.frame(from = c(rep("Thomas", 2), # <issue-6>
+                                rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-ZEPPELIN-328>
+                                rep("Björn", 5) # <issue-ZEPPELIN-332>
+                                ),
+                       to = c(rep("Björn", 2), # <issue-6>
+                              rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-ZEPPELIN-328>
+                              rep("Max", 5) # <issue-ZEPPELIN-332>
+                              ),
                        date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-6>
                                                       "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-ZEPPELIN-328>
                                                       "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",

@@ -16,6 +16,7 @@
 ## Copyright 2015 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2015-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## Adapted from https://github.com/siemens/codeface/blob/be382e9171fb91b4aa99b99b09b2ef64a6dba0d5/packages.r
