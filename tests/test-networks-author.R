@@ -17,6 +17,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -433,76 +434,71 @@ test_that("Network construction of the undirected author-issue network with all 
     ## build network
     network.built = network.builder$get.author.network()
 
+    ## vertex attributes
     vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
-    edges = data.frame(from = c("Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl",
-                                "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo",
-                                "udo", "udo", "udo", "udo", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas",
-                                "Thomas", "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas",
-                                "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn",
-                                "Björn", "Björn", "Björn"),
-                       to = c( "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas",
-                               "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo", "udo", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "udo", "udo", "udo", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
-                               "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max", "Max", "Max",
-                               "Max" ),
-                       date = get.date.from.string(c( "2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-06-01 22:37:03",
-                                                      "2013-05-25 20:02:08", "2013-05-25 20:02:08", "2013-04-21 23:52:09", "2013-05-05 23:28:57",
-                                                      "2013-05-05 23:28:57", "2013-06-01 22:37:03", "2016-07-19 10:47:25", "2013-05-25 20:02:08",
-                                                      "2013-05-25 20:02:08", "2016-07-19 10:47:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
-                                                      "2016-07-14 17:42:52", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
-                                                      "2016-07-27 22:25:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-27 22:25:25",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-14 02:03:14",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-27 22:25:25",
-                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 16:03:23",
-                                                      "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
-                                                      "2016-12-07 15:53:02", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-10-05 01:07:46",
-                                                      "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-07-12 15:59:25",
-                                                      "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56",
-                                                      "2016-12-06 14:03:42", "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:02",
-                                                      "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2017-02-20 22:25:41",
-                                                      "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21", "2017-05-23 12:32:39" )),
+    ## edge attributes
+    edges = data.frame(from = c(rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-3>
+                                rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Thomas", 7), rep("Thomas", 3), rep("Björn", 6), # <issue-6>
+                                rep("Thomas", 9), rep("Thomas", 6), rep("Björn", 11), # <issue-ZEPPELIN-328>
+                                rep("Björn", 6) # <issue-ZEPPELIN-332>
+                                ),
+                       to = c(rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-3>
+                              rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-6>
+                              rep("Björn", 9), rep("Olaf", 6), rep("Olaf", 11), # <issue-ZEPPELIN-328>
+                              rep("Max", 6) # <issue-ZEPPELIN-332>
+                                ),
+                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-3>
+                                                      "2016-08-31 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
+                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02",
+                                                      "2016-08-31 16:45:09", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
+                                                      "2016-07-12 16:06:30", "2016-10-05 16:45:09",
+                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-6>
+                                                      "2016-10-13 15:30:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
+                                                      "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
+                                                      "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2016-07-12 15:30:02",
+                                                      "2016-07-12 15:30:02", "2017-05-23 12:31:34", "2016-07-12 16:03:59",
+                                                      "2016-10-13 15:30:02", "2016-08-31 15:30:02", "2016-10-05 15:30:02",
+                                                      "2016-12-07 15:30:02", "2016-12-07 15:30:02", "2017-05-23 12:32:39",
+                                                      "2016-07-12 16:03:59", "2016-10-13 15:30:02", "2017-05-23 12:31:34",
+                                                      "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
+                                                      "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2017-05-23 12:31:34",
+                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-05 21:46:30", # <issue-ZEPPELIN-328>
+                                                      "2013-05-05 21:49:21", "2013-05-05 21:49:34", "2013-05-06 01:04:34",
+                                                      "2013-05-25 03:48:41", "2013-05-25 04:08:07", "2013-06-01 06:53:06",
+                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
+                                                      "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-06-01 06:53:06", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
+                                                      "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-ZEPPELIN-332>
+                                                      "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52"
+                                                      )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
-                                     "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>", "<issue-57>",
-                                     "<issue-57>", "<issue-57>" ),
-                       event.name = c( "created", "commented", "referenced", "head_ref_deleted", "merged", "closed", "created",
-                                       "commented", "referenced", "head_ref_deleted", "referenced", "merged", "closed",
-                                       "referenced", "mentioned", "subscribed", "commented", "commented", "mentioned",
-                                       "subscribed", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
-                                       "mentioned", "subscribed", "commented", "commented", "commented", "commented",
-                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "commented",
-                                       "commented", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
-                                       "commented", "mentioned", "subscribed", "created", "renamed", "commented", "commented",
-                                       "commented", "commented", "commented", "mentioned", "subscribed", "commented", "merged",
-                                       "closed", "commented", "created", "renamed", "commented", "commented", "commented",
-                                       "commented", "commented", "commented", "merged", "closed", "commented", "created",
-                                       "commented", "commented", "merged", "closed", "commented" ),
+                       issue.id = c( rep("<issue-3>", 14), rep("<issue-6>", 30), rep("<issue-ZEPPELIN-328>", 26),
+                                     rep("<issue-ZEPPELIN-332>", 6)),
+                       event.name = c("created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-3>
+                                      "commented", "add_link", "referenced", "referenced", "assigned", "state_updated", "referenced",
+                                      "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "mentioned", # <issue-6>
+                                      "subscribed", "mentioned", "subscribed", "commented", "mentioned", "subscribed", "labeled",
+                                      "commented", "add_link", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
+                                      "commented", "add_link", "labeled", "mentioned", "subscribed", "mentioned", "subscribed",
+                                      "commented", "labeled",
+                                      "created", "commented", "commented", "commented", "commented", "commented", "commented", # <issue-ZEPPELIN-328>
+                                      "commented", "resolution_updated", "created", "commented", "commented", "commented",
+                                      "commented", "commented", "commented", "commented", "commented", "commented", "commented",
+                                      "commented", "resolution_updated", "commented", "commented", "commented", "commented",
+                                      "created", "commented", "commented", "commented", "commented", "commented" # <issue-ZEPPELIN-332>
+                                      ),
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
                        relation = "issue"
             )
 
+    ## build expected network
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -523,29 +519,40 @@ test_that("Network construction of the undirected author-issue network with just
     ## build network
     network.built = network.builder$get.author.network()
 
+    ## vertex attributes
     vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
-    edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
-                                 "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn" ),
-                       to = c( "Björn", "Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                               "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Max", "Max", "Max" ),
-                       date = get.date.from.string(c( "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
-                                                      "2016-07-14 17:42:52", "2016-07-27 22:25:25", "2016-07-12 16:05:47",
-                                                      "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
-                                                      "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:21",
-                                                      "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:39" )),
+    ## edge attributes
+    edges = data.frame(from = c(rep("Thomas", 2), # <issue-6>
+                                rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-ZEPPELIN-328>
+                                rep("Björn", 5) # <issue-ZEPPELIN-332>
+                                ),
+                       to = c(rep("Björn", 2), # <issue-6>
+                              rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-ZEPPELIN-328>
+                              rep("Max", 5) # <issue-ZEPPELIN-332>
+                              ),
+                       date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-6>
+                                                      "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-ZEPPELIN-328>
+                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
+                                                      "2013-05-25 04:08:07", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
+                                                      "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
+                                                      "2013-06-01 06:50:26",
+                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2016-07-15 20:07:47", # <issue-ZEPPELIN-332>
+                                                      "2016-07-27 20:12:08", "2016-07-28 06:27:52"
+                                                      )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>" ),
+                       issue.id = c( rep("<issue-6>", 2), rep("<issue-ZEPPELIN-328>", 22), rep("<issue-ZEPPELIN-332>", 5) ),
                        event.name = "commented",
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
                        relation = "issue")
 
+    ## build expected network
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))

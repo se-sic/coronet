@@ -49,6 +49,9 @@ function level analyzes they are treated differently (d11d0fb585397fdb3a26414842
 filtered out (11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), default parameters are not validated anymore to avoid confusion by logging output (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
 - In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), `stop` is called on errors during parameter updates now (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
+- The method `read.issues` in `util-read.R` does now support the new issue data format (PR #147, 77c750c034c270f007c75abca0f0630573f195a2, e04ce3080b3cc3e305d8be5aa47ed5b144a9c9c0,
+67b818a955c5e75ac3735d2e09af1f564d82f736, 402048735d0c33214be194b7535593786104e32e). Therefore the test issue data and all related tests are updated (39971eea6d51793c88a35c4e604bc5e3a13bb123,
+0ec6c6c3243e79fce30f8c9c39dc3c4bee2dee7b, 6a9f4ad89f5b9d6d4b19c837006a429637b22c04, fda000fe6208760f18138e65feca3b6e8ff553b2)
 
 ### Fixed
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)

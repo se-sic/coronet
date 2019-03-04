@@ -17,6 +17,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -67,18 +68,18 @@ COMMITS.LIST.DATA.TYPES = c(
 
 ## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
 ISSUES.LIST.COLUMNS = c(
-    "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request", # issue information
-    "author.name", "author.email", # author information
-    "date", # the date
-    "ref.name", "event.name" # the event describing the row's entry
+    "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
+    "event.name", # event type
+    "author.name", "author.email", # auhtor information
+    "date", "event.info.1", "event.info.2" # event details
 )
 
 ## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
 ISSUES.LIST.DATA.TYPES = c(
-    "character", "character", "POSIXct", "POSIXct", "logical",
+    "character", "character", "character", "character" ,"character","POSIXct", "POSIXct", "character",
+    "character",
     "character", "character",
-    "POSIXct",
-    "character", "character"
+    "POSIXct", "character", "character"
 )
 
 ## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
@@ -445,7 +446,6 @@ read.pasta = function(data.path) {
     return(result.df)
 }
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Issue data --------------------------------------------------------------
 
@@ -480,8 +480,13 @@ read.issues = function(data.path) {
     ## set proper artifact type for proper vertex attribute 'artifact.type'
     issue.data["artifact.type"] = "IssueEvent"
 
-    ## convert 'is.pull.request' column to logicals
-    issue.data[["is.pull.request"]] = as.logical(issue.data[["is.pull.request"]])
+    issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
+    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
+    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
+
+    ## convert 'event.info.2' for created and comment events to vector
+    rows_with_list = which(issue.data[["event.name"]] == "created" | issue.data[["event.name"]] == "commented")
+    issue.data[rows_with_list, "event.info.2"] = I(list(unname(lapply(issue.data[rows_with_list, "event.info.2"], jsonlite::parse_json))))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
