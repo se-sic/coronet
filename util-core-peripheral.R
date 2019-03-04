@@ -1258,13 +1258,27 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Generic helper functions ------------------------------------------------
 
-## Classify the specified set of authors into core and peripheral based on the data
-## of the specified data frame column name (calc.base.name).
-## Core authors are those which are responsible for a given
-## percentage of the work load with a default threshold set at 80% according
-## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
-##         the structural complexity introduced by core and peripheral
-##         developers in free software projects.
+
+#' Classify authors into "core" and "peripheral".
+#'
+#' Core authors are those which are responsible for a given percentage of the work load with a default threshold set at
+#' 80% according to Ref:
+#' Terceiro A, Rios LR, Chavez C (2010) An empirical study on the structural complexity introduced by core and
+#' peripheral developers in free software projects.
+#'
+#' @param author.data.frame a dataframe containing at least two columns. The column called "author.name" should store
+#'                          the author's names, the other one, whose name must be specified in the parameter
+#'                          \code{calc.base.name}, should store the authors' centrality values.
+#' @param calc.base.name the name of the second column of the dataframe specified in the parameter
+#'                       \code{author.data.frame}
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each of
+#'         which containing the authors classified as core or peripheral, respectively. Both entries in this list
+#'         ("core" and "peripheral") are dataframes containing the author's names in the first column and their
+#'         centrality values in the second column.
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
 
@@ -1321,13 +1335,22 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     return(res)
 }
 
-## Get the threshold based on the specified integer data list
-## on which a author can be classified as core.
-get.threshold = function(data.list) {
+#' Retrieve the classification threshold of a list containing centrality values. The threshold is determined by taking
+#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD}.
+#'
+#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the sum
+#' and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
+#' threshold of (1 + 2 + 2) * 0.8 = 4. The smallest group of authors that together has a centrality sum of 4 or more
+#' could now be considered core.
+#'
+#' @param centrality.list a list containing centrality values
+#'
+#' @return the threshold used within classifications
+get.threshold = function(centrality.list) {
     logging::logdebug("get.threshold: starting.")
 
     ## Calculate the sum of the provided data as base for the threshold calculation
-    data.threshold.base = sum(data.list)
+    data.threshold.base = sum(centrality.list)
 
     ## Check which authors can be treated as core based on the data
     data.threshold = CORE.THRESHOLD * data.threshold.base
