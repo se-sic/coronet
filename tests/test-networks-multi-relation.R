@@ -124,7 +124,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
          type = TYPE.AUTHOR
      )
     issues = data.frame(
-         name = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-6>", "<issue-3>"),
+         name = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>", "<issue-github-3>"),
          kind = "Issue",
          type = TYPE.ARTIFACT
     )
@@ -141,11 +141,11 @@ test_that("Construction of the bipartite network for the feature artifact with a
                            "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas",
                            "Björn", "Björn", "Björn",  "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans", # mail
                            "Hans", "Hans", "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
-                  to   = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # issue
-                           "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                           "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                           "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                           "<issue-ZEPPELIN-328>", "<issue-6>",
+                  to   = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", # issue
+                           "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                           "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                           "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                           "<issue-jira-ZEPPELIN-328>", "<issue-github-6>",
                            "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>", # mail
                            "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
                            "<thread-9>", "<thread-3>"),
@@ -176,11 +176,11 @@ test_that("Construction of the bipartite network for the feature artifact with a
                              "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
                              "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
                              "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
-                  issue.id = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                               "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                               "<issue-ZEPPELIN-328>", "<issue-6>", rep(NA, 16)),
+                  issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                               "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                               "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                               "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                               "<issue-jira-ZEPPELIN-328>", "<issue-github-6>", rep(NA,16)),
                   event.name = c(rep("commented", 19),
                                  rep(NA, 16)),
                   weight = 1,
@@ -216,12 +216,12 @@ test_that("Construction of the multi network for the feature artifact with autho
      ## 1) construct expected vertices
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                 "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-6>"),
+                 "Base_Feature", "foo", "A", "<issue-jira-ZEPPELIN-328>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>"),
         kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 4)),
         type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 7))
     )
     row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                            "Base_Feature", "foo", "A", "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-6>")
+                            "Base_Feature", "foo", "A", "<issue-jira-ZEPPELIN-328>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>")
 
     ## 2) construct expected edge attributes (data sorted by 'author.name')
     edges = data.frame(from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", # author cochange
@@ -234,10 +234,10 @@ test_that("Construction of the multi network for the feature artifact with autho
                               "Olaf", "Olaf", "Thomas", "Thomas", # author mail
                               "foo", "foo", # artifact cochange
                               "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", # bipartite cochange
-                              "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # bipartite issue
-                              "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                              "<issue-6>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                              "<issue-3>", "<issue-ZEPPELIN-328>", "<issue-6>"),
+                              "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", # bipartite issue
+                              "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                              "<issue-github-6>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                              "<issue-github-3>", "<issue-jira-ZEPPELIN-328>", "<issue-github-6>"),
                        date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", # author cochange
                                                      "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
                                                      "2016-07-12 16:06:10", "2016-07-12 16:06:32",
@@ -289,10 +289,10 @@ test_that("Construction of the multi network for the feature artifact with autho
                                    "<thread-8>", "<thread-8>", "<thread-9>", "<thread-9>",
                                    rep(NA, 24)),
                         issue.id = c(rep(NA, 20),
-                                     "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", # bipartite issue
-                                     "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                                     "<issue-6>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                                     "<issue-ZEPPELIN-328>", "<issue-3>", "<issue-ZEPPELIN-328>", "<issue-6>"),
+                                     "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", # bipartite issue
+                                     "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                                     "<issue-github-6>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                                     "<issue-jira-ZEPPELIN-328>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>", "<issue-github-6>"),
                         event.name = c(rep(NA, 20), rep("commented", 16))
      )
 
