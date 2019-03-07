@@ -71,7 +71,9 @@ ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
     "event.name", # event type
     "author.name", "author.email", # auhtor information
-    "date", "event.info.1", "event.info.2", "event.id", # event details
+    "date", "event.info.1", "event.info.2","event.id", # event details
+    "issue.source", # source information
+
     "artifact.type" # artifact type
 )
 
@@ -81,6 +83,8 @@ ISSUES.LIST.DATA.TYPES = c(
     "character",
     "character", "character",
     "POSIXct", "character", "list()", "character",
+    "character",
+
     "character"
 )
 
@@ -501,37 +505,50 @@ read.pasta = function(data.path) {
 #' Read and parse the issue data from the 'issues.list' file.
 #'
 #' @param data.path the path to the issue data
+#' @param issues.sources the sources of the issue data
 #'
 #' @return the read and parsed issue data
-read.issues = function(data.path) {
+read.issues = function(data.path, issues.sources) {
     logging::logdebug("read.issues: starting.")
 
-    ## get file name of issue data
-    filepath = file.path(data.path, "issues.list")
+    ## create empty issue data
+    issue.data = create.empty.issues.list()
 
-    ## read issues from disk [can be empty]
-    issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
+    for (source in issues.sources) {
 
-    ## handle the case that the list of commits is empty
-    if (inherits(issue.data, "try-error")) {
-        logging::logwarn("There are no Github issue data available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(create.empty.issues.list())
+        ## get file name of source issue data
+        filepath = file.path(data.path, sprintf("issues-%s.list", source))
+
+        ## read source issues from disk [can be empty]
+        source.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
+                                    encoding = "UTF-8"), silent = TRUE)
+
+        ## handle the case that the list of issues is empty
+        if (inherits(source.data, "try-error")) {
+            logging::logwarn("There are no %s issue data available for the current environment.", source)
+            logging::logwarn("Datapath: %s", data.path)
+            return(create.empty.issues.list())
+        }
+
+        ## create (now empty) column 'event.id' to properly set column names
+        ## (this column is reset later)
+        source.data[["event.id"]] = NA
+
+        ## add source column to data
+        source.data["issue.source"] = source
+
+        ## set proper artifact type for proper vertex attribute 'artifact.type'
+        source.data["artifact.type"] = "IssueEvent"
+
+        ## merge source-data to issue-data
+        issue.data = rbind(issue.data, source.data)
     }
-
-    ## create (now empty) column 'event.id' to properly set column names
-    ## (this column is reset later)
-    issue.data["event.id"] = NA
-
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueEvent"
 
     ## set proper column names
     colnames(issue.data) = ISSUES.LIST.COLUMNS
 
     ## set pattern for issue ID for better recognition
-    issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
+    issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
 
     ## properly parse and store data in list-type columns
     issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
