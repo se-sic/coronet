@@ -73,7 +73,6 @@ ISSUES.LIST.COLUMNS = c(
     "author.name", "author.email", # auhtor information
     "date", "event.info.1", "event.info.2","event.id", # event details
     "issue.source", # source information
-
     "artifact.type" # artifact type
 )
 

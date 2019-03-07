@@ -19,6 +19,7 @@
 - Add cutting functionality to README descriptions (fb40c506d8dd838cc8853d426e83840ed93b10d4)
 - Add the parameter `restrict.classification.to.authors` to the functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. The parameter allows to perform classifications on a limited group of authors whose names are specified in this parameter. (2492dd0de5909c41031541ffb365eee40a342b65, #148)
 - Add test cases for `util-core-peripheral.R` by adding the new file `test-core-peripheral.R` along with test cases (2627d6c9aaa4b066cf3043f9cf167fb470bdec6c)
+- Add possibility to choose if only issues from JIRA, only issues from GitHub, or all issues shall be read in (PR #159, 82a2da2b1f2e839a578262a63cc5d721a6488253, 78874604e87615ad0b75fca25c2f2d80f11c96c3). Therefore two test cases, one that reads in only JIRA issues and one that reads in only GitHub issues, are added to the issue read test (0e9750b8378175cbe1601f045e8b34305865cbc6, 219cc3e8889e2b4b27df901703bf1914eaf46041)
 
 ### Changed/Improved
 - Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)
