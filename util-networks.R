@@ -1090,7 +1090,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' @param edge.list list of edges
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
-#' @param available.edge.attributes a named vector/list of attributes classes, with their corresponding names
+#' @param available.edge.attributes a named vector/list of attribute classes, with their corresponding names
 #'                                  as names on the list [default: list()]
 #'
 #' @return the built network
@@ -1227,7 +1227,7 @@ merge.networks = function(networks) {
 #' @param bipartite.relations the list of the vertex relations to add to the given network for
 #'                            all configured relations
 #' @param network.conf the network configuration
-#' @param available.edge.attributes a named vector/list of attributes classes, with their corresponding names
+#' @param available.edge.attributes a named vector/list of attribute classes, with their corresponding names
 #'                                  as names on the list [default: list()]
 #'
 #' @return the adjusted network
@@ -1306,7 +1306,7 @@ create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
 #' Create an empty data frame that does not break the algorithms and
 #' represents a vertex list.
 #'
-#' @return a single-column data.frame (column 'name')
+#' @return a single-column data.frame (column \code{name})
 create.empty.vertex.list = function() {
     return(data.frame(name = character(0)))
 }
@@ -1314,7 +1314,7 @@ create.empty.vertex.list = function() {
 #' Create an empty data frame that does not break the algorithms and
 #' represents an edge list.
 #'
-#' @return a two-column data.frame (columns 'from' and 'to')
+#' @return a two-column data.frame (columns \code{from} and \code{to})
 create.empty.edge.list = function() {
     return(data.frame(from = character(0), to = character(0)))
 }
@@ -1327,7 +1327,7 @@ create.empty.edge.list = function() {
 #' @param type the type of attribute to add; either \code{"vertex"} or \code{"edge"}
 #'             for vertex or edge attributes, respectively [default: "vertex"]
 #' @param attributes a named list/vector of data classes for the wanted attributes,
-#'                   with the attribute names as names on the list
+#'                   with the attribute names as names on the list [default: list()]
 #'
 #' @return the given network with the attributes added
 add.attributes.to.network = function(network, type = c("vertex", "edge"), attributes = list()) {
@@ -1490,7 +1490,7 @@ extract.artifact.network.from.network = function(network, remove.isolates = FALS
 #' Extract the bipartite-network part from the given (multi) network, i.e.,
 #' return the subgraph induced by the edges of type TYPE.EDGES.INTER.
 #'
-#' **Note**: This function throws an error when the edge attribute 'type' is missing.
+#' **Note**: This function throws an error when the edge attribute \code{type} is missing.
 #'
 #' @param network the (multi) network to reduce
 #'

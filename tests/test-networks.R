@@ -86,8 +86,7 @@ test_that("Merge networks", {
     ## Merge two empty networks (i.e., no vertices at all)
     ##
 
-    network.empty = igraph::graph.empty(0, directed = TRUE)
-        #create.empty.network(directed = FALSE)
+    network.empty = create.empty.network(directed = FALSE)
     expect_error(merge.networks(list(network.empty, network.empty)), NA) # expect that no error occurs
     expect_true(igraph::vcount(merge.networks(list(network.empty, network.empty))) == 0) # vertices
     expect_true(igraph::ecount(merge.networks(list(network.empty, network.empty))) == 0) # edges
@@ -120,7 +119,7 @@ test_that("Extraction of sub-networks", {
     author.net.built = extract.author.network.from.network(base.net, remove.isolates = FALSE)
 
     ## construct expected author network (by removing artifact vertices and adjacent edges)
-    author.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[type == TYPE.ARTIFACT])
+    author.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[7:12])
 
     expect_true(igraph::identical_graphs(author.net.built, author.net.expected), info = "author-network extraction")
 
@@ -128,10 +127,10 @@ test_that("Extraction of sub-networks", {
     ## extraction of bipartite networks
     ##
 
-    ## construct original author network
+    ## construct original bipartite network
     bip.net.built = extract.bipartite.network.from.network(base.net)
 
-    ## construct expected author network (by removing artifact vertices and adjacent edges)
+    ## construct expected bipartite network (by removing unipartite edges and isolate vertices)
     bip.net.expected = igraph::delete.edges(base.net, igraph::E(base.net)[1:9])
     bip.net.expected = igraph::delete.vertices(bip.net.expected, "A2")
 
@@ -141,11 +140,11 @@ test_that("Extraction of sub-networks", {
     ## extraction of artifact networks
     ##
 
-    ## construct original author network
+    ## construct original artifact network
     art.net.built = extract.artifact.network.from.network(base.net, remove.isolates = FALSE)
 
-    ## construct expected author network (by removing artifact vertices and adjacent edges)
-    art.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[type == TYPE.AUTHOR])
+    ## construct expected artifact network (by removing author vertices and adjacent edges)
+    art.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[1:6])
 
     expect_true(igraph::identical_graphs(art.net.built, art.net.expected), info = "artifact-network extraction")
 

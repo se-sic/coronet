@@ -736,10 +736,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' the given data source.
         #'
         #' @param data.source The specified data source. One of \code{"mails"},
-        #'                    \code{"commits"}, and \code{"issues"}.
+        #'                    \code{"commits"}, and \code{"issues"}. [default: "commits"]
         #'
         #' @return a named list of data classes, with the corresponding data columns as names
-        get.data.columns.for.data.source = function(data.source = c("mails", "commits", "issues")) {
+        get.data.columns.for.data.source = function(data.source = c("commits", "mails", "issues")) {
 
             ## check arguments
             data.source = match.arg(arg = data.source, several.ok = FALSE)
@@ -1037,7 +1037,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' data source and the method which is retrieving the data for each data source.
         #'
         #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"},
-        #'                    or \code{"issues"}
+        #'                    or \code{"issues"} [default: "commits"]
         #'
         #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
         #'         extracted from the specified data source
