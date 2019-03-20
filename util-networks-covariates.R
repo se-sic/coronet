@@ -406,7 +406,7 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
 #' @param default.value The default value to add if a vertex has no matching value. [default: NA].
-#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
 #'                                           [default: FALSE]
 #'
@@ -418,24 +418,36 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
                                                default.value = NA,
-                                               take.first.over.all.activity.types = FALSE) {
+                                               combine.all.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
     ## the given default.value is interpreted as default per author and type.
     type.default = default.value
 
-    compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types, type.default)
-        return(data)
-    }
-
     ## the default value appended to vertices where no data is available is structured
     ## and named analogously to the vertex attributes containing available data.
     vertex.default = default.value
-    if (!take.first.over.all.activity.types) {
+    if (!combine.all.activity.types) {
         vertex.default = rep(list(vertex.default), length(parsed.activity.types))
         names(vertex.default) = parsed.activity.types
+    }
+
+    compute.attr = function(range, range.data, net) {
+        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types, type.default)
+
+        ## find minima over all activity types if configured; for example:
+        ##     list(
+        ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
+        ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
+        ##     )
+        if (combine.all.activity.types) {
+            data = parallel::mclapply(data, function(item.list) {
+                min.value = min(do.call(c, item.list), na.rm = TRUE)
+                return(list(all.activities = min.value))
+            })
+        }
+        return(data)
     }
 
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, vertex.default,
@@ -472,6 +484,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
     compute.attr = function(range, range.data, net) {
         data = get.active.ranges.data(parsed.activity.types, net.to.range.list, type.default)
 
+        ## combine the active ranges of all attributes to one list if desired
         if(combine.activity.types) {
             data = lapply(data, function(person) {
                 flattened.person = (list("all.activity.types" = as.list(unique(unlist(person)))))
@@ -794,7 +807,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         result = parallel::mclapply(keys, function(key) {
             ## get value from intermediate list (pre-fill with right length if not existing)
             value.x = if (is.null(x[[key]])) rep(list(default.value), times = depth) else x[[key]]
-            ## get value from current list (use NA as default if not existing)
+            ## get value from current list (use default.value as default if not existing)
             value.y = if (is.null(y[[key]])) default.value else y[[key]]
 
             ## combine values and name them appropriately
@@ -810,18 +823,6 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         return(result)
 
     }, activity.by.type)
-
-    ## find minima over all activity types if configured; for example:
-    ##     list(
-    ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
-    ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
-    ##     )
-    if (take.first.over.all.activity.types) {
-        result = parallel::mclapply(result, function(item.list) {
-            min.value = min(do.call(c, item.list), na.rm = TRUE)
-            return(list(all.activities = min.value))
-        })
-    }
 
     return(result)
 }
@@ -856,7 +857,7 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
     ## Switch the list levels from "type - range - author" to "author - range - type".
     active.ranges = list.by.inner.level(range.to.authors.per.activity.type)
 
-    ## For every author: if there's no activity data for a type, an empty list named with the type is added instead.
+    ## For every author: if there's no activity data for a type, the default.value named with the type is added instead.
     active.ranges = lapply(active.ranges, function(ranges.per.type) {
         ranges.for.all.types = lapply(activity.types, function(type) {
             if (type %in% names(ranges.per.type)) {
