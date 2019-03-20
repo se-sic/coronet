@@ -454,7 +454,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 #' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
 #'                       \code{issues}. [default: c("mails", "commits", "issues")]
 #' @param default.value The default value to add if a vertex has no matching value [default: list()]
-#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#' @param combine.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
 #'                                           [default: FALSE]
 #'
@@ -462,7 +462,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges",
                                               activity.types = c("mails", "commits", "issues"),
                                               default.value = list(),
-                                              take.first.over.all.activity.types = FALSE) {
+                                              combine.activity.types = FALSE) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
@@ -471,13 +471,24 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
 
     compute.attr = function(range, range.data, net) {
         data = get.active.ranges.data(parsed.activity.types, net.to.range.list, type.default)
+
+        if(combine.activity.types) {
+            data = lapply(data, function(person) {
+                flattened.person = (list("all.activity.types" = as.list(unique(unlist(person)))))
+                return(list(flattened.person))
+             })
+        }
+
         return(data)
     }
 
     ## the default value appended to vertices where no data is available is structured
     ## and named analogously to the vertex attributes containing available data.
     vertex.default = default.value
-    if (!take.first.over.all.activity.types) {
+    if (combine.activity.types) {
+        vertex.default = list(default.value)
+        names(vertex.default) = c("all.activity.types")
+    } else {
         vertex.default = rep(list(default.value), length(parsed.activity.types))
         names(vertex.default) = parsed.activity.types
     }
