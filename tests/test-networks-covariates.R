@@ -676,22 +676,26 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
     })
 })
 
-#' Test the add.vertex.attribute.active.ranges method
-test_that("Test add.vertex.attribute.active.ranges", {
+#' Test the add.vertex.attribute.active.ranges method with computation over all types
+test_that("Test add.vertex.attribute.active.ranges with computation over all types", {
 
     ## Test setup
-
     networks.and.data = get.network.covariates.test.networks()
 
     ## Test
-
     networks.with.attr = add.vertex.attribute.active.ranges(
-        networks.and.data[["networks"]], networks.and.data[["project.data"]]
+        networks.and.data[["networks"]], networks.and.data[["project.data"]],
+        combine.activity.types = TRUE
     )
-
     actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
 
-    expected.attributes = get.expected.active.ranges()
+    expected.attributes = lapply(get.expected.active.ranges(), function(network) {
+        network = lapply(network, function(person) {
+            unlisted.person = list("all.activity.types" = as.list(unique(unlist(person))))
+            return(unlisted.person)
+        })
+        return(network)
+    })
     expect_identical(expected.attributes, actual.attributes)
 })
 
