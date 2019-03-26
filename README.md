@@ -188,12 +188,12 @@ When constructing networks by using a `NetworkBuilder` object, we basically cons
 
 #### Data sources for network construction
 
-For the construction to work, you need to pass an instance of each the classes `ProjectData` and `NetworkConf`  as parameters when calling the `NetworkBuilder` constructor. The `ProjectData` object holds the data that is used as basis for the constructed networks, while the `NetworkConf` object configures the construction process in detail (see below and also Section [`NetworkConf`](#networkconf) for more information).
+For the construction to work, you need to pass an instance of each the classes `ProjectData` and `NetworkConf` as parameters when calling the `NetworkBuilder` constructor. The `ProjectData` object holds the data that is used as basis for the constructed networks, while the `NetworkConf` object configures the construction process in detail (see below and also Section [`NetworkConf`](#networkconf) for more information).
 
 **Beware:** **The `ProjectData` instance** passed to the constructor of the class `NetworkBuilder` **is getting cloned** inside the `NetworkBuilder` instance! The main reason is the [latent ability to cut data to unified date ranges](#cutting-data-to-unified-date-ranges) (the parameter`unify.date.ranges` [in the class `NetworkConf`](#networkconf)) which would compromise the original given data object; consequently, data cutting is only performed on the cloned data object. Further implications are:
 - When calling `NetworkBuilder$reset.environment()`, the cloned `ProjectData` object gets replaced by a new clone based on the originally given `ProjectData` instance.
-- When you want to adapt the data used for network construction *after constructing a `NetworkBuilder`*, you need to adapt it via `NetworkBuilder$get.project.data()`. This also includes that, if data is read and is cached  inside a `ProjectData` object *during network construction*, the cached data is only available through the `NetworkBuilder` instance!
-- When you adapt the original `ProjectData` object in any way, you need create a new `NetworkBuilder` instance!
+- When you want to adapt the data used for network construction *after constructing a `NetworkBuilder`*, you need to adapt it via `NetworkBuilder$get.project.data()`. This also includes that, if data is read and is cached inside a `ProjectData` object *during network construction*, the cached data is only available through the `NetworkBuilder` instance!
+- When you adapt the original `ProjectData` object in any way, you need to create a new `NetworkBuilder` instance!
 
 #### Types of networks
 
@@ -328,13 +328,13 @@ time. Further details can be found in the Section [*Splitting information*](#spl
 
 Since we extract the data for each data source independently, the time ranges for available data can be quite different. For example, there may be a huge amount of time between the first extracted commit and the first extracted e-mail (and also analogously for the last commit resp. e-mail). This circumstance can affect various analyses using this network library.
 
-To compensate for this, the class `ProjectData` supplies a method `ProjectData$get.data.cut.to.same.date()`, which returns a clone of the underlying `ProjectData` instance for which the data sources are cut their common latest first entry date and their common earliest last entry date.
+To compensate for this, the class `ProjectData` supplies a method `ProjectData$get.data.cut.to.same.date()`, which returns a clone of the underlying `ProjectData` instance for which the data sources are cut to their common latest first entry date and their common earliest last entry date.
 
 Analogously, the `NetworkConf` parameter `unify.data.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
 
 #### Handling data independently
 
-In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to  get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
+In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
 
 ### How-to
 
@@ -441,7 +441,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * The description of the project from the Codeface configuration file
 - `mailinglists`
     * A list of the mailing lists of the project containing their name, type and source
-    * **Note:** In this configuration parameter, a list of mailing-list information (names etc.) is stored. The enumerating IDs of this list are part of the thread IDs of the data source `mails` (e.g., an entry `13#5` for the column `thread` corresponds to thread ID `5` on mailing list `13`).
+    * **Note:** In this configuration parameter, a list of mailing-list information (names etc.) is stored. The enumerating IDs of this list are part of the thread IDs of the data source `mails` (e.g., an entry `13#5` in the column `thread` corresponds to thread ID `5` on mailing list `13`).
 
 #### Artifact-related information
 

@@ -96,7 +96,7 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
 
 #' Calculate the average clustering coefficient for the given network.
 #'
-#' *Note*: The local clustering degree is \code{NaN} for all vertices with a degree < 2.
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
 #' Such vertices are removed from all average calculations for any averaging \code{cc.type}.
 #'
 #' @param network the network to be examined
@@ -227,15 +227,15 @@ metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
 }
 
 #' Calculate the hierarchy values for a network, i.e., the vertex degrees and the local
-#' clustering coeeficient.
+#' clustering coefficient.
 #'
-#' *Note*: The local clustering degree is \code{NaN} for all vertices with a degree < 2.
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
 #'
 #' @param network the network to be examined
 #'
 #' @return A data.frame containing the following columns:
 #'         - \code{"deg"}: the vertex degrees for all vertices in the given network,
-#'         - \code{"cc"}: the local clustering degree for all vertices in the given network, and
+#'         - \code{"cc"}: the local clustering coefficient for all vertices in the given network, and
 #'         - \code{"log.deg"} and \code{"log.cc"}: the logarithmic values for the columns
 #'                \code{"deg"} and \code{"cc"}, respectively (see function \code{log})
 metrics.hierarchy = function(network) {
