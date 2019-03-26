@@ -13,8 +13,10 @@
 ##
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -161,16 +163,6 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
                                                 "2010-07-12 10:05:36")),
                   artifact.type = c(rep("IssueEvent", 19), rep("Mail", 16)),
-                  issue.id = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                               "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
-                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
-                               "<issue-ZEPPELIN-328>", "<issue-6>", rep(NA,16)),
-                  event.name = c(rep("commented", 19),
-                                 rep(NA, 16)),
-                  weight = 1,
-                  type = TYPE.EDGES.INTER,
-                  relation = c(rep("issue", 19), rep("mail", 16)),
                   message.id = c(rep(NA, 19),
                                  "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<1107974989.17910.6.camel@jmcmullan>",
                                  "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
@@ -183,7 +175,17 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   thread = c(rep(NA, 19),
                              "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
                              "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
-                             "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>")
+                             "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+                  issue.id = c("<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                               "<issue-6>", "<issue-3>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>", "<issue-ZEPPELIN-332>",
+                               "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>", "<issue-ZEPPELIN-328>",
+                               "<issue-ZEPPELIN-328>", "<issue-6>", rep(NA, 16)),
+                  event.name = c(rep("commented", 19),
+                                 rep(NA, 16)),
+                  weight = 1,
+                  type = TYPE.EDGES.INTER,
+                  relation = c(rep("issue", 19), rep("mail", 16))
     )
 
     ## 3) build expected network

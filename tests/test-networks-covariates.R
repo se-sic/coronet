@@ -13,7 +13,7 @@
 ##
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -54,6 +54,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
@@ -387,12 +388,12 @@ test_that("Test add.vertex.attribute.commit.count.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L,  1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 2L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L, 2L)),
+        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L, 2L))
     )
 
     ## Test
@@ -415,12 +416,12 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L))
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
+        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L))
     )
 
     ## Test
@@ -443,12 +444,12 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
-        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 2L, 3L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  3L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  3L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L)),
+        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L))
     )
 
     ## Test
@@ -687,15 +688,15 @@ test_that("Test add.vertex.attribute.author.role.simple", {
     expected.attributes = list(
         range = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("peripheral", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("peripheral", "core", "core")
             )
         ),
         cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
                 c("core"), c("peripheral"), c("core", "core", "peripheral")
@@ -703,7 +704,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
         ),
         all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
                 c("core"), c("core"), c("core", "core", "peripheral")
@@ -711,7 +712,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
         ),
         project.cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
                 c("core"), c("peripheral"), c("core", "core", "peripheral")
@@ -719,7 +720,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
         ),
         project.all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
                 c("core"), c("core"), c("core", "core", "peripheral")
@@ -727,7 +728,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
         ),
         complete = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
                 c("core"), c("core"), c("core", "core", "peripheral")
@@ -746,7 +747,8 @@ test_that("Test add.vertex.attribute.author.role.simple", {
 
             actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "author.role")
 
-            expect_identical(expected.attributes[[level]][[type]], actual.attributes)
+            expect_identical(expected.attributes[[level]][[type]], actual.attributes,
+                             info = sprintf("level = %s, type = %s", level, type))
         })
     })
 })

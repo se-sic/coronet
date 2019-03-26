@@ -21,11 +21,15 @@ The network library `codeface-extraction-r` can be used to construct analyzable 
     * [Configuration](#configuration)
     * [Data sources](#data-sources)
     * [Network construction](#network-construction)
+        * [Data sources for network construction](#data-sources-for-network-construction)
         * [Types of networks](#types-of-networks)
         * [Relations](#relations)
         * [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
         * [Vertex and edge attributes](#vertex-and-edge-attributes)
     * [Further functionalities](#further-functionalities)
+        * [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
+        * [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
+        * [Handling data independently](#handling-data-independently)
     * [How-to](#how-to)
     * [File/Module overview](#filemodule-overview)
 - [Configuration classes](#configuration-classes)
@@ -59,7 +63,7 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder - which can result from consecutive runs of  `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] -  needs to have the following structure (roughly):
+The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
@@ -182,6 +186,15 @@ All data sources are accessible from the `ProjectData` and `RangeData` objects t
 
 When constructing networks by using a `NetworkBuilder` object, we basically construct `igraph` objects. You can find more information on how to handle these objects on the [`igraph` project website](http://igraph.org/r/).
 
+#### Data sources for network construction
+
+For the construction to work, you need to pass an instance of each the classes `ProjectData` and `NetworkConf` as parameters when calling the `NetworkBuilder` constructor. The `ProjectData` object holds the data that is used as basis for the constructed networks, while the `NetworkConf` object configures the construction process in detail (see below and also Section [`NetworkConf`](#networkconf) for more information).
+
+**Beware:** **The `ProjectData` instance** passed to the constructor of the class `NetworkBuilder` **is getting cloned** inside the `NetworkBuilder` instance! The main reason is the [latent ability to cut data to unified date ranges](#cutting-data-to-unified-date-ranges) (the parameter`unify.date.ranges` [in the class `NetworkConf`](#networkconf)) which would compromise the original given data object; consequently, data cutting is only performed on the cloned data object. Further implications are:
+- When calling `NetworkBuilder$reset.environment()`, the cloned `ProjectData` object gets replaced by a new clone based on the originally given `ProjectData` instance.
+- When you want to adapt the data used for network construction *after constructing a `NetworkBuilder`*, you need to adapt it via `NetworkBuilder$get.project.data()`. This also includes that, if data is read and is cached inside a `ProjectData` object *during network construction*, the cached data is only available through the `NetworkBuilder` instance!
+- When you adapt the original `ProjectData` object in any way, you need to create a new `NetworkBuilder` instance!
+
 #### Types of networks
 
 There are four types of networks that can be built using this library: author networks, artifact networks, bipartite networks, and multi networks (which are a combination of author, artifact, and bipartite networks). In the following, we give some more details on the various types. All types and their incorporated relations can be configured using a [`NetworkConf`](#networkconf)  object supplied to an `NetworkBuilder` object. The respective relations and their meaning are explained [in the next section](#relations) in more detail.
@@ -274,7 +287,7 @@ Analogously, these edge-construction algorithms apply also for all other relatio
 
 #### Vertex and edge attributes
 
-There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional.
+There are some mandatory attributes that are added to vertices and edges in the process of network construction. These are not optional and will be added in all cases when using instances of the class `NetworkBuilder` to obtain networks.
 
 - Mandatory *vertex* attributes
     * `type`
@@ -296,6 +309,8 @@ There are some mandatory attributes that are added to vertices and edges in the 
     * `artifact.type`
         - The specific artifact type associated with the event causing the respective edge
         - [`"File"`, `"Feature"`, `"Function"`, `"Mail"`, `"IssueEvent"`,`"FeatureExpression"`]
+    * `weight`
+        - The weight of the respective edge
     * `date`
         - The date of the event causing the respective edge
 
@@ -303,11 +318,23 @@ To add further edge attributes, please see the parameter `edge.attributes` in th
 
 ### Further functionalities
 
+#### Splitting data and networks based on defined time windows
+
 Often, it is interesting to build the networks not only for the whole project history
 but also to split the data into smaller ranges. One's benefit is to observe changes in the network over
 time. Further details can be found in the Section [*Splitting information*](#splitting-information).
 
-In some cases, it is not necessary to build a network to get the information you need. Therefore, we offer the possibility to  get the raw data or mappings between, e.g., authors and the files they edited. Examples can be found in the file `showcase.R`.
+#### Cutting data to unified date ranges
+
+Since we extract the data for each data source independently, the time ranges for available data can be quite different. For example, there may be a huge amount of time between the first extracted commit and the first extracted e-mail (and also analogously for the last commit resp. e-mail). This circumstance can affect various analyses using this network library.
+
+To compensate for this, the class `ProjectData` supplies a method `ProjectData$get.data.cut.to.same.date()`, which returns a clone of the underlying `ProjectData` instance for which the data sources are cut to their common latest first entry date and their common earliest last entry date.
+
+Analogously, the `NetworkConf` parameter `unify.data.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
+
+#### Handling data independently
+
+In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
 
 ### How-to
 
@@ -413,7 +440,8 @@ There is no way to update the entries, except for the revision-based parameters.
 - `description`
     * The description of the project from the Codeface configuration file
 - `mailinglists`
-    * A list of the mailinglists of the project containing their name, type and source
+    * A list of the mailing lists of the project containing their name, type and source
+    * **Note:** In this configuration parameter, a list of mailing-list information (names etc.) is stored. The enumerating IDs of this list are part of the thread IDs of the data source `mails` (e.g., an entry `13#5` in the column `thread` corresponds to thread ID `5` on mailing list `13`).
 
 #### Artifact-related information
 
@@ -567,8 +595,8 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * **Example**: The amount of `mail`-based directed edges in an author network for one mail thread with 100 authors is 5049.
     A value of 5000 for `skip.threshold` (as it is smaller than 5049) would lead to the omission of this mail thread from the network.
 - `unify.date.ranges`
-    * Cut the data sources to the largest start date and the smallest end date across all data sources
-    * **Note**: This parameter does not affect the original data object, but rather creates a clone.
+    * Cut the data sources to the latest start date and the earliest end date across all data sources
+    * **Note**: This parameter does not affect the original data object, but rather creates a clone inside a `NetworkBuilder` instance. See also Section [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges) for more information on this.
     * [`TRUE`, *`FALSE`*]
 
 The class `NetworkBuilder` holds an instance of the `NetworkConf` class, just pass the object as parameter to the constructor.

@@ -11,9 +11,9 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2015 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -94,7 +94,10 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
     return(c(avg.pathlength = avg.pathlength))
 }
 
-#' Calculate the average local clustering coefficient for the given network.
+#' Calculate the average clustering coefficient for the given network.
+#'
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
+#' Such vertices are removed from all average calculations for any averaging \code{cc.type}.
 #'
 #' @param network the network to be examined
 #' @param cc.type the type of cluserting coefficient to be calculated
@@ -223,20 +226,27 @@ metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
     return(df[["KS.p"]] >= 0.05)
 }
 
-#' Calculate the hierarchy for a network.
+#' Calculate the hierarchy values for a network, i.e., the vertex degrees and the local
+#' clustering coefficient.
+#'
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
 #'
 #' @param network the network to be examined
 #'
-#' @return A dataframe containing the logarithm of the node degree and the logarithm
-#' of the local clustering coefficient for each node as well as the non-logarithmic values
-#' for these.
+#' @return A data.frame containing the following columns:
+#'         - \code{"deg"}: the vertex degrees for all vertices in the given network,
+#'         - \code{"cc"}: the local clustering coefficient for all vertices in the given network, and
+#'         - \code{"log.deg"} and \code{"log.cc"}: the logarithmic values for the columns
+#'                \code{"deg"} and \code{"cc"}, respectively (see function \code{log})
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode = "total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
-    degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(deg = degrees.without.cluster.coeff, cc = cluster.coeff,
-                      log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
+    return(data.frame(
+        deg = degrees,
+        cc = cluster.coeff,
+        log.deg = log(degrees),
+        log.cc = log(cluster.coeff)
+    ))
 }
 
 

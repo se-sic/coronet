@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -512,3 +512,47 @@ test_that("Construction of the directed bipartite network for the featureexpress
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
 })
+
+
+test_that("Network construction with only untracked files (no edges and artifacts expected)", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects and keep just commits on untracked files
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    commit.data = subset(proj.data$get.commits(), artifact == UNTRACKED.FILE.EMPTY.ARTIFACT)
+    proj.data$set.commits(commit.data)
+
+    ## build network
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.bipartite.network()
+
+    ## build expected network (two vertices, no edges):
+    ## 1) construct vertices
+    vertices = data.frame(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    ## 2) add edge first to obtain edge attributes
+    edges = network.expected.data = data.frame(
+                          from = c("Karl"),
+                          to   = c("Thomas"),
+                          date = get.date.from.unix.timestamp(0),
+                          artifact.type = "",
+                          weight = 0,
+                          type = TYPE.EDGES.INTRA,
+                          relation = "cochange"
+                      )
+    ## 3) construct network
+    network.expected = construct.network.from.edge.list(vertices = vertices, edge.list = edges, network.conf = net.conf,
+                                                        directed = net.conf$get.value("author.directed"))
+    ## 4) remove edge again
+    network.expected = igraph::delete.edges(network.expected, 1)
+
+    ## test
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+

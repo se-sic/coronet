@@ -141,8 +141,8 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
 #' \code{logical}, the second parameter \code{data.types} should specify the datatypes.
 #'
 #' @param columns a character vector containing all the column names
-#' @param data.types a character vector of the same length as \code{columns}, the datatypes can be \code{integer},
-#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor} or \code{logical}
+#' @param data.types a character vector of the same length as \code{columns}; the datatypes can be \code{integer},
+#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor}, \code{logical}, and \code{list()}
 #'
 #' @return the newly created empty dataframe
 create.empty.data.frame = function(columns, data.types = NULL) {
@@ -182,6 +182,9 @@ create.empty.data.frame = function(columns, data.types = NULL) {
                },
                "factor" = {
                    column = as.factor(column)
+               },
+               "list()" = {
+                   column = I(as.list(column))
                },
                {
                    stop(paste("Unknown datatype specified:", data.types[[i]]))
@@ -385,6 +388,8 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     }
     ## 4) add end date to sequence
     dates = c(dates, end.date)
+    ## 5) explicitly re-add time-zone attribute 'tzone' (as 'c.POSIXct' loses it)
+    dates = lubridate::with_tz(dates, tzone = TIMEZONE)
 
     return(dates)
 }
@@ -589,8 +594,11 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
             bin.end = end.date
         }
 
-        ## return the tuple of bin start and bin end
-        return(c(bin.start, bin.end))
+        ## construct current bin as the tuple of bin start and bin end
+        current.bin = c(bin.start, bin.end)
+        ## explicitly set time-zone attribute 'tzone' again (as 'c.POSIXct' loses it)
+        current.bin = lubridate::with_tz(current.bin, tzone = TIMEZONE)
+        return(current.bin)
     })
 
     # if wanted, check for imperfect range in the end:

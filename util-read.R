@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
@@ -71,30 +71,45 @@ ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
     "event.name", # event type
     "author.name", "author.email", # auhtor information
-    "date", "event.info.1", "event.info.2" # event details
+    "date", "event.info.1", "event.info.2", "event.id", # event details
+    "artifact.type" # artifact type
 )
 
 ## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
 ISSUES.LIST.DATA.TYPES = c(
-    "character", "character", "character", "character" ,"character","POSIXct", "POSIXct", "character",
+    "character", "character", "list()", "character", "list()", "POSIXct", "POSIXct", "list()",
     "character",
     "character", "character",
-    "POSIXct", "character", "character"
+    "POSIXct", "character", "list()", "character",
+    "character"
 )
 
 ## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
 MAILS.LIST.COLUMNS = c(
     "author.name", "author.email", # author information
     "message.id", "date", "date.offset", "subject", # meta information
-    "thread" # thread ID
+    "thread", # thread ID
+    "artifact.type" # artifact type
 )
 
 ## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
 MAILS.LIST.DATA.TYPES = c(
     "character", "character",
     "character", "POSIXct", "numeric", "character",
-    "numeric"
+    "character",
+    "character"
 )
+
+## column names of a dataframe containing PaStA data (see function \code{read.pasta})
+PASTA.LIST.COLUMNS = c(
+    "message.id", "commit.hash", "revision.set.id"
+)
+
+## declare the datatype for each column in the constant 'PASTA.LIST.COLUMNS'
+PASTA.LIST.DATA.TYPES = c(
+    "character", "character", "character"
+)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Empty dataframe creation-------------------------------------------------
@@ -129,6 +144,15 @@ create.empty.issues.list = function() {
 #' @return the empty dataframe
 create.empty.mails.list = function() {
     return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing PaStA data.
+#' The dataframe has the column names and column datatypes defined in \code{PASTA.LIST.COLUMNS}
+#' and \code{PASTA.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.pasta.list = function() {
+    return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
 }
 
 
@@ -181,6 +205,10 @@ read.commits = function(data.path, artifact) {
     ## 5) reorder the columns of the data.frame as their order might be changed during aggregating and merging
     commit.data = commit.data[, COMMITS.LIST.COLUMNS]
 
+    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
+    ## To better indicate this, the 'file' column value is changed to 'untracked.file'.
+    commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
+
     ## rewrite data.frame when we want file-based data
     ## (we have proximity-based data as foundation)
     if (artifact == "file") {
@@ -195,7 +223,9 @@ read.commits = function(data.path, artifact) {
 
         ## copy columns to match proper layout for further analyses
         commit.data["artifact"] = commit.data[["file"]]
-        commit.data["artifact.type"] = "File"
+        commit.data["artifact.type"] = ifelse(commit.data[["file"]] == UNTRACKED.FILE,
+                                              UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                              "File")
         commit.data["artifact.diff.size"] = commit.data[["diffsum"]]
         commit.data["diffsum"] = NULL # remove
     }
@@ -214,14 +244,14 @@ read.commits = function(data.path, artifact) {
         commit.data["artifact"] = artifacts.new
     }
 
-    ## Commits to files that are not tracked by Codeface have the empty string in the file and artifact column.
-    ## To better indicate this, the 'artifact' and 'file' column value is changed to 'untracked.file'.
-    commit.data["file"] = ifelse(commit.data[["file"]] == "", UNTRACKED.FILE, commit.data[["file"]])
-
-    ## copy the file column if file level analysis is performed
-    if (artifact == "file") {
-        commit.data["artifact"] = commit.data[["file"]]
-    }
+    ## Commits to files that are not tracked by Codeface have the empty string in the file, artifact, and
+    ## artifact-type column. To better indicate this, the correpsonding column values are adapted.
+    commit.data["artifact"] = ifelse(commit.data[["artifact"]] == "",
+                                     UNTRACKED.FILE.EMPTY.ARTIFACT,
+                                     commit.data[["artifact"]])
+    commit.data["artifact.type"] = ifelse(commit.data[["artifact.type"]] == "",
+                                          UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                          commit.data[["artifact.type"]])
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
@@ -307,14 +337,13 @@ read.mails = function(data.path) {
         return(create.empty.mails.list())
     }
 
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    mail.data["artifact.type"] = "Mail"
 
     colnames(mail.data) = MAILS.LIST.COLUMNS
 
     ## set pattern for thread ID for better recognition
     mail.data[["thread"]] = sprintf("<thread-%s>", mail.data[["thread"]])
-
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    mail.data["artifact.type"] = "Mail"
 
     ## remove mails without a proper date as they mess up directed mail-based networks
     ## this basically only applies for project-level analysis
@@ -406,7 +435,7 @@ read.pasta = function(data.path) {
     if (inherits(lines, "try-error")) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.pasta.list())
     }
 
     result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {
@@ -471,22 +500,24 @@ read.issues = function(data.path) {
         return(create.empty.issues.list())
     }
 
+    ## create (now empty) column 'event.id' to properly set column names
+    ## (this column is reset later)
+    issue.data["event.id"] = NA
+
+    ## set proper artifact type for proper vertex attribute 'artifact.type'
+    issue.data["artifact.type"] = "IssueEvent"
+
     ## set proper column names
     colnames(issue.data) = ISSUES.LIST.COLUMNS
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
 
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueEvent"
-
+    ## properly parse and store data in list-type columns
     issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
     issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
     issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-
-    ## convert 'event.info.2' for created and comment events to vector
-    rows_with_list = which(issue.data[["event.name"]] == "created" | issue.data[["event.name"]] == "commented")
-    issue.data[rows_with_list, "event.info.2"] = I(list(unname(lapply(issue.data[rows_with_list, "event.info.2"], jsonlite::parse_json))))
+    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])

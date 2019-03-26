@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -23,6 +23,7 @@ source("util-init.R")
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Logging -----------------------------------------------------------------
 
+library("methods") # to prevent weird error during logger initialization (see #153)
 library("logging")
 logging::basicConfig(level = "DEBUG")
 assign("last.warning", NULL, envir = baseenv())
@@ -30,14 +31,21 @@ options(mc.cores = 1L)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Libraries ---------------------------------------------------------------
+## Debug information -------------------------------------------------------
 
-requireNamespace("testthat")
+logging::loginfo("Session information:")
+sessionInfo()
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Run tests in subfolder 'tests' ------------------------------------------
 
+logging::loginfo("Running test suite.")
+
+## load package 'testthat'
+requireNamespace("testthat")
+
+## starting tests
 do.tests = function(dir) {
     res = testthat::test_dir(dir, reporter = "check")
     if (length(res[["failures"]]) > 0) {
