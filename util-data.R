@@ -478,16 +478,22 @@ ProjectData = R6::R6Class("ProjectData",
         get.synchronicity = function() {
             logging::loginfo("Getting synchronicity data.")
 
-            ##  if data are not read already, read them
-            if (is.null(private$synchronicity)) {
-                synchronicity.data = read.synchronicity(
-                    self$get.data.path.synchronicity(),
-                    private$project.conf$get.value("artifact"),
-                    private$project.conf$get.value("synchronicity.time.window")
-                )
+            ## if synchronicity data are to be read, do this
+            if (private$project.conf$get.value("synchronicity")) {
+                ##  if data are not read already, read them
+                if (is.null(private$synchronicity)) {
+                    synchronicity.data = read.synchronicity(
+                        self$get.data.path.synchronicity(),
+                        private$project.conf$get.value("artifact"),
+                        private$project.conf$get.value("synchronicity.time.window")
+                    )
 
-                ## set actual data
-                self$set.synchronicity(synchronicity.data)
+                    ## set actual data
+                    self$set.synchronicity(synchronicity.data)
+                }
+            } else {
+                ## mark synchronicity data as empty
+                self$set.synchronicity(NULL)
             }
 
             return(private$synchronicity)
@@ -519,17 +525,24 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the PaStA data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the PaStA data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$pasta)) {
-                pasta.data = read.pasta(self$get.data.path.pasta())
+            ## if PaStA data are to be read, do this
+            if (private$project.conf$get.value("pasta")) {
+                ## if data are not read already, read them
+                if (is.null(private$pasta)) {
+                    pasta.data = read.pasta(self$get.data.path.pasta())
 
-                ## set actual data
-                self$set.pasta(pasta.data)
+                    ## set actual data
+                    self$set.pasta(pasta.data)
+                }
+            } else {
+                ## mark PaStA data as empty
+                self$set.pasta(NULL)
             }
 
             return(private$pasta)
@@ -542,6 +555,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new PaStA data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
+
+            if (is.null(data)) {
+                data = create.empty.pasta.list()
+            }
 
             ## set the actual data
             private$pasta = data
