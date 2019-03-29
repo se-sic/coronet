@@ -437,6 +437,10 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("synchronicity")) {
                 logging::loginfo("Adding synchronicity data.")
                 synchronicity.data = self$get.synchronicity()
+                ## remove previous synchronicity data
+                if ("synchronicity" %in% colnames(commit.data)) {
+                    commit.data["synchronicity"] = NULL
+                }
                 commit.data = merge(commit.data, synchronicity.data,
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
@@ -468,29 +472,49 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the synchronicity data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
             logging::loginfo("Getting synchronicity data.")
 
-            ## if commits are not read already, do this
+            ##  if data are not read already, read them
             if (is.null(private$synchronicity)) {
-                private$synchronicity = read.synchronicity(
+                synchronicity.data = read.synchronicity(
                     self$get.data.path.synchronicity(),
                     private$project.conf$get.value("artifact"),
                     private$project.conf$get.value("synchronicity.time.window")
                 )
+
+                ## set actual data
+                self$set.synchronicity(synchronicity.data)
             }
 
             return(private$synchronicity)
         },
 
-        #' Set the synchronicity data to the given data.
+        #' Set the synchronicity data to the given new data and,
+        #' if configured in the field \code{project.conf},
+        #' also update it for the commit data.
         #'
         #' @param data the new synchronicity data
         set.synchronicity = function(data) {
             logging::loginfo("Setting synchronicity data.")
+
+            if (is.null(data)) {
+                data = create.empty.synchronicity.list()
+            }
+
+            ## set the actual data
             private$synchronicity = data
+
+            ## add synchronicity data to the commit data if configured
+            if (private$project.conf$get.value("synchronicity")) {
+                logging::loginfo("Updating synchronicity data.")
+                if (!is.null(private$commits)) {
+                    self$set.commits(private$commits)
+                }
+            }
         },
 
         #' Get the PaStA data.

@@ -521,7 +521,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
 - `synchronicity`
-    * Read and add synchronicity data to commits and co-change-based networks
+    * Read and add synchronicity data to commits (column `synchronicity`)
     * [`TRUE`, *`FALSE`*]
     * **Note**: To include synchronicity-data-based edge attributes, you need to give the `"synchronicity"` edge attribute for `edge.attributes`.
 - `synchronicity.time.window`:
@@ -529,7 +529,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * [1, *5*, 10, 15]
     * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
 - `pasta`
-    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data
+    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
     * [`TRUE`, *`FALSE`*]
     * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 
