@@ -65,6 +65,14 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     split.data = names(data)
     names(split.data) = split.data
 
+    ## initialize additional data sources to avoid multiple redundant initalizations later
+    additional.data = list(
+        authors = project.data$get.authors(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+    additional.data.sources = names(additional.data)
+
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
 
@@ -135,19 +143,16 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## get data for current range
         df.list = data.split[[range]]
 
-        ## set data
-        ## 1) commits
-        cf.range.data$set.commits(df.list[["commits"]])
-        ## 2) mails
-        cf.range.data$set.mails(df.list[["mails"]])
-        ## 3) issues
-        cf.range.data$set.issues(df.list[["issues"]])
-        ## 4) synchronicity data
-        cf.range.data$set.synchronicity(project.data$get.synchronicity())
-        ## 5) ID--author mapping
-        cf.range.data$set.authors(project.data$get.authors())
-        ## 6) PaStA data
-        cf.range.data$set.pasta(project.data$get.pasta())
+        ## set main data sources: commits, mails, issues
+        for (data.source in split.data) {
+            setter.name = sprintf("set.%s", data.source)
+            cf.range.data[[setter.name]](df.list[[data.source]])
+        }
+        ## set additional data sources: authors, pasta, synchronicity
+        for (data.source in additional.data.sources) {
+            setter.name = sprintf("set.%s", data.source)
+            cf.range.data[[setter.name]](additional.data[[data.source]])
+        }
 
         return(cf.range.data)
     })
