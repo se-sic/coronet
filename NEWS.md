@@ -10,7 +10,7 @@
 - Add parameter `edges.for.base.artifacts` to `NetworkConf` : In author networks, edges do not get constructed anymore between authors for solely modifying untracked files. For authors involved in changing the base artifact, it can be configured whether edges should be created or not using the new `NetworkConf` parameter `edges.for.base.artifacts` (c60c2f6e44b6f34cccb2714eccc7674158c83dde, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
 - Add method `ProjectData$get.authors.by.data.source` to retrieve authors by given data-source name (#149, 65804276dd2ada9b2f00b2cab7b6ad0cecbe733e, 137d8337bc35f5a83aa16a48ef8e47fc0d36b36c)
 - Add helper function `create.empty.data.frame`: The function returns empty data.frames (0 rows) with correct columns and, if specified, all the correct data types. In the future, functions, that return data in data.frames, should always return data.frames of the same shape (regarding columns and data types) – especially when they are empty – because this makes later case distinctions easier or unnecessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb, 351364751b3fc286c66b99fe1fa3f52150f67311)
-- For the most common types of data.frames (data.frames of commits, mails, issues, and authors) four more utility methods are added, namely `create.empty.authors.list`, `create.empty.commits.list`, `create.empty.issues.list`, `create.empty.mails.list` as well as corresponding constants holding columns and associated data types for all these empty data.frames (5f0f52936b4433f64fd9b1c9b2571eb26f66395f, 523daef8cf4642a2360396b11f0d74bce565b0f0, f8e021db955d65ff76b1c359706a188c9fef8c62, 351364751b3fc286c66b99fe1fa3f52150f67311)
+- For the most common types of data.frames (data.frames of commits, mails, issues, and authors) four more utility methods are added, namely `create.empty.authors.list`, `create.empty.commits.list`, `create.empty.issues.list`, `create.empty.mails.list`, `create.empty.synchronicity.list`, `create.empty.pasta.list` as well as corresponding constants holding columns and associated data types for all these empty data.frames (5f0f52936b4433f64fd9b1c9b2571eb26f66395f, 523daef8cf4642a2360396b11f0d74bce565b0f0, f8e021db955d65ff76b1c359706a188c9fef8c62, 351364751b3fc286c66b99fe1fa3f52150f67311, 2f4e6f0657d26dbf84f093ff77b8d43993a69ddc, cd3e34a369435392f9be082df05f9fc504b56239)
 - Add mandatory attributes in `create.empty.network` *if wanted* (cae9d4bd6913d9b78b0bc819915011191f87fedf, cc8bd86befe5b9fc56c53816b609be434bfa2953)
 - Add function `create.empty.vertex.list` (c00101dd8c78dc03d61bce1b5f88805b9fbb3a5f)
 - Add tests for construction of networks without data (a4b3524676a0df88ec544db99c951b4461437099)
@@ -40,6 +40,8 @@
 - Rename misleading parameter names for functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. Most importantly, the parameter `range.data` was renamed to `proj.data` for these functions. (587ef99c1eb93751180bba6037c7f2fe6e24aca5, 81568b12ffdc7637bd0d5a05d0f56a96a88ee6ac, #70)
 - Remove the unused functions `get.commit.count.threshold` and `get.loc.count.threshold`. (2534d73283b6e7f9703b22f605298eaa2c158d93, #70)
 - The function `verify.argument.for.parameter` was adjusted to be suitable in more general use-cases (557bdcd65940d7a098354b19a5c24cec018e3533)
+- Do not redundantly initialize data sources when splitting (35698a1b41c25b9ad7c598977d0afd0add16044f)
+- Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
 
 ### Fixed
 - Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)
@@ -53,6 +55,7 @@
 - Fix missing time-zone attribute `tzone` on `POSIXct` items (5f6cc6922b95bf5cbdd9b2cbf16be4bf4937d0db)
 - Fix author classification which was incorrect in certain situations and adjust test cases to this change (9294a37d98f9ff3d14756d56300b0d171f3f3b4c, c7288c3690b68f367a9f451bec7c584897971a31)
 - Fix wrong behaviour of 'get.author.class' when using 'result.limit' (9437b4f07da599fde017596af2290b24601f9f8d)
+
 
 ## 3.4
 
