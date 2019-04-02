@@ -18,11 +18,8 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
-<<<<<<< HEAD
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-=======
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
->>>>>>> Add parameter 'restrict.classification.to.authors' and clean up code
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
