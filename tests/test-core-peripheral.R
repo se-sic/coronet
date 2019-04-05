@@ -38,15 +38,15 @@ net.builder = NetworkBuilder$new(proj.data, net.conf)
 
 network = net.builder$get.author.network()
 
-test_that("Node-degree classification using 'restrict.classification.to.authors'", {
+test_that("Vertex-degree classification using 'restrict.classification.to.authors'", {
 
     ## Act
     result = get.author.class.network.degree(network,
                                              restrict.classification.to.authors = c("Olaf", "Björn", "Darth Sidious"))
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf", "Björn"), node.degree = c(4,2))
-    expected.peripheral = data.frame(author.name = c("Darth Sidious"), node.degree = c(NA))
+    expected.core = data.frame(author.name = c("Olaf", "Björn"), vertex.degree = c(4, 2))
+    expected.peripheral = data.frame(author.name = c("Darth Sidious"), vertex.degree = c(NA))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL
@@ -72,22 +72,6 @@ test_that("Eigenvector classification", {
 })
 
 # TODO: Add a test for hierarchy classification
-
-test_that("Node-degree classification using 'restrict.classification.to.authors'", {
-
-    ## Act
-    result = get.author.class.network.degree(network,
-                                             restrict.classification.to.authors = c("Olaf", "Björn", "Darth Sidious"))
-
-    ## Assert
-    expected.core = data.frame(author.name = c("Olaf", "Björn"), node.degree = c(4,2))
-    expected.peripheral = data.frame(author.name = c("Darth Sidious"), node.degree = c(NA))
-    expected = list(core = expected.core, peripheral = expected.peripheral)
-
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
-    expect_equal(expected, result)
-})
 
 test_that("Commit-count classification using 'result.limit'" , {
 
@@ -120,7 +104,7 @@ test_that("LOC-count classification" , {
 test_that("get.author.class", {
 
     ## Arrange
-    prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC", "DDD", "EEE"), centrality = c(1,1,1,1,1))
+    prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC", "DDD", "EEE"), centrality = c(1, 1, 1, 1, 1))
 
     ## Act
     result = get.author.class(prepared.authors, "centrality")
@@ -128,9 +112,6 @@ test_that("get.author.class", {
     ## Assert
     expected = list(core = prepared.authors[1:4, ], peripheral = prepared.authors[5, ])
     expect_equal(result, expected)
-})
-
-test_that("get.author.class", {
 
     ## Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0.5, 0.29, 0.21))
@@ -141,12 +122,9 @@ test_that("get.author.class", {
     ## Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors[0, ])
     expect_equal(result, expected)
-})
-
-test_that("get.author.class", {
 
     ## Arrange
-    prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0,0,0))
+    prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0, 0, 0))
 
     ## Act
     result = get.author.class(prepared.authors, "centrality")

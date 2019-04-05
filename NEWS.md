@@ -54,7 +54,7 @@
 - Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
 - Fix missing time-zone attribute `tzone` on `POSIXct` items (5f6cc6922b95bf5cbdd9b2cbf16be4bf4937d0db)
 - Fix author classification which was incorrect in certain situations and adjust test cases to this change (9294a37d98f9ff3d14756d56300b0d171f3f3b4c, c7288c3690b68f367a9f451bec7c584897971a31)
-- Fix wrong behaviour of 'get.author.class' when using 'result.limit' (9437b4f07da599fde017596af2290b24601f9f8d)
+- Fix wrong behaviour of `get.author.class` when using `result.limit` (9437b4f07da599fde017596af2290b24601f9f8d)
 
 
 ## 3.4
