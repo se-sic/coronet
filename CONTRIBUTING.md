@@ -188,7 +188,8 @@ There will be another checklist for you when you open an actual pull request pro
         * For parameters that take a default value, the default value should be placed directly after the description of the parameter using the following format: `[default: value]`.
         **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
     * We use **networks**, not "graphs".
-    * We talk about **authors**, not developers.
+    * We use **vertices**, not "nodes".
+    * We talk about **authors**, not "developers".
 * Also **add tests** to the test suite for each new functionality you add!
 * Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 

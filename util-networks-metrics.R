@@ -47,7 +47,7 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
 #' @param network the network to be examined
 #' @param mode the mode to be used for determining the degrees
 #'
-#' @return The average degree of the nodes in the network.
+#' @return The average degree of the vertices in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
@@ -55,15 +55,15 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     return(c(avg.degree = avg))
 }
 
-#' Calculate all node degrees for the given network
+#' Calculate all vertex degrees for the given network
 #'
 #' @param network the network to be examined
-#' @param sort whether the resulting dataframe is to be sorted by the node degree
+#' @param sort whether the resulting dataframe is to be sorted by the vertex degree
 #' @param sort.decreasing if sorting is active, this says whether the dataframe is to be
 #'            sorted in descending or ascending order
 #'
-#' @return A dataframe containing the nodes and their respective degrees.
-metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
+#' @return A dataframe containing the vertices and their respective degrees.
+metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
     if (sort) {
         degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
     } else {
@@ -86,7 +86,7 @@ metrics.density = function(network) {
 #'
 #' @param network the network to be examined
 #' @param directed whether to consider directed paths in directed networks
-#' @param unconnected whether all nodes of the network are connected
+#' @param unconnected whether all vertices of the network are connected
 #'
 #' @return The average pathlength of the given network.
 metrics.avg.pathlength = function(network, directed, unconnected) {
@@ -131,7 +131,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' [1] http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0002051
 #'
 #' The algorithm relies on the Erdös-Renyi random network with the same number
-#' of nodes and edges as the given network.
+#' of vertices and edges as the given network.
 #'
 #' To check the result value \code{s.delta} for a binary (true/false) decision on smallworldness,
 #' do this: \code{is.smallworld = s.delta > 1}.
@@ -142,7 +142,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #'
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
-    # construct Erdös-Renyi network with same number of nodes and edges as g
+    # construct Erdös-Renyi network with same number of vertices and edges as g
     h = igraph::erdos.renyi.game(n = igraph::vcount(network),
                                  p.or.m = igraph::ecount(network),
                                  type = "gnm",
