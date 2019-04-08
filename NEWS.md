@@ -42,6 +42,7 @@
 - The function `verify.argument.for.parameter` was adjusted to be suitable in more general use-cases (557bdcd65940d7a098354b19a5c24cec018e3533)
 - Do not redundantly initialize data sources when splitting (35698a1b41c25b9ad7c598977d0afd0add16044f)
 - Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
+- Add and enforce coding convention to use 'vertices' and not 'nodes'. Most importantly, the function `metrics.node.degrees` is renamed to `metrics.vertex.degrees`. (d35ce616db76adae06b34b4b241a35bfbe77e10d)
 
 ### Fixed
 - Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)
