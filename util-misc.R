@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -74,19 +74,22 @@ verify.argument.for.parameter = function(argument, allowed.classes, reference) {
     ## get variable name of 'argument'
     argument.variable = as.character(match.call())[2]
 
-    ## check argument if it is missing
+    ## check if the argument is missing
     if (missing(argument)) {
-        logging::logerror(paste("The parameter '%s' is missing in %s constructor ('%s' wanted)."),
-                          argument.variable, reference, allowed.classes)
-        stop(sprintf("Parameter '%s' missing in %s constructor.", argument.variable, reference))
+        error.message = sprintf("The parameter '%s' must not be missing when calling the function '%s'.",
+                                argument.variable, reference)
+        logging::logerror(error.message)
+        stop(error.message)
     }
 
-    ## check argument if it is not allowed
+    ## check if the argument inherits from the correct classes
     if (!inherits(argument, allowed.classes)) {
-        logging::logerror(paste("The given parameter '%s' inherits from the wrong class in %s constructor",
-                                "(actual class is '%s', '%s' wanted)."),
-                          argument.variable, reference, class(argument), allowed.classes)
-        stop(sprintf("Parameter '%s' inherits from wrong class in %s constructor.", argument.variable, reference))
+        error.message = sprintf(paste("The specified parameter '%s' of class [%s] inherits from the wrong class.",
+                                "When calling '%s' the parameter must inherit from one of the following classes: %s"),
+                                argument.variable, paste(class(argument), collapse = ", "), reference,
+                                paste(allowed.classes, collapse = ", "))
+        logging::logerror(error.message)
+        stop(error.message)
     }
 
     return(argument)

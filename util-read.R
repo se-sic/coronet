@@ -110,6 +110,15 @@ PASTA.LIST.DATA.TYPES = c(
     "character", "character", "character"
 )
 
+## column names of a dataframe containing synchronicity data (see function \code{read.synchronicity})
+SYNCHRONICITY.LIST.COLUMNS = c(
+    "hash", "synchronicity"
+)
+
+## declare the datatype for each column in the constant 'SYNCHRONICITY.LIST.COLUMNS'
+SYNCHRONICITY.LIST.DATA.TYPES = c(
+    "character", "logical"
+)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Empty dataframe creation-------------------------------------------------
@@ -155,6 +164,14 @@ create.empty.pasta.list = function() {
     return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
 }
 
+#' Create an empty dataframe which has the same shape as a dataframe containing synchronicity data.
+#' The dataframe has the column names and column datatypes defined in \code{SYNCHRONICITY.LIST.COLUMNS}
+#' and \code{SYNCHRONICITY.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.synchronicity.list = function() {
+    return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit data -------------------------------------------------------------
@@ -295,16 +312,19 @@ read.synchronicity = function(data.path, artifact, time.window) {
     if (!file.exists(file)) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
-        return(data.frame())
+        return(create.empty.synchronicity.list())
     }
 
     ## load commit.ids object
     load(file = file)
-    synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronous = TRUE)
-    nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronous = FALSE)
+    synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronicity = TRUE)
+    nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronicity = FALSE)
 
     ## construct data.frame
     synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
+
+    ## ensure proper column names
+    colnames(synchronicity) = SYNCHRONICITY.LIST.COLUMNS
 
     ## store the synchronicity data
     logging::logdebug("read.synchronicity: finished.")

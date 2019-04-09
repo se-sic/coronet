@@ -14,9 +14,9 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
-## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -518,9 +518,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         initialize = function(project.data, network.conf) {
 
             ## check arguments
-            private$proj.data.original = verify.argument.for.parameter(project.data, "ProjectData", class(self)[1])
+            private$proj.data.original = verify.argument.for.parameter(project.data, "ProjectData", "NetworkBuilder$new")
             private$proj.data = project.data$clone()
-            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", class(self)[1])
+            private$network.conf = verify.argument.for.parameter(network.conf, "NetworkConf", "NetworkBuilder$new")
 
             ## cut data if needed
             if (private$network.conf$get.value("unify.date.ranges")) {
@@ -938,8 +938,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         respect.temporal.order = directed
     }
 
-    ## initialize an edge list to fill and the set of nodes
-    nodes.processed = c()
+    ## initialize an edge list to fill and the set of vertices
+    vertices.processed = c()
     edge.list = data.frame()
 
     keys = names(list)
@@ -963,32 +963,32 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
             ## queue of already processed artifacts
             edge.list.set = data.frame()
-            nodes.processed.set = c()
+            vertices.processed.set = c()
 
             ## connect the current item to all previous ones
             for (item.no in seq_len(nrow(set))) {
                 item = set[item.no, ]
 
                 ## get vertex data
-                item.node = item[["data.vertices"]]
+                item.vertex = item[["data.vertices"]]
 
                 ## get edge attributes
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
                 item.edge.attrs = item[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
-                combinations = expand.grid(item.node, nodes.processed.set, stringsAsFactors = default.stringsAsFactors())
+                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = default.stringsAsFactors())
                 if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
                 }
                 edge.list.set = rbind(edge.list.set, combinations) # add to edge list
 
                 ## mark current item as processed
-                nodes.processed.set = c(nodes.processed.set, item.node)
+                vertices.processed.set = c(vertices.processed.set, item.vertex)
             }
 
-            ## store set of processed nodes
-            attr(edge.list.set, "nodes.processed") = nodes.processed.set
+            ## store set of processed vertices
+            attr(edge.list.set, "vertices.processed") = vertices.processed.set
 
             logging::logdebug("Constructing edges for %s '%s': finished.", attr(set, "group.type"), attr(set, "group.name"))
 
@@ -996,7 +996,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         })
 
         edge.list = plyr::rbind.fill(edge.list.data)
-        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        vertices.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "vertices.processed")) )
 
     } else {
 
@@ -1015,22 +1015,22 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             }
 
             ## get vertex data
-            nodes = unique(set[["data.vertices"]])
+            vertices = unique(set[["data.vertices"]])
 
             ## break if there is no author
-            if (length(nodes) < 1) {
+            if (length(vertices) < 1) {
                 return(NULL)
             }
 
-            ## if there is only one author, just create the node, but no edges
-            if (length(nodes) == 1) {
+            ## if there is only one author, just create the vertex, but no edges
+            if (length(vertices) == 1) {
                 edges = data.frame()
-                attr(edges, "nodes.processed") = nodes # store set of processed nodes
+                attr(edges, "vertices.processed") = vertices # store set of processed vertices
                 return(edges)
             }
 
             ## get combinations
-            combinations = combn(nodes, 2) # all unique pairs of authors
+            combinations = combn(vertices, 2) # all unique pairs of authors
 
             ## construct edge list
             edges = apply(combinations, 2, function(comb) {
@@ -1058,14 +1058,14 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
             })
             edges = plyr::rbind.fill(edges)
 
-            ## store set of processed nodes
-            attr(edges, "nodes.processed") = nodes
+            ## store set of processed vertices
+            attr(edges, "vertices.processed") = vertices
 
             return(edges)
         })
 
         edge.list = plyr::rbind.fill(edge.list.data)
-        nodes.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "nodes.processed")) )
+        vertices.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "vertices.processed")) )
 
     }
 
@@ -1073,7 +1073,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
     return(list(
         vertices = data.frame(
-            name = unique(nodes.processed)
+            name = unique(vertices.processed)
         ),
         edges = edge.list
     ))
@@ -1100,23 +1100,23 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     logging::loginfo("Construct network from edges.")
 
     ## get unique list of vertices to produce
-    nodes.processed = unique(vertices)
+    vertices.processed = unique(vertices)
 
-    ## if we do not have nodes, return rightaway
-    if (is.null(nodes.processed) || length(nodes.processed) == 0) {
-        nodes.processed = create.empty.vertex.list()
+    ## if we do not have vertices, return rightaway
+    if (is.null(vertices.processed) || length(vertices.processed) == 0) {
+        vertices.processed = create.empty.vertex.list()
     }
 
-    ## if we have nodes to create, but no edges, create an empty edge list
+    ## if we have vertices to create, but no edges, create an empty edge list
     if (is.null(edge.list) || ncol(edge.list) < 2) {
         edge.list = create.empty.edge.list()
     }
 
-    ## construct network from edge list if there are nodes
-    net = igraph::graph.data.frame(edge.list, directed = directed, vertices = nodes.processed)
+    ## construct network from edge list if there are vertices
+    net = igraph::graph.data.frame(edge.list, directed = directed, vertices = vertices.processed)
 
-    ## add missing vertex attributes if nodes.processed was empty (igraph::graph.data.frame does add them then)
-    if (nrow(nodes.processed) == 0) {
+    ## add missing vertex attributes if vertices.processed was empty (igraph::graph.data.frame does add them then)
+    if (nrow(vertices.processed) == 0) {
         ## vertex attributes
         needed.vertex.attributes.types = list(name = "character")
         net = add.attributes.to.network(net, "vertex", needed.vertex.attributes.types)
@@ -1366,7 +1366,7 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
 #' This function retains all set network, vertex, and edge attributes.
 #'
 #' @param network the given network
-#' @param remove.multiple whether to contract multiple edges between the same pair of nodes [default: TRUE]
+#' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
 #'
 #' @return the simplified network
@@ -1417,7 +1417,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
 #' Simplify a list of networks.
 #'
 #' @param networks the list of networks
-#' @param remove.multiple whether to contract multiple edges between the same pair of nodes [default: TRUE]
+#' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
 #'
 #' @return the simplified networks

@@ -149,7 +149,7 @@ test_that("Read the synchronicity data.", {
     ## build the expected data.frame
     synchronicity.data.expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                                             synchronous = c(TRUE, TRUE, FALSE, FALSE))
+                                             synchronicity = c(TRUE, TRUE, FALSE, FALSE))
 
     ## check the results
     expect_identical(synchronicity.data.read, synchronicity.data.expected, info = "Synchronicity data.")

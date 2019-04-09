@@ -699,7 +699,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("peripheral"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             )
         ),
         all.ranges = list(
@@ -707,7 +707,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             )
         ),
         project.cumulative = list(
@@ -715,7 +715,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("peripheral"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             )
         ),
         project.all.ranges = list(
@@ -723,7 +723,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             )
         ),
         complete = list(
@@ -731,7 +731,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("peripheral"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "core", "core")
             )
         )
     )
@@ -748,7 +748,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
             actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "author.role")
 
             expect_identical(expected.attributes[[level]][[type]], actual.attributes,
-                             info = sprintf("level = %s, type = %s", level, type))
+                             info = sprintf("level = '%s', type = '%s'", level, type))
         })
     })
 })

@@ -19,6 +19,7 @@
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -53,92 +54,266 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Author-class wrappers and overviews -------------------------------------
 
-## Classify the authors of the specified version range into core and peripheral
-## based on the classification metric indicated by "type".
-##
-## For count-based network metrics, the raw data has to be given. For network-based metrics,
-## the network has to be given.
-get.author.class.by.type = function(network = NULL, data = NULL,
+#' Classify authors into the classes "core" and "peripheral".
+#'
+#' The classification algorithm works by considering a numerical value for each author that denotes their centrality and
+#' can be imagined to work in the following way:
+#'   1. Order the authors by their centrality value and put them into a stack in which the most central authors reside
+#'      on the top
+#'   2. Initialize an empty set of "core" authors
+#'   3. Pop the author residing at the very top of the stack and add them to the set of "core" authors
+#'   4. Check if the combined centrality of the set of "core" authors is greater than or equal to \code{CORE.THRESHOLD}
+#'      times the total centrality value (sum over the centrality values of all authors)
+#'      - If so, terminate. Consider everyone in the set of "core" authors as "core" and everyone else as "peripheral".
+#'      - If not, go to step 3
+#'
+#' @param network the network containing the authors to classify (parameter is required if the parameter \code{type}
+#'                specifies a network-based classification metric) [default: NULL]
+#' @param proj.data the \code{ProjectData} containing the authors to classify (parameter is required if the parameter
+#'                  \code{type} specifies a count-based classification metric) [default: NULL]
+#' @param type a character string declaring the classification metric. The classification metric determines which
+#'             numerical characteristic of authors is chosen as their centrality value.
+#'             The parameter currently supports the following five options:
+#'             Network-based options/metrics (parameter \code{network} has to be specified):
+#'              - "network.degree"
+#'              - "network.eigen"
+#'              - "network.hierarchy"
+#'             Commit-based options/metrics (parameter \code{proj.data} has to be specified):
+#'              - "commit.count"
+#'              - "loc.count"
+#'             [default: "network.degree"]
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+get.author.class.by.type = function(network = NULL,
+                                    proj.data = NULL,
                                     type = c("network.degree", "network.eigen", "network.hierarchy",
-                                             "commit.count", "loc.count")) {
+                                             "commit.count", "loc.count"),
+                                    result.limit = NULL,
+                                    restrict.classification.to.authors = NULL) {
+
     logging::logdebug("get.author.class.by.type: starting.")
 
     type = match.arg(type)
 
-    if (is.null(network) && is.null(data)) {
-        logging::logerror("Neither network nor raw data were given.")
-        stop("Either network or raw data needs to be given.")
+    ## Get a reasonable metric name for each classification type
+    metric.name = switch(type,
+                         "network.degree" = "vertex.degree",
+                         "network.eigen" = "eigen.centrality",
+                         "network.hierarchy" = "hierarchy",
+                         "commit.count" = "commit.count",
+                         "loc.count" = "loc.count")
+
+    if (startsWith(type, "network")) {
+        if (is.null(network)) {
+            logging::logerror("For network-based classifications the parameter 'network' must not be null.")
+            stop("For network-based classifications the parameter 'network' must not be null.")
+        }
+
+        ## Ensure that the parameter 'network' is of type 'igraph'
+        verify.argument.for.parameter(network, "igraph", "get.author.class.by.type")
+
+        if (igraph::vcount(network) == 0) {
+            logging::logwarn("The specified network is empty. Returning an empty classification.")
+            return(list("core" = create.empty.data.frame(c("author.name", metric.name), c("character", "numeric")),
+                        "peripheral" = create.empty.data.frame(c("author.name", metric.name), c("character", "numeric"))))
+        }
+    } else {
+        if (is.null(proj.data)) {
+            logging::logerror("For commit-based classifications the parameter 'proj.data' must not be null.")
+            stop("For commit-based classifications the parameter 'proj.data' must not be null.")
+        }
+
+        ## Ensure that the parameter 'proj.data' is of type 'ProjectData'
+        verify.argument.for.parameter(proj.data, "ProjectData", "get.author.class.by.type")
     }
 
-    result = switch(type,
-                    "network.degree" = get.author.class.network.degree(network = network),
-                    "network.eigen" = get.author.class.network.eigen(network = network),
-                    "network.hierarchy" = get.author.class.network.hierarchy(network = network),
-                    "commit.count" = get.author.class.commit.count(range.data = data),
-                    "loc.count" = get.author.class.loc.count(range.data = data))
+
+    ## The centrality dataframe has two columns:
+    ## 1. a column of author names
+    ## 2. a column for the centrality type (which is given by the parameter 'type'),
+    ##    e.g. the vertex degree when type == network.degree or the commit count when type == commit.count
+    centrality.dataframe = NULL
+
+    if (type == "network.degree") {
+        ## Get vertex degrees for all authors
+        vertex.degree.vec = igraph::degree(network)
+
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(vertex.degree.vec),
+                                          centrality = as.vector(vertex.degree.vec))
+    } else if (type == "network.eigen") {
+        ## Get eigenvectors for all authors
+        ## The method ignores the directed parameter if the given network is undirected
+        eigen.centrality.vec = tryCatch(
+            igraph::eigen_centrality(network, directed = TRUE),
+            error = function(e) {
+                logging::logwarn(e)
+                logging::logwarn("As of the error above, adjust ARPACK options 'maxiter' and 'tol'...")
+                adjusted.options = list(maxiter = 5000, tol = 0.1)
+                adjusted.computation = igraph::eigen_centrality(network, directed = TRUE,
+                                                                options = adjusted.options)
+                logging::loginfo("eigen_centrality with adjusted ARPACK options finished successfully.")
+                return(adjusted.computation)
+            }
+        )
+
+        eigen.centrality.vec = eigen.centrality.vec[["vector"]]
+
+        ## In case no collaboration occured, all centrality values are set to 0
+        if (igraph::ecount(network) == 0) {
+            eigen.centrality.vec[] = 0
+        }
+
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(eigen.centrality.vec),
+                                          centrality = as.vector(eigen.centrality.vec))
+    } else if (type == "network.hierarchy") {
+        hierarchy.base.df = metrics.hierarchy(network)
+        hierarchy.calculated = hierarchy.base.df[["deg"]] / hierarchy.base.df[["cc"]]
+
+        ## fix all authors whose clustering coefficient is '0', since their hierarchy value
+        ## is 'Inf'. We do not get any complications here because there are no authors with
+        ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
+        ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
+        hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
+
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = row.names(hierarchy.base.df), centrality = hierarchy.calculated)
+    } else if (type == "commit.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.commit.count(proj.data)
+    } else {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.loc.count(proj.data)
+    }
+
+    # rename the second column of the centrality dataframe to the correct name with respect to the classification type
+    names(centrality.dataframe)[2] = metric.name
+
+    ## If the parameter 'restrict.classification.to.authors' is 'NULL', no restriction is made.
+    ## Therefore, the restriction is defined as to include all authors (i.e., there is no restriction in the next step)
+    if (is.null(restrict.classification.to.authors)) {
+        restrict.classification.to.authors = centrality.dataframe[["author.name"]]
+    }
+
+    ## Restrict authors as given by the parameter 'restrict.classification.to.authors' before classification
+    centrality.dataframe = centrality.dataframe[centrality.dataframe[["author.name"]] %in% restrict.classification.to.authors, ]
+
+    ## Retrieve classification results
+    classification = get.author.class(centrality.dataframe, metric.name, result.limit = result.limit)
+
+    ## Authors who are specified in the parameter 'restrict.classification.to.authors' but were not considered in the
+    ## classification will be appended with a value of 'NA' to the classification as peripheral authors:
+    ## 1) Prepare a list of author names who are specified in the parameter 'restrict.classification.to.authors' but are
+    ##    not part of the classification
+    remaining.authors = setdiff(restrict.classification.to.authors, centrality.dataframe[["author.name"]])
+    ## 2) Create a dataframe for those authors, all of which getting 'NA' as centrality value
+    remaining.authors.df = data.frame(author.name = remaining.authors, temp = rep(NA, length(remaining.authors)))
+    ## 3) In preparition to the coming 'rbind', adjust the column names to be the same for both dataframes
+    names(remaining.authors.df) = c("author.name", metric.name)
+    ## 4) Append the newly created dataframe of authors to the classification as peripheral authors
+    classification[["peripheral"]] = rbind(classification[["peripheral"]], remaining.authors.df)
 
     logging::logdebug("get.author.class.by.type: finished.")
-    return(result)
+    return(classification)
 }
 
-## Classify the authors of all specified version ranges into core and peripheral
-## based on the specified classification function.
-##
-## The data can either be given as list of raw range data (for the count-based metrics)
-## or as list of networks for the network-based metrics).
+#' Classify authors into "core" and "peripheral" independently for a list of networks or \code{ProjectData} objects.
+#'
+#' @param network.list a list of networks, each of which containing the authors to classify (parameter is required if
+#'                     the parameter \code{type} specifies a network-based classification metric) [default: NULL]
+#' @param range.data.list a list of \code{ProjectData} and/or \code{RangeData} objects, each of which containing the
+#'                        authors to classify (parameter is required if the parameter \code{type} specifies a
+#'                        count-based classification metric) [default: NULL]
+#' @param type a character string declaring the classification metric. The classification metric determines which
+#'             numerical characteristic of authors is chosen as their centrality value.
+#'             The parameter currently supports the following five options:
+#'             Network-based options/metrics (parameter \code{network} has to be specified):
+#'              - "network.degree"
+#'              - "network.eigen"
+#'              - "network.hierarchy"
+#'             Commit-based options/metrics (parameter \code{proj.data} has to be specified):
+#'              - "commit.count"
+#'              - "loc.count"
+#'             [default: "network.degree"]
+#' @param restrict.classification.to.authors a vector of author names or a list of vectors of author names.
+#'                                           When choosing the first option (i.e., when passing a vector of author
+#'                                           names), only authors that are contained within this vector are to be
+#'                                           classified. Authors that appear in the vector but are not part of the
+#'                                           classification result (i.e., they are not present in the underlying data)
+#'                                           will be added to it afterwards (with a centrality value of \code{NA}).
+#'                                           Alternatively, a list containing vectors of author names can be passed. The
+#'                                           list must have the same length as the list of networks specified in the
+#'                                           parameter \code{network.list} or the list of \code{RangeData} objects
+#'                                           specified in the parameter \code{range.data.list}, respectively. For each
+#'                                           range, the corresponding author group in the list will then be used for
+#'                                           restriction instead of using the same group for all ranges. \code{NULL}
+#'                                           means that no restriction is made. [default: NULL]
+#'
+#' @return a list of classification results. Each classification result is a list containing two named list members
+#'         \code{core} and \code{peripheral}, each of which holding the authors classified as core or peripheral,
+#'         respectively. Both entries in this list (\code{core} and \code{peripheral}) are dataframes containing the
+#'         authors' names in the first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
 get.author.class.overview = function(network.list = NULL, range.data.list = NULL,
                                      type = c("network.degree", "network.eigen", "network.hierarchy",
-                                              "commit.count", "loc.count")) {
+                                              "commit.count", "loc.count"),
+                                     restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.overview: starting.")
 
     type = match.arg(type)
 
-    if (is.null(range.data.list) && (type == "commit.count" || type == "loc.count")) {
-        logging::logerror("For count-based metric evolution, a list of RangeData objects is needed.")
-        stop("For the count-based metrics, the raw data has to be given.")
+    if (startsWith(type, "network")) {
+        if (is.null(network.list)) {
+            logging::logerror("For network-based classifications the parameter 'network.list' must not be null.")
+            stop("For network-based classifications the parameter 'network.list' must not be null.")
+        }
 
-    } else if (is.null(network.list) && (type == "network.degree" || type == "network.eigen")) {
-        logging::logerror("For the network-based metric evolution, a list of networks as igraph-objects is needed.")
-        stop("For the network-based metrics, the network list has to be given.")
+        data.list = network.list
+    } else {
+        if (is.null(range.data.list)) {
+            logging::logerror("For commit-based classifications the parameter 'range.data.list' must not be null.")
+            stop("For commit-based classifications the parameter 'range.data.list' must not be null.")
+        }
+
+        data.list = range.data.list
     }
 
-    res = list()
-    if (!is.null(range.data.list)) {
-        for (i in 1:length(range.data.list)) {
-            range.data = range.data.list[[i]]
-            range.name = names(range.data.list)[[i]]
-
-            ## Get classification data of the current range
-            range.class =
-                get.author.class.by.type(data = range.data, type = type)
-
-            ## Save in list of classifications
-            if (!is.null(range.name)) {
-                res[[range.name]] = range.class
-            } else {
-                res = c(res, list(range.class))
-            }
-        }
-    } else { # use network list as data
-        for (i in 1:length(network.list)) {
-            range.network = network.list[[i]]
-            range.name = names(network.list)[[i]]
-
-            ## Get classification data of the current range
-            range.class =
-                get.author.class.by.type(network = range.network, type = type)
-
-            ## save in list of clasifications
-            if (!is.null(range.name)) {
-                res[[range.name]] = range.class
-            } else {
-                res = c(res, list(range.class))
-            }
-        }
+    ## If the parameter 'restrict.classification.to.authors' is no list but simply a vector of authors, this vector is
+    ## replicated for each range so that each range is restricted to same group of authors
+    if (!is.list(restrict.classification.to.authors)) {
+        restrict.classification.to.authors = rep(list(restrict.classification.to.authors), length(data.list))
+    } else if (length(restrict.classification.to.authors) != length(data.list)) {
+        stop("If a list is specified in the parameter 'restrict.classification.to.authors', its length must match the
+              length of either the parameter 'network.list' or 'range.data.list', depending on the classification type
+              specified in the parameter 'type'.")
     }
+
+    result = mapply(data.list, restrict.classification.to.authors, SIMPLIFY = FALSE,
+                    FUN = function(data, restrict.classification.to.authors) {
+        if (startsWith(type, "network")) {
+            return(get.author.class.by.type(network = data, type = type,
+                                            restrict.classification.to.authors = restrict.classification.to.authors))
+        } else {
+            return(get.author.class.by.type(proj.data = data, type = type,
+                                            restrict.classification.to.authors = restrict.classification.to.authors))
+        }
+    })
 
     logging::logdebug("get.author.class.overview: finished.")
-    return(res)
+    return(result)
 }
 
 ## Get the number/activity of core and peripheral authors based on the specified classification function
@@ -370,115 +545,101 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
 
 ## * Degree-based classification -------------------------------------------
 
-## Classify the authors of the specified version range into core and peripheral
-## based on the degree centrality.
-##
-## This function takes an igraph object.
-get.author.class.network.degree = function(network = NULL, result.limit = NULL) {
+#' Classify authors into "core" and "peripheral" based on the vertex degree of author vertices in the network and return
+#' the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.degree = function(network, result.limit = NULL, restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.degree: starting.")
 
-    if (is.null(network)) {
-        logging::logerror("For the network-based degree-centrality analysis, the network is needed.")
-        stop("The network has to be given for this analysis.")
-    } else if (igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
-        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
-                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
-    }
-
-    ## Get node degrees for all authors
-    centrality.vec = sort(igraph::degree(network), decreasing = TRUE)
-    centrality.df = data.frame(author.name = names(centrality.vec),
-                               centrality = as.vector(centrality.vec))
-
-    ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, "centrality", result.limit = result.limit)
+    result = get.author.class.by.type(network = network, type = "network.degree", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
     logging::logdebug("get.author.class.network.degree: finished.")
-    return(res)
-}
-
-get.author.class.network.hierarchy = function(network = NULL, result.limit = NULL) {
-
-    logging::logdebug("get.author.class.network.hierarchy: starting.")
-
-    if(is.null(network)) {
-        logging::logerror("For the network-based hierarchy-centrality analysis, the network is needed.")
-        stop("The network has to be given for this analysis.")
-    } else if(igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
-        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
-                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
-    }
-
-    hierarchy.base.df = metrics.hierarchy(network)
-    hierarchy.calculated = hierarchy.base.df$deg / hierarchy.base.df$cc
-
-    ## fix all authors whose clustering coefficient is '0', since their hierarchy value
-    ## is 'Inf'. We do not get any complications here because there are no authors with
-    ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
-    ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
-    hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
-
-    hierarchy.df = data.frame(author.name = row.names(hierarchy.base.df), hierarchy = hierarchy.calculated)
-
-    ## Get the author classification based on the centrality
-    res = get.author.class(hierarchy.df, "hierarchy", result.limit = result.limit)
-
-    logging::logdebug("get.author.class.network.hierarchy: finished.")
-    return(res)
+    return(result)
 }
 
 ## * Eigenvector-based classification --------------------------------------
 
-## Classify the authors of the specified version range into core and peripheral
-## based on the eigenvector centrality.
-##
-## This function takes either a network OR the raw range data. In case both are given, the network is used.
-get.author.class.network.eigen = function(network = NULL, range.data = NULL, result.limit = NULL) {
+#' Classify authors into "core" and "peripheral" based on the eigenvector-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.eigen = function(network, result.limit = NULL, restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.eigen: starting.")
 
-    if (is.null(network)) {
-        logging::logerror("For the network-based eigen-centrality analysis, the network has to be given.")
-        stop("The network has to be given for this analysis.")
-
-    } else if (igraph::vcount(network) == 0) {
-        logging::logwarn("The given network is empty. Returning empty classification...")
-        ## return an empty classification
-        return(list("core" = data.frame("author.name" = character(0), "centrality" = numeric(0)),
-                    "peripheral" = data.frame("author.name" = character(0), "centrality" = numeric(0))))
-    }
-
-    ## Get eigenvectors for all authors
-    ## The method ignores the directed parameter if the given network is undirected
-    eigen.centrality = tryCatch(
-        igraph::eigen_centrality(network, directed = TRUE),
-        error = function(e) {
-            logging::logwarn(e)
-            logging::logwarn("As of the error above, adjust ARPACK options 'maxiter' and 'tol'...")
-            adjusted.options = list(maxiter = 5000, tol = 0.1)
-            adjusted.computation = igraph::eigen_centrality(network, directed = TRUE,
-                                                            options = adjusted.options)
-            logging::loginfo("eigen_centrality with adjusted ARPACK options finished successfully.")
-            return(adjusted.computation)
-        }
-    )
-    centrality.vec = sort(eigen.centrality[["vector"]], decreasing = TRUE)
-
-    ## In case no collaboration occured, all centrality values are set to 0
-    if (igraph::ecount(network) == 0) {
-        centrality.vec[1:length(centrality.vec)] = rep(0, length(centrality.vec))
-    }
-    centrality.df = data.frame(author.name = names(centrality.vec),
-                               centrality = as.vector(centrality.vec))
-
-    ## Get the author classification based on the centrality
-    res = get.author.class(centrality.df, "centrality", result.limit = result.limit)
+    result = get.author.class.by.type(network = network, type = "network.eigen", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
     logging::logdebug("get.author.class.network.eigen: finished.")
-    return(res)
+    return(result)
+}
+
+## * Hierarchy-based classification ----------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the hierarchy value of author vertices in the network and
+#' return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.hierarchy = function(network, result.limit = NULL, restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.network.hierarchy: starting.")
+
+    result = get.author.class.by.type(network = network, type = "network.hierarchy", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.network.hierarchy: finished.")
+    return(result)
 }
 
 
@@ -487,32 +648,35 @@ get.author.class.network.eigen = function(network = NULL, range.data = NULL, res
 
 ## * Count-based classification --------------------------------------------
 
-## Classify the authors of the specified version range into core and peripheral
-## based on the number of commits made withing a version range.
-get.author.class.commit.count = function(range.data, result.limit = NULL) {
+#' Classify authors into "core" and "peripheral" based on authors' commit-counts and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' commit data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.commit.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL) {
+
     logging::logdebug("get.author.class.commit.count: starting.")
 
-    ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(range.data)
-
-    ## Get the author classification based on the commit counts
-    res = get.author.class(author.commit.count, "freq", result.limit = result.limit)
+    result = get.author.class.by.type(proj.data = proj.data, type = "commit.count", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
     logging::logdebug("get.author.class.commit.count: finished.")
-    return(res)
-}
-
-## Get the commit count threshold  of the specified version range
-## on which a author can be classified as core.
-get.commit.count.threshold = function(range.data) {
-    logging::logdebug("get.commit.count.threshold: starting.")
-
-    ## Get the commit counts per author
-    author.commit.count = get.author.commit.count(range.data)
-    threshold = get.threshold(author.commit.count$freq)
-
-    logging::logdebug("get.commit.count.threshold: finished.")
-    return(threshold)
+    return(result)
 }
 
 #' Get the commit count per comitter in the given range data, where the committer
@@ -627,13 +791,17 @@ get.committer.commit.count = function(range.data) {
     return(res)
 }
 
-## Get the commit count per author of the specified version range
-## as a data frame ordered by the commit count.
-get.author.commit.count = function(range.data) {
+#' Get the commit count for each author based on the commit data contained in the specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective commit counts
+get.author.commit.count = function(proj.data) {
     logging::logdebug("get.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data)[[1]]
+    commits.df = get.commit.data(proj.data)[[1]]
 
     ## Return NA in case no commit data is available
     if (all(is.na(commits.df))) {
@@ -641,7 +809,7 @@ get.author.commit.count = function(range.data) {
     }
 
     ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
+    res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
                        GROUP BY `author.name` ORDER BY `freq` DESC")
 
     logging::logdebug("get.author.commit.count: finished.")
@@ -650,44 +818,52 @@ get.author.commit.count = function(range.data) {
 
 ## * LOC-based classification ----------------------------------------------
 
-## Classify the authors of the specified version range into core and peripheral
-## based on the sum of added and deleted lines of code a author has committed within a version range.
-get.author.class.loc.count = function(range.data, result.limit = NULL) {
+#' Classify authors into "core" and "peripheral" based on authors' lines of code (LOC) and return the classification
+#' result. LOC are calculated independently for each author by looking at the sum of added and deleted lines of code in
+#' all their commits.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' commit data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.loc.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.loc.count: starting.")
 
-    ## Get the changed lines (loc counts) per author
-    author.loc.count = get.author.loc.count(range.data)
-
-    ## Get the author classification based on the loc counts
-    res = get.author.class(author.loc.count, "loc", result.limit = result.limit)
+    result = get.author.class.by.type(proj.data = proj.data, type = "loc.count", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
     logging::logdebug("get.author.class.loc.count: finished.")
-    return(res)
+    return(result)
 }
 
-## Get the loc count threshold of the specified version range
-## on which a author can be classified as core.
-get.loc.count.threshold = function(range.data) {
-    logging::logdebug("get.loc.count.threshold: starting.")
-
-    ## Get the loc per author
-    author.loc.count = get.author.loc.count(range.data)
-
-    threshold = get.threshold(author.loc.count$loc)
-
-    logging::logdebug("get.loc.count.threshold: finished.")
-    return(threshold)
-}
-
-## Get the changed lines per author of the specified version range
-## as a data frame ordered by the changed lines.
-get.author.loc.count = function(range.data) {
+#' Get the number of changed lines of code (LOC) for each author based on the commit data contained in the specified
+#' \code{ProjectData}. The number is calculated by taking the sum of added and deleted lines of code for each commit.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective LOC counts
+get.author.loc.count = function(proj.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
     commits.df = get.commit.data(
-        range.data,
-        columns = c("author.name", "author.email", "added.lines", "deleted.lines")
+        proj.data,
+        columns = c("author.name", "added.lines", "deleted.lines")
     )[[1]]
 
     ## Return NA in case no commit data is available
@@ -696,8 +872,7 @@ get.author.loc.count = function(range.data) {
     }
 
     ## Execute a query to get the changed lines per author
-    res = sqldf::sqldf("SELECT `author.name`, `author.email`,
-                            SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
+    res = sqldf::sqldf("SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
                         FROM `commits.df`
                         GROUP BY `author.name` ORDER BY `loc` DESC")
 
@@ -1061,25 +1236,32 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Generic helper functions ------------------------------------------------
 
-## Classify the specified set of authors into core and peripheral based on the data
-## of the specified data frame column name (calc.base.name).
-## Core authors are those which are responsible for a given
-## percentage of the work load with a default threshold set at 80% according
-## to Ref: Terceiro A, Rios LR, Chavez C (2010) An empirical study on
-##         the structural complexity introduced by core and peripheral
-##         developers in free software projects.
+
+#' Classify authors into "core" and "peripheral".
+#'
+#' Core authors are those who are responsible for a given percentage of the work load with a default threshold set at
+#' 80% according to Ref:
+#' Terceiro A, Rios LR, Chavez C (2010) An empirical study on the structural complexity introduced by core and
+#' peripheral developers in free software projects.
+#'
+#' The actual threshold ratio (i.e., the exemplary 80 %) is set by the constant \code{CORE.THRESHOLD}. See also the
+#' function \code{get.threshold}.
+#'
+#' @param author.data.frame a dataframe containing at least two columns. The column called "author.name" should store
+#'                          the author's names, the other one, whose name must be specified in the parameter
+#'                          \code{calc.base.name}, should store the authors' centrality values.
+#' @param calc.base.name the name of the second column of the dataframe specified in the parameter
+#'                       \code{author.data.frame}
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each of
+#'         which containing the authors classified as core or peripheral, respectively. Both entries in this list
+#'         ("core" and "peripheral") are dataframes containing the author's names in the first column and their
+#'         centrality values in the second column.
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
-
-    ## Return empty classification in case no data is available
-    if (all(is.na(author.data.frame))) {
-        logging::logwarn("There is no data to use for the classification. Returning empty classification...")
-
-        empty.df = data.frame(character(0), numeric(0))
-        names(empty.df) = c("author.name", calc.base.name)
-        return(list("core" = empty.df,
-                    "peripheral" = empty.df))
-    }
 
     ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
@@ -1107,7 +1289,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
             sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
     )
     if (is.infinite(min(buffer.value))) {
-        author.class.threshold.idx = 0
+        author.class.threshold.idx = nrow(author.data)
     } else {
         author.class.threshold.idx = min(buffer.value)
     }
@@ -1134,16 +1316,25 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     return(res)
 }
 
-## Get the threshold based on the specified integer data list
-## on which a author can be classified as core.
-get.threshold = function(data.list) {
+#' Retrieve the classification threshold of a list containing centrality values. The threshold is determined by taking
+#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD}.
+#'
+#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the sum
+#' and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
+#' threshold of (1 + 2 + 2) * 0.8 = 4. The smallest group of authors that together has a centrality sum of 4 or more
+#' could now be considered core (here, B and C with 2 commits each).
+#'
+#' @param centrality.list a list containing centrality values
+#'
+#' @return the threshold used within classifications
+get.threshold = function(centrality.list) {
     logging::logdebug("get.threshold: starting.")
 
     ## Calculate the sum of the provided data as base for the threshold calculation
-    data.threshold.base = sum(data.list)
+    data.threshold.base = sum(centrality.list)
 
     ## Check which authors can be treated as core based on the data
-    data.threshold = round(CORE.THRESHOLD * data.threshold.base)
+    data.threshold = CORE.THRESHOLD * data.threshold.base
 
     logging::logdebug("get.threshold: finished.")
     return(data.threshold)

@@ -37,7 +37,7 @@ requireNamespace("igraph") # networks
 #' This method is a wrapper combining the steps of splitting the project data and calculating the attribute.
 #'
 #' Important: If a vertex attribute can have multiple values per vertex, the \code{compute.attr} function
-#' has to wrap all attribute vectors of a single node into a list. In that case, also the
+#' has to wrap all attribute vectors of a single vertex into a list. In that case, also the
 #' \code{default.value} needs to be put into a list. By that, this function can differentiate between
 #' attributes having multiple values and attributes having, at most, one value.
 #'
@@ -70,7 +70,7 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #' Utility function to compute vertex attributes for a list of network-to-range tuples.
 #'
 #' Important: If a vertex attribute can have multiple values per vertex, the \code{compute.attr} function
-#' has to wrap all attribute vectors of a single node into a list. In that case, also the
+#' has to wrap all attribute vectors of a single vertex into a list. In that case, also the
 #' \code{default.value} needs to be put into a list. By that, this function can differentiate between
 #' attributes having multiple values and attributes having, at most, one value.
 #'

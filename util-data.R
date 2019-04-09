@@ -17,7 +17,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
-## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -232,7 +232,7 @@ ProjectData = R6::R6Class("ProjectData",
         initialize = function(project.conf) {
 
             ## check arguments
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", "ProjectData$new")
 
             ## if we have a direct subclass of ProjectData here,
             ## log this accordingly
@@ -283,7 +283,8 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param reset.environment parameter to determine whether the environment
         #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf",
+                                                                 "ProjectData$set.project.conf")
 
             if (reset.environment) {
                 self$reset.environment()
@@ -436,6 +437,10 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("synchronicity")) {
                 logging::loginfo("Adding synchronicity data.")
                 synchronicity.data = self$get.synchronicity()
+                ## remove previous synchronicity data
+                if ("synchronicity" %in% colnames(commit.data)) {
+                    commit.data["synchronicity"] = NULL
+                }
                 commit.data = merge(commit.data, synchronicity.data,
                                     by = "hash", all.x = TRUE, sort = FALSE)
             }
@@ -467,44 +472,77 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the synchronicity data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
             logging::loginfo("Getting synchronicity data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$synchronicity)) {
-                private$synchronicity = read.synchronicity(
-                    self$get.data.path.synchronicity(),
-                    private$project.conf$get.value("artifact"),
-                    private$project.conf$get.value("synchronicity.time.window")
-                )
+            ## if synchronicity data are to be read, do this
+            if (private$project.conf$get.value("synchronicity")) {
+                ##  if data are not read already, read them
+                if (is.null(private$synchronicity)) {
+                    synchronicity.data = read.synchronicity(
+                        self$get.data.path.synchronicity(),
+                        private$project.conf$get.value("artifact"),
+                        private$project.conf$get.value("synchronicity.time.window")
+                    )
+
+                    ## set actual data
+                    self$set.synchronicity(synchronicity.data)
+                }
+            } else {
+                ## mark synchronicity data as empty
+                self$set.synchronicity(NULL)
             }
 
             return(private$synchronicity)
         },
 
-        #' Set the synchronicity data to the given data.
+        #' Set the synchronicity data to the given new data and,
+        #' if configured in the field \code{project.conf},
+        #' also update it for the commit data.
         #'
         #' @param data the new synchronicity data
         set.synchronicity = function(data) {
             logging::loginfo("Setting synchronicity data.")
+
+            if (is.null(data)) {
+                data = create.empty.synchronicity.list()
+            }
+
+            ## set the actual data
             private$synchronicity = data
+
+            ## add synchronicity data to the commit data if configured
+            if (private$project.conf$get.value("synchronicity")) {
+                logging::loginfo("Updating synchronicity data.")
+                if (!is.null(private$commits)) {
+                    self$set.commits(private$commits)
+                }
+            }
         },
 
         #' Get the PaStA data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the PaStA data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$pasta)) {
-                pasta.data = read.pasta(self$get.data.path.pasta())
+            ## if PaStA data are to be read, do this
+            if (private$project.conf$get.value("pasta")) {
+                ## if data are not read already, read them
+                if (is.null(private$pasta)) {
+                    pasta.data = read.pasta(self$get.data.path.pasta())
 
-                ## set actual data
-                self$set.pasta(pasta.data)
+                    ## set actual data
+                    self$set.pasta(pasta.data)
+                }
+            } else {
+                ## mark PaStA data as empty
+                self$set.pasta(NULL)
             }
 
             return(private$pasta)
@@ -517,6 +555,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new PaStA data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
+
+            if (is.null(data)) {
+                data = create.empty.pasta.list()
+            }
 
             ## set the actual data
             private$pasta = data
@@ -1088,8 +1130,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             super$initialize(project.conf)
 
             ## check arguments
-            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
-            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+            private$range = verify.argument.for.parameter(range, "character", "RangeData$new")
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", "RangeData$new")
 
             ## correct revision.callgraph variable
             if (revision.callgraph == "") {

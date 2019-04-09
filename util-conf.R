@@ -17,7 +17,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
-## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -481,10 +481,10 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## verify arguments using match.arg
             artifact = match.arg(artifact)
             ## verify arguments
-            private$data = verify.argument.for.parameter(data, "character", class(self)[1])
-            private$selection.process = verify.argument.for.parameter(selection.process, "character", class(self)[1])
-            private$casestudy = verify.argument.for.parameter(casestudy, "character", class(self)[1])
-            private$artifact = verify.argument.for.parameter(artifact, "character", class(self)[1])
+            private$data = verify.argument.for.parameter(data, "character", "ProjectConf$new")
+            private$selection.process = verify.argument.for.parameter(selection.process, "character", "ProjectConf$new")
+            private$casestudy = verify.argument.for.parameter(casestudy, "character", "ProjectConf$new")
+            private$artifact = verify.argument.for.parameter(artifact, "character", "ProjectConf$new")
 
             ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
