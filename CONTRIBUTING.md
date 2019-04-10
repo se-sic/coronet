@@ -173,6 +173,7 @@ There will be another checklist for you when you open an actual pull request pro
     * **assignments**: only with `=`,
     * **spacing**: spaces around all binary operators (`=`, `+`, `-`, etc.); spaces before left parenthesis, except in a function call; spaces before opening curly braces that denote a code block,
     * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
+    * **comments**: comments on the same line as source code start with a single hash sign (`#`), while comments on an own line start with two hash signs (`##`),
     * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`),
     * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`, and
     * **return statements**: always use the function `return()` to return a value from a function; do not use one when you intend to not return anything.
@@ -180,16 +181,52 @@ There will be another checklist for you when you open an actual pull request pro
 * To handle dates and date objects (i.e. mainly, `POSIXct` objects in R), always use the functions `get.date.from.string`, `get.date.from.unix.timestamp`, and `get.date.string`. This ensures proper date handling in all parts of the code. If you need to modify dates (e.g., to add a week), always use the `lubridate` package.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
-    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details). In particular, we settle on the following style of the **`roxygen2`** function documentation:
-        * The introductory sentence(s) which describes the function in general should always end with a period.
-        * Descriptions of a parameter (`@param parameter.name`) should *not* end with a period unless there is a multi-sentence description for one parameter. If the description of one parameter covers multiple lines, all but the first lines are indentend along the end of the parameter name. This applies similarly for descriptions using `@return`.
-        * Variable names, class names, or other code snippets which are part of the function documentation should be placed within `\code{...}`.
-        **Note:** This does not hold for inline documentation within a function. There we only use `'...'` for variable names, class names, and other code snippets.
-        * For parameters that take a default value, the default value should be placed directly after the description of the parameter using the following format: `[default: value]`.
-        **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
     * We use **networks**, not "graphs".
     * We use **vertices**, not "nodes".
     * We talk about **authors**, not "developers".
+    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details). In particular, we settle on the following style of the **`roxygen2`** documentation (see example below):
+        * The introductory sentence(s) which describes a function, method, or class, in general, must always start with an upper-case letter and end with a period. Use 2nd-person imperative ("Get the label.") rather than 3rd-person declarative ("Gets the label.").
+        * Variable names, class names, or other code snippets which are part of the function documentation must be placed within `\code{...}`.
+          **Note:** This does not hold for inline documentation within a function. There we only use `'...'` for variable names, class names, and other code snippets.
+        * Class documentation must include a basic, but abstract description of its functionality and the data it holds. If the class inherits from another class, the superclass must be mentioned explicitly in the description and also using a referenced (`@seealso SuperClassName`). The introductory sentence should be phrased something like this: `The class \code{X} (is a subclass of \code{SuperClass} and) provides ...`.
+        * For each parameter of a function or method, a parameter description (`@param parameter.name description`) must be added. The same holds for descriptions of return values (`@return description`) – if something is returned. For both items, the descriptions should always be a phrase (i.e., no verbs should be used), start with a lower-case letter, and *not* end with a period – *unless* there are further phrases or sentences following. If the description covers multiple lines, all but the first lines are indented along the start of the description in the first line.
+        * For parameters that take a default value, the default value must be placed directly after the description of the parameter using the following format: `[default: value]`.
+          **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
+        * Example for a function/method documentation:
+          ```R
+          #' Group the data items of the given \code{data.source} by the given \code{group.column}.
+          #'
+          #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+          #' data as first column (see \code{get.key.to.value.from.df} for details).
+          #'
+          #' Example: To obtain the authors who touched the same source-code artifact,
+          #' call \code{group.data.by.column("commits", "artifact", "author.name")}.
+          #'
+          #' @param data.source the specified data source, one of \code{"commits"},
+          #'                    \code{"mails"}, and \code{"issues"} [default: "commits"]
+          #' @param group.column the column to group the data of the given \code{data.source} by
+          #' @param data.column the column that gets duplicated as first column \code{data.vertices}
+          #'
+          #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+          #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+          #'         column (with name \code{"data.vertices"})
+          #'
+          #' @seealso get.key.to.value.from.df
+          group.data.by.column = function(data.source = c("commits", "mails", "issues"),
+                                          group.column, data.column) {
+            logging::loginfo("Grouping artifacts by data column.")
+
+            ## check given data source given by 'data.source'
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            ## get the key-value mapping/list for the given parameters
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
+
+            return(mylist)
+          }
+          ```
+    * For all other stuff, look at the source code and get inspired.
 * Also **add tests** to the test suite for each new functionality you add!
 * Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 
