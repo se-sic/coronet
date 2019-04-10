@@ -79,6 +79,21 @@ RELATION.TO.DATASOURCE = list(
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkBuilder ----------------------------------------------------------
 
+#' The class \code{NetworkBuilder} provides convenient network construction in a
+#' lazy fashion.
+#'
+#' To configure an object of this network-construction class, a configuration
+#' object of class \code{NetworkConf} and a data-carrying object of class
+#' \code{ProjectData} must be passed to the initialization function.
+#'
+#' The following kinds of network can be constructed:
+#' - author networks,
+#' - artifact networks,
+#' - bipartite networks, and
+#' - multi networks.
+#'
+#' @seealso ProjectConf
+#' @seealso ProjectData
 NetworkBuilder = R6::R6Class("NetworkBuilder",
 
     ## * private -----------------------------------------------------------

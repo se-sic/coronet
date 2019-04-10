@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -60,6 +60,11 @@ ARTIFACT.CODEFACE = list(
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Conf --------------------------------------------------------------------
 
+#' The class \code{Conf} provides convenient handling of a predefined set of
+#' configuration options or, rather, attributes.
+#'
+#' **Note:** This class is considered abstract and should not instantiated directly,
+#' as the list of handled attributes is empty.
 Conf = R6::R6Class("Conf",
 
     ## * private -----------------------------------------------------------
@@ -315,6 +320,13 @@ Conf = R6::R6Class("Conf",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectConf -------------------------------------------------------------
 
+#' The class \code{ProjectConf} is a subclass of \code{Conf} and provides
+#' convenient handling of project-related configuration attributes with the
+#' class \code{ProjectData}.
+#'
+#' @seealso Conf
+#' @seealso ProjectData
+#' @seealso RangeData
 ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 
     ## * private -----------------------------------------------------------
@@ -655,6 +667,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkConf -------------------------------------------------------------
 
+#' The class \code{NetworkConf} is a subclass of \code{Conf} and provides
+#' convenient handling of configuration attributes related to network
+#' construction with the class \code{NetworkBuilder}.
+#'
+#' @seealso Conf
+#' @seealso NetworkBuilder
 NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
     ## * private -----------------------------------------------------------

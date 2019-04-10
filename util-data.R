@@ -67,6 +67,22 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
 
+#' The class \code{ProjectData} provides convenient data handling for a project's data
+#' in a lazy fashion.
+#'
+#' To configure an object of this data-handling class, a configuration object of class
+#' \code{ProjectConf} must be passed to the initialization function. Data paths and
+#' other configuration options are read from it.
+#'
+#' The following main data sources are handled:
+#' - commits,
+#' - mails, and
+#' - issues.
+#'#' Furthermore, following additional and orthogonal data sources are handled:
+#' - synchronicity data and
+#' - PaStA data.
+#'
+#' @seealso ProjectConf
 ProjectData = R6::R6Class("ProjectData",
 
     ## * private -----------------------------------------------------------
@@ -1104,6 +1120,14 @@ ProjectData = R6::R6Class("ProjectData",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## RangeData ---------------------------------------------------------------
 
+#' The class \code{RangeData} is a subclass of \code{ProjectData} and is used to
+#' represents only a subset of the data (i.e., a range) of a complete
+#' \code{ProjectData} object.
+#'
+#' Functionality to handle range-related data is added.
+#'
+#' @seealso ProjectData
+#' @seealso ProjectConf
 RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
     ## * private -----------------------------------------------------------
