@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -25,7 +25,7 @@
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 
-## TODO see https://github.com/se-passau/codeface-extraction-r/issues/70
+## TODO see https://github.com/se-passau/coronet/issues/70
 ## TODO adjust coding style regarding bracket notation
 
 

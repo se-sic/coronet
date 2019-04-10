@@ -1,8 +1,8 @@
-# codeface-extraction-r - The network library
+# coronet - The network library
 
 Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
 
-The network library `codeface-extraction-r` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
+The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 ![Exemplary plot of multi network](plot-multi.png)
 
@@ -140,6 +140,8 @@ To initialize the library in your project, you need to source all files of the l
 source("path/to/util-init.R", chdir = TRUE)
 ```
 It may lead to unpredictable behavior, when you do not do this, as we need to set some system and environment variables to ensure correct behavior of all functionality (e.g., parsing timestamps in the correct timezone and reading files from disk using the correct encoding).
+
+**Note:** If you have used this library as a submodule already before it was renamed as `coronet`, you need to ensure that the right remote URL is used. The best way to do that is to remove the current submodule and re-add it with the new URL.
 
 ### Selecting the correct version
 
@@ -620,4 +622,4 @@ This project is licensed under [GNU General Public License v2.0](LICENSE).
 
 ## Work in progress
 
-To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-passau/codeface-extraction-r/issues).
+To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-passau/coronet/issues).
