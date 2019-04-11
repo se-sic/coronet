@@ -12,10 +12,11 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -584,12 +585,16 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## construct revisions for call-graph data
             revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
 
+            ## construct ranges
+            ranges = construct.ranges(revisions, sliding.window = sliding.window)
+
             ## assemble revision data
             rev.data = list(
                 revisions = revisions,
                 revisions.dates = revisions.dates,
                 revisions.callgraph = revisions.callgraph,
-                ranges = construct.ranges(revisions, sliding.window = sliding.window),
+                ranges = ranges,
+                ranges.paths = generate.range.directory.names(ranges),
                 ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
             )
             ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
@@ -882,4 +887,29 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
     }
 
     return(construct.configuration.string(conf, title))
+}
+
+#' Generate the directory names for Codeface ranges. That is, commit hashes forming the range are shortend
+#' to a length of six characters and the range name is prepended by a consecutive range number.
+#'
+#' The function is partly adapted from
+#' https://github.com/siemens/codeface@57bfbab58f75a91effb431842d01c76627071134 and
+#' https://github.com/siemens/codeface/commit/cd7b68c65ff7ae113e6c75275ce3798004ce7b09.
+#'
+#' @param ranges the revisions of the study
+generate.range.directory.names = function(ranges) {
+    range.numbers = seq_along(ranges)
+
+    directory.names = mapply(range.numbers, ranges, SIMPLIFY = FALSE, FUN = function(range.number, range) {
+        revisions = strsplit(range, "-")[[1]]
+
+        if (length(revisions[1]) == 40) {
+            revisions[1] = substr(revisions[1], 0, 6)
+            revisions[2] = substr(revisions[2], 0, 6)
+        }
+	return(paste0(formatC(range.number, width=3, flag="0"), "--", revisions[1], "-", revisions[2]))
+    })
+
+    names(directory.names) = ranges
+    return(directory.names)
 }
