@@ -136,7 +136,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param allowed Indicator whether to return also information on allowed values
         #'
-        #' @return the configuration list as string
+        #' @return the configuration list as string [default: FALSE]
         get.conf.as.string = function(allowed = FALSE) {
             ## get the complete list of attributes
             attributes = private$attributes
@@ -156,7 +156,7 @@ Conf = R6::R6Class("Conf",
 
         #' Print the private variables of the class.
         #'
-        #' @param allowed Indicator whether to print information on allowed values
+        #' @param allowed Indicator whether to print information on allowed values [default: FALSE]
         print = function(allowed = FALSE) {
             logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
         },
@@ -178,7 +178,7 @@ Conf = R6::R6Class("Conf",
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
         update.values = function(updated.values = list()) {
             ## determine the function executed on an error
             error.function = stop
@@ -446,7 +446,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
         #' @param suffix the suffix of the casestudy's results folder
-        #' @param subfolder an optional subfolder
+        #' @param subfolder an optional subfolder [default: NULL]
         #'
         #' @return the path to the results folder
         #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
@@ -579,8 +579,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
-        #' @param sliding.window whether sliding window splitting is enabled or not
-        #'                       default: 'FALSE'
+        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
         set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
             ## construct revisions for call-graph data
             revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
@@ -614,7 +613,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
         #'               amount given to acitivity-based splitting
         #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
-        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
+        #' @param sliding.window whether sliding window splitting is enabled or not
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
         set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
@@ -776,7 +775,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
         update.values = function(updated.values = list()) {
             super$update.values(updated.values = updated.values)
 
@@ -809,7 +808,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string
-#' @param title the title line right before the constructed string
+#' @param title the title line right before the constructed string [default: deparse(substitute(conf))]
 #'
 #' @return a string representing the status of \code{conf}, including newline characters and
 #'         pretty-printed list style

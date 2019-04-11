@@ -32,7 +32,8 @@ requireNamespace("igraph") # networks
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
@@ -74,7 +75,8 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
@@ -116,7 +118,8 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
@@ -158,7 +161,8 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
@@ -199,8 +203,9 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 #' Construct the range data for the Codeface ranges.
 #'
 #' @param project.conf the project configuration
-#' @param callgraphs whether or not callgraph data is existing
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param callgraphs whether or not callgraph data is existing [default: FALSE]
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the constructed data
 construct.data = function(project.conf, callgraphs = FALSE, step = 1) {
