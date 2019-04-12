@@ -12,10 +12,11 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -135,7 +136,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param allowed Indicator whether to return also information on allowed values
         #'
-        #' @return the configuration list as string
+        #' @return the configuration list as string [default: FALSE]
         get.conf.as.string = function(allowed = FALSE) {
             ## get the complete list of attributes
             attributes = private$attributes
@@ -155,7 +156,7 @@ Conf = R6::R6Class("Conf",
 
         #' Print the private variables of the class.
         #'
-        #' @param allowed Indicator whether to print information on allowed values
+        #' @param allowed Indicator whether to print information on allowed values [default: FALSE]
         print = function(allowed = FALSE) {
             logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
         },
@@ -177,7 +178,7 @@ Conf = R6::R6Class("Conf",
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
         update.values = function(updated.values = list()) {
             ## determine the function executed on an error
             error.function = stop
@@ -445,7 +446,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
         #' @param suffix the suffix of the casestudy's results folder
-        #' @param subfolder an optional subfolder
+        #' @param subfolder an optional subfolder [default: NULL]
         #'
         #' @return the path to the results folder
         #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
@@ -578,18 +579,21 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
-        #' @param sliding.window whether sliding window splitting is enabled or not
-        #'                       default: 'FALSE'
+        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
         set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
             ## construct revisions for call-graph data
             revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
+
+            ## construct ranges
+            ranges = construct.ranges(revisions, sliding.window = sliding.window)
 
             ## assemble revision data
             rev.data = list(
                 revisions = revisions,
                 revisions.dates = revisions.dates,
                 revisions.callgraph = revisions.callgraph,
-                ranges = construct.ranges(revisions, sliding.window = sliding.window),
+                ranges = ranges,
+                ranges.paths = generate.range.directory.names(ranges),
                 ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
             )
             ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
@@ -609,7 +613,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
         #'               amount given to acitivity-based splitting
         #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
-        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
+        #' @param sliding.window whether sliding window splitting is enabled or not
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
         set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
@@ -771,7 +775,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
         update.values = function(updated.values = list()) {
             super$update.values(updated.values = updated.values)
 
@@ -804,7 +808,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string
-#' @param title the title line right before the constructed string
+#' @param title the title line right before the constructed string [default: deparse(substitute(conf))]
 #'
 #' @return a string representing the status of \code{conf}, including newline characters and
 #'         pretty-printed list style
@@ -882,4 +886,29 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
     }
 
     return(construct.configuration.string(conf, title))
+}
+
+#' Generate the directory names for Codeface ranges. That is, commit hashes forming the range are shortened
+#' to a length of six characters and the range name is prepended by a consecutive range number.
+#'
+#' The function is partly adapted from
+#' https://github.com/siemens/codeface@57bfbab58f75a91effb431842d01c76627071134 and
+#' https://github.com/siemens/codeface/commit/cd7b68c65ff7ae113e6c75275ce3798004ce7b09.
+#'
+#' @param ranges the (revision) ranges of the project
+generate.range.directory.names = function(ranges) {
+    range.numbers = seq_along(ranges)
+
+    directory.names = mapply(range.numbers, ranges, SIMPLIFY = FALSE, FUN = function(range.number, range) {
+        revisions = strsplit(range, "-")[[1]]
+
+        if (length(revisions[1]) == 40) {
+            revisions[1] = substr(revisions[1], 0, 6)
+            revisions[2] = substr(revisions[2], 0, 6)
+        }
+	return(paste0(formatC(range.number, width = 3, flag = "0"), "--", revisions[1], "-", revisions[2]))
+    })
+
+    names(directory.names) = ranges
+    return(directory.names)
 }

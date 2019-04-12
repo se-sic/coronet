@@ -43,6 +43,7 @@
 - Do not redundantly initialize data sources when splitting (35698a1b41c25b9ad7c598977d0afd0add16044f)
 - Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
 - Add and enforce coding convention to use 'vertices' and not 'nodes'. Most importantly, the function `metrics.node.degrees` is renamed to `metrics.vertex.degrees`. (d35ce616db76adae06b34b4b241a35bfbe77e10d)
+- Adjust range directories' names to start with a consecutive range number and to conform with the directories created by [Codeface](https://github.com/se-passau/codeface) (b3e29472a57e26935a31645b96fbef7d7785c25a, f6b28fbe3bb3599784a42e102fa4fc1e480c2a7a)
 
 ### Fixed
 - Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)
@@ -56,6 +57,7 @@
 - Fix missing time-zone attribute `tzone` on `POSIXct` items (5f6cc6922b95bf5cbdd9b2cbf16be4bf4937d0db)
 - Fix author classification which was incorrect in certain situations and adjust test cases to this change (9294a37d98f9ff3d14756d56300b0d171f3f3b4c, c7288c3690b68f367a9f451bec7c584897971a31)
 - Fix wrong behaviour of `get.author.class` when using `result.limit` (9437b4f07da599fde017596af2290b24601f9f8d)
+- Fix outdated function calls in the bulk module (4e0354078449ef57637297fd3670830e10342ecd)
 
 
 ## 3.4

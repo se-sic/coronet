@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
@@ -1161,7 +1161,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @return the path to the range's result folder
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
-            range = private$range
+            range = private$project.conf$get.value("ranges.paths")[[private$range]]
             return(file.path(data.path, range))
         },
 

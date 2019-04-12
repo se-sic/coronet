@@ -14,6 +14,7 @@
 ## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -31,7 +32,8 @@ requireNamespace("igraph") # networks
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the multi networks
 collect.multi.networks = function(project.conf, network.conf, step = 1) {
@@ -43,10 +45,13 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, range)
 
-        ## get the bipartite network
-        multi.network = range.data$get.multi.network()
+        ## construct network builder
+        network.builder <- NetworkBuilder$new(range.data, network.conf)
+
+        ## get the multi network
+        multi.network = network.builder$get.multi.network()
 
         ## set range attribute
         multi.network = igraph::set.graph.attribute(multi.network, "range", range)
@@ -70,7 +75,8 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
@@ -82,10 +88,13 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, range)
+
+        ## construct network builder
+        network.builder <- NetworkBuilder$new(range.data, network.conf)
 
         ## get the bipartite network
-        bp.network = range.data$get.bipartite.network()
+        bp.network = network.builder$get.bipartite.network()
 
         ## set range attribute
         bp.network = igraph::set.graph.attribute(bp.network, "range", range)
@@ -109,7 +118,8 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the author networks
 collect.author.networks = function(project.conf, network.conf, step = 1) {
@@ -121,10 +131,13 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, range)
+
+        ## construct network builder
+        network.builder <- NetworkBuilder$new(range.data, network.conf)
 
         ## get the author network
-        author.network = range.data$get.author.network()
+        author.network = network.builder$get.author.network()
 
         ## set range attribute
         author.network = igraph::set.graph.attribute(author.network, "range", range)
@@ -148,7 +161,8 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
 #'
 #' @param project.conf the project configuration
 #' @param network.conf the network configuration
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the artifact networks
 collect.artifact.networks = function(project.conf, network.conf, step = 1) {
@@ -160,10 +174,13 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, network.conf, range)
+        range.data = RangeData$new(project.conf, range)
+
+        ## construct network builder
+        network.builder <- NetworkBuilder$new(range.data, network.conf)
 
         ## get the artifact network
-        artifact.network = range.data$get.artifact.network()
+        artifact.network = network.builder$get.artifact.network()
 
         ## set range attribute
         artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
@@ -186,12 +203,12 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
 #' Construct the range data for the Codeface ranges.
 #'
 #' @param project.conf the project configuration
-#' @param network.conf the network configuration
-#' @param callgraphs whether or not callgraph data is existing
-#' @param step the step size of which ranges get processed (i.e. 2 means every second range)
+#' @param callgraphs whether or not callgraph data is existing [default: FALSE]
+#' @param step the step size of which ranges get processed (i.e., 2 means every second range)
+#'             [default: 1]
 #'
 #' @return the constructed data
-construct.data = function(project.conf, network.conf, callgraphs = FALSE, step = 1) {
+construct.data = function(project.conf, callgraphs = FALSE, step = 1) {
     ## we need to iterate over all ranges
     ranges = project.conf$get.value("ranges")
     ## subset according to given step size
@@ -204,7 +221,7 @@ construct.data = function(project.conf, network.conf, callgraphs = FALSE, step =
                                     "")
 
         ## construct range data
-        range.data = RangeData$new(project.conf, network.conf, range, revision.callgraph)
+        range.data = RangeData$new(project.conf, range, revision.callgraph)
         attr(range.data, "range") = range
 
         # add to global list
