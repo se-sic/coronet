@@ -888,14 +888,14 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
     return(construct.configuration.string(conf, title))
 }
 
-#' Generate the directory names for Codeface ranges. That is, commit hashes forming the range are shortend
+#' Generate the directory names for Codeface ranges. That is, commit hashes forming the range are shortened
 #' to a length of six characters and the range name is prepended by a consecutive range number.
 #'
 #' The function is partly adapted from
 #' https://github.com/siemens/codeface@57bfbab58f75a91effb431842d01c76627071134 and
 #' https://github.com/siemens/codeface/commit/cd7b68c65ff7ae113e6c75275ce3798004ce7b09.
 #'
-#' @param ranges the revisions of the study
+#' @param ranges the (revision) ranges of the project
 generate.range.directory.names = function(ranges) {
     range.numbers = seq_along(ranges)
 
@@ -906,7 +906,7 @@ generate.range.directory.names = function(ranges) {
             revisions[1] = substr(revisions[1], 0, 6)
             revisions[2] = substr(revisions[2], 0, 6)
         }
-	return(paste0(formatC(range.number, width=3, flag="0"), "--", revisions[1], "-", revisions[2]))
+	return(paste0(formatC(range.number, width = 3, flag = "0"), "--", revisions[1], "-", revisions[2]))
     })
 
     names(directory.names) = ranges
