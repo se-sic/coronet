@@ -625,12 +625,13 @@ get.committer.not.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.not.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+    commits.df = range.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("author.name", "committer.name")]
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
@@ -651,12 +652,13 @@ get.committer.and.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.and.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+    commits.df = range.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("author.name", "committer.name")]
 
     ## Execute a query to get the commit count per person
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
@@ -677,12 +679,13 @@ get.committer.or.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.or.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data, columns = c("committer.name", "author.name"))[[1]]
+    commits.df = range.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("author.name", "committer.name")]
 
     ## Execute queries to get the commit count per person
     ungrouped = sqldf::sqldf("SELECT `committer.name` AS `name` FROM `commits.df`
@@ -712,12 +715,13 @@ get.committer.commit.count = function(range.data) {
     logging::logdebug("get.committer.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(range.data, columns = c("committer.name", "committer.email"))[[1]]
+    commits.df = range.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("committer.name")]
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
@@ -737,12 +741,13 @@ get.author.commit.count = function(proj.data) {
     logging::logdebug("get.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(proj.data)[[1]]
+    commits.df = proj.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("author.name")]
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
@@ -797,15 +802,13 @@ get.author.loc.count = function(proj.data) {
     logging::logdebug("get.author.loc.count: starting.")
 
     ## Get commit data
-    commits.df = get.commit.data(
-        proj.data,
-        columns = c("author.name", "added.lines", "deleted.lines")
-    )[[1]]
+    commits.df = proj.data$get.commits.filtered()
 
-    ## Return NA in case no commit data is available
-    if (all(is.na(commits.df))) {
-        return(NA)
-    }
+    ## For each commit hash, make sure there is only one row
+    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+    ## Restrict commits to relevant columns
+    commits.df = commits.df[c("author.name", "added.lines", "deleted.lines")]
 
     ## Execute a query to get the changed lines per author
     res = sqldf::sqldf("SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
