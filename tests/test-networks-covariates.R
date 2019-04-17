@@ -16,7 +16,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
-## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -388,12 +388,12 @@ test_that("Test add.vertex.attribute.commit.count.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 2L, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  2L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L,  2L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L, 2L)),
-        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 2L, 2L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L))
     )
 
     ## Test
@@ -416,12 +416,12 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L,  2L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L,  2L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L)),
-        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 2L, 2L))
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L))
     )
 
     ## Test
@@ -444,12 +444,12 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 2L, 3L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  3L)),
-        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 2L,  3L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L)),
-        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 2L,  3L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L))
     )
 
     ## Test
@@ -688,50 +688,50 @@ test_that("Test add.vertex.attribute.author.role.simple", {
     expected.attributes = list(
         range = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("peripheral", "core", "core")
+                c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("peripheral", "core", "core")
+                c("core"), c("core"), c("core", "core", "core")
             )
         ),
         cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             )
         ),
         all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("peripheral"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             )
         ),
         project.cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             )
         ),
         project.all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("peripheral"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             )
         ),
         complete = list(
             commit.count = network.covariates.test.build.expected(
-                c("peripheral"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("core", "core", "peripheral")
             )
         )
     )

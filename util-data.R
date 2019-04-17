@@ -1315,7 +1315,7 @@ get.commit.data = function(project.data, columns = c("author.name", "author.emai
     logging::logdebug("get.commit.data: starting.")
 
     ## Get commit data
-    commits.df = project.data$get.commits()
+    commits.df = project.data$get.commits.filtered()
 
     ## In case no commit data is available, return NA
     if (nrow(commits.df) == 0) {
