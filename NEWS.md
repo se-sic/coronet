@@ -44,6 +44,8 @@
 - Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
 - Add and enforce coding convention to use 'vertices' and not 'nodes'. Most importantly, the function `metrics.node.degrees` is renamed to `metrics.vertex.degrees`. (d35ce616db76adae06b34b4b241a35bfbe77e10d)
 - Adjust range directories' names to start with a consecutive range number and to conform with the directories created by [Codeface](https://github.com/se-passau/codeface) (b3e29472a57e26935a31645b96fbef7d7785c25a, f6b28fbe3bb3599784a42e102fa4fc1e480c2a7a)
+- Remove the two functions `get.author.class.activity` and `get.author.class.activity.overview` from the file `util-core-peripheral.R` (61b344a8ce6725ecf0415b108ada9ee08e1121d9)
+- Remove function `get.commit.data` from `util-data.R` and replace all calls to this function with statements of equivalent functionality despite the fact that they are now retrieving the commit data via `get.commits.filtered` instead of `get.commits` which was internally used in the function `get.commit.data` (4fc6b450cd70bc6c1c63f268aec805d6328849c6, 7fc454e9d8f3c951fcb9ac820f056f2fd08e6945, c4cf8d25d62d9448c4c2571ed973387835ac87c6, #70)
 
 ### Fixed
 - Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)

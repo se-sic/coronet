@@ -79,7 +79,7 @@ test_that("Commit-count classification using 'result.limit'" , {
     result = get.author.class.commit.count(proj.data, result.limit = 3)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Karl", "Olaf", "Thomas"), commit.count = c(2, 2, 2))
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), commit.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
     row.names(result$core) = NULL
@@ -93,7 +93,7 @@ test_that("LOC-count classification" , {
     result = get.author.class.loc.count(proj.data)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Björn", "Karl", "Olaf", "Thomas"), loc.count = c(2, 2, 2, 2))
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), loc.count = c(2, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
     row.names(result$core) = NULL
