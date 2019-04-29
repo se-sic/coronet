@@ -504,19 +504,20 @@ read.pasta = function(data.path) {
 #' Read and parse the issue data from the 'issues.list' file.
 #'
 #' @param data.path the path to the issue data
-#' @param issues.sources the sources of the issue data
+#' @param issues.sources the sources of the issue data. One or both of \code{"jira"} and \code{"github"}.
 #'
 #' @return the read and parsed issue data
-read.issues = function(data.path, issues.sources) {
+read.issues = function(data.path, issues.sources = c("jira", "github")) {
     logging::logdebug("read.issues: starting.")
 
-    ## create empty issue data
-    issue.data = create.empty.issues.list()
+    ## check arguments
+    issues.sources = match.arg(arg = issues.sources, several.ok = TRUE)
 
-    for (source in issues.sources) {
+    ## read data from choosen sources
+    issue.data = lapply(issues.sources, function(issue.source) {
 
         ## get file name of source issue data
-        filepath = file.path(data.path, sprintf("issues-%s.list", source))
+        filepath = file.path(data.path, sprintf("issues-%s.list", issue.source))
 
         ## read source issues from disk [can be empty]
         source.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
@@ -524,7 +525,7 @@ read.issues = function(data.path, issues.sources) {
 
         ## handle the case that the list of issues is empty
         if (inherits(source.data, "try-error")) {
-            logging::logwarn("There are no %s issue data available for the current environment.", source)
+            logging::logwarn("There are no %s issue data available for the current environment.", issue.source)
             logging::logwarn("Datapath: %s", data.path)
             return(create.empty.issues.list())
         }
@@ -534,39 +535,44 @@ read.issues = function(data.path, issues.sources) {
         source.data[["event.id"]] = NA
 
         ## add source column to data
-        source.data["issue.source"] = source
+        source.data["issue.source"] = issue.source
 
         ## set proper artifact type for proper vertex attribute 'artifact.type'
         source.data["artifact.type"] = "IssueEvent"
 
-        ## merge source-data to issue-data
-        issue.data = rbind(issue.data, source.data)
+        ## set proper column names
+        colnames(source.data) = ISSUES.LIST.COLUMNS
+
+        return(source.data)
+    })
+
+    ## combine issue data from all sources
+    issue.data = plyr::rbind.fill(issue.data)
+
+    if(!plyr::empty(issue.data)){
+
+        ## set pattern for issue ID for better recognition
+        issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
+
+        ## properly parse and store data in list-type columns
+        issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
+        issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
+        issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
+        issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
+
+        ## convert dates and sort by 'date' column
+        issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
+        issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
+        issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
+        issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+        issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+
+        ## generate a unique event ID from issue ID, author, and date
+        issue.data[["event.id"]] = sapply(
+            paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
+            function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
+        )
     }
-
-    ## set proper column names
-    colnames(issue.data) = ISSUES.LIST.COLUMNS
-
-    ## set pattern for issue ID for better recognition
-    issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
-
-    ## properly parse and store data in list-type columns
-    issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
-    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
-    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
-
-    ## convert dates and sort by 'date' column
-    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
-    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
-    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
-    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
-
-    ## generate a unique event ID from issue ID, author, and date
-    issue.data[["event.id"]] = sapply(
-        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
-        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
-    )
 
     logging::logdebug("read.issues: finished.")
     return(issue.data)
