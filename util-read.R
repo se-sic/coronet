@@ -71,7 +71,7 @@ ISSUES.LIST.COLUMNS = c(
     "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
     "event.name", # event type
     "author.name", "author.email", # auhtor information
-    "date", "event.info.1", "event.info.2","event.id", # event details
+    "date", "event.info.1", "event.info.2", "event.id", # event details
     "issue.source", # source information
     "artifact.type" # artifact type
 )
@@ -83,7 +83,6 @@ ISSUES.LIST.DATA.TYPES = c(
     "character", "character",
     "POSIXct", "character", "list()", "character",
     "character",
-
     "character"
 )
 
@@ -547,32 +546,28 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     })
 
     ## combine issue data from all sources
-    issue.data = plyr::rbind.fill(issue.data)
+    issue.data = do.call(rbind, issue.data)
 
-    if(!plyr::empty(issue.data)){
+    ## set pattern for issue ID for better recognition
+    issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
 
-        ## set pattern for issue ID for better recognition
-        issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
+    ## properly parse and store data in list-type columns
+    issue.data[["issue.type"]] = I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
+    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
+    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
+    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
 
-        ## properly parse and store data in list-type columns
-        issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
-        issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
-        issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-        issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
+    ## convert dates and sort by 'date' column
+    issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
+    issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
+    issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
-        ## convert dates and sort by 'date' column
-        issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
-        issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
-        issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
-        issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
-        issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
-
-        ## generate a unique event ID from issue ID, author, and date
-        issue.data[["event.id"]] = sapply(
-            paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
-            function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
-        )
-    }
+    ## generate a unique event ID from issue ID, author, and date
+    issue.data[["event.id"]] = sapply(
+        paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
+        function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
+    )
 
     logging::logdebug("read.issues: finished.")
     return(issue.data)

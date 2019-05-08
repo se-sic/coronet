@@ -253,11 +253,12 @@ test_that("Read and parse the pasta data.", {
     expect_identical(pasta.data.read, pasta.data.expected, info = "PaStA data.")
 })
 
-test_that("Read and parse the issue data with default source.", {
+test_that("Read and parse the issue data.", {
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     ## read the actual data from all sources
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     issue.data.read = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
 
     ## read the actual data from jira
@@ -333,10 +334,10 @@ test_that("Read and parse the issue data with default source.", {
                                                      "open", "open", "", "open", "closed", "930af63a030fb92e48eddff01f53284c3eeba80e",
                                                      "", "", "Thomas", "Thomas", "open", "Thomas", "Thomas", "fb52357f05958007b867da06f4077abdc04fa0d8",
                                                      "udo", "udo", "decided", "open"),
-                                    event.info.2 = NA, # is assigned later
-                                    event.id = NA, # is assigned later
-                                    issue.source = c(rep("jira", 19), rep("github", 17)),
-                                    artifact.type = "IssueEvent"
+                                     event.info.2 = NA, # is assigned later
+                                     event.id = NA, # is assigned later
+                                     issue.source = c(rep("jira", 19), rep("github", 17)),
+                                     artifact.type = "IssueEvent"
                                      )
 
     issue.data.expected[["event.info.2"]] = I(list(
@@ -361,9 +362,9 @@ test_that("Read and parse the issue data with default source.", {
     issue.data.expected.github = subset(issue.data.expected, issue.data.expected[["issue.source"]] == "github")
 
     ## set row names as integers
-    attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = 36, by = 1))
-    attr(issue.data.expected.jira, "row.names") = as.integer(seq(from = 1, to = 19, by = 1))
-    attr(issue.data.expected.github, "row.names") = as.integer(seq(from = 1, to = 17, by = 1))
+    attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected), by = 1))
+    attr(issue.data.expected.jira, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.jira), by = 1))
+    attr(issue.data.expected.github, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.github), by = 1))
 
     ## sort by date
     issue.data.expected = issue.data.expected[order(issue.data.expected[["date"]], decreasing = FALSE), ]
