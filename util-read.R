@@ -552,10 +552,10 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
 
     ## properly parse and store data in list-type columns
-    issue.data[["issue.type"]] = I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
-    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
-    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
+    issue.data[["issue.type"]] = I(unname(lapply(issue.data[["issue.type"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::fromJSON, simplifyVector = FALSE)))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
