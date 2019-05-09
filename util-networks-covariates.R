@@ -418,7 +418,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
                                                default.value = NA,
-                                               combine.all.activity.types = FALSE) {
+                                               combine.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
@@ -428,20 +428,20 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
     ## the default value appended to vertices where no data is available is structured
     ## and named analogously to the vertex attributes containing available data.
     vertex.default = default.value
-    if (!combine.all.activity.types) {
+    if (!combine.activity.types) {
         vertex.default = rep(list(vertex.default), length(parsed.activity.types))
         names(vertex.default) = parsed.activity.types
     }
 
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types, type.default)
+        data = get.first.activity.data(range.data, parsed.activity.types, type.default)
 
         ## If configured, find minimum over all activity types per author, for example:
         ## data
         ##      list(authorA = list(mails = 1, commits = 2), authorB = list(mails = 3, commits = 3))
         ## yields
         ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
-        if (combine.all.activity.types) {
+        if (combine.activity.types) {
             data = parallel::mclapply(data, function(item.list) {
                 min.value = min(do.call(c, item.list), na.rm = TRUE)
                 return(list(all.activities = min.value))
@@ -754,16 +754,11 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'
 #' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
 #' @param range.data The data to base the computation on.
-#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
-#'                                           \code{activity.types} is of interest (instead of one value per type).
-#'                                           [default: FALSE]
 #' @param default.value The default value to add if no information is available per author and activity type. [default: NA]
 #'
-#' @return A list with authors as keys and a POSIXct list in the following format as value:
-#'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
-#'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
+#' @return A list containing per author a list of first activity values named with the corresponding activity type.
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
-                                   take.first.over.all.activity.types = FALSE, default.value = NA) {
+                                   default.value = NA) {
 
     ## get data for each activity type and extract minimal date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors

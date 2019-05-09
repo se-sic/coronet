@@ -615,7 +615,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
-            default.value = NA, combine.all.activity.types = TRUE
+            default.value = NA, combine.activity.types = TRUE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
@@ -638,7 +638,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
-            default.value = NA, combine.all.activity.types = FALSE
+            default.value = NA, combine.activity.types = FALSE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
@@ -669,7 +669,7 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails"), name = "first.activity", aggregation.level = level,
-            default.value = NA, combine.all.activity.types = FALSE
+            default.value = NA, combine.activity.types = FALSE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
