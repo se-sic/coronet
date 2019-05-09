@@ -4,8 +4,8 @@
 ## Unversioned
 
 ### Added
-- It is now possible to base the computation of the vertex attribute active.ranges on multiple data sources. Furthermore,
-the flag combine.all.activity.types of the function add.vertex.attribute.active.ranges indicates, if the generated vertex
+- It is now possible to base the computation of the vertex attribute 'active.ranges' on multiple data sources. Furthermore,
+the flag 'combine.activity.types' of the function 'add.vertex.attribute.active.ranges' indicates, if the generated vertex
 attribute contains a list of ranges for every data source or one combined list of ranges.
 (926afbbbafecaac98a074b612bf5f7ce6b201e45, babddbd89a28c089527bc5a5eca34d314d50efeb,
 674372b1ee4d2733e6d9c471efdecf42b470d2e3)
@@ -27,7 +27,7 @@ attribute contains a list of ranges for every data source or one combined list o
 - Add possibility to choose if only issues from JIRA, only issues from GitHub, or all issues shall be read in (PR #159, d677949bedc3567b02cc7a1f3daffa0a785aa7a8, a3e71326d8deb861fcc4434c580e12570f7f8fa0, ea2618134efbfd8159ea49bd6fd21f4d11f3faeb). Therefore two test cases, one that reads in only JIRA issues and one that reads in only GitHub issues, are added to the issue read test (65b1acd7895b5330fab1d53d7bd27ab5dbd25192, 2d897cbb38853b20e1adba88f617908033142aef)
 
 ### Changed/Improved
-- In first activity computation, the default.value is now used analogous to active ranges computation. The given value is used as default per
+- In first activity computation, the default value is now used analogous to active ranges computation. The given value is used as default per
 author and type. As vertex default, a value of the same type as given attributes is constructed.
 (94cf1028fdac9b988cb00c14ad390125c79bf1da, 8ea6f546a4ca3c2995e18728191eba65fbb8626f)
 - Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)

@@ -876,16 +876,43 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
 }
 
 
-#' This function takes a named nested list, for example \code{l = list(outer1 = list(middle11 = list("innerA", "innerB"),
-#' middle12 = list("innerB")), outer2 = list("innerA"))}. For every distinct innermost element (every element of the
-#' nested list, that isn't itself a list, in the example list l \code{"innerA" and "innerB"}), the whole nested list
-#' structure is searched for the specific element. Every part of the list structure, that doesn't contain the specific
-#' innermost element, is removed. For \code{"innerB"} in l for example, the whole \code{outer2} is removed. The resulting
-#' list structures are combined to a list named with the corresponding (previous) innermost elements and returned. Called
-#' with the example list l, this function returns a list like \code{list(innerA=list(outer1=list(middle11 = "middle11"),
-#' outer2 = "outer2"), innerB = list(outer1 = list(middle11 = "middle11", middle12 = "middle12")))}.
+#' This function takes a nested list and switches the order of the nesting levels: the innermost level is moved to the
+#' outside. This is done by reproducing the given list structure for every element occuring in one of the innermost lists
+#' and then deleting every sublist in which the element does not occur. For example, on input
 #'
-#' @param nested.list A list nested AT LEAST ONCE, that means: the elements of the outermost list are also lists.
+#' type.range.author = list(
+#'     "type1" = list(
+#'         "range1" = list("authorB", "authorC", "authorD"),
+#'         "range3" = list("authorA", "authorC")
+#'     ),
+#'     "type2" = list(
+#'         "range2" = list("authorB"),
+#'         "range3" = list("authorC", "authorD")
+#'     )
+#' )
+#'
+#' the function will return a new list
+#'
+#' author.type.range = list(
+#'     "authorB" = list(
+#'         "type1" = list("range1"),
+#'         "type2" = list("range2")
+#'     ),
+#'     "authorC" = list(
+#'         "type1" = list("range1", "range3"),
+#'         "type2" = list("range3")
+#'     ),
+#'     "authorD" = list(
+#'         "type1" = list("range1"),
+#'         "type2" = list("range3")
+#'     ),
+#'     "authorA" = list(
+#'         "type1" = list("range3")
+#'     )
+#' )
+#'
+#' @param nested.list A list nested AT LEAST ONCE, that means: the elements of the outermost list are also lists. The
+#'                    nesting depth of all inner lists must be the same and the lists must be named at every nesting level.
 #'
 #' @return The nested list with the innermost level as new outermost level.
 list.by.inner.level = function(nested.list) {
@@ -893,7 +920,7 @@ list.by.inner.level = function(nested.list) {
 
     ## Returns the given structure of nested lists with all parts removed, that do not contain the given
     ## innerst.element.
-    get.structure.for = function(innerst.element, structure, name="default") {
+    get.structure.for = function(innerst.element, structure, name = "default") {
 
         ## Base case 1: an empty list is returned as it is.
         if (length(structure) == 0) {
