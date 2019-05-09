@@ -310,6 +310,7 @@ get.expected.active.ranges = function() {
     expected.attributes = network.covariates.test.build.expected(
         list(bjoern), list(olaf), list(olaf, karl, thomas)
     )
+    return(expected.attributes)
 }
 
 #' Get splitted test data
@@ -716,7 +717,7 @@ test_that("Test default values of add.vertex.attribute.active.ranges", {
         network = lapply(network, function(person) {
             person.cut.activity.types = (c(person["mails"], person["issues"]))
             person.replaced.expected.default = lapply(person.cut.activity.types, function(activity.type) {
-                if(length(activity.type) == 0) {
+                if (length(activity.type) == 0) {
                     activity.type = "test.default.value"
                 }
                 return(activity.type)

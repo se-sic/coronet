@@ -436,11 +436,11 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
     compute.attr = function(range, range.data, net) {
         data = get.first.activity.data(range.data, parsed.activity.types, take.first.over.all.activity.types, type.default)
 
-        ## find minima over all activity types if configured; for example:
-        ##     list(
-        ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
-        ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
-        ##     )
+        ## If configured, find minimum over all activity types per author, for example:
+        ## data
+        ##      list(authorA = list(mails = 1, commits = 2), authorB = list(mails = 3, commits = 3))
+        ## yields
+        ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
         if (combine.all.activity.types) {
             data = parallel::mclapply(data, function(item.list) {
                 min.value = min(do.call(c, item.list), na.rm = TRUE)
@@ -485,7 +485,7 @@ add.vertex.attribute.active.ranges = function(list.of.networks, project.data, na
         data = get.active.ranges.data(parsed.activity.types, net.to.range.list, type.default)
 
         ## combine the active ranges of all attributes to one list if desired
-        if(combine.activity.types) {
+        if (combine.activity.types) {
             data = lapply(data, function(person) {
                 flattened.person = (list("all.activity.types" = as.list(unique(unlist(person)))))
                 return(list(flattened.person))
@@ -757,6 +757,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
 #'                                           [default: FALSE]
+#' @param default.value The default value to add if no information is available per author and activity type. [default: NA]
 #'
 #' @return A list with authors as keys and a POSIXct list in the following format as value:
 #'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
@@ -831,6 +832,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 #'
 #' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
 #' @param net.to.range.list The data to base the computation on, split by networks.
+#' @param default.value The default value to add if no information is available per author and activity type. [default: list()]
 #'
 #' @return A list with elements representing the authors, each containing a list of elements representing the activity
 #'         types, each containing a list of active ranges.
@@ -920,7 +922,7 @@ list.by.inner.level = function(nested.list) {
             na.removed = result.of.recursive.calls[sapply(result.of.recursive.calls, function(x) any(!is.na(x)))]
 
             ## if element names equal content values in the recursive result, remove names
-            if(identical(unlist(na.removed, use.names = FALSE), names(na.removed))) {
+            if (identical(unlist(na.removed, use.names = FALSE), names(na.removed))) {
                 na.removed = unname(na.removed)
             }
 
