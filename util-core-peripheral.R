@@ -1093,17 +1093,20 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     author.cumsum = cumsum(author.data[[calc.base.name]])
     buffer.value = which(
         author.cumsum > author.class.threshold |
-            sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
+            as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
     )
-    if (is.infinite(min(buffer.value))) {
+
+    # Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following 'if' statement
+    min = suppressWarnings(min(buffer.value))
+    if (is.infinite(min)) {
         author.class.threshold.idx = nrow(author.data)
     } else {
-        author.class.threshold.idx = min(buffer.value)
+        author.class.threshold.idx = min
     }
 
     ## classify authors according to threshold
     core.classification = rep(FALSE, nrow(author.data))
-    core.classification[1:author.class.threshold.idx] = TRUE
+    core.classification[seq_len(author.class.threshold.idx)] = TRUE
 
     ## With no activity/collaboration occurring, all authors are classified as peripheral.
     if (author.class.threshold == 0) {
