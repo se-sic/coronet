@@ -103,33 +103,39 @@ test_that("LOC-count classification" , {
 
 test_that("get.author.class", {
 
-    ## Arrange
+    ## Check all same values:
+    ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC", "DDD", "EEE"), centrality = c(1, 1, 1, 1, 1))
-
-    ## Act
+    ## 2) Act
     result = get.author.class(prepared.authors, "centrality")
-
-    ## Assert
+    ## 3) Assert
     expected = list(core = prepared.authors[1:4, ], peripheral = prepared.authors[5, ])
-    expect_equal(result, expected)
+    expect_identical(result, expected)
 
-    ## Arrange
+    ## Check fractions and inherent rounding:
+    ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0.5, 0.29, 0.21))
-
-    ## Act
+    ## 2) Act
     result = get.author.class(prepared.authors, "centrality")
-
-    ## Assert
+    ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors[0, ])
-    expect_equal(result, expected)
+    expect_identical(result, expected)
 
-    ## Arrange
+    ## Check all zero values:
+    ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0, 0, 0))
-
-    ## Act
+    ## 2) Act
     result = get.author.class(prepared.authors, "centrality")
-
-    ## Assert
+    ## 3) Assert
     expected = list(core = prepared.authors[0, ], peripheral = prepared.authors)
-    expect_equal(result, expected)
+    expect_identical(result, expected)
+
+    ## Check empty input data.frame:
+    ## 1) Arrange
+    prepared.authors = data.frame(author.name = character(0), centrality = numeric(0))
+    ## 2) Act
+    result = get.author.class(prepared.authors, "centrality")
+    ## 3) Assert
+    expected = list(core = prepared.authors, peripheral = prepared.authors)
+    expect_identical(result, expected)
 })
