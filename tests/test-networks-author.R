@@ -470,22 +470,22 @@ test_that("Network construction of the undirected author-issue network with all 
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c(rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-3>
-                                rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Thomas", 7), rep("Thomas", 3), rep("Björn", 6), # <issue-6>
-                                rep("Thomas", 9), rep("Thomas", 6), rep("Björn", 11), # <issue-ZEPPELIN-328>
-                                rep("Björn", 6) # <issue-ZEPPELIN-332>
+    edges = data.frame(from = c(rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-github-3>
+                                rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Thomas", 7), rep("Thomas", 3), rep("Björn", 6), # <issue-github-6>
+                                rep("Thomas", 9), rep("Thomas", 6), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
+                                rep("Björn", 6) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       to = c(rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-3>
-                              rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-6>
-                              rep("Björn", 9), rep("Olaf", 6), rep("Olaf", 11), # <issue-ZEPPELIN-328>
-                              rep("Max", 6) # <issue-ZEPPELIN-332>
+                       to = c(rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-github-3>
+                              rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-github-6>
+                              rep("Björn", 9), rep("Olaf", 6), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
+                              rep("Max", 6) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-3>
+                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-github-3>
                                                       "2016-08-31 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
                                                       "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02",
                                                       "2016-08-31 16:45:09", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
                                                       "2016-07-12 16:06:30", "2016-10-05 16:45:09",
-                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-6>
+                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-github-6>
                                                       "2016-10-13 15:30:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
                                                       "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
                                                       "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2016-07-12 15:30:02",
@@ -495,7 +495,7 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2016-07-12 16:03:59", "2016-10-13 15:30:02", "2017-05-23 12:31:34",
                                                       "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
                                                       "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2017-05-23 12:31:34",
-                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-05 21:46:30", # <issue-ZEPPELIN-328>
+                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-05 21:46:30", # <issue-jira-ZEPPELIN-328>
                                                       "2013-05-05 21:49:21", "2013-05-05 21:49:34", "2013-05-06 01:04:34",
                                                       "2013-05-25 03:48:41", "2013-05-25 04:08:07", "2013-06-01 06:53:06",
                                                       "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
@@ -504,24 +504,24 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                                       "2013-06-01 06:53:06", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
                                                       "2013-05-25 06:22:23", "2013-06-01 06:50:26",
-                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-ZEPPELIN-332>
+                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-jira-ZEPPELIN-332>
                                                       "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52"
                                                       )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( rep("<issue-3>", 14), rep("<issue-6>", 30), rep("<issue-ZEPPELIN-328>", 26),
-                                     rep("<issue-ZEPPELIN-332>", 6)),
-                       event.name = c("created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-3>
+                       issue.id = c( rep("<issue-github-3>", 14), rep("<issue-github-6>", 30), rep("<issue-jira-ZEPPELIN-328>", 26),
+                                     rep("<issue-jira-ZEPPELIN-332>", 6)),
+                       event.name = c("created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
                                       "commented", "add_link", "referenced", "referenced", "assigned", "state_updated", "referenced",
-                                      "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "mentioned", # <issue-6>
+                                      "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "mentioned", # <issue-github-6>
                                       "subscribed", "mentioned", "subscribed", "commented", "mentioned", "subscribed", "labeled",
                                       "commented", "add_link", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
                                       "commented", "add_link", "labeled", "mentioned", "subscribed", "mentioned", "subscribed",
                                       "commented", "labeled",
-                                      "created", "commented", "commented", "commented", "commented", "commented", "commented", # <issue-ZEPPELIN-328>
+                                      "created", "commented", "commented", "commented", "commented", "commented", "commented", # <issue-jira-ZEPPELIN-328>
                                       "commented", "resolution_updated", "created", "commented", "commented", "commented",
                                       "commented", "commented", "commented", "commented", "commented", "commented", "commented",
                                       "commented", "resolution_updated", "commented", "commented", "commented", "commented",
-                                      "created", "commented", "commented", "commented", "commented", "commented" # <issue-ZEPPELIN-332>
+                                      "created", "commented", "commented", "commented", "commented", "commented" # <issue-jira-ZEPPELIN-332>
                                       ),
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
@@ -555,16 +555,16 @@ test_that("Network construction of the undirected author-issue network with just
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c(rep("Thomas", 2), # <issue-6>
-                                rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-ZEPPELIN-328>
-                                rep("Björn", 5) # <issue-ZEPPELIN-332>
+    edges = data.frame(from = c(rep("Thomas", 2), # <issue-github-6>
+                                rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-jira-ZEPPELIN-328>
+                                rep("Björn", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       to = c(rep("Björn", 2), # <issue-6>
-                              rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-ZEPPELIN-328>
-                              rep("Max", 5) # <issue-ZEPPELIN-332>
+                       to = c(rep("Björn", 2), # <issue-github-6>
+                              rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-jira-ZEPPELIN-328>
+                              rep("Max", 5) # <issue-jira-ZEPPELIN-332>
                               ),
-                       date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-6>
-                                                      "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-ZEPPELIN-328>
+                       date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-github-6>
+                                                      "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-jira-ZEPPELIN-328>
                                                       "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
                                                       "2013-05-25 04:08:07", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
                                                       "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
@@ -572,11 +572,11 @@ test_that("Network construction of the undirected author-issue network with just
                                                       "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                                       "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
                                                       "2013-06-01 06:50:26",
-                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2016-07-15 20:07:47", # <issue-ZEPPELIN-332>
+                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2016-07-15 20:07:47", # <issue-jira-ZEPPELIN-332>
                                                       "2016-07-27 20:12:08", "2016-07-28 06:27:52"
                                                       )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( rep("<issue-6>", 2), rep("<issue-ZEPPELIN-328>", 22), rep("<issue-ZEPPELIN-332>", 5) ),
+                       issue.id = c( rep("<issue-github-6>", 2), rep("<issue-jira-ZEPPELIN-328>", 22), rep("<issue-jira-ZEPPELIN-332>", 5) ),
                        event.name = "commented",
                        weight = 1,
                        type = TYPE.EDGES.INTRA,

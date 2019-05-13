@@ -254,15 +254,24 @@ test_that("Read and parse the pasta data.", {
 })
 
 test_that("Read and parse the issue data.", {
-
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
-    ## read the actual data
-    issue.data.read = read.issues(proj.conf$get.value("datapath.issues"))
+    ## read the actual data from all sources
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
+    issue.data.read = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
+
+    ## read the actual data from jira
+    proj.conf$update.value("issues.from.source", "jira")
+    issue.data.read.jira = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
+
+    ## read the actual data from github
+    proj.conf$update.value("issues.from.source", "github")
+    issue.data.read.github = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
 
     ## build the expected data.frame
-    issue.data.expected = data.frame(issue.id = sprintf("<issue-%s>", c(rep("ZEPPELIN-328", 13), rep( "ZEPPELIN-332", 6), rep(3, 7),rep(6,10))),
+    issue.data.expected = data.frame(issue.id = c(rep("<issue-jira-ZEPPELIN-328>", 13), rep("<issue-jira-ZEPPELIN-332>", 6),
+                                                  rep("<issue-github-3>", 7), rep("<issue-github-6>", 10)),
                                      issue.title = c(rep("[ZEPPELIN-328] Interpreter page should clarify the % magic syntax for interpreter group.name", 13),
                                                      rep("[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table", 6),
                                                      rep("Error in construct.networks.from.list for openssl function networks", 7),
@@ -320,15 +329,16 @@ test_that("Read and parse the issue data.", {
                                                                    "2016-10-05 15:30:02", "2016-10-13 15:30:02",
                                                                    "2016-12-07 15:30:02", "2016-12-07 15:30:02",
                                                                    "2017-05-23 12:31:34", "2017-05-23 12:32:39")),
-                                    event.info.1 = c("open", "open", "open", "open", "open", "open", "open", "open", "open",
+                                     event.info.1 = c("open", "open", "open", "open", "open", "open", "open", "open", "open",
                                                      "open", "open", "open", "fixed", "open", "open", "open", "open", "open",
                                                      "open", "open", "", "open", "closed", "930af63a030fb92e48eddff01f53284c3eeba80e",
                                                      "", "", "Thomas", "Thomas", "open", "Thomas", "Thomas", "fb52357f05958007b867da06f4077abdc04fa0d8",
                                                      "udo", "udo", "decided", "open"),
-                                    event.info.2 = NA, # is assigned later
-                                    event.id = NA, # is assigned later
-                                    artifact.type = "IssueEvent"
-                                    )
+                                     event.info.2 = NA, # is assigned later
+                                     event.id = NA, # is assigned later
+                                     issue.source = c(rep("jira", 19), rep("github", 17)),
+                                     artifact.type = "IssueEvent"
+                                     )
 
     issue.data.expected[["event.info.2"]] = I(list(
                                                 list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
@@ -347,12 +357,22 @@ test_that("Read and parse the issue data.", {
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
+    # split the expected data to only jira and only github data
+    issue.data.expected.jira = subset(issue.data.expected, issue.data.expected[["issue.source"]] == "jira")
+    issue.data.expected.github = subset(issue.data.expected, issue.data.expected[["issue.source"]] == "github")
+
     ## set row names as integers
-    attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = 36, by = 1))
+    attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected), by = 1))
+    attr(issue.data.expected.jira, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.jira), by = 1))
+    attr(issue.data.expected.github, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.github), by = 1))
 
     ## sort by date
     issue.data.expected = issue.data.expected[order(issue.data.expected[["date"]], decreasing = FALSE), ]
+    issue.data.expected.jira = issue.data.expected.jira[order(issue.data.expected.jira[["date"]], decreasing = FALSE), ]
+    issue.data.expected.github = issue.data.expected.github[order(issue.data.expected.github[["date"]], decreasing = FALSE), ]
 
     ## check the results
     expect_identical(issue.data.read, issue.data.expected, info = "Issue data.")
+    expect_identical(issue.data.read.jira, issue.data.expected.jira, info = "Issue data jira.")
+    expect_identical(issue.data.read.github, issue.data.expected.github, info = "Issue data github.")
 })

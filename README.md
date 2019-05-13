@@ -520,6 +520,9 @@ There is no way to update the entries, except for the revision-based parameters.
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
+- `issues.from.source`
+    * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
+    * [*`github`, `jira`*]
 - `synchronicity`
     * Read and add synchronicity data to commits (column `synchronicity`)
     * [`TRUE`, *`FALSE`*]

@@ -72,6 +72,7 @@ ISSUES.LIST.COLUMNS = c(
     "event.name", # event type
     "author.name", "author.email", # auhtor information
     "date", "event.info.1", "event.info.2", "event.id", # event details
+    "issue.source", # source information
     "artifact.type" # artifact type
 )
 
@@ -81,6 +82,7 @@ ISSUES.LIST.DATA.TYPES = c(
     "character",
     "character", "character",
     "POSIXct", "character", "list()", "character",
+    "character",
     "character"
 )
 
@@ -501,48 +503,63 @@ read.pasta = function(data.path) {
 #' Read and parse the issue data from the 'issues.list' file.
 #'
 #' @param data.path the path to the issue data
+#' @param issues.sources the sources of the issue data. One or both of \code{"jira"} and \code{"github"}.
 #'
 #' @return the read and parsed issue data
-read.issues = function(data.path) {
+read.issues = function(data.path, issues.sources = c("jira", "github")) {
     logging::logdebug("read.issues: starting.")
 
-    ## get file name of issue data
-    filepath = file.path(data.path, "issues.list")
+    ## check arguments
+    issues.sources = match.arg(arg = issues.sources, several.ok = TRUE)
 
-    ## read issues from disk [can be empty]
-    issue.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
+    ## read data from choosen sources
+    issue.data = lapply(issues.sources, function(issue.source) {
 
-    ## handle the case that the list of commits is empty
-    if (inherits(issue.data, "try-error")) {
-        logging::logwarn("There are no Github issue data available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(create.empty.issues.list())
-    }
+        ## get file name of source issue data
+        filepath = file.path(data.path, sprintf("issues-%s.list", issue.source))
 
-    ## create (now empty) column 'event.id' to properly set column names
-    ## (this column is reset later)
-    issue.data["event.id"] = NA
+        ## read source issues from disk [can be empty]
+        source.data = try(read.table(filepath, header = FALSE, sep = ";", strip.white = TRUE,
+                                    encoding = "UTF-8"), silent = TRUE)
 
-    ## set proper artifact type for proper vertex attribute 'artifact.type'
-    issue.data["artifact.type"] = "IssueEvent"
+        ## handle the case that the list of issues is empty
+        if (inherits(source.data, "try-error")) {
+            logging::logwarn("There are no %s issue data available for the current environment.", issue.source)
+            logging::logwarn("Datapath: %s", data.path)
+            return(create.empty.issues.list())
+        }
 
-    ## set proper column names
-    colnames(issue.data) = ISSUES.LIST.COLUMNS
+        ## create (now empty) column 'event.id' to properly set column names
+        ## (this column is reset later)
+        source.data[["event.id"]] = NA
+
+        ## add source column to data
+        source.data["issue.source"] = issue.source
+
+        ## set proper artifact type for proper vertex attribute 'artifact.type'
+        source.data["artifact.type"] = "IssueEvent"
+
+        ## set proper column names
+        colnames(source.data) = ISSUES.LIST.COLUMNS
+
+        return(source.data)
+    })
+
+    ## combine issue data from all sources
+    issue.data = do.call(rbind, issue.data)
 
     ## set pattern for issue ID for better recognition
-    issue.data[["issue.id"]] = sprintf("<issue-%s>", issue.data[["issue.id"]])
+    issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
 
     ## properly parse and store data in list-type columns
-    issue.data[["issue.type"]]= I(unname(lapply(issue.data[["issue.type"]], jsonlite::parse_json)))
-    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::parse_json)))
-    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::parse_json)))
-    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::parse_json)))
+    issue.data[["issue.type"]] = I(unname(lapply(issue.data[["issue.type"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["issue.resolution"]] = I(unname(lapply(issue.data[["issue.resolution"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::fromJSON, simplifyVector = FALSE)))
+    issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::fromJSON, simplifyVector = FALSE)))
 
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
-    issue.data[["closing.date"]][ issue.data[["closing.date"]] == "" ] = NA
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 

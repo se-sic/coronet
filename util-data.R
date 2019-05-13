@@ -18,6 +18,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -662,7 +663,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if issues have not been read yet do this
             if (is.null(private$issues)) {
-                private$issues = read.issues(self$get.data.path.issues())
+                private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
             }
             private$extract.timestamps(source = "issues")
 
