@@ -138,4 +138,12 @@ test_that("get.author.class", {
     ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors)
     expect_identical(result, expected)
+
+    ## Check empty input data (no columns):
+    expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo"), NA) # expect that no error occurs
+    ## Check empty input data (not enough columns) (1):
+    expect_error(get.author.class(data.frame(), "foo"), NA) # expect that no error occurs
+    ## Check empty input data (not enough columns) (2):
+    expect_error(get.author.class(data.frame(author.name = character(0)), "foo"), NA) # expect that no error occurs
+
 })

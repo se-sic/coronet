@@ -1057,7 +1057,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #' @param author.data.frame a dataframe containing at least two columns. The column called "author.name" should store
 #'                          the author's names, the other one, whose name must be specified in the parameter
 #'                          \code{calc.base.name}, should store the authors' centrality values.
-#' @param calc.base.name the name of the second column of the dataframe specified in the parameter
+#' @param calc.base.name the name of the classification column of the dataframe specified in the parameter
 #'                       \code{author.data.frame}
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
@@ -1069,6 +1069,14 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #'         centrality values in the second column.
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
+
+    ## Make sure that we have enough data for a classification
+    if (ncol(author.data.frame) < 2) {
+        author.data.frame = create.empty.data.frame(
+            columns = c("author.name", calc.base.name),
+            data.types = list("character", "numeric")
+        )
+    }
 
     ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
