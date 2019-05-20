@@ -942,3 +942,64 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unit tests for empty attribute data -------------------------------------
+
+#' Test addition of attributes despite of empty data
+test_that("Test addition of attributes despite of empty data", {
+
+    bins = get.date.from.string(c("2010-01-01", "2010-02-01"))
+    range = construct.ranges(bins)
+
+    ## construct "empty" RangeData object:
+    ## 1) get ProjectData object
+    proj.data = get.network.covariates.test.networks()[["project.data"]]
+    ## 2) split it with obscure ranges to get rid of data
+    proj.data.empty = split.data.time.based(project.data = proj.data, bins = bins)[[1]]
+
+    ## construct empty network
+    networks = list(create.empty.network(add.attributes = TRUE))
+    names(networks) = range
+
+
+    ## add commit-count attribute
+    net.commit.count = add.vertex.attribute.commit.count.author(networks, proj.data.empty, default = 0L)[[1]]
+    expect_true("commit.count" %in% igraph::list.vertex.attributes(net.commit.count))
+
+    ## add author-role attribute:
+    ## 1) construct empty classification
+    classification = list(get.author.class(data.frame(), "foo"))
+    names(classification) = range
+    ## 2) add attribute
+    net.author.role = add.vertex.attribute.author.role(networks, classification, default = "unclassified")[[1]]
+    expect_true("author.role" %in% igraph::list.vertex.attributes(net.author.role))
+
+})
+
+#' Test addition of attributes despite of non-captured vertices
+test_that("Test addition of attributes despite of non-captured vertices", {
+
+    bins = get.date.from.string(c("2010-01-01", "2010-02-01"))
+    range = construct.ranges(bins)
+
+    ## construct "empty" RangeData object:
+    ## 1) get ProjectData object
+    proj.data = get.network.covariates.test.networks()[["project.data"]]
+    ## 2) split it with obscure ranges to get rid of data
+    proj.data.empty = split.data.time.based(project.data = proj.data, bins = bins)[[1]]
+
+    ## construct empty network with one additional vertex
+    network = create.empty.network(add.attributes = TRUE) +
+        igraph::vertices("<unknown-author>", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
+    networks = list(network)
+    names(networks) = range
+
+    ## add commit-count attribute
+    net.commit.count = add.vertex.attribute.commit.count.committer.and.author(networks, proj.data.empty, default = 0L)[[1]]
+
+    ## check existence and proper value
+    expect_true("commit.count.committer.and.author" %in% igraph::list.vertex.attributes(net.commit.count))
+    expect_identical(igraph::get.vertex.attribute(net.commit.count, "commit.count.committer.and.author"), 0L)
+
+})

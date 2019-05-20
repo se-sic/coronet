@@ -90,7 +90,20 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
             current.network = net.to.range[["network"]]
             range.data = net.to.range[["data"]]
 
-            attr.df = compute.attr(range, range.data, current.network)
+            attrs.by.vertex.name = compute.attr(range, range.data, current.network)
+
+            ## catch the primitive case that the list of given attributes is empty or not set
+            if (length(attrs.by.vertex.name) == 0 || is.null(attrs.by.vertex.name)) {
+                ## construct list of attribute name and type
+                attributes = structure(class(default.value), names = attr.name)
+                ## add the vertex attribute (default value = 'NA')
+                net.with.attr = add.attributes.to.network(current.network, "vertex", attributes)
+                ## overwrite set vertex attribute with 'default.value', given the case that there are indeed vertices
+                ## in the current network
+                net.with.attr = igraph::set.vertex.attribute(net.with.attr, attr.name, value = default.value)
+                ## return immediately
+                return(net.with.attr)
+            }
 
             get.or.default = function(name, data, default) {
                 if (name %in% names(data)) {
@@ -101,7 +114,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
             }
 
             attributes = lapply(igraph::V(current.network)$name,
-                                function(x) get.or.default(x, attr.df, default.value))
+                                function(x) get.or.default(x, attrs.by.vertex.name, default.value))
 
             ## simplify the list of attributes to a vector if all its elements are just vectors (not lists)
             if (length(attributes) > 0 && !any(lapply(attributes, is.list))) {
