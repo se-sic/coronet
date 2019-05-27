@@ -852,7 +852,7 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
     names(range.to.authors.per.activity.type) = activity.types
 
     ## Switch the list levels from "type - range - author" to "author - range - type".
-    active.ranges = list.by.inner.level(range.to.authors.per.activity.type)
+    active.ranges = transpose.nested.list.by.innermost.values(range.to.authors.per.activity.type)
 
     ## For every author: if there's no activity data for a type, the default.value named with the type is added instead.
     active.ranges = lapply(active.ranges, function(ranges.per.type) {
@@ -910,7 +910,7 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
 #'                    nesting depth of all inner lists must be the same and the lists must be named at every nesting level.
 #'
 #' @return The nested list with the innermost level as new outermost level.
-list.by.inner.level = function(nested.list) {
+transpose.nested.list.by.innermost.values = function(nested.list) {
     list.by = unique(unlist(nested.list, use.names = FALSE))
 
     ## Returns the given structure of nested lists with all parts removed, that do not contain the given
