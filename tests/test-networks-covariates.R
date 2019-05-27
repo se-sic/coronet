@@ -690,12 +690,13 @@ test_that("Test add.vertex.attribute.active.ranges with computation over all typ
     )
     actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
 
-    expected.attributes = lapply(get.expected.active.ranges(), function(network) {
-        network = lapply(network, function(person) {
+    # adjust prepared expected attributes to the current use case
+    expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
+        active.ranges = lapply(active.ranges, function(person) {
             unlisted.person = list("all.activity.types" = as.list(unique(unlist(person))))
             return(unlisted.person)
         })
-        return(network)
+        return(active.ranges)
     })
     expect_identical(expected.attributes, actual.attributes)
 })
@@ -707,24 +708,27 @@ test_that("Test default values of add.vertex.attribute.active.ranges", {
     networks.and.data = get.network.covariates.test.networks()
 
     ## Test
-    networks.with.attr = add.vertex.attribute.active.ranges(
-        networks.and.data[["networks"]], networks.and.data[["project.data"]],
-        activity.types = c("mails", "issues"), default.value =  "test.default.value"
-    )
+    test.networks = networks.and.data[["networks"]]
+    test.data = networks.and.data[["project.data"]]
+    test.activity.types = c("mails", "issues")
+    test.default.value =  "test.default.value"
+    networks.with.attr = add.vertex.attribute.active.ranges(test.networks, test.data,
+        activity.types = test.activity.types, default.value = test.default.value)
     actual.attributes = lapply(networks.with.attr, igraph:: get.vertex.attribute, name = "active.ranges")
 
-    expected.attributes = lapply(get.expected.active.ranges(), function(network) {
-        network = lapply(network, function(person) {
-            person.cut.activity.types = (c(person["mails"], person["issues"]))
+    # adjust prepared expected attributes to the current use case
+    expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
+        active.ranges = lapply(active.ranges, function(person) {
+            person.cut.activity.types = person[test.activity.types]
             person.replaced.expected.default = lapply(person.cut.activity.types, function(activity.type) {
                 if (length(activity.type) == 0) {
-                    activity.type = "test.default.value"
+                    activity.type = test.default.value
                 }
                 return(activity.type)
             })
             return(person.replaced.expected.default)
         })
-        return(network)
+        return(active.ranges)
     })
     expect_identical(expected.attributes, actual.attributes)
 })
