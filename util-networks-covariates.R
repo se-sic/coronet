@@ -14,7 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
+## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
@@ -406,7 +406,7 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
 #' @param default.value The default value to add if a vertex has no matching value. [default: NA].
-#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
 #'                                           [default: FALSE]
 #'
@@ -418,14 +418,39 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
                                                default.value = NA,
-                                               take.first.over.all.activity.types = FALSE) {
+                                               combine.activity.types = FALSE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
+
+    ## the given default.value is interpreted as default per author and type.
+    type.default = default.value
+
+    ## the default value appended to vertices where no data is available is structured
+    ## and named analogously to the vertex attributes containing available data.
+    vertex.default = default.value
+    if (!combine.activity.types) {
+        vertex.default = rep(list(vertex.default), length(parsed.activity.types))
+        names(vertex.default) = parsed.activity.types
+    }
+
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, activity.types, take.first.over.all.activity.types)
+        data = get.first.activity.data(range.data, parsed.activity.types, type.default)
+
+        ## If configured, find minimum over all activity types per author, for example:
+        ## data
+        ##      list(authorA = list(mails = 1, commits = 2), authorB = list(mails = 3, commits = 3))
+        ## yields
+        ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
+        if (combine.activity.types) {
+            data = parallel::mclapply(data, function(item.list) {
+                min.value = min(do.call(c, item.list), na.rm = TRUE)
+                return(list(all.activities = min.value))
+            })
+        }
         return(data)
     }
 
-    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, default.value,
+    nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level, vertex.default,
                                                     compute.attr, list.attributes = TRUE)
     return(nets.with.attr)
 }
@@ -438,49 +463,51 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
 #' @param list.of.networks The network list
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "active.ranges"]
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues}. [default: c("mails", "commits", "issues")]
 #' @param default.value The default value to add if a vertex has no matching value [default: list()]
+#' @param combine.activity.types Flag indicating that one value, computed over all given
+#'                                           \code{activity.types} is of interest (instead of one value per type).
+#'                                           [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.active.ranges = function(list.of.networks, project.data, name = "active.ranges",
-                                              default.value = list()) {
+                                              activity.types = c("mails", "commits", "issues"),
+                                              default.value = list(),
+                                              combine.activity.types = FALSE) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
+    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
-    range.to.authors = lapply(
-        net.to.range.list,
-        function(net.to.range) {
-            ## FIXME support data-source-specific method AND all-sources method
-            ## (we only use 'commits' source here)
-            unique(net.to.range[["data"]]$get.commits()[["author.name"]])
+    ## the given default.value is interpreted as default per author and type.
+    type.default = default.value
+
+    compute.attr = function(range, range.data, net) {
+        data = get.active.ranges.data(parsed.activity.types, net.to.range.list, type.default)
+
+        ## combine the active ranges of all attributes to one list if desired
+        if (combine.activity.types) {
+            data = lapply(data, function(person) {
+                flattened.person = (list("all.activity.types" = as.list(unique(unlist(person)))))
+                return(list(flattened.person))
+             })
         }
-    )
 
-    author.names = unique(unlist(range.to.authors))
+        return(data)
+    }
 
-    active.ranges = lapply(
-        author.names,
-        function(author) {
-            filter.by.author = Filter(function(range) author %in% range,
-                                      range.to.authors)
+    ## the default value appended to vertices where no data is available is structured
+    ## and named analogously to the vertex attributes containing available data.
+    vertex.default = default.value
+    if (combine.activity.types) {
+        vertex.default = list(default.value)
+        names(vertex.default) = c("all.activity.types")
+    } else {
+        vertex.default = rep(list(default.value), length(parsed.activity.types))
+        names(vertex.default) = parsed.activity.types
+    }
+    vertex.default = list(vertex.default)
 
-            active.ranges.of.author = names(filter.by.author)
-
-            ## vector for one vertex needs to be wrapped into a list due to multiple values per vertex
-            return(list(active.ranges.of.author))
-        }
-    )
-
-    names(active.ranges) = author.names
-
-    ## default value for one vertex needs to be wrapped into a list due to multiple values per vertex
-    list.default.value = list(default.value)
-
-    nets.with.attr = add.vertex.attribute(
-        net.to.range.list, name, list.default.value,
-        function(range, range.data, net) {
-            active.ranges
-        }
-    )
-
+    nets.with.attr = add.vertex.attribute(net.to.range.list, name, vertex.default, compute.attr)
     return(nets.with.attr)
 }
 
@@ -723,23 +750,15 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper ------------------------------------------------------------------
 
-#' Helper function for first activity: computing first activity information per person and activity type and returning it as a dataframe.
+#' Helper function for first activity: computes first activity information per person and activity type.
 #'
-#' @param activity.types The activity types to compute information for. They determine the columns of the returned data frame.
-#'                       [default: c("mails", "commits", "issues")]
+#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
 #' @param range.data The data to base the computation on.
-#' @param take.first.over.all.activity.types Flag indicating that one value, computed over all given
-#'                                           \code{activity.types} is of interest (instead of one value per type).
-#'                                           [default: FALSE]
+#' @param default.value The default value to add if no information is available per author and activity type. [default: NA]
 #'
-#' @return A list with authors as keys and a POSIXct list in the following format as value:
-#'         - if \code{take.first.over.all.activity.types}, a one-element list named 'all.activities'
-#'         - otherwise, a list with length \code{length(activity.types)} and corresponding names
+#' @return A list containing per author a list of first activity values named with the corresponding activity type.
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
-                                   take.first.over.all.activity.types = FALSE) {
-
-    ## check given activity types
-    parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
+                                   default.value = NA) {
 
     ## get data for each activity type and extract minimal date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
@@ -749,7 +768,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
     ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
     ##    )
-    activity.by.type = parallel::mclapply(parsed.activity.types, function(type) {
+    activity.by.type = parallel::mclapply(activity.types, function(type) {
         ## compute minima
         minima.per.person = lapply(
             range.data$group.artifacts.by.data.column(type, "author.name"),
@@ -783,9 +802,9 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         ## actually combine values for each key
         result = parallel::mclapply(keys, function(key) {
             ## get value from intermediate list (pre-fill with right length if not existing)
-            value.x = if (is.null(x[[key]])) rep(list(NA), times = depth) else x[[key]]
-            ## get value from current list (use NA as default if not existing)
-            value.y = if (is.null(y[[key]])) NA else y[[key]]
+            value.x = if (is.null(x[[key]])) rep(list(default.value), times = depth) else x[[key]]
+            ## get value from current list (use default.value as default if not existing)
+            value.y = if (is.null(y[[key]])) default.value else y[[key]]
 
             ## combine values and name them appropriately
             combined.values = c(value.x, value.y)
@@ -801,17 +820,139 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 
     }, activity.by.type)
 
-    ## find minima over all activity types if configured; for example:
-    ##     list(
-    ##        authorA = list(all.activities = 1), authorB = list(all.activities = 0),
-    ##        authorC = list(all.activities = 3), authorD = list(all.activities = 2)
-    ##     )
-    if (take.first.over.all.activity.types) {
-        result = parallel::mclapply(result, function(item.list) {
-            min.value = min(do.call(c, item.list), na.rm = TRUE)
-            return(list(all.activities = min.value))
+    return(result)
+}
+
+#' Helper function for active ranges: computes the active ranges per author and activity.type.
+#'
+#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
+#' @param net.to.range.list The data to base the computation on, split by networks.
+#' @param default.value The default value to add if no information is available per author and activity type. [default: list()]
+#'
+#' @return A list with elements representing the authors, each containing a list of elements representing the activity
+#'         types, each containing a list of active ranges.
+get.active.ranges.data = function(activity.types = c("mails", "commits", "issues"), net.to.range.list, default.value = list()) {
+
+    ## a list with elements representing the parsed activity types, each containing a list of elements
+    ## representing the ranges the data was split by, each containing a list of authors who were active
+    ## for the corresponding activity type and range.
+    range.to.authors.per.activity.type = lapply(activity.types, function(type) {
+        type.function = paste0("get.", type)
+        lapply(net.to.range.list, function(net.to.range) {
+
+            ## get author information per activity.type
+            type.data = net.to.range[["data"]][[type.function]]()
+
+            ## remove unnecessary information and potentially resulting duplicats
+            clean.type.data = unique(type.data[["author.name"]])
+
+            return(as.list(clean.type.data))
         })
+    })
+    names(range.to.authors.per.activity.type) = activity.types
+
+    ## Switch the list levels from "type - range - author" to "author - range - type".
+    active.ranges = transpose.nested.list.by.innermost.values(range.to.authors.per.activity.type)
+
+    ## For every author: if there's no activity data for a type, the default.value named with the type is added instead.
+    active.ranges = lapply(active.ranges, function(ranges.per.type) {
+        ranges.for.all.types = lapply(activity.types, function(type) {
+            if (type %in% names(ranges.per.type)) {
+                return(ranges.per.type[[type]])
+            } else {
+                return(default.value)
+            }
+        })
+        names(ranges.for.all.types) = activity.types
+        return(list(ranges.for.all.types))
+    })
+
+    return(active.ranges)
+}
+
+
+#' This function takes a nested list and switches the order of the nesting levels: the innermost level is moved to the
+#' outside. This is done by reproducing the given list structure for every element occuring in one of the innermost lists
+#' and then deleting every sublist in which the element does not occur. For example, on input
+#'
+#' type.range.author = list(
+#'     "type1" = list(
+#'         "range1" = list("authorB", "authorC", "authorD"),
+#'         "range3" = list("authorA", "authorC")
+#'     ),
+#'     "type2" = list(
+#'         "range2" = list("authorB"),
+#'         "range3" = list("authorC", "authorD")
+#'     )
+#' )
+#'
+#' the function will return a new list
+#'
+#' author.type.range = list(
+#'     "authorB" = list(
+#'         "type1" = list("range1"),
+#'         "type2" = list("range2")
+#'     ),
+#'     "authorC" = list(
+#'         "type1" = list("range1", "range3"),
+#'         "type2" = list("range3")
+#'     ),
+#'     "authorD" = list(
+#'         "type1" = list("range1"),
+#'         "type2" = list("range3")
+#'     ),
+#'     "authorA" = list(
+#'         "type1" = list("range3")
+#'     )
+#' )
+#'
+#' @param nested.list A list nested AT LEAST ONCE, that means: the elements of the outermost list are also lists. The
+#'                    nesting depth of all inner lists must be the same and the lists must be named at every nesting level.
+#'
+#' @return The nested list with the innermost level as new outermost level.
+transpose.nested.list.by.innermost.values = function(nested.list) {
+    list.by = unique(unlist(nested.list, use.names = FALSE))
+
+    ## Returns the given structure of nested lists with all parts removed, that do not contain the given
+    ## innerst.element.
+    get.structure.for = function(innerst.element, structure, name = "default") {
+
+        ## Base case 1: an empty list is returned as it is.
+        if (length(structure) == 0) {
+            return(list())
+
+        ## Base case 2: if the structure isn't nested itself, it is only returned, if it contains the given innerst.element.
+        ##           Otherwise, NA is returned.
+        } else if (!is.list(structure[[1]])) {
+            if (innerst.element %in% structure) {
+                return(name)
+            } else {
+                return(NA)
+            }
+
+        ## Recursive case: for every substructure, the function is called recursively. From the results, the list is
+        ##                 reconstructed, named and returned.
+        } else {
+            result.of.recursive.calls = lapply(names(structure), function(substructure.name) {
+                substructure = structure[[substructure.name]]
+                call.result = get.structure.for(innerst.element, substructure, substructure.name)
+                return(call.result)
+            })
+            names(result.of.recursive.calls) = names(structure)
+
+            ## remove NA values from recursively obtained structure
+            na.removed = result.of.recursive.calls[sapply(result.of.recursive.calls, function(x) any(!is.na(x)))]
+
+            ## if element names equal content values in the recursive result, remove names
+            if (identical(unlist(na.removed, use.names = FALSE), names(na.removed))) {
+                na.removed = unname(na.removed)
+            }
+
+            return(na.removed)
+        }
     }
 
+    result = lapply(list.by, function(element) get.structure.for(element, nested.list))
+    names(result) = list.by
     return(result)
 }

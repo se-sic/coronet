@@ -15,7 +15,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
+## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
@@ -289,6 +289,27 @@ get.expected.first.activity = function() {
         })
     })
 
+    return(expected.attributes)
+}
+
+#' Helper for tests of the function add.vertex.attribute.active.ranges: Returns the expected active ranges per range,
+#' author and data source as a nested list.
+#'
+#' @return A list with elements that represent the range (the test data is split to build one network per range), each
+#'         containing a list with elements that represent authors, the networks vertices, each containing a list of active
+#'         ranges per data source.
+get.expected.active.ranges = function() {
+
+    ## expected active ranges per person and data source
+    bjoern = list("mails" = list(myranges[1]), "commits" = list(myranges[1]), "issues" = list())
+    olaf = list("mails" = list(myranges[1], myranges[3]), "commits" = list(myranges[2], myranges[3]), "issues" = list())
+    karl = list("mails" = list(), "commits" = list(myranges[3]) , "issues" = list())
+    thomas = list("mails" = list(myranges[2]), "commits" = list(myranges[3]), "issues" = list())
+
+    ## list of expected vertex attributes per network range containing active ranges for the corresponding persons.
+    expected.attributes = network.covariates.test.build.expected(
+        list(bjoern), list(olaf), list(olaf, karl, thomas)
+    )
     return(expected.attributes)
 }
 
@@ -594,7 +615,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
-            default.value = NA, take.first.over.all.activity.types = TRUE
+            default.value = NA, combine.activity.types = TRUE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
@@ -617,7 +638,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
-            default.value = NA, take.first.over.all.activity.types = FALSE
+            default.value = NA, combine.activity.types = FALSE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
@@ -635,7 +656,7 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
     expected.attributes = lapply(expected.attributes, function(level) {
         lapply(level, function(network) {
             lapply(network, function(person) {
-                return(person["commits"])
+                return(person["mails"])
             })
         })
     })
@@ -647,8 +668,8 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
 
         networks.with.attributes = add.vertex.attribute.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
-            activity.types = c("commits"), name = "first.activity", aggregation.level = level,
-            default.value = NA, take.first.over.all.activity.types = FALSE
+            activity.types = c("mails"), name = "first.activity", aggregation.level = level,
+            default.value = NA, combine.activity.types = FALSE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
 
@@ -656,25 +677,59 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
     })
 })
 
-#' Test the add.vertex.attribute.active.ranges method
-test_that("Test add.vertex.attribute.active.ranges", {
+#' Test the add.vertex.attribute.active.ranges method with computation over all types
+test_that("Test add.vertex.attribute.active.ranges with computation over all types", {
 
     ## Test setup
-
     networks.and.data = get.network.covariates.test.networks()
 
-    expected.attributes = network.covariates.test.build.expected(
-        list(myranges[1]), list(myranges[2:3]), list(myranges[2:3], myranges[3], myranges[3])
-    )
-
     ## Test
-
     networks.with.attr = add.vertex.attribute.active.ranges(
-        networks.and.data[["networks"]], networks.and.data[["project.data"]]
+        networks.and.data[["networks"]], networks.and.data[["project.data"]],
+        combine.activity.types = TRUE
     )
-
     actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
 
+    # adjust prepared expected attributes to the current use case
+    expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
+        active.ranges = lapply(active.ranges, function(person) {
+            unlisted.person = list("all.activity.types" = as.list(unique(unlist(person))))
+            return(unlisted.person)
+        })
+        return(active.ranges)
+    })
+    expect_identical(expected.attributes, actual.attributes)
+})
+
+#' Test default values for the add.vertex.attribute.active.ranges method
+test_that("Test default values of add.vertex.attribute.active.ranges", {
+
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks()
+
+    ## Test
+    test.networks = networks.and.data[["networks"]]
+    test.data = networks.and.data[["project.data"]]
+    test.activity.types = c("mails", "issues")
+    test.default.value =  "test.default.value"
+    networks.with.attr = add.vertex.attribute.active.ranges(test.networks, test.data,
+        activity.types = test.activity.types, default.value = test.default.value)
+    actual.attributes = lapply(networks.with.attr, igraph:: get.vertex.attribute, name = "active.ranges")
+
+    # adjust prepared expected attributes to the current use case
+    expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
+        active.ranges = lapply(active.ranges, function(person) {
+            person.cut.activity.types = person[test.activity.types]
+            person.replaced.expected.default = lapply(person.cut.activity.types, function(activity.type) {
+                if (length(activity.type) == 0) {
+                    activity.type = test.default.value
+                }
+                return(activity.type)
+            })
+            return(person.replaced.expected.default)
+        })
+        return(active.ranges)
+    })
     expect_identical(expected.attributes, actual.attributes)
 })
 

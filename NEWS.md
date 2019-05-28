@@ -4,6 +4,10 @@
 ## Unversioned
 
 ### Added
+- It is now possible to base the computation of the vertex attribute 'active.ranges' on multiple data sources. Furthermore,
+the flag 'combine.activity.types' of the function 'add.vertex.attribute.active.ranges' indicates, if the generated vertex
+attribute contains a list of ranges for every data source or one combined list of ranges.
+(aba8af959b39bbc16747786eab9781fe40e08ed3, 1bb81e86f1f8d62527de83c6489d1c9d5666f19d, 8f35a6b5194b664ef186e57650e6705b38ec610f)
 - Add the constants `UNTRACKED.FILE`, `UNTRACKED.FILE.EMPTY.ARTIFACT`, and `UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE`: Commits that do not change any artifact are considered to be carried out on a meta-file called `<untracked.file>`. The constant `UNTRACKED.FILE` is added to hold the string constant. Analogously, the constants `UNTRACKED.FILE.EMPTY.ARTIFACT` (currently, `""`) and `UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE` (currently, `""`) hold the constants for any artifacts and their corresponding types, respectively, "changed" in untracked files. (11428d9847fd44f982cd094a3248bd13fb6b7b58, 5ea65b9ac5a22967de87d7fd4ac66b0bc8e07238, dde0dd7c6b36b49aa2b6c91395be8ea6e0cd7969, 2284bbec55e091a4135dc029906ba12446b9f0ad)
 - Add the public method `ProjectData$get.commits.filtered.uncached`: The method allows for external filtering of the commits by specifying if untracked files and/or the base artifact should be filtered (this method does not take advantage of caching, whereas the method `ProjectData$get.commits.filtered` does) (11428d9847fd44f982cd094a3248bd13fb6b7b58)
 - Add the parameters `commits.filter.base.artifact` and `commits.filter.untracked.files` to the `ProjectConf`: In addition to the `ProjectConf` parameter `commits.filter.base.artifact` (previously called `artifact.filter.base`), which configured whether the base artifact should be included in the `get.commits.filtered` method, there is now a similar parameter called `commits.filter.untracked.files` doing the same thing for untracked files (11428d9847fd44f982cd094a3248bd13fb6b7b58, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
@@ -22,6 +26,9 @@
 - Add possibility to choose if only issues from JIRA, only issues from GitHub, or all issues shall be read in (PR #159, d677949bedc3567b02cc7a1f3daffa0a785aa7a8, a3e71326d8deb861fcc4434c580e12570f7f8fa0, ea2618134efbfd8159ea49bd6fd21f4d11f3faeb). Therefore two test cases, one that reads in only JIRA issues and one that reads in only GitHub issues, are added to the issue read test (65b1acd7895b5330fab1d53d7bd27ab5dbd25192, 2d897cbb38853b20e1adba88f617908033142aef)
 
 ### Changed/Improved
+- In first activity computation, the default value is now used analogous to active ranges computation. The given value is used as default per
+author and type. As vertex default, a value of the same type as given attributes is constructed.
+(18a065c9b0d93c83795bf1be2319e6470b70622a, edf864a5e9a4f54336ecd5c884be12672084e332)
 - Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)
 - Heavily improve addition of PaStA data (cd3e34a369435392f9be082df05f9fc504b56239)
 - The method `read.issues` in `util-read.R` now supports the new issue data format (PR #147, 77c750c034c270f007c75abca0f0630573f195a2, e04ce3080b3cc3e305d8be5aa47ed5b144a9c9c0, 67b818a955c5e75ac3735d2e09af1f564d82f736, 402048735d0c33214be194b7535593786104e32e, 351364751b3fc286c66b99fe1fa3f52150f67311). Therefore, the test issue data and all related tests are updated (39971eea6d51793c88a35c4e604bc5e3a13bb123, 0ec6c6c3243e79fce30f8c9c39dc3c4bee2dee7b, 6a9f4ad89f5b9d6d4b19c837006a429637b22c04, fda000fe6208760f18138e65feca3b6e8ff553b2, 351364751b3fc286c66b99fe1fa3f52150f67311)
