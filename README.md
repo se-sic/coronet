@@ -4,6 +4,8 @@ Have you ever wanted to build socio-technical developer networks the way you wan
 
 The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
+If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
+
 ![Exemplary plot of multi network](plot-multi.png)
 
 
