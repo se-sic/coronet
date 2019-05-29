@@ -5,7 +5,7 @@
 
 ### Announcement
 
-- Rename project to `coronet` (#10, 929f8cec7b52adef1389ce1691b783c235eb815d)
+- Rename project to `coronet` (#10, 929f8cec7b52adef1389ce1691b783c235eb815d, ac1ce80b9f5da812f90b5fed63f26dc8c812a4d6)
     * Be sure to update Git remotes and submodules to the new URL!
 
 ### Added
@@ -25,7 +25,7 @@
 - Add the parameter `restrict.classification.to.authors` to the functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. The parameter allows to perform classifications on a limited group of authors whose names are specified in this parameter. (2492dd0de5909c41031541ffb365eee40a342b65, #148)
 - Add test cases for `util-core-peripheral.R` by adding the new file `test-core-peripheral.R` along with test cases (2627d6c9aaa4b066cf3043f9cf167fb470bdec6c)
 - Add project-configuration parameter `issues.from.source` to choose if only issues from JIRA, only issues from GitHub, or all issues shall be read in (PR #159, d677949bedc3567b02cc7a1f3daffa0a785aa7a8, a3e71326d8deb861fcc4434c580e12570f7f8fa0, ea2618134efbfd8159ea49bd6fd21f4d11f3faeb). Therefore two test cases, one that reads in only JIRA issues and one that reads in only GitHub issues, are added to the issue read test (65b1acd7895b5330fab1d53d7bd27ab5dbd25192, 2d897cbb38853b20e1adba88f617908033142aef)
-- Add class documentation (#157, 6e33d0aa49d5a432c1fad786944bd1ac855ecbf3)
+- Add class documentation (#157, 6e33d0aa49d5a432c1fad786944bd1ac855ecbf3, 250f9e04b18775f3c5f40b114236afcde9e760ae)
 
 ### Changed/Improved
 - Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)
