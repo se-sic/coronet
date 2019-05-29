@@ -86,13 +86,13 @@ RELATION.TO.DATASOURCE = list(
 #' object of class \code{NetworkConf} and a data-carrying object of class
 #' \code{ProjectData} must be passed to the initialization function.
 #'
-#' The following kinds of network can be constructed:
+#' The following types of networks can be constructed:
 #' - author networks,
 #' - artifact networks,
 #' - bipartite networks, and
-#' - multi networks.
+#' - multi networks (a combination of all other types of networks).
 #'
-#' @seealso ProjectConf
+#' @seealso NetworkConf
 #' @seealso ProjectData
 NetworkBuilder = R6::R6Class("NetworkBuilder",
 

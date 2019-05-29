@@ -78,7 +78,8 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 #' - commits,
 #' - mails, and
 #' - issues.
-#'#' Furthermore, following additional and orthogonal data sources are handled:
+#'
+#' Furthermore, the following additional and orthogonal data sources are handled:
 #' - synchronicity data and
 #' - PaStA data.
 #'
@@ -1121,10 +1122,8 @@ ProjectData = R6::R6Class("ProjectData",
 ## RangeData ---------------------------------------------------------------
 
 #' The class \code{RangeData} is a subclass of \code{ProjectData} and is used to
-#' represents only a subset of the data (i.e., a range) of a complete
+#' represent only a subset of the data (i.e., a range) of a complete
 #' \code{ProjectData} object.
-#'
-#' Functionality to handle range-related data is added.
 #'
 #' @seealso ProjectData
 #' @seealso ProjectConf

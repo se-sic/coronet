@@ -962,7 +962,6 @@ test_that("Test addition of attributes despite of empty data", {
     networks = list(create.empty.network(add.attributes = TRUE))
     names(networks) = range
 
-
     ## add commit-count attribute
     net.commit.count = add.vertex.attribute.commit.count.author(networks, proj.data.empty, default = 0L)[[1]]
     expect_true("commit.count" %in% igraph::list.vertex.attributes(net.commit.count))
