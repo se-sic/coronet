@@ -70,6 +70,7 @@
 - Fix wrong behavior of `get.author.class` when using `result.limit` and when classifying zero or passing invalid input (9437b4f07da599fde017596af2290b24601f9f8d, #164, d93b906993089e35f0b539fe3b06b2f36ae3d4c6, 8060caa4930ef05a48b59a328ebf928a64109294, 70e4de5d83541eaad4714d7761b1b35503aaebbf)
 - Add vertex attribute also to empty networks (#165, 74845d4b179d2830c1483b42897a8bd0fcee19e9)
 - Fix outdated function calls in the bulk module (4e0354078449ef57637297fd3670830e10342ecd)
+- Add special case handling for the classification of networks without edges (7e14492640cbf504c45431c03cf0167c455a4b77)
 
 
 ## 3.4
