@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -16,7 +16,7 @@
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018-2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -25,7 +25,7 @@
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 
-## TODO see https://github.com/se-passau/codeface-extraction-r/issues/70
+## TODO see https://github.com/se-passau/coronet/issues/70
 ## TODO adjust coding style regarding bracket notation
 
 
@@ -1057,7 +1057,7 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #' @param author.data.frame a dataframe containing at least two columns. The column called "author.name" should store
 #'                          the author's names, the other one, whose name must be specified in the parameter
 #'                          \code{calc.base.name}, should store the authors' centrality values.
-#' @param calc.base.name the name of the second column of the dataframe specified in the parameter
+#' @param calc.base.name the name of the classification column of the dataframe specified in the parameter
 #'                       \code{author.data.frame}
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
@@ -1069,6 +1069,14 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #'         centrality values in the second column.
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
     logging::logdebug("get.author.class: starting.")
+
+    ## Make sure that we have enough data for a classification
+    if (ncol(author.data.frame) < 2) {
+        author.data.frame = create.empty.data.frame(
+            columns = c("author.name", calc.base.name),
+            data.types = list("character", "numeric")
+        )
+    }
 
     ## Make sure the provided data is ordered correctly by the calculation base
     author.data = author.data.frame[order(author.data.frame[[calc.base.name]], decreasing = TRUE), , drop = FALSE]
@@ -1093,20 +1101,23 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     author.cumsum = cumsum(author.data[[calc.base.name]])
     buffer.value = which(
         author.cumsum > author.class.threshold |
-            sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold)))
+            as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
     )
-    if (is.infinite(min(buffer.value))) {
+
+    # Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following 'if' statement
+    min = suppressWarnings(min(buffer.value))
+    if (is.infinite(min)) {
         author.class.threshold.idx = nrow(author.data)
     } else {
-        author.class.threshold.idx = min(buffer.value)
+        author.class.threshold.idx = min
     }
 
     ## classify authors according to threshold
     core.classification = rep(FALSE, nrow(author.data))
-    core.classification[1:author.class.threshold.idx] = TRUE
+    core.classification[seq_len(author.class.threshold.idx)] = TRUE
 
     ## With no activity/collaboration occurring, all authors are classified as peripheral.
-    if (author.class.threshold == 0) {
+    if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
         logging::logwarn("No collaboration/activity occured, thus, all authors' classification is set to peripheral.")
         core.classification = rep(FALSE, length(core.classification))
         # ## old code: if we found no core author (should not happen anymore)

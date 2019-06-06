@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##

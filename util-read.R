@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -20,6 +20,11 @@
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
+## Note:
+## The definition of column names for each individual data source used in this file corresponds to the individual
+## extraction process of the tool 'codeface-extraction' (https://github.com/se-passau/codeface-extraction; use
+## commit 0700f94 or a compatible later commit).
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Libraries ---------------------------------------------------------------
@@ -32,21 +37,9 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Constants ---------------------------------------------------------------
+## Main data sources -------------------------------------------------------
 
-## The following definition of column names for each individual data source corresponds to the individual extraction
-## process of the tool 'codeface-extraction' (https://github.com/se-passau/codeface-extraction; use commit 0700f94 or
-## compatible later commit).
-
-## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
-AUTHORS.LIST.COLUMNS = c(
-    "author.id", "author.name", "author.email"
-)
-
-## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
-AUTHORS.LIST.DATA.TYPES = c(
-    "character", "character", "character"
-)
+## * Commit data -----------------------------------------------------------
 
 ## column names of a dataframe containing commits (see file 'commits.list' and function \code{read.commits})
 COMMITS.LIST.COLUMNS = c(
@@ -65,118 +58,6 @@ COMMITS.LIST.DATA.TYPES = c(
     "character", "numeric", "numeric", "numeric", "numeric",
     "character", "character", "character", "numeric"
 )
-
-## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
-ISSUES.LIST.COLUMNS = c(
-    "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
-    "event.name", # event type
-    "author.name", "author.email", # auhtor information
-    "date", "event.info.1", "event.info.2", "event.id", # event details
-    "issue.source", # source information
-    "artifact.type" # artifact type
-)
-
-## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
-ISSUES.LIST.DATA.TYPES = c(
-    "character", "character", "list()", "character", "list()", "POSIXct", "POSIXct", "list()",
-    "character",
-    "character", "character",
-    "POSIXct", "character", "list()", "character",
-    "character",
-    "character"
-)
-
-## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
-MAILS.LIST.COLUMNS = c(
-    "author.name", "author.email", # author information
-    "message.id", "date", "date.offset", "subject", # meta information
-    "thread", # thread ID
-    "artifact.type" # artifact type
-)
-
-## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
-MAILS.LIST.DATA.TYPES = c(
-    "character", "character",
-    "character", "POSIXct", "numeric", "character",
-    "character",
-    "character"
-)
-
-## column names of a dataframe containing PaStA data (see function \code{read.pasta})
-PASTA.LIST.COLUMNS = c(
-    "message.id", "commit.hash", "revision.set.id"
-)
-
-## declare the datatype for each column in the constant 'PASTA.LIST.COLUMNS'
-PASTA.LIST.DATA.TYPES = c(
-    "character", "character", "character"
-)
-
-## column names of a dataframe containing synchronicity data (see function \code{read.synchronicity})
-SYNCHRONICITY.LIST.COLUMNS = c(
-    "hash", "synchronicity"
-)
-
-## declare the datatype for each column in the constant 'SYNCHRONICITY.LIST.COLUMNS'
-SYNCHRONICITY.LIST.DATA.TYPES = c(
-    "character", "logical"
-)
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Empty dataframe creation-------------------------------------------------
-
-#' Create an empty dataframe which has the same shape as a dataframe containing authors. The dataframe has the column
-#' names and column datatypes defined in \code{AUTHORS.LIST.COLUMNS} and \code{AUTHORS.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.authors.list = function() {
-    return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing commits. The dataframe has the column
-#' names and column datatypes defined in \code{COMMITS.LIST.COLUMNS} and \code{COMMITS.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.commits.list = function() {
-    return (create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
-#' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.issues.list = function() {
-    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing mails. The dataframe has the column
-#' names and column datatypes defined in \code{MAILS.LIST.COLUMNS} and \code{MAILS.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.mails.list = function() {
-    return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing PaStA data.
-#' The dataframe has the column names and column datatypes defined in \code{PASTA.LIST.COLUMNS}
-#' and \code{PASTA.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.pasta.list = function() {
-    return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing synchronicity data.
-#' The dataframe has the column names and column datatypes defined in \code{SYNCHRONICITY.LIST.COLUMNS}
-#' and \code{SYNCHRONICITY.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.synchronicity.list = function() {
-    return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
-}
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Commit data -------------------------------------------------------------
 
 #' Read the commits from the 'commits.list' file.
 #'
@@ -286,56 +167,31 @@ read.commits = function(data.path, artifact) {
     return(commit.data)
 }
 
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Synchronicity data ------------------------------------------------------
-
-#' Read the synchronicity data from file. The name of the file follows
-#' the following pattern: 'commit_sync_analysis_artifact_time.window.dat',
-#' where artifact and time.window are the given variables.
+#' Create an empty dataframe which has the same shape as a dataframe containing commits. The dataframe has the column
+#' names and column datatypes defined in \code{COMMITS.LIST.COLUMNS} and \code{COMMITS.LIST.DATA.TYPES}, respectively.
 #'
-#' @param data.path the path to the synchronicity data
-#' @param artifact the artifact whose synchronicity data get read
-#' @param time.window the time window of the data to be read
-#'
-#' @return the read synchronicity data
-read.synchronicity = function(data.path, artifact, time.window) {
-    logging::logdebug("read.synchronicity: starting.")
-
-    ## check time.window
-    allowed.time.windows = c(1, 5, 10, 15)
-    stopifnot((time.window) %in% allowed.time.windows)
-
-    ## construct file
-    file.name = sprintf("commit_sync_analysis_%ss_%s.dat", artifact, time.window)
-    file = file.path(data.path, file.name)
-
-    ## handle the case that the synchronicity data is empty
-    if (!file.exists(file)) {
-        logging::logwarn("There are no synchronicity data available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(create.empty.synchronicity.list())
-    }
-
-    ## load commit.ids object
-    load(file = file)
-    synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronicity = TRUE)
-    nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronicity = FALSE)
-
-    ## construct data.frame
-    synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
-
-    ## ensure proper column names
-    colnames(synchronicity) = SYNCHRONICITY.LIST.COLUMNS
-
-    ## store the synchronicity data
-    logging::logdebug("read.synchronicity: finished.")
-    return(synchronicity)
+#' @return the empty dataframe
+create.empty.commits.list = function() {
+    return (create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
 }
 
+## * Mail data -------------------------------------------------------------
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Mail data ---------------------------------------------------------------
+## column names of a dataframe containing mails (see file 'mails.list' and function \code{read.mails})
+MAILS.LIST.COLUMNS = c(
+    "author.name", "author.email", # author information
+    "message.id", "date", "date.offset", "subject", # meta information
+    "thread", # thread ID
+    "artifact.type" # artifact type
+)
+
+## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
+MAILS.LIST.DATA.TYPES = c(
+    "character", "character",
+    "character", "POSIXct", "numeric", "character",
+    "character",
+    "character"
+)
 
 #' Read the mail data from the 'emails.list' file.
 #'
@@ -393,112 +249,35 @@ read.mails = function(data.path) {
     return(mail.data)
 }
 
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Author data -------------------------------------------------------------
-
-#' Read the author data from the 'authors.list' file.
+#' Create an empty dataframe which has the same shape as a dataframe containing mails. The dataframe has the column
+#' names and column datatypes defined in \code{MAILS.LIST.COLUMNS} and \code{MAILS.LIST.DATA.TYPES}, respectively.
 #'
-#' @param data.path the path to the author data
-#'
-#' @return the read author data
-read.authors = function(data.path) {
-    logging::logdebug("read.authors: starting.")
-
-    ## get file name of commit data
-    file = file.path(data.path, "authors.list")
-
-    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
-    authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                encoding = "UTF-8"), silent = TRUE)
-
-    ## break if the list of authors is empty
-    if (inherits(authors.df, "try-error")) {
-        logging::logerror("There are no authors available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        stop("Stopped due to missing authors.")
-    }
-
-    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
-        authors.df[3] = NA
-    }
-    colnames(authors.df) = AUTHORS.LIST.COLUMNS
-
-    ## store the ID--author mapping
-    logging::logdebug("read.authors: finished.")
-    return(authors.df)
+#' @return the empty dataframe
+create.empty.mails.list = function() {
+    return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
 }
 
+## * Issue data ------------------------------------------------------------
 
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## PaStA data --------------------------------------------------------------
+## column names of a dataframe containing issues (see file 'issues.list' and function \code{read.issues})
+ISSUES.LIST.COLUMNS = c(
+    "issue.id", "issue.title", "issue.type", "issue.state", "issue.resolution", "creation.date", "closing.date", "issue.components", # issue information
+    "event.name", # event type
+    "author.name", "author.email", # auhtor information
+    "date", "event.info.1", "event.info.2", "event.id", # event details
+    "issue.source", # source information
+    "artifact.type" # artifact type
+)
 
-#' Read and parse the PaStA data from the 'mbox-result' file.
-#' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
-#' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
-#' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
-#'
-#' @param data.path the path to the PaStA data
-#'
-#' @return the read and parsed PaStA data
-read.pasta = function(data.path) {
-    # constant for seperating keys and value
-    SEPERATOR = " => "
-    KEY.SEPERATOR = " "
-
-    ## get file name of PaStA data
-    filepath = file.path(data.path, "mbox-result")
-
-    ## read data from disk [can be empty]
-    lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
-
-    ## handle the case if the list of PaStA items is empty
-    if (inherits(lines, "try-error")) {
-        logging::logwarn("There are no PaStA data available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-        return(create.empty.pasta.list())
-    }
-
-    result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {
-        #line = lines[i]
-        if ( nchar(line) == 0 ) {
-            return(NULL)
-        }
-
-        if (!grepl("<", line)) {
-            logging::logwarn("Faulty line: %s", line)
-            return(NULL)
-        }
-
-        # 1) split at arrow
-        # 2) split keys
-        # 3) split values
-        # 4) insert all key-value pairs by iteration (works also if there is only one key)
-        if (grepl(SEPERATOR, line)) {
-            line.split = unlist(strsplit(line, SEPERATOR))
-            keys = line.split[1]
-            values = line.split[2]
-            keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
-            values.split = unlist(strsplit(values, KEY.SEPERATOR))
-        } else {
-            keys.split = unlist(strsplit(line, KEY.SEPERATOR))
-            values.split = NA
-        }
-
-        # Transform data to data.frame
-        df = merge(keys.split, values.split)
-        colnames(df) = c("message.id", "commit.hash")
-        df["revision.set.id"] = sprintf("<revision-set-%s>", line.id)
-        return(df)
-    })
-    result.df = plyr::rbind.fill(result.list)
-    logging::logdebug("read.pasta: finished.")
-    return(result.df)
-}
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Issue data --------------------------------------------------------------
+## declare the datatype for each column in the constant 'ISSUES.LIST.COLUMNS'
+ISSUES.LIST.DATA.TYPES = c(
+    "character", "character", "list()", "character", "list()", "POSIXct", "POSIXct", "list()",
+    "character",
+    "character", "character",
+    "POSIXct", "character", "list()", "character",
+    "character",
+    "character"
+)
 
 #' Read and parse the issue data from the 'issues.list' file.
 #'
@@ -571,4 +350,218 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
 
     logging::logdebug("read.issues: finished.")
     return(issue.data)
+}
+
+
+#' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
+#' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.issues.list = function() {
+    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Additional data sources -------------------------------------------------
+
+## * Author data -----------------------------------------------------------
+
+## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
+AUTHORS.LIST.COLUMNS = c(
+    "author.id", "author.name", "author.email"
+)
+
+## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
+AUTHORS.LIST.DATA.TYPES = c(
+    "character", "character", "character"
+)
+
+#' Read the author data from the 'authors.list' file.
+#'
+#' @param data.path the path to the author data
+#'
+#' @return the read author data
+read.authors = function(data.path) {
+    logging::logdebug("read.authors: starting.")
+
+    ## get file name of commit data
+    file = file.path(data.path, "authors.list")
+
+    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                encoding = "UTF-8"), silent = TRUE)
+
+    ## break if the list of authors is empty
+    if (inherits(authors.df, "try-error")) {
+        logging::logerror("There are no authors available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        stop("Stopped due to missing authors.")
+    }
+
+    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
+        authors.df[3] = NA
+    }
+    colnames(authors.df) = AUTHORS.LIST.COLUMNS
+
+    ## store the ID--author mapping
+    logging::logdebug("read.authors: finished.")
+    return(authors.df)
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing authors. The dataframe has the column
+#' names and column datatypes defined in \code{AUTHORS.LIST.COLUMNS} and \code{AUTHORS.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.authors.list = function() {
+    return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
+}
+
+## * PaStA data ------------------------------------------------------------
+
+## column names of a dataframe containing PaStA data (see function \code{read.pasta})
+PASTA.LIST.COLUMNS = c(
+    "message.id", "commit.hash", "revision.set.id"
+)
+
+## declare the datatype for each column in the constant 'PASTA.LIST.COLUMNS'
+PASTA.LIST.DATA.TYPES = c(
+    "character", "character", "character"
+)
+
+#' Read and parse the PaStA data from the 'mbox-result' file.
+#' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
+#' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
+#' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
+#'
+#' @param data.path the path to the PaStA data
+#'
+#' @return the read and parsed PaStA data
+read.pasta = function(data.path) {
+    # constant for seperating keys and value
+    SEPERATOR = " => "
+    KEY.SEPERATOR = " "
+
+    ## get file name of PaStA data
+    filepath = file.path(data.path, "mbox-result")
+
+    ## read data from disk [can be empty]
+    lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
+
+    ## handle the case if the list of PaStA items is empty
+    if (inherits(lines, "try-error")) {
+        logging::logwarn("There are no PaStA data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(create.empty.pasta.list())
+    }
+
+    result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {
+        #line = lines[i]
+        if ( nchar(line) == 0 ) {
+            return(NULL)
+        }
+
+        if (!grepl("<", line)) {
+            logging::logwarn("Faulty line: %s", line)
+            return(NULL)
+        }
+
+        # 1) split at arrow
+        # 2) split keys
+        # 3) split values
+        # 4) insert all key-value pairs by iteration (works also if there is only one key)
+        if (grepl(SEPERATOR, line)) {
+            line.split = unlist(strsplit(line, SEPERATOR))
+            keys = line.split[1]
+            values = line.split[2]
+            keys.split = unlist(strsplit(keys, KEY.SEPERATOR))
+            values.split = unlist(strsplit(values, KEY.SEPERATOR))
+        } else {
+            keys.split = unlist(strsplit(line, KEY.SEPERATOR))
+            values.split = NA
+        }
+
+        # Transform data to data.frame
+        df = merge(keys.split, values.split)
+        colnames(df) = c("message.id", "commit.hash")
+        df["revision.set.id"] = sprintf("<revision-set-%s>", line.id)
+        return(df)
+    })
+    result.df = plyr::rbind.fill(result.list)
+    logging::logdebug("read.pasta: finished.")
+    return(result.df)
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing PaStA data.
+#' The dataframe has the column names and column datatypes defined in \code{PASTA.LIST.COLUMNS}
+#' and \code{PASTA.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.pasta.list = function() {
+    return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
+}
+
+## * Synchronicity data ----------------------------------------------------
+
+## column names of a dataframe containing synchronicity data (see function \code{read.synchronicity})
+SYNCHRONICITY.LIST.COLUMNS = c(
+    "hash", "synchronicity"
+)
+
+## declare the datatype for each column in the constant 'SYNCHRONICITY.LIST.COLUMNS'
+SYNCHRONICITY.LIST.DATA.TYPES = c(
+    "character", "logical"
+)
+
+#' Read the synchronicity data from file. The name of the file follows
+#' the following pattern: 'commit_sync_analysis_artifact_time.window.dat',
+#' where artifact and time.window are the given variables.
+#'
+#' @param data.path the path to the synchronicity data
+#' @param artifact the artifact whose synchronicity data get read
+#' @param time.window the time window of the data to be read
+#'
+#' @return the read synchronicity data
+read.synchronicity = function(data.path, artifact, time.window) {
+    logging::logdebug("read.synchronicity: starting.")
+
+    ## check time.window
+    allowed.time.windows = c(1, 5, 10, 15)
+    stopifnot((time.window) %in% allowed.time.windows)
+
+    ## construct file
+    file.name = sprintf("commit_sync_analysis_%ss_%s.dat", artifact, time.window)
+    file = file.path(data.path, file.name)
+
+    ## handle the case that the synchronicity data is empty
+    if (!file.exists(file)) {
+        logging::logwarn("There are no synchronicity data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(create.empty.synchronicity.list())
+    }
+
+    ## load commit.ids object
+    load(file = file)
+    synchronous.commits = data.frame(hash = commit.hashes[["synchronous"]], synchronicity = TRUE)
+    nonsynchronous.commits = data.frame(hash = commit.hashes[["non.synchronous"]], synchronicity = FALSE)
+
+    ## construct data.frame
+    synchronicity = plyr::rbind.fill(synchronous.commits, nonsynchronous.commits)
+
+    ## ensure proper column names
+    colnames(synchronicity) = SYNCHRONICITY.LIST.COLUMNS
+
+    ## store the synchronicity data
+    logging::logdebug("read.synchronicity: finished.")
+    return(synchronicity)
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing synchronicity data.
+#' The dataframe has the column names and column datatypes defined in \code{SYNCHRONICITY.LIST.COLUMNS}
+#' and \code{SYNCHRONICITY.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.synchronicity.list = function() {
+    return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
