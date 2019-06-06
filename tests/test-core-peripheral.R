@@ -14,6 +14,7 @@
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -148,4 +149,26 @@ test_that("get.author.class", {
     ## Check empty input data (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo"), NA) # expect that no error occurs
 
+})
+
+test_that("Core classification of cochange author networks with vertices but no edges", {
+    ## create network with one author and no edges
+    authors = data.frame(author.name = "A", kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    edges = create.empty.edge.list()
+    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+
+    ## classify the authors into core/peripheral
+    classification = get.author.class.by.type(network, type = "network.eigen")
+
+    expect_true(nrow(classification[["core"]]) == 1 && nrow(classification[["peripheral"]]) == 0)
+
+    ## create network with several authors and no edges
+    authors = data.frame(author.name = LETTERS[1:5], kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    edges = create.empty.edge.list()
+    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+
+    ## classify the authors into core/peripheral
+    classification = get.author.class.by.type(network, type = "network.eigen")
+
+    expect_true(nrow(classification[["core"]]) == 0 && nrow(classification[["peripheral"]]) == 5)
 })

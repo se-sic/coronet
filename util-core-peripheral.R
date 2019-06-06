@@ -16,7 +16,7 @@
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2018-2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -1117,7 +1117,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     core.classification[seq_len(author.class.threshold.idx)] = TRUE
 
     ## With no activity/collaboration occurring, all authors are classified as peripheral.
-    if (author.class.threshold == 0) {
+    if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
         logging::logwarn("No collaboration/activity occured, thus, all authors' classification is set to peripheral.")
         core.classification = rep(FALSE, length(core.classification))
         # ## old code: if we found no core author (should not happen anymore)
