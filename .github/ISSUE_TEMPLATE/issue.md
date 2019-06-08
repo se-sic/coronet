@@ -4,7 +4,7 @@ about: Create an issue report
 ---
 
 <!--
-Thanks for contributing to codeface-extraction-r!
+Thanks for contributing to coronet!
 -->
 ### Description
 

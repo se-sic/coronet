@@ -5,5 +5,7 @@
 32710;"2016-07-12 16:05:41";"Olaf";"olaf@example.org";"2016-07-12 17:05:55";"Thomas";"thomas@example.org";"3a0ed78458b3976243db6829f63eba3eead26774";1;1;0;1;"test2.c";"Base_Feature";"Feature";1
 32710;"2016-07-12 16:05:41";"Olaf";"olaf@example.org";"2016-07-12 17:05:55";"Thomas";"thomas@example.org";"3a0ed78458b3976243db6829f63eba3eead26774";1;1;0;1;"test2.c";"Base_Feature";"FeatureExpression";1
 32714;"2016-07-12 16:06:10";"Karl";"karl@example.org";"2016-07-12 16:06:10";"Karl";"karl@example.org";"1143db502761379c2bfcecc2007fc34282e7ee61";1;1;0;1;"test3.c";"Base_Feature";"Feature";1
+32715;"2016-07-12 16:06:20";"Karl";"karl@example.org";"2016-07-12 16:06:20";"Karl";"karl@example.org";"418d1dc4929ad1df251d2aeb833dd45757b04a6f";1;1;0;1;"";"";"";0
+32716;"2016-07-12 16:06:30";"Thomas";"thomas@example.org";"2016-07-12 16:06:30";"Thomas";"thomas@example.org";"d01921773fae4bed8186b0aa411d6a2f7a6626e6";1;1;0;1;"";"";"";0
 32711;"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"0a1a5c523d835459c42f33e863623138555e2526";1;1;0;1;"test2.c";"Base_Feature";"Feature";1
 32711;"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"0a1a5c523d835459c42f33e863623138555e2526";1;1;0;1;"test2.c";"foo";"Feature";1

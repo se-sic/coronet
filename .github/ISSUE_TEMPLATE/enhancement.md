@@ -4,7 +4,7 @@ about: Suggest an enhancement to the existing functionality
 ---
 
 <!--
-Thanks for contributing to codeface-extraction-r!
+Thanks for contributing to coronet!
 -->
 ### Description
 

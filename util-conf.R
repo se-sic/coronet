@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -11,12 +11,15 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -57,6 +60,11 @@ ARTIFACT.CODEFACE = list(
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Conf --------------------------------------------------------------------
 
+#' The class \code{Conf} provides convenient handling of a predefined set of
+#' configuration options or, rather, attributes.
+#'
+#' **Note:** This class is considered abstract and should not instantiated directly,
+#' as the list of handled attributes is empty.
 Conf = R6::R6Class("Conf",
 
     ## * private -----------------------------------------------------------
@@ -75,7 +83,7 @@ Conf = R6::R6Class("Conf",
                 return(self$get.value(att))
             })
             names(current.values) = names(private$attributes)
-            self$update.values(current.values, stop.on.error = TRUE)
+            self$update.values(current.values)
         },
 
         #' Check whether the given 'value' is the correct datatype
@@ -124,8 +132,8 @@ Conf = R6::R6Class("Conf",
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
-            ## FIXME do we need this?
-            private$check.values()
+            # ## check the default values for validity
+            # private$check.values()
         },
 
         ## * * printing ----------------------------------------------------
@@ -134,7 +142,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param allowed Indicator whether to return also information on allowed values
         #'
-        #' @return the configuration list as string
+        #' @return the configuration list as string [default: FALSE]
         get.conf.as.string = function(allowed = FALSE) {
             ## get the complete list of attributes
             attributes = private$attributes
@@ -154,7 +162,7 @@ Conf = R6::R6Class("Conf",
 
         #' Print the private variables of the class.
         #'
-        #' @param allowed Indicator whether to print information on allowed values
+        #' @param allowed Indicator whether to print information on allowed values [default: FALSE]
         print = function(allowed = FALSE) {
             logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
         },
@@ -165,8 +173,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param entry the entry name for the value
         #' @param value the new value
-        #' @param error call stop() on an error? [default: FALSE]
-        update.value = function(entry, value, stop.on.error = FALSE) {
+        update.value = function(entry, value) {
             ## construct list for updating
             updating = list(value)
             names(updating) = entry
@@ -177,11 +184,10 @@ Conf = R6::R6Class("Conf",
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
-        #' @param error call stop() on an error? [default: FALSE]
-        update.values = function(updated.values = list(), stop.on.error = FALSE) {
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
+        update.values = function(updated.values = list()) {
             ## determine the function executed on an error
-            error.function = ifelse(stop.on.error, stop, logging::logwarn)
+            error.function = stop
 
             ## check values to update
             names.to.update = c()
@@ -218,9 +224,7 @@ Conf = R6::R6Class("Conf",
 
                     } else {
                         message = paste0(
-                            "Updating network-configuration attribute '%s' failed.",
-                            if (!stop.on.error) " The failure is ignored!\n",
-                            # "Current value: %s\n",
+                            "Updating network-configuration attribute '%s' failed.\n",
                             "Allowed values (%s of type '%s'): %s\n",
                             "Given value (of type '%s'): %s"
                         )
@@ -316,6 +320,13 @@ Conf = R6::R6Class("Conf",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectConf -------------------------------------------------------------
 
+#' The class \code{ProjectConf} is a subclass of \code{Conf} and provides
+#' convenient handling of project-related configuration attributes with the
+#' class \code{ProjectData}.
+#'
+#' @seealso Conf
+#' @seealso ProjectData
+#' @seealso RangeData
 ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 
     ## * private -----------------------------------------------------------
@@ -332,7 +343,13 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         ## * * attributes ---------------------------------------------------
 
         attributes = list(
-            artifact.filter.base = list(
+            commits.filter.base.artifact = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commits.filter.untracked.files = list(
                 default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
@@ -361,6 +378,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
+            ),
+            issues.from.source = list(
+                default = c("jira", "github"),
+                type = "character",
+                allowed = c("jira", "github"),
+                allowed.number = Inf
             )
         ),
 
@@ -442,7 +465,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param selection.process the selection process of the current study ('threemonth', 'releases')
         #' @param casestudy the current casestudy
         #' @param suffix the suffix of the casestudy's results folder
-        #' @param subfolder an optional subfolder
+        #' @param subfolder an optional subfolder [default: NULL]
         #'
         #' @return the path to the results folder
         #'         (i.e., "{data}/{selection.process}/{casestudy}_{suffix}[/{subfolder}]")
@@ -469,17 +492,19 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'                 and \code{featureexpression}) [default: "feature"]
         initialize = function(data, selection.process, casestudy, artifact = c("feature", "file",
                                                                                "function", "featureexpression")) {
+
+            logging::loginfo("Construct project configuration: starting.")
+
+            ## call super constructor
             super$initialize()
 
             ## verify arguments using match.arg
             artifact = match.arg(artifact)
             ## verify arguments
-            private$data = verify.argument.for.parameter(data, "character", class(self)[1])
-            private$selection.process = verify.argument.for.parameter(selection.process, "character", class(self)[1])
-            private$casestudy = verify.argument.for.parameter(casestudy, "character", class(self)[1])
-            private$artifact = verify.argument.for.parameter(artifact, "character", class(self)[1])
-
-            logging::loginfo("Construct project configuration: starting.")
+            private$data = verify.argument.for.parameter(data, "character", "ProjectConf$new")
+            private$selection.process = verify.argument.for.parameter(selection.process, "character", "ProjectConf$new")
+            private$casestudy = verify.argument.for.parameter(casestudy, "character", "ProjectConf$new")
+            private$artifact = verify.argument.for.parameter(artifact, "character", "ProjectConf$new")
 
             ## convert artifact to tagging
             tagging = ARTIFACT.TO.TAGGING[[ artifact ]]
@@ -573,18 +598,21 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #'
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
-        #' @param sliding.window whether sliding window splitting is enabled or not
-        #'                       default: 'FALSE'
+        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
         set.revisions = function(revisions, revisions.dates, sliding.window = FALSE) {
             ## construct revisions for call-graph data
             revisions.callgraph = private$postprocess.revision.list.for.callgraph.data(revisions)
+
+            ## construct ranges
+            ranges = construct.ranges(revisions, sliding.window = sliding.window)
 
             ## assemble revision data
             rev.data = list(
                 revisions = revisions,
                 revisions.dates = revisions.dates,
                 revisions.callgraph = revisions.callgraph,
-                ranges = construct.ranges(revisions, sliding.window = sliding.window),
+                ranges = ranges,
+                ranges.paths = generate.range.directory.names(ranges),
                 ranges.callgraph = construct.ranges(revisions.callgraph, sliding.window = sliding.window)
             )
             ## change structure of values (i.e., insert 'default' sublists and set 'updatable' value)
@@ -604,7 +632,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
         #' @param length the string given to time-based splitting (e.g., "3 months") or the activity
         #'               amount given to acitivity-based splitting
         #' @param basis the data used as basis for splitting (either "commits", "mails", or "issues")
-        #' @param sliding.window whether sliding window splitting is enabled or not [default: FALSE]
+        #' @param sliding.window whether sliding window splitting is enabled or not
         #' @param revisions the revisions of the study
         #' @param revisions.dates the revision dates of the study
         set.splitting.info = function(type, length, basis, sliding.window, revisions, revisions.dates) {
@@ -639,6 +667,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkConf -------------------------------------------------------------
 
+#' The class \code{NetworkConf} is a subclass of \code{Conf} and provides
+#' convenient handling of configuration attributes related to network
+#' construction with the class \code{NetworkBuilder}.
+#'
+#' @seealso Conf
+#' @seealso NetworkBuilder
 NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
     ## * private -----------------------------------------------------------
@@ -687,6 +721,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             ),
             artifact.directed = list(
                 default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            edges.for.base.artifacts = list(
+                default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
@@ -749,16 +789,20 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 
         #' The constructor, automatically checking the default values.
         initialize = function() {
-            # private$check.values()
+            logging::loginfo("Construct network configuration: starting.")
+
+            ## call super constructor
+            super$initialize()
+
+            logging::loginfo("Construct network configuration: finished.")
         },
 
         #' Update the attributes of the class with the new values given in the
         #' 'updated.values' list.
         #'
-        #' @param updated.values the new values for the attributes to be updated
-        #' @param error call stop() on an error? [default: FALSE]
-        update.values = function(updated.values = list(), stop.on.error = FALSE) {
-            super$update.values(updated.values = updated.values, stop.on.error = stop.on.error)
+        #' @param updated.values the new values for the attributes to be updated [default: list()]
+        update.values = function(updated.values = list()) {
+            super$update.values(updated.values = updated.values)
 
             ## 1) "date" and "artifact.type" always as edge attribute
             name = "edge.attributes"
@@ -789,7 +833,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
 #' Constructs a string representing a configuration (i.e., a potentially nested list).
 #'
 #' @param conf the configuration list to represent as string
-#' @param title the title line right before the constructed string
+#' @param title the title line right before the constructed string [default: deparse(substitute(conf))]
 #'
 #' @return a string representing the status of \code{conf}, including newline characters and
 #'         pretty-printed list style
@@ -867,4 +911,29 @@ get.configuration.string = function(conf, title = deparse(substitute(conf))) {
     }
 
     return(construct.configuration.string(conf, title))
+}
+
+#' Generate the directory names for Codeface ranges. That is, commit hashes forming the range are shortened
+#' to a length of six characters and the range name is prepended by a consecutive range number.
+#'
+#' The function is partly adapted from
+#' https://github.com/siemens/codeface@57bfbab58f75a91effb431842d01c76627071134 and
+#' https://github.com/siemens/codeface/commit/cd7b68c65ff7ae113e6c75275ce3798004ce7b09.
+#'
+#' @param ranges the (revision) ranges of the project
+generate.range.directory.names = function(ranges) {
+    range.numbers = seq_along(ranges)
+
+    directory.names = mapply(range.numbers, ranges, SIMPLIFY = FALSE, FUN = function(range.number, range) {
+        revisions = strsplit(range, "-")[[1]]
+
+        if (length(revisions[1]) == 40) {
+            revisions[1] = substr(revisions[1], 0, 6)
+            revisions[2] = substr(revisions[2], 0, 6)
+        }
+	return(paste0(formatC(range.number, width = 3, flag = "0"), "--", revisions[1], "-", revisions[2]))
+    })
+
+    names(directory.names) = ranges
+    return(directory.names)
 }

@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -11,11 +11,13 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -139,7 +141,8 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
                 ## configurations
                 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-                proj.conf$update.value("artifact.filter.base", FALSE)
+                proj.conf$update.value("commits.filter.base.artifact", FALSE)
+                proj.conf$update.value("commits.filter.untracked.files", TRUE)
                 net.conf = NetworkConf$new()
 
                 ## update network configuration
@@ -196,25 +199,13 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
 test_that("Network construction of the undirected author-cochange network", {
 
-    ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
-    net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "cochange"))
-
-    ## construct objects
-    proj.data = ProjectData$new(project.conf = proj.conf)
-    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
-
-    ## build network
-    network.built = network.builder$get.author.network()
-
-    ## vertex attributes
+    ## build expected network:
+    ## 1) vertices
     authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas"),
                          kind = TYPE.AUTHOR,
                          type = TYPE.AUTHOR)
 
-    ## edge attributes
+    ## 2) edges
     data = data.frame(comb.1. = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl"),
                       comb.2. = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas"),
                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
@@ -232,10 +223,51 @@ test_that("Network construction of the undirected author-cochange network", {
                       type = TYPE.EDGES.INTRA,
                       relation = "cochange"
     )
-
-    ## build expected network
+    ## 3) build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
 
+
+    ##
+    ## without untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## test
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+
+
+    ##
+    ## with untracked files
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.author.network()
+
+    ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
 
@@ -243,7 +275,7 @@ test_that("Network construction of the undirected but temorally ordered author-c
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = FALSE,
                                                  author.respect.temporal.order = TRUE))
@@ -285,7 +317,7 @@ test_that("Network construction of the directed author-cochange network", {
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE))
 
@@ -326,7 +358,7 @@ test_that("Network construction of the directed author-cochange network without 
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", author.directed = TRUE,
                                                  author.respect.temporal.order = FALSE))
@@ -372,7 +404,7 @@ test_that("Network construction of the undirected simplified author-cochange net
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "cochange", simplify = TRUE))
 
@@ -420,7 +452,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "issue"))
@@ -432,76 +464,71 @@ test_that("Network construction of the undirected author-issue network with all 
     ## build network
     network.built = network.builder$get.author.network()
 
+    ## vertex attributes
     vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
-    edges = data.frame(from = c("Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl", "Karl",
-                                "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo",
-                                "udo", "udo", "udo", "udo", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas",
-                                "Thomas", "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas",
-                                "Thomas", "Thomas", "Thomas", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                                "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn",
-                                "Björn", "Björn", "Björn"),
-                       to = c( "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas",
-                               "Thomas", "Thomas", "Thomas", "Thomas", "udo", "udo", "udo", "udo", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "udo", "udo", "udo", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
-                               "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn",
-                               "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max", "Max", "Max",
-                               "Max" ),
-                       date = get.date.from.string(c( "2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-06-01 22:37:03",
-                                                      "2013-05-25 20:02:08", "2013-05-25 20:02:08", "2013-04-21 23:52:09", "2013-05-05 23:28:57",
-                                                      "2013-05-05 23:28:57", "2013-06-01 22:37:03", "2016-07-19 10:47:25", "2013-05-25 20:02:08",
-                                                      "2013-05-25 20:02:08", "2016-07-19 10:47:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-04-17 02:07:37", "2016-04-17 02:07:37",
-                                                      "2016-07-14 17:42:52", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
-                                                      "2016-07-27 22:25:25", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-27 22:25:25",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-14 02:03:14",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-14 17:42:52", "2016-07-15 08:37:57",
-                                                      "2016-07-15 08:37:57", "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-07-27 22:25:25",
-                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 16:03:23",
-                                                      "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
-                                                      "2016-12-07 15:53:02", "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-10-05 01:07:46",
-                                                      "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-07-12 15:59:25",
-                                                      "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-08-31 18:21:48", "2016-10-13 15:33:56",
-                                                      "2016-12-06 14:03:42", "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:02",
-                                                      "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02", "2017-02-20 22:25:41",
-                                                      "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21", "2017-05-23 12:32:39" )),
+    ## edge attributes
+    edges = data.frame(from = c(rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-github-3>
+                                rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Thomas", 7), rep("Thomas", 3), rep("Björn", 6), # <issue-github-6>
+                                rep("Thomas", 9), rep("Thomas", 6), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
+                                rep("Björn", 6) # <issue-jira-ZEPPELIN-332>
+                                ),
+                       to = c(rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-github-3>
+                              rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-github-6>
+                              rep("Björn", 9), rep("Olaf", 6), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
+                              rep("Max", 6) # <issue-jira-ZEPPELIN-332>
+                                ),
+                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-github-3>
+                                                      "2016-08-31 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
+                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02",
+                                                      "2016-08-31 16:45:09", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
+                                                      "2016-07-12 16:06:30", "2016-10-05 16:45:09",
+                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-github-6>
+                                                      "2016-10-13 15:30:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
+                                                      "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
+                                                      "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2016-07-12 15:30:02",
+                                                      "2016-07-12 15:30:02", "2017-05-23 12:31:34", "2016-07-12 16:03:59",
+                                                      "2016-10-13 15:30:02", "2016-08-31 15:30:02", "2016-10-05 15:30:02",
+                                                      "2016-12-07 15:30:02", "2016-12-07 15:30:02", "2017-05-23 12:32:39",
+                                                      "2016-07-12 16:03:59", "2016-10-13 15:30:02", "2017-05-23 12:31:34",
+                                                      "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
+                                                      "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2017-05-23 12:31:34",
+                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-05 21:46:30", # <issue-jira-ZEPPELIN-328>
+                                                      "2013-05-05 21:49:21", "2013-05-05 21:49:34", "2013-05-06 01:04:34",
+                                                      "2013-05-25 03:48:41", "2013-05-25 04:08:07", "2013-06-01 06:53:06",
+                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
+                                                      "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-06-01 06:53:06", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
+                                                      "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-jira-ZEPPELIN-332>
+                                                      "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52"
+                                                      )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
-                                     "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>", "<issue-2>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>", "<issue-57>",
-                                     "<issue-57>", "<issue-57>" ),
-                       event.name = c( "created", "commented", "referenced", "head_ref_deleted", "merged", "closed", "created",
-                                       "commented", "referenced", "head_ref_deleted", "referenced", "merged", "closed",
-                                       "referenced", "mentioned", "subscribed", "commented", "commented", "mentioned",
-                                       "subscribed", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
-                                       "mentioned", "subscribed", "commented", "commented", "commented", "commented",
-                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "commented",
-                                       "commented", "commented", "mentioned", "subscribed", "mentioned", "subscribed",
-                                       "commented", "mentioned", "subscribed", "created", "renamed", "commented", "commented",
-                                       "commented", "commented", "commented", "mentioned", "subscribed", "commented", "merged",
-                                       "closed", "commented", "created", "renamed", "commented", "commented", "commented",
-                                       "commented", "commented", "commented", "merged", "closed", "commented", "created",
-                                       "commented", "commented", "merged", "closed", "commented" ),
+                       issue.id = c( rep("<issue-github-3>", 14), rep("<issue-github-6>", 30), rep("<issue-jira-ZEPPELIN-328>", 26),
+                                     rep("<issue-jira-ZEPPELIN-332>", 6)),
+                       event.name = c("created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
+                                      "commented", "add_link", "referenced", "referenced", "assigned", "state_updated", "referenced",
+                                      "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "mentioned", # <issue-github-6>
+                                      "subscribed", "mentioned", "subscribed", "commented", "mentioned", "subscribed", "labeled",
+                                      "commented", "add_link", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
+                                      "commented", "add_link", "labeled", "mentioned", "subscribed", "mentioned", "subscribed",
+                                      "commented", "labeled",
+                                      "created", "commented", "commented", "commented", "commented", "commented", "commented", # <issue-jira-ZEPPELIN-328>
+                                      "commented", "resolution_updated", "created", "commented", "commented", "commented",
+                                      "commented", "commented", "commented", "commented", "commented", "commented", "commented",
+                                      "commented", "resolution_updated", "commented", "commented", "commented", "commented",
+                                      "created", "commented", "commented", "commented", "commented", "commented" # <issue-jira-ZEPPELIN-332>
+                                      ),
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
                        relation = "issue"
             )
 
+    ## build expected network
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -511,7 +538,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("artifact.filter.base", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "issue"))
 
@@ -522,30 +549,70 @@ test_that("Network construction of the undirected author-issue network with just
     ## build network
     network.built = network.builder$get.author.network()
 
+    ## vertex attributes
     vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
-    edges = data.frame(from = c( "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
-                                 "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn" ),
-                       to = c( "Björn", "Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf",
-                               "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Max", "Max", "Max" ),
-                       date = get.date.from.string(c( "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-14 17:42:52",
-                                                      "2016-07-14 02:03:14", "2016-07-15 08:37:57", "2016-07-27 22:25:25",
-                                                      "2016-07-14 17:42:52", "2016-07-27 22:25:25", "2016-07-12 16:05:47",
-                                                      "2016-08-31 18:21:48", "2016-10-13 15:33:56", "2016-12-06 14:03:42",
-                                                      "2016-12-07 15:53:02", "2016-10-05 01:07:46", "2016-12-07 15:37:21",
-                                                      "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:39" )),
+    ## edge attributes
+    edges = data.frame(from = c(rep("Thomas", 2), # <issue-github-6>
+                                rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-jira-ZEPPELIN-328>
+                                rep("Björn", 5) # <issue-jira-ZEPPELIN-332>
+                                ),
+                       to = c(rep("Björn", 2), # <issue-github-6>
+                              rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-jira-ZEPPELIN-328>
+                              rep("Max", 5) # <issue-jira-ZEPPELIN-332>
+                              ),
+                       date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-github-6>
+                                                      "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-jira-ZEPPELIN-328>
+                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
+                                                      "2013-05-25 04:08:07", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
+                                                      "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
+                                                      "2013-06-01 06:50:26",
+                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2016-07-15 20:07:47", # <issue-jira-ZEPPELIN-332>
+                                                      "2016-07-27 20:12:08", "2016-07-28 06:27:52"
+                                                      )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>", "<issue-48>",
-                                     "<issue-48>", "<issue-48>", "<issue-51>", "<issue-51>", "<issue-51>", "<issue-51>",
-                                     "<issue-51>", "<issue-51>", "<issue-51>", "<issue-57>", "<issue-57>", "<issue-57>" ),
+                       issue.id = c( rep("<issue-github-6>", 2), rep("<issue-jira-ZEPPELIN-328>", 22), rep("<issue-jira-ZEPPELIN-332>", 5) ),
                        event.name = "commented",
                        weight = 1,
                        type = TYPE.EDGES.INTRA,
                        relation = "issue")
 
+    ## build expected network
     network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+
+test_that("Network construction with only untracked files (no edges expected)", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "cochange"))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects and keep just commits on untracked files
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    commit.data = subset(proj.data$get.commits(), artifact == UNTRACKED.FILE.EMPTY.ARTIFACT)
+    proj.data$set.commits(commit.data)
+
+    ## build network
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.author.network()
+
+    ## build expected network (two vertices, no edges)
+    vertices = list(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
+    network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
+    network.expected = igraph::add.vertices(network.expected, nv = max(lengths(vertices)), attr = vertices)
+
+    ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })

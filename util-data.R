@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -11,12 +11,14 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -31,16 +33,25 @@ requireNamespace("parallel") # for parallel computation
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Constants ---------------------------------------------------------------
 
-## base artifacts
+## untracked file
+UNTRACKED.FILE = "<untracked.file>"
+
+## the empty string which resides in the artifact column when artifact == feature or artifact == function
+## in the 'ProjectConf'
+UNTRACKED.FILE.EMPTY.ARTIFACT = ""
+UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE = ""
+
+## base artifacts (which one actually applies, depends on the artifact parameter in the 'ProjectConf')
 BASE.ARTIFACTS = c(
-    "Base_Feature",
-    "File_Level"
+    "Base_Feature", ## when artifact == feature
+    "File_Level",   ## when artifact == function
+    UNTRACKED.FILE  ## when artifact == file
 )
 
-## mapping of data source to artifact column
-## (for commits: filter also empty, non-configured, and (potentially) base artifacts)
+## mapping of data source to artifact column (for commits: filter artifacts based on the configuration options
+## 'commits.filter.base.artifact' and 'commits.filter.untracked.files' of the corresponding 'ProjectConf' object)
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
-    "commits" = "get.commits.filtered.empty",
+    "commits" = "get.commits.filtered",
     "mails"   = "get.mails",
     "issues"  = "get.issues"
 )
@@ -56,6 +67,23 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
 
+#' The class \code{ProjectData} provides convenient data handling for a project's data
+#' in a lazy fashion.
+#'
+#' To configure an object of this data-handling class, a configuration object of class
+#' \code{ProjectConf} must be passed to the initialization function. Data paths and
+#' other configuration options are read from it.
+#'
+#' The following main data sources are handled:
+#' - commits,
+#' - mails, and
+#' - issues.
+#'
+#' Furthermore, the following additional and orthogonal data sources are handled:
+#' - synchronicity data and
+#' - PaStA data.
+#'
+#' @seealso ProjectConf
 ProjectData = R6::R6Class("ProjectData",
 
     ## * private -----------------------------------------------------------
@@ -70,135 +98,95 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## commits and commit data
         commits.filtered = NULL, # data.frame
-        commits.filtered.empty = NULL, #data.frame
         commits = NULL, # data.frame
-        synchronicity = NULL, # data.frame
-        pasta = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
-        ## authors
-        authors = NULL, # data.frame
         ## issues
         issues = NULL, #data.frame
+        ## authors
+        authors = NULL, # data.frame
+        ## additional data sources
+        synchronicity = NULL, # data.frame
+        pasta = NULL, # data.frame
+        pasta.mails = NULL, # data.frame
+        pasta.commits = NULL, # data.frame
         ## timestamps of mail, issue and commit data
         data.timestamps = NULL, #data.frame
 
         ## * * filtering commits -------------------------------------------
 
-        #' Filter commits with empty artifacts from the already filtered commit list and
-        #' save the new list to 'commits.filtered.empty'.
+        #' Filter commits retrieved by the method \code{get.commits} after potentially removing untracked files and the
+        #' base artifact (see parameters).
         #'
-        #' @seealso \code{get.commits.filtered}
-        filter.commits.empty = function() {
-
-            logging::logdebug("filter.commits.empty: starting.")
-
-            ## do not compute anything more than once
-            if (!is.null(private$commits.filtered.empty)) {
-                logging::logdebug("filter.commits.empty: finished. (already existing)")
-                return(private$commits.filtered.empty)
-            }
-
-            ## get raw commit data
-            commit.data = self$get.commits.filtered()
-
-            ## break if the list of commits is empty
-            if (nrow(commit.data) == 0) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.filtered.empty = data.frame()
-                return(private$commits.filtered.empty)
-            }
-
-            ## only process commits with non-empty artifact
-            commit.data = subset(commit.data, artifact != "")
-
-            ## store the commit data
-            private$commits.filtered.empty = commit.data
-            logging::logdebug("filter.commits.empty: finished.")
-        },
-
-        #' Filter the data from the commit list which does not belong to the artifact listed in the field
-        #' \code{project.conf}.
-        #' If configured in \code{project.conf}, filter the commits from the commit list that touch the base artifact.
-        #' Add synchronicity and PaStA data if configured in \code{project.conf}.
-        #' Finally, save the new list to the field \code{commits.filtered}.
-        filter.commits = function() {
-
+        #' @param remove.untracked.files flag whether untracked files are kept or removed
+        #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #'
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        filter.commits = function(remove.untracked.files, remove.base.artifact) {
             logging::logdebug("filter.commits: starting.")
 
-            ## do not compute anything more than once
-            if (!is.null(private$commits.filtered)) {
-                logging::logdebug("filter.commits: finished. (already existing)")
-                return(private$commits.filtered)
-            }
-
-            ## get raw commit data
+            ## get commit data
             commit.data = self$get.commits()
 
-            ## break if the list of commits is empty
-            if (nrow(commit.data) == 0) {
-                logging::logwarn("There are no commits available for the current environment.")
-                logging::logwarn("Class: %s", self$get.class.name())
-                # logging::logwarn("Configuration: %s", private$project.conf$get.conf.as.string())
-                private$commits.filtered = data.frame()
-                return(private$commits.filtered)
+            ## filter out the untracked files
+            if (remove.untracked.files) {
+                commit.data = subset(commit.data, file != UNTRACKED.FILE)
             }
 
-            ## only process commits with the artifact listed in the configuration or missing
-            commit.data = subset(commit.data, artifact.type %in%
-                                     c(private$project.conf$get.value("artifact.codeface"), ""))
-
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
-            if (private$project.conf$get.value("artifact.filter.base")) {
+            if (remove.base.artifact) {
                 commit.data = subset(commit.data, !(artifact %in% BASE.ARTIFACTS))
             }
 
-            ## append synchronicity data if wanted
-            if (private$project.conf$get.value("synchronicity")) {
-                synchronicity.data = self$get.synchronicity()
-                commit.data = merge(commit.data, synchronicity.data,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
-            }
-
-            ## add PaStA data if wanted
-            if (private$project.conf$get.value("pasta")) {
-                self$get.pasta()
-                commit.data = private$add.pasta.data(commit.data)
-            }
-
-            ## store the commit data
-            private$commits.filtered = commit.data
             logging::logdebug("filter.commits: finished.")
+            return(commit.data)
         },
 
         ## * * PaStA data --------------------------------------------------
 
-        #' Add the PaStA data to the given data.frame for further analysis.
+        #' Aggregate PaStA data for convenient merging to main data sources.
         #'
-        #' @param data the base data as data.frame to append the PaStA data to.
+        #' In detail, the given PaStA data is independently aggregated by both the
+        #' columns \code{commit.hash} and \code{message.id}. The resulting data.frames
+        #' are stored in the fields \code{pasta.commits} and \code{pasta.mails},
+        #' respectively.
         #'
-        #' @return the augmented data.frame
-        add.pasta.data = function(data) {
-            logging::loginfo("Adding PaStA data.")
-            data[, "pasta"] = NA
-            if ("message.id" %in% colnames(data)) {
-                for (i in 1:nrow(data)) {
-                    pasta.item = self$get.pasta.items(message.id = data[i, "message.id"])
-                    if (!length(pasta.item) == 0) {
-                        data$pasta[i] = I(list(pasta.item))
-                    }
-                }
-            } else if ("hash" %in% colnames(data)) {
-                for (i in 1:nrow(data)) {
-                    pasta.item = self$get.pasta.items(commit.hash = data[i, "hash"])
-                    if (!length(pasta.item) == 0) {
-                        data$pasta[i] = I(list(pasta.item))
-                    }
-                }
+        #' **Note**: The column \code{commit.hash} gets renamed to \code{hash} to match
+        #' the corresponding column in the commit data (see \code{read.commits}).
+        #'
+        #' @param pasta.data a data.frame of PaStA data as retrieved from
+        #'                   \code{ProjectData$get.pasta.data}
+        aggregate.pasta.data = function(pasta.data) {
+            logging::logdebug("aggregate.pasta.data: starting.")
+
+            ## check for data first
+            if (nrow(pasta.data) == 0) {
+                ## take (empty) input data and no rows from it
+                private$pasta.mails = pasta.data[0, ]
+                private$pasta.commits = pasta.data[0, ]
+            } else {
+                ## compute aggregated data.frames for easier merging
+                ## 1) define group function (determines result in aggregated data.frame cells)
+                group.fun = unname # unique
+                ## 2) aggregate by message ID
+                group.col = "message.id"
+                private$pasta.mails = aggregate(
+                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    group.fun, na.action = na.pass
+                )
+                ## 3) aggregate by commit hash
+                group.col = "commit.hash"
+                private$pasta.commits = aggregate(
+                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    group.fun, na.action = na.pass
+                )
             }
-            return(data)
+
+            ## set column names consistent to main data
+            colnames(private$pasta.mails) = c("message.id", "pasta", "revision.set.id")
+            colnames(private$pasta.commits) = c("hash", "pasta", "revision.set.id")
+
+            logging::logdebug("aggregate.pasta.data: finished.")
         },
 
         ## * * timestamps --------------------------------------------------
@@ -262,7 +250,7 @@ ProjectData = R6::R6Class("ProjectData",
         initialize = function(project.conf) {
 
             ## check arguments
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", "ProjectData$new")
 
             ## if we have a direct subclass of ProjectData here,
             ## log this accordingly
@@ -287,13 +275,14 @@ ProjectData = R6::R6Class("ProjectData",
         #' changed.
         reset.environment = function() {
             private$commits.filtered = NULL
-            private$commits.filtered.empty = NULL
             private$commits = NULL
-            private$artifacts = NULL
-            private$synchronicity = NULL
             private$mails = NULL
+            private$issues = NULL
             private$authors = NULL
+            private$synchronicity = NULL
             private$pasta = NULL
+            private$pasta.mails = NULL
+            private$pasta.commits = NULL
             private$data.timestamps = NULL
         },
 
@@ -312,7 +301,8 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param reset.environment parameter to determine whether the environment
         #'                          has to be reset or not
         set.project.conf = function(project.conf, reset.environment = FALSE) {
-            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf", class(self)[1])
+            private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf",
+                                                                 "ProjectData$set.project.conf")
 
             if (reset.environment) {
                 self$reset.environment()
@@ -329,6 +319,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Set  a value of the project configuration and reset the environment
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
+            self$reset.environment()
         },
 
         #' Update the project configuration based on the given list
@@ -385,147 +376,191 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Get the list of commits without empty artifacts and filtered by the artifact kind configured
-        #' in the field \code{project.conf}.
-        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
-        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
-        #' to the filtered commit data.
-        #' If the list of filtered commits does not already exist, call the filter method.
+        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' base artifact (if configured in the \code{project.conf}, see parameters \code{commits.filter.untracked.files}
+        #' and \code{commits.filter.base.artifact}).
         #'
-        #' @return the commit list without empty artifacts and containing only commit data related to the
-        #'         configured artifact and, if configured, without the base artifact
-        get.commits.filtered.empty = function() {
-            logging::loginfo("Getting commit data filtered by artifact.base and artifact.empty.")
-
-            ## if commits are not read already, do this
-            if (is.null(private$commits.filtered.empty)) {
-                private$filter.commits.empty()
-            }
-
-            return(private$commits.filtered.empty)
-        },
-
-        #' Get the list of commits filtered by the artifact kind configured in the field \code{project.conf}.
-        #' If configured in \code{project.conf}, get the list of commits without the base artifact.
-        #' In addition, if configured in \code{project.conf}, append the synchronicity data and PaStA data
-        #' to the filtered commit data.
-        #' If the list of filtered commits does not already exist, call the filter method.
+        #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
-        #' @return the commit list containing only commit data related to the configured artifact and,
-        #'         if configured, without the base artifact
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #'
+        #' @seealso get.commits.filtered.uncached
         get.commits.filtered = function() {
-            logging::loginfo("Getting commit data filtered by artifact.base.")
-
-            ## if commits are not read already, do this
             if (is.null(private$commits.filtered)) {
-                private$filter.commits()
+                private$commits.filtered = private$filter.commits(
+                    private$project.conf$get.value("commits.filter.untracked.files"),
+                    private$project.conf$get.value("commits.filter.base.artifact")
+                )
             }
-
             return(private$commits.filtered)
         },
 
-        #' Get the complete list of commits.
-        #' If configured in the field \code{project.conf}, append the PaStA data to the commit data
-        #' by calling the setter function.
-        #' If the list of commits does not already exist, call the read method first.
+        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' base artifact (see parameters).
+        #'
+        #' This method does not use caching. If you want to use caching, please use the method
+        #' \code{get.commits.filtered} instead.
+        #'
+        #' @param remove.untracked.files flag whether untracked files are kept or removed
+        #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #'
+        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #'
+        #' @seealso get.commits.filtered
+        get.commits.filtered.uncached = function(remove.untracked.files, remove.base.artifact) {
+            return (private$filter.commits(remove.untracked.files, remove.base.artifact))
+        },
+
+        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
+        #' If the list of commits is not cached in the field \code{commits}, call the read method first.
+        #' If configured in the \code{project.conf}, add PaStA and synchronicity data.
         #'
         #' @return the list of commits
         get.commits = function() {
-            logging::loginfo("Getting raw commit data.")
+            logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
             if (is.null(private$commits)) {
-                commits.read = read.commits(
-                    self$get.data.path(),
-                    private$project.conf$get.value("artifact")
-                )
+                commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
-                self$set.commits(data = commits.read)
+                ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
+                ## untracked files
+                commit.data = subset(commit.data, artifact.type %in%
+                                         c(private$project.conf$get.value("artifact.codeface"),
+                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE))
+
+                ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
+                ## the field 'commits' afterwards
+                self$set.commits(commit.data)
             }
             private$extract.timestamps(source = "commits")
 
             return(private$commits)
         },
 
-        #' Get the complete list of commits.
-        #' If it does not already exist, call the read method first.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$get.commits()}.
-        #'
-        #' @return the list of commits
-        get.commits.raw = function() {
-            return(self$get.commits())
-        },
-
         #' Set the commit list of the project to a new one.
-        #' Add PaStA data if configured in the field \code{project.conf}.
+        #' Add PaStA and sychronicity data if configured in the \code{project.conf}.
         #'
-        #' @param data the new list of commits
-        set.commits = function(data) {
-            logging::loginfo("Setting raw commit data.")
-            if (is.null(data)) {
-                data = data.frame()
+        #' @param commit.data the new list of commits
+        set.commits = function(commit.data) {
+            logging::loginfo("Setting commit data.")
+
+            # TODO: Also check for correct shape (column names and data types) of the passed data
+
+            if (is.null(commit.data)) {
+                commit.data = create.empty.commits.list()
             }
+
+            ## append synchronicity data if wanted
+            if (private$project.conf$get.value("synchronicity")) {
+                logging::loginfo("Adding synchronicity data.")
+                synchronicity.data = self$get.synchronicity()
+                ## remove previous synchronicity data
+                if ("synchronicity" %in% colnames(commit.data)) {
+                    commit.data["synchronicity"] = NULL
+                }
+                commit.data = merge(commit.data, synchronicity.data,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+            }
+
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding PaStA data.")
-                data = private$add.pasta.data(data = data)
+                ## get data
+                self$get.pasta() # no assignment because we just want to trigger the read-in
+                ## remove previous PaStA data
+                if ("pasta" %in% colnames(commit.data)) {
+                    commit.data["pasta"] = NULL
+                    commit.data["revision.set.id"] = NULL
+                }
+                ## merge PaStA data
+                commit.data = merge(commit.data, private$pasta.commits,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
 
-            private$commits = data
+            ## sort by date again (because 'merge' is doing bullshit!)
+            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
-            ## remove cached data for filtered commits as these need to be re-computed
-            ## after changing the data
+            private$commits = commit.data
+
+            ## remove cached data for filtered commits as these need to be re-computed after
+            ## changing the data
             private$commits.filtered = NULL
-            private$commits.filtered.empty = NULL
-        },
-
-        #' Set the commit list of the project to a new one.
-        #'
-        #' Note: This is just a delegate for \code{ProjectData$set.commits(data)}.
-        #'
-        #' @param data the new list of commits
-        set.commits.raw = function(data) {
-            self$set.commits(data)
         },
 
         #' Get the synchronicity data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
             logging::loginfo("Getting synchronicity data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$synchronicity)) {
-                private$synchronicity = read.synchronicity(
-                    self$get.data.path.synchronicity(),
-                    private$project.conf$get.value("artifact"),
-                    private$project.conf$get.value("synchronicity.time.window")
-                )
+            ## if synchronicity data are to be read, do this
+            if (private$project.conf$get.value("synchronicity")) {
+                ##  if data are not read already, read them
+                if (is.null(private$synchronicity)) {
+                    synchronicity.data = read.synchronicity(
+                        self$get.data.path.synchronicity(),
+                        private$project.conf$get.value("artifact"),
+                        private$project.conf$get.value("synchronicity.time.window")
+                    )
+
+                    ## set actual data
+                    self$set.synchronicity(synchronicity.data)
+                }
+            } else {
+                ## mark synchronicity data as empty
+                self$set.synchronicity(NULL)
             }
 
             return(private$synchronicity)
         },
 
-        #' Set the synchronicity data to the given data.
+        #' Set the synchronicity data to the given new data and,
+        #' if configured in the field \code{project.conf},
+        #' also update it for the commit data.
         #'
         #' @param data the new synchronicity data
         set.synchronicity = function(data) {
             logging::loginfo("Setting synchronicity data.")
+
+            if (is.null(data)) {
+                data = create.empty.synchronicity.list()
+            }
+
+            ## set the actual data
             private$synchronicity = data
+
+            ## add synchronicity data to the commit data if configured
+            if (private$project.conf$get.value("synchronicity")) {
+                logging::loginfo("Updating synchronicity data.")
+                if (!is.null(private$commits)) {
+                    self$set.commits(private$commits)
+                }
+            }
         },
 
         #' Get the PaStA data.
         #' If it does not already exist call the read method.
+        #' Call the setter function to set the data.
         #'
         #' @return the PaStA data
         get.pasta = function() {
             logging::loginfo("Getting PaStA data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$pasta)) {
-                private$pasta = read.pasta(self$get.data.path.pasta())
+            ## if PaStA data are to be read, do this
+            if (private$project.conf$get.value("pasta")) {
+                ## if data are not read already, read them
+                if (is.null(private$pasta)) {
+                    pasta.data = read.pasta(self$get.data.path.pasta())
+
+                    ## set actual data
+                    self$set.pasta(pasta.data)
+                }
+            } else {
+                ## mark PaStA data as empty
+                self$set.pasta(NULL)
             }
 
             return(private$pasta)
@@ -538,7 +573,18 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new PaStA data
         set.pasta = function(data) {
             logging::loginfo("Setting PaStA data.")
+
+            if (is.null(data)) {
+                data = create.empty.pasta.list()
+            }
+
+            ## set the actual data
             private$pasta = data
+
+            ## aggregate by message IDs and commit hashes
+            private$aggregate.pasta.data(private$pasta)
+
+            ## add PaStA data to commit and mail data if configured
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Updating PaStA data.")
                 if (!is.null(private$commits)) {
@@ -576,14 +622,28 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new mail data
         set.mails = function(data) {
             logging::loginfo("Setting e-mail data.")
+
             if (is.null(data)) {
-                data = data.frame()
+                data = create.empty.mails.list()
             }
+
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
                 logging::loginfo("Adding PaStA data.")
-                data = private$add.pasta.data(data = data)
+                ## get data
+                self$get.pasta() # no assignment because we just want to trigger the read-in
+                ## remove previous PaStA data
+                if ("pasta" %in% colnames(data)) {
+                    data["pasta"] = NULL
+                    data["revision.set.id"] = NULL
+                }
+                ## merge PaStA data
+                data = merge(data, private$pasta.mails,
+                             by = "message.id", all.x = TRUE, sort = FALSE)
             }
+
+            ## sort by date again (because 'merge' is doing bullshit!)
+            data = data[order(data[["date"]], decreasing = FALSE), ] # sort!
 
             private$mails = data
         },
@@ -620,7 +680,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if issues have not been read yet do this
             if (is.null(private$issues)) {
-                private$issues = read.issues(self$get.data.path.issues())
+                private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
             }
             private$extract.timestamps(source = "issues")
 
@@ -637,7 +697,11 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data the new issue data
         set.issues = function(data) {
             logging::loginfo("Setting issue data.")
-            if (is.null(data)) data = data.frame()
+
+            if (is.null(data)) {
+                data = create.empty.issues.list()
+            }
+
             private$issues = data
         },
 
@@ -709,33 +773,44 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return a vector containing all the names
         get.cached.data.sources = function() {
-            result = c()
+            data.sources = c(
+                ## main data sources
+                "commits",
+                "mails",
+                "issues",
+                ## author data
+                "authors",
+                ## additional data sources
+                "synchronicity",
+                "pasta"
+            )
 
-            ## main data sources
-            if (!is.null(private$commits)) {
-                result = c(result, "commits")
-            }
-            if (!is.null(private$mails)) {
-                result = c(result, "mails")
-            }
-            if (!is.null(private$issues)) {
-                result = c(result, "issues")
-            }
-
-            ## author data
-            if (!is.null(private$authors)) {
-                result = c(result, "authors")
-            }
-
-            ## additional data sources
-            if (!is.null(private$synchronicity)) {
-                result = c(result, "synchronicity")
-            }
-            if (!is.null(private$pasta)) {
-                result = c(result, "pasta")
-            }
+            result = Filter(function (ds) {
+                return(!is.null(private[[ds]]))
+            }, data.sources)
 
             return(result)
+        },
+
+        #' Extract the data classes (i.e., data columns and their classes) available in
+        #' the given data source.
+        #'
+        #' @param data.source The specified data source. One of \code{"mails"},
+        #'                    \code{"commits"}, and \code{"issues"}. [default: "commits"]
+        #'
+        #' @return a named list of data classes, with the corresponding data columns as names
+        get.data.columns.for.data.source = function(data.source = c("commits", "mails", "issues")) {
+
+            ## check arguments
+            data.source = match.arg(arg = data.source, several.ok = FALSE)
+
+            ## get the needed data method first
+            data.fun = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            ## get the column classes with corresponding names
+            columns = lapply(self[[data.fun]](), class)
+
+            return(columns)
         },
 
         #' Compares two ProjectData objects by first comparing the names of the
@@ -1008,13 +1083,36 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## check given data source
             data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            ## TODO use filtered commit data here (and not the filtered.empty version)? → try filtered!
             data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
 
             ## get the key-value mapping/list for the given parameters
             mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
 
             return(mylist)
+        },
+
+        #' Get the list of authors by only looking only at the specified data source.
+        #'
+        #' *Note*: The constant \code{DATASOURCE.TO.ARTIFACT.FUNCTION} denotes the mapping between
+        #' data source and the method which is retrieving the data for each data source.
+        #'
+        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"},
+        #'                    or \code{"issues"} [default: "commits"]
+        #'
+        #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
+        #'         extracted from the specified data source
+        get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
+
+            data.source = match.arg(data.source)
+
+            ## retrieve author names from chosen data source
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+            data = self[[data.source.func]]()[c("author.name", "author.email")]
+
+            ## remove duplicates
+            data = unique(data)
+
+            return (data)
         }
     )
 )
@@ -1023,6 +1121,12 @@ ProjectData = R6::R6Class("ProjectData",
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## RangeData ---------------------------------------------------------------
 
+#' The class \code{RangeData} is a subclass of \code{ProjectData} and is used to
+#' represent only a subset of the data (i.e., a range) of a complete
+#' \code{ProjectData} object.
+#'
+#' @seealso ProjectData
+#' @seealso ProjectConf
 RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
     ## * private -----------------------------------------------------------
@@ -1050,8 +1154,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             super$initialize(project.conf)
 
             ## check arguments
-            private$range = verify.argument.for.parameter(range, "character", class(self)[1])
-            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", class(self)[1])
+            private$range = verify.argument.for.parameter(range, "character", "RangeData$new")
+            private$revision.callgraph = verify.argument.for.parameter(revision.callgraph, "character", "RangeData$new")
 
             ## correct revision.callgraph variable
             if (revision.callgraph == "") {
@@ -1081,7 +1185,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @return the path to the range's result folder
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
-            range = private$range
+            range = private$project.conf$get.value("ranges.paths")[[private$range]]
             return(file.path(data.path, range))
         },
 
@@ -1218,98 +1322,3 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
 
     return(mylist)
 }
-
-#' Get the commit data with the specified columns for the specified project-data instance
-#' as a data frame for each specified split range.
-#'
-#' A split interval can be set by defining the number of weeks for each requested range as a vector.
-#'
-#' @param project.data The project data as source for the commits
-#' @param columns The commit-data columns to select and return
-#' @param split A list of numerics, indicating numbers of weeks into which the selected data
-#'              is to be split
-#'
-#' @return A data.frame indicating the selected \code{columns}, split into the given numbers
-#'         of weeks (\code{split})
-get.commit.data = function(project.data, columns = c("author.name", "author.email"), split = c()) {
-    logging::logdebug("get.commit.data: starting.")
-
-    ## Get commit data
-    commits.df = project.data$get.commits()
-
-    ## In case no commit data is available, return NA
-    if (nrow(commits.df) == 0) {
-        return(NA)
-    }
-
-    ## Make sure the hash is included in the cut columns vector for grouping
-    cut.columns = columns
-    if (!("hash" %in% cut.columns)) {
-        cut.columns = c(cut.columns, "hash")
-    }
-
-    ## Make sure the date is included in the cut columns vector for splitting
-    if (!("date" %in% cut.columns)) {
-        cut.columns = c(cut.columns, "date")
-    }
-
-    ## Cut down data to needed minimum
-    commits.df = commits.df[cut.columns]
-
-    ## Group by hash to get a line per commit
-    commits.df = sqldf::sqldf("SELECT * FROM `commits.df` GROUP BY `hash`")
-
-    ## Remove hash column if not wanted as it now contains nonsensical data
-    if (!("hash" %in% columns)) {
-        commits.df["hash"] = NULL
-    }
-
-    ## Order commits by date column
-    commits.df = commits.df[order(commits.df$date), ]
-
-    ## Fetch the date range info
-    date.first = as.Date(commits.df$date[1])
-    date.last = as.Date(commits.df$date[nrow(commits.df)]) + 1 # +1 since findInterval is right-exclusive
-
-    ## Calc the split dates depending on the specified intervals
-    date.split = c(date.last)
-    if (!is.null(split)) {
-        for (i in 1:length(split)) {
-            ## subtract split[i] number of weeks
-            date.calc = date.split[i] - lubridate::weeks(split[i])
-
-            ## Check if calculated date is still after the first commit date of the range
-            if (date.calc > date.first) {
-                date.split = c(date.split, date.calc)
-            } else {
-                date.split = c(date.split, date.first)
-                break
-            }
-        }
-    } else {
-        date.split = c(date.split, date.first)
-    }
-
-    date.split = rev(date.split)
-
-    ## Only keep the commits which were made within the specified split ranges
-    ## TODO https://github.com/se-passau/codeface-extraction-r/pull/51#discussion_r132924711
-    commits.df = commits.df[as.Date(commits.df$date) >= date.split[1], ]
-
-    ## Calc group numbers for the commits by the split dates
-    intervals = findInterval(as.Date(commits.df[["date"]]), date.split, all.inside = FALSE)
-
-    ## Remove date column if not wanted
-    if (!("date" %in% columns)) {
-        commits.df["date"] = NULL
-    }
-
-    ## Split the commits by the calculated groups
-    res = split.data.by.bins(commits.df, intervals)
-    names(res) = construct.ranges(date.split)
-    attr(res, "bins") = date.split
-
-    logging::logdebug("get.commit.data: finished.")
-    return(res)
-}
-

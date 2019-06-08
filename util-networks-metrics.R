@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -11,9 +11,9 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2015 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
-## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## All Rights Reserved.
@@ -47,7 +47,7 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
 #' @param network the network to be examined
 #' @param mode the mode to be used for determining the degrees
 #'
-#' @return The average degree of the nodes in the network.
+#' @return The average degree of the vertices in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
@@ -55,15 +55,15 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
     return(c(avg.degree = avg))
 }
 
-#' Calculate all node degrees for the given network
+#' Calculate all vertex degrees for the given network
 #'
 #' @param network the network to be examined
-#' @param sort whether the resulting dataframe is to be sorted by the node degree
+#' @param sort whether the resulting dataframe is to be sorted by the vertex degree
 #' @param sort.decreasing if sorting is active, this says whether the dataframe is to be
 #'            sorted in descending or ascending order
 #'
-#' @return A dataframe containing the nodes and their respective degrees.
-metrics.node.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
+#' @return A dataframe containing the vertices and their respective degrees.
+metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
     if (sort) {
         degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
     } else {
@@ -86,7 +86,7 @@ metrics.density = function(network) {
 #'
 #' @param network the network to be examined
 #' @param directed whether to consider directed paths in directed networks
-#' @param unconnected whether all nodes of the network are connected
+#' @param unconnected whether all vertices of the network are connected
 #'
 #' @return The average pathlength of the given network.
 metrics.avg.pathlength = function(network, directed, unconnected) {
@@ -94,7 +94,10 @@ metrics.avg.pathlength = function(network, directed, unconnected) {
     return(c(avg.pathlength = avg.pathlength))
 }
 
-#' Calculate the average local clustering coefficient for the given network.
+#' Calculate the average clustering coefficient for the given network.
+#'
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
+#' Such vertices are removed from all average calculations for any averaging \code{cc.type}.
 #'
 #' @param network the network to be examined
 #' @param cc.type the type of cluserting coefficient to be calculated
@@ -128,7 +131,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' [1] http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0002051
 #'
 #' The algorithm relies on the Erdös-Renyi random network with the same number
-#' of nodes and edges as the given network.
+#' of vertices and edges as the given network.
 #'
 #' To check the result value \code{s.delta} for a binary (true/false) decision on smallworldness,
 #' do this: \code{is.smallworld = s.delta > 1}.
@@ -139,7 +142,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #'
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
-    # construct Erdös-Renyi network with same number of nodes and edges as g
+    # construct Erdös-Renyi network with same number of vertices and edges as g
     h = igraph::erdos.renyi.game(n = igraph::vcount(network),
                                  p.or.m = igraph::ecount(network),
                                  type = "gnm",
@@ -223,20 +226,27 @@ metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
     return(df[["KS.p"]] >= 0.05)
 }
 
-#' Calculate the hierarchy for a network.
+#' Calculate the hierarchy values for a network, i.e., the vertex degrees and the local
+#' clustering coefficient.
+#'
+#' *Note*: The local clustering coefficient is \code{NaN} for all vertices with a degree < 2.
 #'
 #' @param network the network to be examined
 #'
-#' @return A dataframe containing the logarithm of the node degree and the logarithm
-#' of the local clustering coefficient for each node as well as the non-logarithmic values
-#' for these.
+#' @return A data.frame containing the following columns:
+#'         - \code{"deg"}: the vertex degrees for all vertices in the given network,
+#'         - \code{"cc"}: the local clustering coefficient for all vertices in the given network, and
+#'         - \code{"log.deg"} and \code{"log.cc"}: the logarithmic values for the columns
+#'                \code{"deg"} and \code{"cc"}, respectively (see function \code{log})
 metrics.hierarchy = function(network) {
     degrees = igraph::degree(network, mode = "total")
     cluster.coeff = igraph::transitivity(network, type = "local", vids = NULL)
-    degrees.without.cluster.coeff = subset(degrees, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    cluster.coeff = subset(cluster.coeff, !(is.nan(cluster.coeff) | cluster.coeff == 0))
-    return(data.frame(deg = degrees.without.cluster.coeff, cc = cluster.coeff,
-                      log.deg = log(degrees.without.cluster.coeff), log.cc = log(cluster.coeff)))
+    return(data.frame(
+        deg = degrees,
+        cc = cluster.coeff,
+        log.deg = log(degrees),
+        log.cc = log(cluster.coeff)
+    ))
 }
 
 

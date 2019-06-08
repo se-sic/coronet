@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -73,19 +74,22 @@ verify.argument.for.parameter = function(argument, allowed.classes, reference) {
     ## get variable name of 'argument'
     argument.variable = as.character(match.call())[2]
 
-    ## check argument if it is missing
+    ## check if the argument is missing
     if (missing(argument)) {
-        logging::logerror(paste("The parameter '%s' is missing in %s constructor ('%s' wanted)."),
-                          argument.variable, reference, allowed.classes)
-        stop(sprintf("Parameter '%s' missing in %s constructor.", argument.variable, reference))
+        error.message = sprintf("The parameter '%s' must not be missing when calling the function '%s'.",
+                                argument.variable, reference)
+        logging::logerror(error.message)
+        stop(error.message)
     }
 
-    ## check argument if it is not allowed
+    ## check if the argument inherits from the correct classes
     if (!inherits(argument, allowed.classes)) {
-        logging::logerror(paste("The given parameter '%s' inherits from the wrong class in %s constructor",
-                                "(actual class is '%s', '%s' wanted)."),
-                          argument.variable, reference, class(argument), allowed.classes)
-        stop(sprintf("Parameter '%s' inherits from wrong class in %s constructor.", argument.variable, reference))
+        error.message = sprintf(paste("The specified parameter '%s' of class [%s] inherits from the wrong class.",
+                                "When calling '%s' the parameter must inherit from one of the following classes: %s"),
+                                argument.variable, paste(class(argument), collapse = ", "), reference,
+                                paste(allowed.classes, collapse = ", "))
+        logging::logerror(error.message)
+        stop(error.message)
     }
 
     return(argument)
@@ -130,6 +134,71 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
     } else {
         return(match.arg(arg, choices, several.ok))
     }
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Empty dataframe creation-------------------------------------------------
+
+#' Create an empty dataframe with the specified columns. Unless all columns should have the default datatype
+#' \code{logical}, the second parameter \code{data.types} should specify the datatypes.
+#'
+#' @param columns a character vector containing all the column names
+#' @param data.types a character vector of the same length as \code{columns}; the datatypes can be \code{integer},
+#'                   \code{numeric}, \code{POSIXct}, \code{character}, \code{factor}, \code{logical}, and \code{list()}
+#'
+#' @return the newly created empty dataframe
+create.empty.data.frame = function(columns, data.types = NULL) {
+
+    ## if the vector data.types is specified, its length must match the length of the corresponding column names
+    if (!is.null(data.types) && length(data.types) != length(columns)) {
+        stop("If specified, the length of the two given vectors columns and data.types must be the same.")
+    }
+
+    ## create the empty data frame (with zero rows), but the given number of columns
+    data.frame = data.frame(matrix(nrow = 0, ncol = length(columns)))
+    colnames(data.frame) = columns
+
+    ## assign the datatypes to the data frame columns by indivdually swapping the columns with new columns that possess
+    ## the correct data type
+    for (i in seq_along(data.types)) {
+
+        ## get the column
+        column = data.frame[[i]]
+
+        ## replace column with column of correct type
+        switch(tolower(data.types[i]),
+               "posixct" = {
+                   column = as.POSIXct(column)
+               },
+               "integer" = {
+                   column = as.integer(column)
+               },
+               "numeric" = {
+                   column = as.numeric(column)
+               },
+               "logical" = {
+                   column = as.logical(column)
+               },
+               "character" = {
+                   column = as.character(column)
+               },
+               "factor" = {
+                   column = as.factor(column)
+               },
+               "list()" = {
+                   column = I(as.list(column))
+               },
+               {
+                   stop(paste("Unknown datatype specified:", data.types[[i]]))
+               }
+        )
+
+        ## set the column back into the dataframe
+        data.frame[[i]] = column
+    }
+
+    return(data.frame)
 }
 
 
@@ -322,6 +391,8 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     }
     ## 4) add end date to sequence
     dates = c(dates, end.date)
+    ## 5) explicitly re-add time-zone attribute 'tzone' (as 'c.POSIXct' loses it)
+    dates = lubridate::with_tz(dates, tzone = TIMEZONE)
 
     return(dates)
 }
@@ -526,8 +597,11 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
             bin.end = end.date
         }
 
-        ## return the tuple of bin start and bin end
-        return(c(bin.start, bin.end))
+        ## construct current bin as the tuple of bin start and bin end
+        current.bin = c(bin.start, bin.end)
+        ## explicitly set time-zone attribute 'tzone' again (as 'c.POSIXct' loses it)
+        current.bin = lubridate::with_tz(current.bin, tzone = TIMEZONE)
+        return(current.bin)
     })
 
     # if wanted, check for imperfect range in the end:

@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -306,9 +306,9 @@ motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
 
     ## iterate over all vertex sequences to remove artifacts
     vs.cleaned = lapply(vs, function(seq) {
-        ## get types of nodes
+        ## get types of vertices
         types = igraph::get.vertex.attribute(network, "type", index = seq)
-        ## remove artifact nodes
+        ## remove artifact vertices
         seq = seq[ types != TYPE.ARTIFACT ]
         return(seq)
     })

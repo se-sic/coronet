@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -13,8 +13,10 @@
 ##
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
-## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -41,36 +43,44 @@ test_that("Read the raw commit data with the feature artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32711, 32711)),
+    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
+                                                                           32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:05:41",
-                                                        "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-                                      author.name = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Thomas", "Thomas"),
+                                                        "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                        "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      author.name = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", "Thomas",
+                                                      "Thomas", "Thomas"),
                                       author.email = c("bjoern@example.org", "bjoern@example.org", "olaf@example.org",
                                                      "olaf@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
-                                                     "thomas@example.org", "thomas@example.org"),
+                                                     "karl@example.org", "thomas@example.org", "thomas@example.org", "thomas@example.org"),
                                       committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-20 10:00:44",
                                                                               "2016-07-20 10:00:44", "2016-07-12 17:05:55", "2016-07-12 17:05:55",
-                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-                                      committer.name = c("Björn", "Björn", "Björn", "Björn", "Thomas", "Thomas", "Karl", "Thomas", "Thomas"),
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                              "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Björn", "Björn", "Thomas", "Thomas", "Karl", "Karl", "Thomas",
+                                                         "Thomas", "Thomas"),
                                       committer.email = c("bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org",
-                                                          "thomas@example.org", "thomas@example.org", "karl@example.org", "thomas@example.org",
-                                                          "thomas@example.org"),
+                                                          "thomas@example.org", "thomas@example.org", "karl@example.org", "karl@example.org",
+                                                          "thomas@example.org", "thomas@example.org", "thomas@example.org"),
                                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
                                              "5a5ec9675e98187e1e92561e1888aa6f04faa338", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                              "3a0ed78458b3976243db6829f63eba3eead26774", "3a0ed78458b3976243db6829f63eba3eead26774",
-                                             "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526",
+                                             "1143db502761379c2bfcecc2007fc34282e7ee61", "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                             "d01921773fae4bed8186b0aa411d6a2f7a6626e6", "0a1a5c523d835459c42f33e863623138555e2526",
                                              "0a1a5c523d835459c42f33e863623138555e2526"),
-                                      changed.files = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1)),
-                                      added.lines = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1)),
-                                      deleted.lines = as.integer(c(1, 1, 0, 0, 0, 0, 0, 0, 0)),
-                                      diff.size = as.integer(c(2, 2, 1, 1, 1, 1, 1, 1, 1)),
-                                      file = c("test.c", "test.c", "test.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+                                      changed.files = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)),
+                                      diff.size = as.integer(c(2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1)),
+                                      file = c("test.c", "test.c", "test.c", "test.c", "test2.c", "test2.c", "test3.c", UNTRACKED.FILE,
+                                               UNTRACKED.FILE, "test2.c", "test2.c"),
                                       artifact = c("A", "defined(A)", "A", "defined(A)", "Base_Feature", "Base_Feature", "Base_Feature",
-                                                 "Base_Feature", "foo"),
+                                                   UNTRACKED.FILE.EMPTY.ARTIFACT, UNTRACKED.FILE.EMPTY.ARTIFACT, "Base_Feature", "foo"),
                                       artifact.type = c("Feature", "FeatureExpression", "Feature", "FeatureExpression", "Feature",
-                                                      "FeatureExpression", "Feature", "Feature", "Feature"),
-                                      artifact.diff.size = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1, 1)))
+                                                      "FeatureExpression", "Feature", UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                                      UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "Feature", "Feature"),
+                                      artifact.diff.size = as.integer(c(1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1)))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
@@ -88,31 +98,35 @@ test_that("Read the raw commit data with the file artifact.", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
 
     ## read the actual data
-    commit.data.read = read.commits.raw(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
+    commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32715)),
+    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32720, 32721, 32715)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
-                                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
-                                      author.name = c("Björn", "Olaf", "Olaf", "Karl", "Thomas"),
+                                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                    "2016-07-12 16:06:32")),
+                                      author.name = c("Björn", "Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas"),
                                       author.email = c("bjoern@example.org", "olaf@example.org", "olaf@example.org",
-                                                     "karl@example.org", "thomas@example.org"),
+                                                     "karl@example.org", "karl@example.org", "thomas@example.org", "thomas@example.org"),
                                       committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-20 10:00:44", "2016-07-12 17:05:55",
-                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:32")),
-                                      committer.name = c("Björn", "Björn", "Thomas", "Karl", "Thomas"),
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                              "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Thomas", "Karl", "Karl", "Thomas", "Thomas"),
                                       committer.email = c("bjoern@example.org", "bjoern@example.org", "thomas@example.org",
-                                                        "karl@example.org", "thomas@example.org"),
+                                                        "karl@example.org", "karl@example.org", "thomas@example.org", "thomas@example.org"),
                                       hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                              "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                             "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                              "0a1a5c523d835459c42f33e863623138555e2526"),
-                                      changed.files = as.integer(c(1, 1, 1, 1, 1)),
-                                      added.lines = as.integer(c(1, 1, 1, 1, 1)),
-                                      deleted.lines = as.integer(c(1, 0, 0, 0, 0)),
-                                      diff.size = as.integer(c(2, 1, 1, 1, 1)),
-                                      file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c"),
-                                      artifact = c("test.c", "test.c", "test2.c", "test3.c", "test2.c"),
-                                      artifact.type = c("File", "File", "File", "File", "File"),
-                                      artifact.diff.size = c(1, 1, 1, 1, 1))
+                                      changed.files = as.integer(c(1, 1, 1, 1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 0, 0, 0, 0, 0, 0)),
+                                      diff.size = as.integer(c(2, 1, 1, 1, 1, 1, 1)),
+                                      file = c("test.c", "test.c", "test2.c", "test3.c", UNTRACKED.FILE, UNTRACKED.FILE, "test2.c"),
+                                      artifact = c("test.c", "test.c", "test2.c", "test3.c", UNTRACKED.FILE, UNTRACKED.FILE, "test2.c"),
+                                      artifact.type = c("File", "File", "File", "File", UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                                        UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "File"),
+                                      artifact.diff.size = c(1, 1, 1, 1, 0, 0, 1))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
@@ -135,7 +149,7 @@ test_that("Read the synchronicity data.", {
     ## build the expected data.frame
     synchronicity.data.expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                     "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                                             synchronous = c(TRUE, TRUE, FALSE, FALSE))
+                                             synchronicity = c(TRUE, TRUE, FALSE, FALSE))
 
     ## check the results
     expect_identical(synchronicity.data.read, synchronicity.data.expected, info = "Synchronicity data.")
@@ -240,56 +254,125 @@ test_that("Read and parse the pasta data.", {
 })
 
 test_that("Read and parse the issue data.", {
-    ## FIXME @Roger1995: update issues.list with a more recent content!
-
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
-    ## read the actual data
-    issue.data.read = read.issues(proj.conf$get.value("datapath.issues"))
+    ## read the actual data from all sources
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
+    issue.data.read = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
+
+    ## read the actual data from jira
+    proj.conf$update.value("issues.from.source", "jira")
+    issue.data.read.jira = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
+
+    ## read the actual data from github
+    proj.conf$update.value("issues.from.source", "github")
+    issue.data.read.github = read.issues(proj.conf$get.value("datapath.issues"), proj.conf$get.value("issues.from.source"))
 
     ## build the expected data.frame
-    issue.data.expected = data.frame(issue.id = sprintf("<issue-%s>", rep(c(2, 48, 51, 48, 2, 48, 51, 57), c(6, 2, 5, 5, 1, 3, 8, 6))),
-                                     issue.state = rep(c("CLOSED", "OPEN", "CLOSED", "OPEN", "CLOSED", "OPEN", "CLOSED", "CLOSED"), c(6, 2, 5, 5, 1, 3, 8, 6)),
-                                     creation.date = get.date.from.string(rep(c("2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-04-17 02:06:38",
-                                                                                "2013-04-21 23:52:09", "2016-04-17 02:06:38", "2016-07-12 15:59:25", "2016-12-07 15:53:02"),
-                                                                              c(6, 2, 5, 5, 1, 3, 8, 6))),
-                                     closing.date = get.date.from.string(rep(c("2013-05-25 20:02:08", NA, "2016-12-07 15:37:02", NA, "2014-05-25 20:02:08", NA, "2016-12-07 15:37:02",
-                                                                               "2017-05-23 12:32:21"), c(6, 2, 5, 5, 1, 3, 8, 6))),
-                                     is.pull.request = rep(c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE), c(6, 2, 5, 5, 1, 3, 8, 6)),
-                                     author.name = c("Karl", "Karl", "Karl", "Olaf", "Olaf", "Karl", "udo", "udo", "Thomas", "Thomas", "Björn", "Björn", "Björn", "Thomas",
-                                                     "Björn", "Björn", "Björn", "Thomas", "Thomas", "Björn", "Björn", "Olaf", "Björn", "Olaf", "Björn", "Björn", "Olaf", "Olaf",
-                                                     "Olaf", "Björn", "Björn", "Björn", "Björn", "Max", "Max", "Max"),
-                                     author.email = c("karl@example.org", "karl@example.org", "karl@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
-                                                      "udo@example.org", "udo@example.org", "thomas@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org",
-                                                      "bjoern@example.org", "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "thomas@example.org",
-                                                      "thomas@example.org", "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "bjoern@example.org", "olaf@example.org",
-                                                      "bjoern@example.org", "bjoern@example.org", "olaf@example.org", "olaf@example.org", "olaf@example.org", "bjoern@example.org",
-                                                      "bjoern@example.org", "bjoern@example.org", "bjoern@example.org", "max@example.org", "max@example.org", "max@example.org"),
-                                     date = get.date.from.string(c("2013-04-21 23:52:09", "2013-05-05 23:28:57", "2013-05-05 23:28:57", "2013-05-25 20:02:08", "2013-05-25 20:02:08",
-                                                                   "2013-06-01 22:37:03", "2016-04-17 02:07:37", "2016-04-17 02:07:37", "2016-07-12 15:59:25", "2016-07-12 15:59:25",
-                                                                   "2016-07-12 15:59:25", "2016-07-12 16:03:23", "2016-07-12 16:05:47", "2016-07-14 02:03:14", "2016-07-14 17:42:52",
-                                                                   "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-15 08:37:57", "2016-07-19 10:47:25", "2016-07-27 22:25:25",
-                                                                   "2016-07-27 22:25:25", "2016-07-27 22:25:25", "2016-08-31 18:21:48", "2016-10-05 01:07:46", "2016-10-13 15:33:56",
-                                                                   "2016-12-06 14:03:42", "2016-12-07 15:37:02", "2016-12-07 15:37:02", "2016-12-07 15:37:21", "2016-12-07 15:53:02",
-                                                                   "2016-12-07 15:53:02", "2017-02-20 22:25:41", "2017-03-02 17:30:10", "2017-05-23 12:32:21", "2017-05-23 12:32:21",
-                                                                   "2017-05-23 12:32:39")),
-                                     ref.name = c(rep("", 6), rep("Karl", 2), rep("Björn", 2), rep("", 5), rep("Thomas", 2), rep("", 2), rep("udo", 2), rep("", 15)),
-                                     event.name = c("created", "commented", "referenced", "merged", "closed", "head_ref_deleted", "mentioned", "subscribed", "mentioned", "subscribed",
-                                                    "created", "renamed", "commented", "commented", "commented", "mentioned", "subscribed", "commented", "referenced", "mentioned",
-                                                    "subscribed", "commented", "commented", "commented", "commented", "commented", "merged", "closed", "commented", "commented", "created",
-                                                    "commented", "commented", "merged", "closed", "commented"),
+    issue.data.expected = data.frame(issue.id = c(rep("<issue-jira-ZEPPELIN-328>", 13), rep("<issue-jira-ZEPPELIN-332>", 6),
+                                                  rep("<issue-github-3>", 7), rep("<issue-github-6>", 10)),
+                                     issue.title = c(rep("[ZEPPELIN-328] Interpreter page should clarify the % magic syntax for interpreter group.name", 13),
+                                                     rep("[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table", 6),
+                                                     rep("Error in construct.networks.from.list for openssl function networks", 7),
+                                                     rep("Distinguish directedness of networks and edge-construction algorithm", 10)),
+                                     issue.type = I(c(rep(list(list("issue" , "bug")), 13), rep(list(list("issue" , "bug")), 6),
+                                                      rep(list(list("issue" , "bug")), 7), rep(list(list("issue", "bug", "enhancement")), 10))),
+                                     issue.state = c(rep("closed", 13), rep("open", 6), rep("closed", 7), rep("open", 10)),
+                                     issue.resolution = I(c(rep(list(list("fixed")), 13), rep(list(list("unresolved")), 6),
+                                                            rep(list(list()), 7), rep(list(list()), 10))),
+                                     creation.date = get.date.from.string(c(rep("2013-04-21 23:52:09", 13),
+                                                                            rep("2016-04-17 02:06:38", 6),
+                                                                            rep("2016-07-12 15:59:25", 7),
+                                                                            rep("2016-07-12 14:30:13", 10))),
+                                     closing.date = get.date.from.string(c(rep("2013-05-25 20:02:08", 13), rep(NA, 6),
+                                                                           rep("2016-12-07 15:37:02", 7), rep(NA, 10))),
+                                     issue.components = I(c(rep(list(list("GUI" , "Interpreters")), 13), rep(list(list("Interpreters")), 6),
+                                                            rep(list(list()), 7), rep(list(list()), 10))),
+                                     event.name = c("created", "commented", "commented", "commented", "commented", "commented",
+                                                    "commented", "commented", "commented", "commented", "commented", "commented",
+                                                    "resolution_updated", "created", "commented", "commented", "commented", "commented",
+                                                    "commented", "created", "assigned", "commented", "state_updated", "add_link",
+                                                    "referenced", "referenced", "mentioned", "subscribed", "commented", "mentioned",
+                                                    "subscribed", "add_link", "mentioned", "subscribed", "labeled", "commented"),
+                                     author.name = c("Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn", "Olaf", "Björn",
+                                                     "Björn", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn", "Björn", "Max",
+                                                     "Max", "Max", "Karl", "Olaf", "Karl", "Olaf", "Karl", "Karl", "Thomas", "udo",
+                                                     "udo", "Thomas", "Björn", "Björn", "Thomas", "Björn", "Björn", "Olaf", "Björn"),
+                                     author.email = c("thomas@example.org", "thomas@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "bjoern@example.org", "bjoern@example.org",
+                                                      "olaf@example.org", "bjoern@example.org", "bjoern@example.org",
+                                                      "olaf@example.org", "olaf@example.org", "olaf@example.org",
+                                                      "bjoern@example.org", "bjoern@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "max@example.org", "max@example.org",
+                                                      "max@example.org", "karl@example.org", "olaf@example.org",
+                                                      "karl@example.org", "olaf@example.org", "karl@example.org",
+                                                      "karl@example.org", "thomas@example.org", "udo@example.org",
+                                                      "udo@example.org", "thomas@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "thomas@example.org", "bjoern@example.org",
+                                                      "bjoern@example.org", "olaf@example.org", "bjoern@example.org"),
+                                     date = get.date.from.string(c("2013-04-21 23:52:09", "2013-04-21 23:52:09",
+                                                                   "2013-05-05 21:46:30", "2013-05-05 21:49:21",
+                                                                   "2013-05-05 21:49:34", "2013-05-06 01:04:34",
+                                                                   "2013-05-25 03:25:06", "2013-05-25 03:48:41",
+                                                                   "2013-05-25 04:08:07", "2013-05-25 06:06:53",
+                                                                   "2013-05-25 06:22:23", "2013-06-01 06:50:26",
+                                                                   "2013-06-01 06:53:06", "2016-07-12 16:01:30",
+                                                                   "2016-07-12 16:02:30", "2016-07-15 19:55:39",
+                                                                   "2016-07-15 20:07:47", "2016-07-27 20:12:08",
+                                                                   "2016-07-28 06:27:52", "2016-07-12 15:59:25",
+                                                                   "2016-07-12 15:59:25", "2016-07-12 15:59:59",
+                                                                   "2016-07-12 16:06:30", "2016-08-07 15:37:02",
+                                                                   "2016-08-31 16:45:09", "2016-10-05 16:45:09",
+                                                                   "2016-07-12 15:30:02", "2016-07-12 15:30:02",
+                                                                   "2016-07-12 16:03:59", "2016-08-31 15:30:02",
+                                                                   "2016-10-05 15:30:02", "2016-10-13 15:30:02",
+                                                                   "2016-12-07 15:30:02", "2016-12-07 15:30:02",
+                                                                   "2017-05-23 12:31:34", "2017-05-23 12:32:39")),
+                                     event.info.1 = c("open", "open", "open", "open", "open", "open", "open", "open", "open",
+                                                     "open", "open", "open", "fixed", "open", "open", "open", "open", "open",
+                                                     "open", "open", "", "open", "closed", "930af63a030fb92e48eddff01f53284c3eeba80e",
+                                                     "", "", "Thomas", "Thomas", "open", "Thomas", "Thomas", "fb52357f05958007b867da06f4077abdc04fa0d8",
+                                                     "udo", "udo", "decided", "open"),
+                                     event.info.2 = NA, # is assigned later
+                                     event.id = NA, # is assigned later
+                                     issue.source = c(rep("jira", 19), rep("github", 17)),
                                      artifact.type = "IssueEvent"
                                      )
+
+    issue.data.expected[["event.info.2"]] = I(list(
+                                                list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
+                                                list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
+                                                list("unresolved"), list("unresolved"), list("unresolved"), list("unresolved"),
+                                                "unresolved", list("unresolved"), list("unresolved"), list("unresolved"),
+                                                list("unresolved"), list("unresolved"), list("unresolved"), list(), "", list(), "open",
+                                                "commit", "", "", "thomas@example.org", "thomas@example.org", list(),
+                                                "thomas@example.org", "thomas@example.org", "commit", "udo@example.org",
+                                                "udo@example.org", "", list()
+                                            ))
+
     ## calculate event IDs
     issue.data.expected[["event.id"]] = sapply(
         paste(issue.data.expected[["issue.id"]], issue.data.expected[["author.name"]], issue.data.expected[["date"]], sep = "_"),
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
+
+    # split the expected data to only jira and only github data
+    issue.data.expected.jira = subset(issue.data.expected, issue.data.expected[["issue.source"]] == "jira")
+    issue.data.expected.github = subset(issue.data.expected, issue.data.expected[["issue.source"]] == "github")
+
     ## set row names as integers
-    attr(issue.data.expected, "row.names") = as.integer(c(1, 2, 3, 4, 5, 6, 8, 9, 18, 19, 20, 21, 22, 10, 11, 12, 13, 14, 7, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-                                                          35, 36))
+    attr(issue.data.expected, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected), by = 1))
+    attr(issue.data.expected.jira, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.jira), by = 1))
+    attr(issue.data.expected.github, "row.names") = as.integer(seq(from = 1, to = nrow(issue.data.expected.github), by = 1))
+
+    ## sort by date
+    issue.data.expected = issue.data.expected[order(issue.data.expected[["date"]], decreasing = FALSE), ]
+    issue.data.expected.jira = issue.data.expected.jira[order(issue.data.expected.jira[["date"]], decreasing = FALSE), ]
+    issue.data.expected.github = issue.data.expected.github[order(issue.data.expected.github[["date"]], decreasing = FALSE), ]
 
     ## check the results
     expect_identical(issue.data.read, issue.data.expected, info = "Issue data.")
+    expect_identical(issue.data.read.jira, issue.data.expected.jira, info = "Issue data jira.")
+    expect_identical(issue.data.read.github, issue.data.expected.github, info = "Issue data github.")
 })

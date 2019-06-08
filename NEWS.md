@@ -1,4 +1,76 @@
-# codeface-extraction-r – Changelog
+# coronet – Changelog
+
+
+## 3.5
+
+### Announcement
+
+- Rename project to `coronet` (#10, 929f8cec7b52adef1389ce1691b783c235eb815d, ac1ce80b9f5da812f90b5fed63f26dc8c812a4d6)
+    * Be sure to update Git remotes and submodules to the new URL!
+
+### Added
+- Add the constants `UNTRACKED.FILE`, `UNTRACKED.FILE.EMPTY.ARTIFACT`, and `UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE`: Commits that do not change any artifact are considered to be carried out on a meta-file called `<untracked.file>`. The constant `UNTRACKED.FILE` is added to hold the string constant. Analogously, the constants `UNTRACKED.FILE.EMPTY.ARTIFACT` (currently, `""`) and `UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE` (currently, `""`) hold the constants for any artifacts and their corresponding types, respectively, "changed" in untracked files. (11428d9847fd44f982cd094a3248bd13fb6b7b58, 5ea65b9ac5a22967de87d7fd4ac66b0bc8e07238, dde0dd7c6b36b49aa2b6c91395be8ea6e0cd7969, 2284bbec55e091a4135dc029906ba12446b9f0ad)
+- Add the public method `ProjectData$get.commits.filtered.uncached`: The method allows for external filtering of the commits by specifying if untracked files and/or the base artifact should be filtered (this method does not take advantage of caching, whereas the method `ProjectData$get.commits.filtered` does) (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- Add the parameters `commits.filter.base.artifact` and `commits.filter.untracked.files` to the `ProjectConf`: In addition to the `ProjectConf` parameter `commits.filter.base.artifact` (previously called `artifact.filter.base`), which configured whether the base artifact should be included in the `get.commits.filtered` method, there is now a similar parameter called `commits.filter.untracked.files` doing the same thing for untracked files (11428d9847fd44f982cd094a3248bd13fb6b7b58, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- Add parameter `edges.for.base.artifacts` to `NetworkConf` : In author networks, edges do not get constructed anymore between authors for solely modifying untracked files. For authors involved in changing the base artifact, it can be configured whether edges should be created or not using the new `NetworkConf` parameter `edges.for.base.artifacts` (c60c2f6e44b6f34cccb2714eccc7674158c83dde, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- Add method `ProjectData$get.authors.by.data.source` to retrieve authors by given data-source name (#149, 65804276dd2ada9b2f00b2cab7b6ad0cecbe733e, 137d8337bc35f5a83aa16a48ef8e47fc0d36b36c)
+- Add helper function `create.empty.data.frame`: The function returns empty data.frames (0 rows) with correct columns and, if specified, all the correct data types. In the future, functions, that return data in data.frames, should always return data.frames of the same shape (regarding columns and data types) – especially when they are empty – because this makes later case distinctions easier or unnecessary (67a4fbe4f244b4b6047c2c2be7682d7f9085e9eb, 351364751b3fc286c66b99fe1fa3f52150f67311)
+- For the most common types of data.frames (data.frames of commits, mails, issues, and authors) four more utility methods are added, namely `create.empty.authors.list`, `create.empty.commits.list`, `create.empty.issues.list`, `create.empty.mails.list`, `create.empty.synchronicity.list`, `create.empty.pasta.list` as well as corresponding constants holding columns and associated data types for all these empty data.frames (5f0f52936b4433f64fd9b1c9b2571eb26f66395f, 523daef8cf4642a2360396b11f0d74bce565b0f0, f8e021db955d65ff76b1c359706a188c9fef8c62, 351364751b3fc286c66b99fe1fa3f52150f67311, 2f4e6f0657d26dbf84f093ff77b8d43993a69ddc, cd3e34a369435392f9be082df05f9fc504b56239)
+- Add mandatory attributes in `create.empty.network` *if wanted* (cae9d4bd6913d9b78b0bc819915011191f87fedf, cc8bd86befe5b9fc56c53816b609be434bfa2953)
+- Add function `create.empty.vertex.list` (c00101dd8c78dc03d61bce1b5f88805b9fbb3a5f)
+- Add tests for construction of networks without data (a4b3524676a0df88ec544db99c951b4461437099)
+- Add tests for construction of networks without vertices (6eb214c1aca0899567529aa514352440f3005d5c)
+- Add a note on mailing-list threads to README (c6dca275c3571e396529a0178c8300de8cd8aa26)
+- Add cutting functionality to README descriptions (fb40c506d8dd838cc8853d426e83840ed93b10d4)
+- Add the parameter `restrict.classification.to.authors` to the functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. The parameter allows to perform classifications on a limited group of authors whose names are specified in this parameter. (2492dd0de5909c41031541ffb365eee40a342b65, #148)
+- Add test cases for `util-core-peripheral.R` by adding the new file `test-core-peripheral.R` along with test cases (2627d6c9aaa4b066cf3043f9cf167fb470bdec6c)
+- Add project-configuration parameter `issues.from.source` to choose if only issues from JIRA, only issues from GitHub, or all issues shall be read in (PR #159, d677949bedc3567b02cc7a1f3daffa0a785aa7a8, a3e71326d8deb861fcc4434c580e12570f7f8fa0, ea2618134efbfd8159ea49bd6fd21f4d11f3faeb). Therefore two test cases, one that reads in only JIRA issues and one that reads in only GitHub issues, are added to the issue read test (65b1acd7895b5330fab1d53d7bd27ab5dbd25192, 2d897cbb38853b20e1adba88f617908033142aef)
+- Add class documentation (#157, 6e33d0aa49d5a432c1fad786944bd1ac855ecbf3, 250f9e04b18775f3c5f40b114236afcde9e760ae)
+
+### Changed/Improved
+- Always add mandatory vertex and edge attributes (#154, 0526755da68aa79efc3e86e34eb60a8d9b3116d7)
+- Heavily improve addition of PaStA data (cd3e34a369435392f9be082df05f9fc504b56239)
+- The method `read.issues` in `util-read.R` now supports the new issue data format (PR #147, 77c750c034c270f007c75abca0f0630573f195a2, e04ce3080b3cc3e305d8be5aa47ed5b144a9c9c0, 67b818a955c5e75ac3735d2e09af1f564d82f736, 402048735d0c33214be194b7535593786104e32e, 351364751b3fc286c66b99fe1fa3f52150f67311). Therefore, the test issue data and all related tests are updated (39971eea6d51793c88a35c4e604bc5e3a13bb123, 0ec6c6c3243e79fce30f8c9c39dc3c4bee2dee7b, 6a9f4ad89f5b9d6d4b19c837006a429637b22c04, fda000fe6208760f18138e65feca3b6e8ff553b2, 351364751b3fc286c66b99fe1fa3f52150f67311)
+- Rename `ProjectConf` parameter `artifact.filter.base` to `commits.filter.base.artifact` (PR #149, 466d8eb8e7f39e43985d825636af85ddfe54b13a)
+- The constant `BASE.ARTIFACTS` is extended by adding untracked files (i.e. the new meta-file `UNTRACKED.FILE`), which is now considered to be a new base artifact in the case of file-level analyses. This implies, that, in case of file-level analyses, the base artifact and the untracked files fall together, while in feature-level and function-level analyses they are treated differently (d11d0fb585397fdb3a2641484248f74752db9331)
+- Filtering by artifact kind (e.g. filtering out either `"Feature"` or `"FeatureExpression"`) is now being done in the method `ProjectData$get.commits` instead of the method `ProjectData$get.commits.filtered` (894c9a5c181fef14dcb71fa23699bebbcbcd2b4f)
+- Remove `get.commits.filtered.empty` and corresponding `filter.commits.empty` method, the functionality is now included into the methods `get.commits.filtered` and `filter.commits` respectively (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- The private method `ProjectData$filter.commits` now takes parameters which configure whether untracked files and/or the base artifact are to be filtered (11428d9847fd44f982cd094a3248bd13fb6b7b58)
+- Remove `get.commits.raw`, `set.commits.raw` and `read.commits.raw` functions (64a94863c9e70ac8c75e443bc15cd7facbf2111d, c26e582e4ad6bf1eaeb08202fc3e00394332a013)
+- Add commits on untracked files to test suite (#153, d9f527c5602a3f463e5ccb0d395abe1d6a837ea3)
+- In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), default parameters are not validated anymore to avoid confusion by logging output (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
+- In the class `Conf` (and its sub-classes `NetworkConf` and `ProjectConf`), `stop` is called on errors during parameter updates now (ec8c6dd72746a0506b3e03dccc4fcaf7a03325ea)
+- Change shape of `Vertices` in the legend of plots to avoid confusion (f4fb4807cfd87d9d552a9ede92ea65ae4a386a04)
+- Refactor `ProjectData$get.cached.data.sources` to be more concise (a4e7a213dce6d4709e92e22d2f55971b7bde8037)
+- Update contribution guide regarding `roxygen2` conventions (#157, fbc2d5487fe08d072f22578c4954601315f8aee7, 783ee58ebeb9865df25a7f95d23a881b4d7de96b, 6e33d0aa49d5a432c1fad786944bd1ac855ecbf3)
+- Update README regarding mandatory edge attributes (641624b077d403a34b52718c7aaea25dd1ce626d)
+- Rename misleading parameter names for functions `get.author.class.by.type`, `get.author.class.overview`, `get.author.class.network.degree`, `get.author.class.network.eigen`, `get.author.class.network.hierarchy`, `get.author.class.commit.count` and `get.author.class.loc.count`. Most importantly, the parameter `range.data` was renamed to `proj.data` for these functions. (587ef99c1eb93751180bba6037c7f2fe6e24aca5, 81568b12ffdc7637bd0d5a05d0f56a96a88ee6ac, #70)
+- Remove the unused functions `get.commit.count.threshold` and `get.loc.count.threshold`. (2534d73283b6e7f9703b22f605298eaa2c158d93, #70)
+- The function `verify.argument.for.parameter` was adjusted to be suitable in more general use-cases (557bdcd65940d7a098354b19a5c24cec018e3533)
+- Do not redundantly initialize data sources when splitting (35698a1b41c25b9ad7c598977d0afd0add16044f)
+- Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
+- Add and enforce coding convention to use 'vertices' and not 'nodes'. Most importantly, the function `metrics.node.degrees` is renamed to `metrics.vertex.degrees`. (d35ce616db76adae06b34b4b241a35bfbe77e10d)
+- Adjust range directories' names to start with a consecutive range number and to conform with the directories created by [Codeface](https://github.com/se-passau/codeface) (b3e29472a57e26935a31645b96fbef7d7785c25a, f6b28fbe3bb3599784a42e102fa4fc1e480c2a7a)
+- Remove the two functions `get.author.class.activity` and `get.author.class.activity.overview` from the file `util-core-peripheral.R` (61b344a8ce6725ecf0415b108ada9ee08e1121d9)
+- Remove function `get.commit.data` from `util-data.R` and replace all calls to this function with statements of equivalent functionality despite the fact that they are now retrieving the commit data via `get.commits.filtered` instead of `get.commits` which was internally used in the function `get.commit.data` (#70, 4fc6b450cd70bc6c1c63f268aec805d6328849c6, 7fc454e9d8f3c951fcb9ac820f056f2fd08e6945, c4cf8d25d62d9448c4c2571ed973387835ac87c6)
+- Add possibility to decide whether the vertex attribute `active.ranges` should be computed per activity type or over all activity types (#92, aba8af959b39bbc16747786eab9781fe40e08ed3, 1bb81e86f1f8d62527de83c6489d1c9d5666f19d, 8f35a6b5194b664ef186e57650e6705b38ec610f)
+- During the computation of the vertex attribute `first.activity`, the default value is now used analogous to active-ranges computation: The given value is used as default per author and type. (#92, 18a065c9b0d93c83795bf1be2319e6470b70622a, edf864a5e9a4f54336ecd5c884be12672084e332)
+
+### Fixed
+- Remove the empty artifact from all types of networks (#153, 4eba7f6d77d48f00959ec26d3182d29bd1282444)
+- Fix vertices for networks without edges (#150, PR #149, 0d7c2226da67f3537f3ff9d013607fe19df8a4c0, 7e27a182de282f054f08e3a2fb04d852c2c55102)
+- Fix merging of networks without vertices (0666f1fffb718063024351b9ccf3c0885bec4acf)
+- Fix extraction functions regarding handling of empty networks (#155, 3e403e49cf547586db1edb15f8711f1a744bed19)
+- Fix hierarchy calculations and classifications (#151, 59740189ba4c9502a041e5387337e0537024a1d4)
+- Rework 'tests.R' and fix logger initialization for tests (#152, c93c4fda30482eafa1f9e0174b9aaea357c6917b)
+- Fix handling of empty vertex list in `construct.network.from.edge.list` (01f31d685f7e324c7e2fdd16cd376e764afcdec9)
+- Fix error when resetting an `ProjectData` environment (c64cab84e928a2a4c89a6df12440ba7ca06e6263)
+- Fix missing time-zone attribute `tzone` on `POSIXct` items (5f6cc6922b95bf5cbdd9b2cbf16be4bf4937d0db)
+- Fix author classification which was incorrect in certain situations and adjust test cases to this change (9294a37d98f9ff3d14756d56300b0d171f3f3b4c, c7288c3690b68f367a9f451bec7c584897971a31)
+- Fix wrong behavior of `get.author.class` when using `result.limit` and when classifying zero or passing invalid input (9437b4f07da599fde017596af2290b24601f9f8d, #164, d93b906993089e35f0b539fe3b06b2f36ae3d4c6, 8060caa4930ef05a48b59a328ebf928a64109294, 70e4de5d83541eaad4714d7761b1b35503aaebbf)
+- Add vertex attribute also to empty networks (#165, 74845d4b179d2830c1483b42897a8bd0fcee19e9)
+- Fix outdated function calls in the bulk module (4e0354078449ef57637297fd3670830e10342ecd)
+- Add special case handling for the classification of networks without edges (7e14492640cbf504c45431c03cf0167c455a4b77)
 
 
 ## 3.4
@@ -13,7 +85,7 @@
 
 ### Changed/Improved
 - Add possibility to add multiple first activities for different activity types in one vertex attribute (#92, 04f18b3097d17fe6b3486c656a807133e0ac0a42)
-- Add possibility to decide whether first activity should be computed per activity type or over all activity types when added as vertex attribute (#92, , 86962a313ceeb09c0e0675dc509d91e10647d6b6)
+- Add possibility to decide whether the vertex attribute `first activity` should be computed per activity type or over all activity types (#92, 86962a313ceeb09c0e0675dc509d91e10647d6b6)
 - Refactor computation of vertex attribute `first.activity` for better performance (40b7d879e323275d308c408cca4913b805ddacf8, f5188904e51ddc08558842f6e357f8fa8edbb105)
 - Move `RELATION.TO.DATASOURCE` to module 'networks' (1ac09f64d202ba4279d05a9765bbbefdc57d4e1b)
 - Determine list of artifacts more reasonably in ProjectData (#97, 23a8aa3e8b20cd0d735cb4987e4a397b922e01ad, 11f71899a514910c1f44ed1d9648127e93057ea2)
@@ -90,7 +162,7 @@
 - Remove the mandatory vertex attribute `artifact.type` due to inconsistent use ()
 - Remove the mandatory vertex attribute `id` from artifact vertices due to inconsistent use (7ad49c4ad937c9a6c7398a45179e25d5d5c03faa)
 - Streamline edge attribute `artifact.type` for uniformity ()
-- Use color palette 'viridis' for plotting for better flexibility  (f190ca130a15a82e5eed836e9ffc53b8a34aac20)
+- Use color palette 'viridis' for plotting for better flexibility (f190ca130a15a82e5eed836e9ffc53b8a34aac20)
 - Edge width in network plots now depends on edge weight, i.e., `width = 0.3 + 0.5 * log(weight)` (d791df8e2c41314f86c36b3af566141e7713f46c)
 - Split function `construct.network.from.list` into the two functions `construct.edge.list.from.key.value.list` and `construct.network.from.edge.list` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)
 - Handle data for more than one relation in function `add.edges.for.bipartite.relation` (2f1b4d9b0d6a629163a6dd3111b20930e15fcc13)

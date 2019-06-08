@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -36,7 +36,7 @@ test_that("Construction of the multi network for the feature artifact with autho
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-              proj.conf$update.value("artifact.filter.base", FALSE)
+              proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
 

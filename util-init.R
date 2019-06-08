@@ -1,4 +1,4 @@
-## This file is part of codeface-extraction-r, which is free software: you
+## This file is part of coronet, which is free software: you
 ## can redistribute it and/or modify it under the terms of the GNU General
 ## Public License as published by  the Free Software Foundation, version 2.
 ##
@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
@@ -22,13 +22,27 @@
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## System variables and R settings -----------------------------------------
 
+## * Locale ----------------------------------------------------------------
+
 if (Sys.info()['sysname'] == "Windows") {
     Sys.setlocale(category = "LC_ALL", locale = "english-us")
 } else {
     Sys.setlocale(category = "LC_ALL", locale = "en_US.UTF-8")
 }
-Sys.setenv(TZ = "UTC")
+
+## * Universal time zone ---------------------------------------------------
+
+TIMEZONE = "UTC"
+Sys.setenv(TZ = TIMEZONE)
+
+## * Other stuff -----------------------------------------------------------
+
 options(stringsAsFactors = FALSE)
+
+## for proper initialization of the package 'logging', the base package 'methods' needs
+## to be attached properly (see #153)
+
+library(methods)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

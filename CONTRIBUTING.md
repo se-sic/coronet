@@ -1,6 +1,6 @@
-# Contributing to the network library
+# Contributing to the network library `coronet`
 
-The following is a set of guidelines for contributing to the Network Library, which are hosted in the [se-passau](https://github.com/se-passau) organization on GitHub.
+The following is a set of guidelines for contributing to the network library `coronet`, which is hosted in the [se-passau](https://github.com/se-passau) organization on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
@@ -39,7 +39,7 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 #### Before Submitting A Bug Report
 
 * **Check the code.**
-  You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem in the latest version of the library (see [branch `dev`](https://github.com/se-passau/codeface-extraction-r/tree/dev)).
+  You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem in the latest version of the library (see [branch `dev`](https://github.com/se-passau/coronet/tree/dev)).
 * **Search for previous issues describing the same problem.**
   If an old issue includes also a fix or a workaround for your problem, you do not need to file a new issue. Although, if the problem still persists after applying potential fixes, please file a new issue including detailed information to reproduce the problem. If there is an old issue that is still open, add a comment to the existing issue instead of opening a new one.
 * **Run the test suite.**
@@ -85,7 +85,7 @@ Before creating enhancement suggestions, please check [this list](#before-submit
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
 
-Enhancements are tracked as GitHub issues, but slightly different information is needed for them. 
+Enhancements are tracked as GitHub issues, but slightly different information is needed for them.
 
 Create an issue and provide the needed information:
 
@@ -112,8 +112,8 @@ In our development process, we pursue the following idea:
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
-- `master`: [![Build Status](https://travis-ci.com/se-passau/codeface-extraction-r.svg?token=8VFPdy2kjPXtstT72yww&branch=master)](https://travis-ci.com/se-passau/codeface-extraction-r)
-- `dev`: [![Build Status](https://travis-ci.com/se-passau/codeface-extraction-r.svg?token=8VFPdy2kjPXtstT72yww&branch=dev)](https://travis-ci.com/se-passau/codeface-extraction-r)
+- `master`: [![Build Status](https://travis-ci.com/se-passau/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=master)](https://travis-ci.com/se-passau/coronet)
+- `dev`: [![Build Status](https://travis-ci.com/se-passau/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=dev)](https://travis-ci.com/se-passau/coronet)
 
 
 ### Pull Requests
@@ -173,6 +173,7 @@ There will be another checklist for you when you open an actual pull request pro
     * **assignments**: only with `=`,
     * **spacing**: spaces around all binary operators (`=`, `+`, `-`, etc.); spaces before left parenthesis, except in a function call; spaces before opening curly braces that denote a code block,
     * **quoting** (e.g., of strings): always use double quotes instead of single quotes,
+    * **comments**: comments on the same line as source code start with a single hash sign (`#`), while comments on an own line start with two hash signs (`##`),
     * **Booleans**: always write `TRUE` instead of `T` (analogously for `FALSE` and `F`),
     * **square-brackets notation**: always access values in lists or data.frame using the square-brackets notation (e.g., `df["column1"]` or `list1[["item1"]]`, and
     * **return statements**: always use the function `return()` to return a value from a function; do not use one when you intend to not return anything.
@@ -180,9 +181,53 @@ There will be another checklist for you when you open an actual pull request pro
 * To handle dates and date objects (i.e. mainly, `POSIXct` objects in R), always use the functions `get.date.from.string`, `get.date.from.unix.timestamp`, and `get.date.string`. This ensures proper date handling in all parts of the code. If you need to modify dates (e.g., to add a week), always use the `lubridate` package.
 * **Logging** is performed using the `logging` package.
 * **Documentation**:
-    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details).
     * We use **networks**, not "graphs".
-    * We talk about **authors**, not developers.
+    * We use **vertices**, not "nodes".
+    * We talk about **authors**, not "developers".
+    * Function, method, and class documentation is defined in **`roxygen2`** format (see [RStudio documentation](https://support.rstudio.com/hc/en-us/articles/200532317-Writing-Package-Documentation) for details). In particular, we settle on the following style of the **`roxygen2`** documentation (see example below):
+        * The introductory sentence(s) which describes a function, method, or class, in general, must always start with an upper-case letter and end with a period. Use 2nd-person imperative ("Get the label.") rather than 3rd-person declarative ("Gets the label.").
+        * Variable names, class names, or other code snippets which are part of the function documentation must be placed within `\code{...}`.
+          **Note:** This does not hold for inline documentation within a function. There we only use `'...'` for variable names, class names, and other code snippets.
+        * Class documentation must include a basic, but abstract description of its functionality and the data it holds. If the class inherits from another class, the superclass must be mentioned explicitly in the description and also using a referenced (`@seealso SuperClassName`). The introductory sentence should be phrased something like this: `The class \code{X} (is a subclass of \code{SuperClass} and) provides ...`.
+        * For each parameter of a function or method, a parameter description (`@param parameter.name description`) must be added. The same holds for descriptions of return values (`@return description`) – if something is returned. For both items, the descriptions should always be a phrase (i.e., no verbs should be used), should start with a lower-case letter, and should *not* end with a period – *unless* there are further phrases or sentences following. If the description covers multiple lines, all but the first lines are indented along the start of the description in the first line.
+        * For parameters that take a default value, the default value must be placed directly after the description of the parameter using the following format: `[default: value]`.
+          **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
+        * Add references to notable other classes, methods, constants, and functions using `@seealso reference`. As `reference` usually is code, we omit the `\code{...}` notation for it. 
+        * Example for a function/method documentation:
+          ```R
+          #' Group the data items of the given \code{data.source} by the given \code{group.column}.
+          #'
+          #' For each group, the column \code{data.column} is duplicated and prepended to each group's
+          #' data as first column (see \code{get.key.to.value.from.df} for details).
+          #'
+          #' Example: To obtain the authors who touched the same source-code artifact,
+          #' call \code{group.data.by.column("commits", "artifact", "author.name")}.
+          #'
+          #' @param data.source the specified data source, one of \code{"commits"},
+          #'                    \code{"mails"}, and \code{"issues"} [default: "commits"]
+          #' @param group.column the column to group the data of the given \code{data.source} by
+          #' @param data.column the column that gets duplicated as first column \code{data.vertices}
+          #'
+          #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+          #'         data items from \code{data.source}, with \code{data.column} duplicated as first
+          #'         column (with name \code{"data.vertices"})
+          #'
+          #' @seealso get.key.to.value.from.df
+          group.data.by.column = function(data.source = c("commits", "mails", "issues"),
+                                          group.column, data.column) {
+            logging::loginfo("Grouping artifacts by data column.")
+
+            ## check given data source given by 'data.source'
+            data.source = match.arg.or.default(data.source, several.ok = FALSE)
+            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            ## get the key-value mapping/list for the given parameters
+            mylist = get.key.to.value.from.df(self[[data.source.func]](), group.column, data.column)
+
+            return(mylist)
+          }
+          ```
+    * For all other stuff, look at the source code and get inspired.
 * Also **add tests** to the test suite for each new functionality you add!
 * Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 
