@@ -103,7 +103,7 @@ While `proximity` triggers a file/function-based commit analysis in `Codeface`, 
 When using this network library, the user only needs to give the `artifact` parameter to the [`ProjectConf`](#projectconf) constructor, which automatically ensures that the correct tagging is selected.
 
 The configuration files `{project-name}_{tagging}.conf` are mandatory and contain some basic configuration regarding a performed `Codeface` analysis (e.g., project name, name of the corresponding repository, name of the mailing list, etc.).
-For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) files in the `Codeface` repository.
+For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) in the `Codeface` repository.
 
 All the `*.list` files listed above are output files of `codeface-extraction` and contain meta data of, e.g., commits or e-mails to the mailing list, etc., in CSV format.
 This network library lazily loads and processes these files when needed.
