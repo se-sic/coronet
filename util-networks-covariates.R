@@ -679,11 +679,13 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            lapply(range.data$group.authors.by.data.column("commits", "artifact"),
+            vertex.attributes = lapply(range.data$group.authors.by.data.column("commits", "artifact"),
                    function(x) {
-                       length(unique(x[["author.name"]]))
+                       editor.count = length(unique(c(x[["author.name"]], x[["committer.name"]])))
+                       return(editor.count)
                    }
             )
+            return(vertex.attributes)
         }
     )
 

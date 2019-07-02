@@ -822,7 +822,7 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
 
     expected.attributes = list(
         range = network.covariates.test.build.expected(
-            c(1L), c(1L), c(3L, 1L)),
+            c(1L), c(2L), c(3L, 1L)),
         cumulative = network.covariates.test.build.expected(
             c(1L), c(2L), c(3L, 1L)),
         all.ranges = network.covariates.test.build.expected(
