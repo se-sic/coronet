@@ -818,9 +818,35 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
 
     networks.and.data = get.network.covariates.test.networks("artifact")
 
-    expected.attributes = network.covariates.test.build.expected(list(1L), list(1L), list(3L, 1L))
-
-    expected.attributes = list(
+    expected.attributes.author = list(
+        range = network.covariates.test.build.expected(
+            c(1L), c(1L), c(3L, 1L)),
+        cumulative = network.covariates.test.build.expected(
+            c(1L), c(2L), c(3L, 1L)),
+        all.ranges = network.covariates.test.build.expected(
+            c(2L), c(2L), c(3L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(
+            c(1L), c(2L), c(3L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(
+            c(2L), c(2L), c(3L, 1L)),
+        complete = network.covariates.test.build.expected(
+            c(2L), c(2L), c(3L, 1L))
+    )
+    expected.attributes.committer = list(
+        range = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L)),
+        cumulative = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L)),
+        all.ranges = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L)),
+        complete = network.covariates.test.build.expected(
+            c(1L), c(1L), c(2L, 1L))
+    )
+    expected.attributes.both = list(
         range = network.covariates.test.build.expected(
             c(1L), c(2L), c(3L, 1L)),
         cumulative = network.covariates.test.build.expected(
@@ -838,14 +864,26 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.artifact.editor.count(
+        networks.with.attr.author = add.vertex.attribute.artifact.editor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level, editor.definition = "author"
+        )
+        networks.with.attr.committer = add.vertex.attribute.artifact.editor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level, editor.definition = "committer"
+        )
+        networks.with.attr.both = add.vertex.attribute.artifact.editor.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]],
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "editor.count")
+        actual.attributes.author = lapply(networks.with.attr.author, igraph::get.vertex.attribute, name = "editor.count")
+        actual.attributes.committer = lapply(networks.with.attr.committer, igraph::get.vertex.attribute, name = "editor.count")
+        actual.attributes.both = lapply(networks.with.attr.both, igraph::get.vertex.attribute, name = "editor.count")
 
-        expect_equal(expected.attributes[[level]], actual.attributes)
+        expect_equal(expected.attributes.author[[level]], actual.attributes.author)
+        expect_equal(expected.attributes.committer[[level]], actual.attributes.committer)
+        expect_equal(expected.attributes.both[[level]], actual.attributes.both)
     })
 })
 
