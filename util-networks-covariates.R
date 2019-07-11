@@ -666,6 +666,7 @@ add.vertex.attribute.author.role = function(list.of.networks, classification.res
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
+#' @param editor.definition Determines, who is counted as editor of an artifact. [default: c("author", "committer")]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
@@ -673,15 +674,20 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
                                                       aggregation.level = c("range", "cumulative", "all.ranges",
                                                                             "project.cumulative", "project.all.ranges",
                                                                             "complete"),
+                                                      editor.definition = c("author", "committer"),
                                                       default.value = 0) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
+
+    ## match editor definitions to column name in commit dataframe
+    editor.definition = match.arg.or.default(editor.definition, several.ok = TRUE)
+    editor.definition = lapply(editor.definition, function(editor) {paste0(editor, ".name")})
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
             vertex.attributes = lapply(range.data$group.authors.by.data.column("commits", "artifact"),
-                   function(x) {
-                       editor.count = length(unique(c(x[["author.name"]], x[["committer.name"]])))
+                   function(artifact.commits) {
+                       editor.count = length(unique(unlist(lapply(editor.definition, function(editor.type) {artifact.commits[[editor.type]]}))))
                        return(editor.count)
                    }
             )
