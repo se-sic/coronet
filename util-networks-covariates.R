@@ -666,7 +666,8 @@ add.vertex.attribute.author.role = function(list.of.networks, classification.res
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param editor.definition Determines, who is counted as editor of an artifact. [default: c("author", "committer")]
+#' @param editor.definition Determines, who is counted as editor of an artifact (one ore more of
+#'                          \code{c("author", "committer")}). [default: "author"]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0]
 #'
 #' @return A list of networks with the added attribute
@@ -679,15 +680,19 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     ## match editor definitions to column name in commit dataframe
-    editor.definition = match.arg.or.default(editor.definition, several.ok = TRUE)
-    editor.definition = lapply(editor.definition, function(editor) {paste0(editor, ".name")})
+    if (missing(editor.definition)) {
+        editor.definition = "author"
+    } else {
+        editor.definition = match.arg.or.default(editor.definition, choices = c("author", "committer"), several.ok = TRUE)
+    }
+    editor.definition = paste0(editor.definition, ".name")
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
             vertex.attributes = lapply(range.data$group.authors.by.data.column("commits", "artifact"),
                    function(artifact.commits) {
-                       editor.count = length(unique(unlist(lapply(editor.definition, function(editor.type) {artifact.commits[[editor.type]]}))))
+                       editor.count = length(unique(unlist(artifact.commits[editor.definition])))
                        return(editor.count)
                    }
             )

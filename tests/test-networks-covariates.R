@@ -866,7 +866,7 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr.author = add.vertex.attribute.artifact.editor.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]],
-            aggregation.level = level, editor.definition = "author"
+            aggregation.level = level
         )
         networks.with.attr.committer = add.vertex.attribute.artifact.editor.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]],
@@ -874,7 +874,7 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
         )
         networks.with.attr.both = add.vertex.attribute.artifact.editor.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]],
-            aggregation.level = level
+            aggregation.level = level, editor.definition = c("author", "committer")
         )
 
         actual.attributes.author = lapply(networks.with.attr.author, igraph::get.vertex.attribute, name = "editor.count")
