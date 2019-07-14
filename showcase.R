@@ -17,6 +17,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -120,6 +121,37 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
 y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+
+#' Produces a barplot showing for every editor the number of commits for which he is only author, only committer, and
+#' both author and committer.
+#'
+#' @param data The project data.
+plot.commit.editor.types.by.author = function(data) {
+
+    ## get editor data
+    and = get.committer.and.author.commit.count(data)
+    or = get.committer.not.author.commit.count(data)
+
+    ## build data frame as required for plotting
+    both = data.frame(and[["author.name"]], and[["freq"]])
+    colnames(both) = c("editor", "author and committer")
+
+    author = aggregate(or$freq, by = list(or$author.name), FUN = sum)
+    colnames(author) = c("editor", "only author")
+
+    committer = aggregate(or$freq, by = list(or$committer.name), FUN = sum)
+    colnames(committer) = c("editor", "only committer")
+
+    plot.data = merge(merge(both, author, all = TRUE), committer, all = TRUE)
+    plot.data[is.na(plot.data)] = 0
+    editors = plot.data[["editor"]]
+    plot.data = plot.data[2:4]
+    rownames(plot.data) = editors
+
+    ## draw plot
+    barplot(t(plot.data), main = "Types of commit edits per author", ylab = "commit count", col = heat.colors(3), las = 2)
+    legend("topright", names(plot.data), fill = heat.colors(3), cex = 0.5)
+}
 
 ## * Data retrieval --------------------------------------------------------
 
