@@ -1,5 +1,10 @@
 # coronet – Changelog
 
+## Unversioned
+
+### Added
+- Add a parameter `editor.definition` to the function `add.vertex.attribute.artifact.editor.count` which can be used to define, if author or committer or both count as editors when computing the attribute values. (#92, ff1e147ba563b2d71f8228afd49492a315a5ad48)
+
 
 ## 3.5
 
