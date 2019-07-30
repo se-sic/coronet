@@ -153,6 +153,26 @@ plot.commit.editor.types.by.author = function(data) {
     legend("topright", names(plot.data), fill = heat.colors(3), cex = 0.5)
 }
 
+#' Produces a barplot showing for how many commits committer and author are the same person and for how many commits committer
+#' and author are different.
+#'
+#' @param data The project data.
+plot.commit.edit.types.in.project = function(data) {
+
+    ## get commit count
+    and = get.committer.and.author.commit.count(data)
+    or = get.committer.not.author.commit.count(data)
+
+    ## build data frame as required for plotting
+    same = sum(and$freq)
+    different = sum(or$freq)
+    plot.data = data.frame(same, different)
+
+    ## draw plot
+    barplot(t(plot.data), ylab = "commit count", col = heat.colors(3), ylim = c(0, same + different + (same + different)/4))
+    legend("topright", c("author = committer", "author /= committer"), fill = heat.colors(3))
+}
+
 ## * Data retrieval --------------------------------------------------------
 
 # y.data$get.commits()
