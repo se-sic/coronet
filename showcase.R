@@ -168,13 +168,13 @@ plot.commit.edit.types.in.project = function(data) {
     or = get.committer.not.author.commit.count(data)
 
     ## build data frame as required for plotting
-    same = sum(and$freq)
-    different = sum(or$freq)
-    plot.data = data.frame(same, different)
+    plot.data = data.frame(c("author /= committer", "author = committer"), c(sum(or$freq), sum(and$freq)))
+    colnames(plot.data) = c("edit types", "commit count")
 
     ## draw plot
-    barplot(t(plot.data), ylab = "commit count", col = heat.colors(3), ylim = c(0, same + different + (same + different)/4))
-    legend("topright", c("author = committer", "author /= committer"), fill = heat.colors(3))
+    ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(y = `commit count`, x = `edit types`)) +
+        ## use data frame values instead of counting entries
+        ggplot2::geom_bar(stat = 'identity')
 }
 
 ## * Data retrieval --------------------------------------------------------
