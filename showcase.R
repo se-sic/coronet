@@ -144,13 +144,17 @@ plot.commit.editor.types.by.author = function(data) {
 
     plot.data = merge(merge(both, author, all = TRUE), committer, all = TRUE)
     plot.data[is.na(plot.data)] = 0
-    editors = plot.data[["editor"]]
-    plot.data = plot.data[2:4]
-    rownames(plot.data) = editors
+    ## prepare data for a stacked barplot (prepare for stacking the editor types)
+    plot.data = reshape2::melt(plot.data)
+    names(plot.data) = c("editor", "editor type", "commit count")
+
 
     ## draw plot
-    barplot(t(plot.data), main = "Types of commit edits per author", ylab = "commit count", col = heat.colors(3), las = 2)
-    legend("topright", names(plot.data), fill = heat.colors(3), cex = 0.5)
+    ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = editor, y = `commit count`, fill = `editor type`)) +
+        ## use data frame values instead of counting entries
+        ggplot2::geom_bar(stat = 'identity') +
+        ## rotate y-axis labels by 90 degree
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
 }
 
 #' Produces a barplot showing for how many commits committer and author are the same person and for how many commits committer
