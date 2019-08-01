@@ -54,13 +54,15 @@ plot.commit.editor.types.by.author = function(data, plot.percentage = FALSE) {
         plot.data = cbind(plot.data[1], t(apply(plot.data[2:4], 1, function(x) {x/sum(x)})))
     }
 
+    ## compute order of bars from data: only author < author and committer < only committer
+    ordered.editors = plot.data$editor[with(plot.data, order(`only committer`, `author and committer`, `only author`))]
+
     ## prepare data for a stacked barplot (prepare for stacking the editor types)
     plot.data = reshape2::melt(plot.data)
     names(plot.data) = c("editor", "editor type", "commit count")
 
-
     ## draw plot
-    ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = editor, y = `commit count`, fill = `editor type`)) +
+    ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = factor(editor, levels = ordered.editors), y = `commit count`, fill = `editor type`)) +
         ## use data frame values instead of counting entries
         ggplot2::geom_bar(stat = 'identity') +
         ## rotate y-axis labels by 90 degree
