@@ -27,7 +27,10 @@ requireNamespace("ggplot2") ## plotting
 #' both author and committer.
 #'
 #' @param data The project data.
-plot.commit.editor.types.by.author = function(data) {
+#' @param plot.percentage If true, the barplot shows the relative number of differently edited commits per author: each
+#'                        bar in the barplot (representing the commits of one editor) is scaled to 100%. Otherwise, the
+#'                        absolute number of commits per author is shown in the plot.
+plot.commit.editor.types.by.author = function(data, plot.percentage = FALSE) {
 
     ## get editor data
     and = get.committer.and.author.commit.count(data)
@@ -45,6 +48,12 @@ plot.commit.editor.types.by.author = function(data) {
 
     plot.data = merge(merge(both, author, all = TRUE), committer, all = TRUE)
     plot.data[is.na(plot.data)] = 0
+
+    ## if desired, calculate percentage of editor types per author
+    if(plot.percentage) {
+        plot.data = cbind(plot.data[1], t(apply(plot.data[2:4], 1, function(x) {x/sum(x)})))
+    }
+
     ## prepare data for a stacked barplot (prepare for stacking the editor types)
     plot.data = reshape2::melt(plot.data)
     names(plot.data) = c("editor", "editor type", "commit count")
