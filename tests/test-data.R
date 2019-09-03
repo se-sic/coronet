@@ -34,6 +34,7 @@ test_that("Compare two ProjectData objects", {
 
     ##initialize a ProjectData object with the ProjectConf and clone it into another one
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("pasta", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone()
 
@@ -43,19 +44,20 @@ test_that("Compare two ProjectData objects", {
     ## second object, as well, and test for equality.
 
     ##change the second data object
-    proj.data.one$get.commits()
-
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
-
-    proj.data.two$get.commits()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.two$get.pasta()
 
     expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
 
     proj.data.one$get.pasta()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.one$get.commits()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.two$get.commits()
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
