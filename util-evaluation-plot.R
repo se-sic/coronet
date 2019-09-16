@@ -50,7 +50,7 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
     plot.data[is.na(plot.data)] = 0
 
     ## if desired, calculate percentage of editor types per author
-    if(plot.percentage) {
+    if(percentage.per.author) {
         plot.data = cbind(plot.data[1], t(apply(plot.data[2:4], 1, function(x) {x/sum(x)})))
     }
 
