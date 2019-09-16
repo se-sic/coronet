@@ -27,10 +27,10 @@ requireNamespace("ggplot2") ## plotting
 #' both author and committer.
 #'
 #' @param data The project data.
-#' @param plot.percentage If true, the barplot shows the relative number of differently edited commits per author: each
-#'                        bar in the barplot (representing the commits of one editor) is scaled to 100%. Otherwise, the
-#'                        absolute number of commits per author is shown in the plot.
-plot.commit.editor.types.by.author = function(data, plot.percentage = FALSE) {
+#' @param percentage.per.author If true, the barplot shows the relative number of differently edited commits per author: each
+#'                              bar in the barplot (representing the commits of one editor) is scaled to 100%. Otherwise, the
+#'                              absolute number of commits per author is shown in the plot. [default: FALSE]
+plot.commit.editor.types.by.author = function(data, percentage.per.author = FALSE) {
 
     ## get editor data
     and = get.committer.and.author.commit.count(data)
@@ -73,7 +73,9 @@ plot.commit.editor.types.by.author = function(data, plot.percentage = FALSE) {
 #' and author are different.
 #'
 #' @param data The project data.
-plot.commit.edit.types.in.project = function(data) {
+#' @param relative.y.scale If true, the y axis shows the percentage of the number of commits of the special edit type with
+#'                         respect to all commits. If false, the y axis shows the absolut number of commits.
+plot.commit.edit.types.in.project = function(data, relative.y.scale = FALSE) {
 
     ## get commit count
     and = get.committer.and.author.commit.count(data)
@@ -82,6 +84,11 @@ plot.commit.edit.types.in.project = function(data) {
     ## build data frame as required for plotting
     plot.data = data.frame(c("author /= committer", "author = committer"), c(sum(or$freq), sum(and$freq)))
     colnames(plot.data) = c("edit types", "commit count")
+
+    ## if desired, calculate values for y axis labes showing percentage of all commits
+    if(relative.y.scale) {
+        plot.data = cbind(plot.data[1], plot.data[2]/sum(plot.data[2]))
+    }
 
     ## draw plot
     ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(y = `commit count`, x = `edit types`)) +
