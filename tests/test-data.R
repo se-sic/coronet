@@ -125,3 +125,52 @@ test_that("Compare two RangeData objects", {
     expect_false(proj.data.base$equals(range.data.four))
 
 })
+
+test_that("Filter patchstack mails", {
+
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("mails.filter.patchstack.mails", TRUE)
+
+    ## create the project data
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve the mails while filtering patchstack mails
+    mails.filtered = proj.data$get.mails()
+
+    ## create new project with filtering disabled
+    proj.conf$update.value("mails.filter.patchstack.mails", FALSE)
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve the mails without filtering patchstack mails
+    mails.unfiltered = proj.data$get.mails()
+
+    ## get message ids
+    mails.filtered.mids = mails.filtered[["message.id"]]
+    mails.unfiltered.mids = mails.unfiltered[["message.id"]]
+
+    expect_equal(setdiff(mails.unfiltered.mids, mails.filtered.mids), c("<hans2@mail.gmail.com>",
+                                                                        "<hans3@mail.gmail.com>",
+                                                                        "<hans4@mail.gmail.com>",
+                                                                        "<hans5@mail.gmail.com>",
+                                                                        "<hans6@mail.gmail.com>"))
+})
+
+test_that("Filter patchstack mails with PaStA enabled", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("mails.filter.patchstack.mails", TRUE)
+    proj.conf$update.value("pasta", TRUE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve filtered PaStA data by calling 'get.pasta' which calls the filtering functionality internally
+    filtered.pasta = proj.data$get.pasta()
+
+    ## ensure that PaStA data relating to Hans' mail 2 and 3 do not exist anymore since they have also been filtered
+    ## during patchstack mail filtering
+    expect_false("<hans2@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_false("<hans3@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+
+    ## ensure that all three PaStA entries that existed previously do still exist but have been associated to the
+    ## very first mail of the patchstack
+    expect_equal(3, sum(filtered.pasta[["message.id"]] == "<hans1@mail.gmail.com>"))
+})
