@@ -4,6 +4,7 @@
 
 ### Added
 - Add a parameter `editor.definition` to the function `add.vertex.attribute.artifact.editor.count` which can be used to define, if author or committer or both count as editors when computing the attribute values. (#92, ff1e147ba563b2d71f8228afd49492a315a5ad48)
+- Add the possibility to filter out patchstack mails from the mails of the `ProjectData`. The option can be toggled using the newly added configuration option `mails.filter.patchstack.mails`. (1608e28ca36610c58d2a5447d12ee2052c6eb976, a932c8cdaa6fe5149c798bc09d9e421ba679c48d)
 
 
 ## 3.5
