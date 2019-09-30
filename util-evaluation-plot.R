@@ -53,7 +53,7 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
     plot.data[is.na(plot.data)] = 0
 
     ## if desired, calculate percentage of editor types per author
-    if(percentage.per.author) {
+    if (percentage.per.author) {
         name.column = plot.data[1]
         value.columns = plot.data[2:4]
 
@@ -101,7 +101,7 @@ plot.commit.edit.types.in.project = function(data, relative.y.scale = FALSE) {
     colnames(plot.data) = c("edit types", "commit count")
 
     ## if desired, calculate values for y axis labes showing percentage of all commits
-    if(relative.y.scale) {
+    if (relative.y.scale) {
         plot.data = cbind(plot.data[1], plot.data[2]/sum(plot.data[2]))
     }
 
