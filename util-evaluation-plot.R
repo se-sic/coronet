@@ -27,9 +27,10 @@ requireNamespace("ggplot2") ## plotting
 #' both author and committer.
 #'
 #' @param data The project data.
-#' @param percentage.per.author If \code{TRUE}, the barplot shows the relative number of differently edited commits per author: each
-#'                              bar in the barplot (representing the commits of one editor) is scaled to 100%. Otherwise, the
-#'                              absolute number of commits per author is shown in the plot. [default: FALSE]
+#' @param percentage.per.author If \code{TRUE}, the barplot shows the relative number of differently edited commits per
+#'                              author: each bar in the barplot (representing the commits of one editor) is scaled to
+#'                              100%. Otherwise, the absolute number of commits per author is shown in the plot.
+#'                              [default: FALSE]
 #'
 #' @return a ggplot2/ggraph plot object
 plot.commit.editor.types.by.author = function(data, percentage.per.author = FALSE) {
@@ -63,14 +64,16 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
     }
 
     ## compute order of bars from data: only author < author and committer < only committer
-    ordered.editors = plot.data[["editor"]][with(plot.data, order(`only committer`, `author and committer`, `only author`))]
+    ordered.editors = plot.data[["editor"]][with(plot.data,
+                                                 order(`only committer`, `author and committer`, `only author`))]
 
     ## prepare data for a stacked barplot (prepare for stacking the editor types)
     plot.data = reshape2::melt(plot.data)
     names(plot.data) = c("editor", "editor type", "commit count")
 
     ## draw plot
-    plot = ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = factor(editor, levels = ordered.editors), y = `commit count`, fill = `editor type`)) +
+    plot = ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = factor(editor, levels = ordered.editors),
+                                                                    y = `commit count`, fill = `editor type`)) +
         ## use data frame values instead of counting entries
         ggplot2::geom_bar(stat = 'identity') +
         ## rotate y-axis labels by 90 degree
@@ -78,12 +81,13 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
     return(plot)
 }
 
-#' Produces a barplot showing for how many commits committer and author are the same person and for how many commits committer
-#' and author are different.
+#' Produces a barplot showing for how many commits committer and author are the same person and for how many commits
+#' committer and author are different.
 #'
 #' @param data The project data.
-#' @param relative.y.scale If \code{TRUE}, the y axis shows the percentage of the number of commits of the special edit type with
-#'                         respect to all commits. If \code{FALSE}, the y axis shows the absolut number of commits. [default: FALSE]
+#' @param relative.y.scale If \code{TRUE}, the y axis shows the percentage of the number of commits of the special edit
+#'                         type with respect to all commits. If \code{FALSE}, the y axis shows the absolut number of
+#'                         commits. [default: FALSE]
 #'
 #' @return a ggplot2/ggraph plot object
 plot.commit.edit.types.in.project = function(data, relative.y.scale = FALSE) {
