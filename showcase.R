@@ -17,6 +17,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -79,6 +80,13 @@ revisions.callgraph = proj.conf$get.value("revisions.callgraph")
 
 x.data = ProjectData$new(project.conf = proj.conf)
 x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
+
+## * Evaluation plots ------------------------------------------------------
+
+# edit.types = plot.commit.edit.types.in.project(x.data)
+# edit.types.scaled = plot.commit.edit.types.in.project(x.data, TRUE)
+# editor.types = plot.commit.editor.types.by.author(x.data)
+# editor.types.scaled = plot.commit.editor.types.by.author(x.data, TRUE)
 
 ## * Data retrieval --------------------------------------------------------
 
