@@ -166,12 +166,16 @@ test_that("Filter patchstack mails with PaStA enabled", {
     ## retrieve filtered PaStA data by calling 'get.pasta' which calls the filtering functionality internally
     filtered.pasta = proj.data$get.pasta()
 
-    ## ensure that PaStA data relating to Hans' mail 2 and 3 do not exist anymore since they have also been filtered
-    ## during patchstack mail filtering
-    expect_false("<hans2@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
-    expect_false("<hans3@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    ## ensure that the remaining mails have not been touched
+    expect_true("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_true("<asddghdswqeasdasd@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_true("<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_equal(2, sum(filtered.pasta[["message.id"]] == "<saf54sd4gfasf46asf46@mail.gmail.com>"))
 
-    ## ensure that all three PaStA entries that existed previously do still exist but have been associated to the
-    ## very first mail of the patchstack
-    expect_equal(3, sum(filtered.pasta[["message.id"]] == "<hans1@mail.gmail.com>"))
+    ## ensure that out of three PaStA entries that existed previously, all of which pointing to the same commit hash,
+    ## one new PaStA entry has been created with has assigned the message ID of the first patchstack mail
+    expect_true("<hans1@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+
+    ## ensure that there are no other entries than the ones that have been verified to exist above
+    expect_equal(6, nrow(filtered.pasta))
 })

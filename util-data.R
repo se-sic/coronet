@@ -239,6 +239,9 @@ ProjectData = R6::R6Class("ProjectData",
             ## combine new re-written PaStA data
             new.pasta = plyr::rbind.fill(new.pasta)
 
+            ## remove potential duplicates
+            new.pasta = unique(new.pasta)
+
             ## remove old items from PaStA data
             ## 1) flatten the list of mail-dataframes (i.e. patchstacks) to a single mail-dataframe
             patchstack.mails = plyr::rbind.fill(private$mails.patchstacks)
@@ -247,6 +250,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## append the new pasta data to the old pasta data
             pasta = plyr::rbind.fill(pasta, new.pasta)
+
+            ## reestablish ordering using the 'revision.set.id' column of the PaStA data
+            pasta = pasta[order(pasta[["revision.set.id"]]), ]
 
             logging::logdebug("filter.pasta.data: finished.")
             return(pasta)
@@ -309,6 +315,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## merge PaStA data
                 private$commits = merge(private$commits, private$pasta.commits,
                                     by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
             }
 
             logging::logdebug("update.pasta.commit.data: finished.")
@@ -329,6 +338,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## merge PaStA data
                 private$mails = merge(private$mails, private$pasta.mails,
                                       by = "message.id", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
             }
 
             logging::logdebug("update.pasta.mail.data: finished.")
@@ -380,6 +392,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## merge synchronicity data
                 private$commits = merge(private$commits, private$synchronicity,
                                     by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
             }
 
@@ -672,8 +687,8 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
 
-            ## sort by date again (because 'merge' is doing bullshit!)
-            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
+            ## sort by date
+            private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
@@ -851,8 +866,8 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
 
-            ## sort by date again (because 'merge' is doing bullshit!)
-            private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ] # sort!
+            ## sort by date
+            private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
         },
 
         #' Get the author data.
