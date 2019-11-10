@@ -172,8 +172,8 @@ test_that("Filter patchstack mails with PaStA enabled", {
     expect_true("<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
     expect_equal(2, sum(filtered.pasta[["message.id"]] == "<saf54sd4gfasf46asf46@mail.gmail.com>"))
 
-    ## ensure that out of three PaStA entries that existed previously, all of which pointing to the same commit hash,
-    ## one new PaStA entry has been created with has assigned the message ID of the first patchstack mail
+    ## ensure that the three PaStA entries relating to the filtered patchstack mails have been merged to a single new
+    ## PaStA entry which has assigned the message ID of the first patchstack mail
     expect_true("<hans1@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
 
     ## ensure that there are no other entries than the ones that have been verified to exist above
