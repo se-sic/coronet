@@ -12,7 +12,8 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -34,6 +35,7 @@ test_that("Compare two ProjectData objects", {
 
     ##initialize a ProjectData object with the ProjectConf and clone it into another one
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("pasta", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone()
 
@@ -43,19 +45,20 @@ test_that("Compare two ProjectData objects", {
     ## second object, as well, and test for equality.
 
     ##change the second data object
-    proj.data.one$get.commits()
-
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
-
-    proj.data.two$get.commits()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.two$get.pasta()
 
     expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
 
     proj.data.one$get.pasta()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.one$get.commits()
+
+    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+
+    proj.data.two$get.commits()
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
@@ -122,4 +125,57 @@ test_that("Compare two RangeData objects", {
 
     expect_false(proj.data.base$equals(range.data.four))
 
+})
+
+test_that("Filter patchstack mails", {
+
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("mails.filter.patchstack.mails", TRUE)
+
+    ## create the project data
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve the mails while filtering patchstack mails
+    mails.filtered = proj.data$get.mails()
+
+    ## create new project with filtering disabled
+    proj.conf$update.value("mails.filter.patchstack.mails", FALSE)
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve the mails without filtering patchstack mails
+    mails.unfiltered = proj.data$get.mails()
+
+    ## get message ids
+    mails.filtered.mids = mails.filtered[["message.id"]]
+    mails.unfiltered.mids = mails.unfiltered[["message.id"]]
+
+    expect_equal(setdiff(mails.unfiltered.mids, mails.filtered.mids), c("<hans2@mail.gmail.com>",
+                                                                        "<hans3@mail.gmail.com>",
+                                                                        "<hans4@mail.gmail.com>",
+                                                                        "<hans5@mail.gmail.com>",
+                                                                        "<hans6@mail.gmail.com>"))
+})
+
+test_that("Filter patchstack mails with PaStA enabled", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("mails.filter.patchstack.mails", TRUE)
+    proj.conf$update.value("pasta", TRUE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    ## retrieve filtered PaStA data by calling 'get.pasta' which calls the filtering functionality internally
+    filtered.pasta = proj.data$get.pasta()
+
+    ## ensure that the remaining mails have not been touched
+    expect_true("<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_true("<asddghdswqeasdasd@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_true("<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+    expect_equal(2, sum(filtered.pasta[["message.id"]] == "<saf54sd4gfasf46asf46@mail.gmail.com>"))
+
+    ## ensure that the three PaStA entries relating to the filtered patchstack mails have been merged to a single new
+    ## PaStA entry which has assigned the message ID of the first patchstack mail
+    expect_true("<hans1@mail.gmail.com>" %in% filtered.pasta[["message.id"]])
+
+    ## ensure that there are no other entries than the ones that have been verified to exist above
+    expect_equal(6, nrow(filtered.pasta))
 })

@@ -63,6 +63,9 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
     "issues"  = "issue.id"
 )
 
+## the maximum time difference between subsequent mails of a patchstack
+PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
@@ -101,6 +104,7 @@ ProjectData = R6::R6Class("ProjectData",
         commits = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
+        mails.patchstacks = NULL, # list
         ## issues
         issues = NULL, #data.frame
         ## authors
@@ -113,36 +117,146 @@ ProjectData = R6::R6Class("ProjectData",
         ## timestamps of mail, issue and commit data
         data.timestamps = NULL, #data.frame
 
-        ## * * filtering commits -------------------------------------------
+        ## * * commit filtering --------------------------------------------
 
-        #' Filter commits retrieved by the method \code{get.commits} after potentially removing untracked files and the
-        #' base artifact (see parameters).
+        #' Filter commits by potentially removing commits to untracked files or to the base artifact (see parameters).
         #'
+        #' @param commits the data.frame of commits on which filtering will be applied
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
         #'
-        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
-        filter.commits = function(remove.untracked.files, remove.base.artifact) {
+        #' @return the commits after all filters have been applied
+        filter.commits = function(commits, remove.untracked.files, remove.base.artifact) {
             logging::logdebug("filter.commits: starting.")
-
-            ## get commit data
-            commit.data = self$get.commits()
 
             ## filter out the untracked files
             if (remove.untracked.files) {
-                commit.data = subset(commit.data, file != UNTRACKED.FILE)
+                commits = subset(commits, file != UNTRACKED.FILE)
             }
 
             ## filter out the base artifacts (i.e., Base_Feature, File_Level)
             if (remove.base.artifact) {
-                commit.data = subset(commit.data, !(artifact %in% BASE.ARTIFACTS))
+                commits = subset(commits, !(artifact %in% BASE.ARTIFACTS))
             }
 
             logging::logdebug("filter.commits: finished.")
-            return(commit.data)
+            return(commits)
+        },
+
+        ## * * mail filtering ----------------------------------------------
+
+        #' Filter patchstack mails from the mails that are currently cached in the field \code{mails} and return them.
+        #' Store detected patchstacks in the field \code{patchstack.mails}. They are used later in the
+        #' function \code{filter.pasta.data} to also accommodate for the deleted mails in the PaStA data.
+        #'
+        #' In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread
+        #' creator and has been sent within a short time window (see \code{PATCHSTACK.MAIL.DECAY.THRESHOLD}) after the
+        #' preceding mail.
+        #' The mails spanned by a patchstack are called 'patchstack mails'.
+        #'
+        #' For each patchstack, all patchstack mails but the first one are filtered.
+        #'
+        #' @return the mail data after filtering patchstack mails
+        filter.patchstack.mails = function() {
+            logging::logdebug("filter.patchstack.mails: starting.")
+
+            ## retrieve mails grouped by thread IDs
+            thread.data = self$group.authors.by.data.column("mails", "thread")
+
+            ## extract the patchstack mails and the filtered mails for each thread
+            result = parallel::mclapply(thread.data, function(thread) {
+
+                ## ensure that all mails within the thread are ordered correctly
+                thread = thread[order(thread["date"]), ]
+
+                running = TRUE
+                i = 1
+
+                ## find the largest index 'i' for which holds that each mail up to index 'i' has been authored by the
+                ## thread creator and that all mails up to index 'i' have been received within a succesive time window
+                ## of 'PATCHSTACK.MAIL.DECAY.THRESHOLD'
+                while (i < nrow(thread) && running) {
+                    if (thread[1, "author.name"] == thread[i + 1, "author.name"] &&
+                        thread[i + 1, "date"] - thread[i, "date"] <=
+                        lubridate::as.duration(PATCHSTACK.MAIL.DECAY.THRESHOLD)) {
+                        i = i + 1
+                    } else {
+                        running = FALSE
+                    }
+                }
+
+                ## return the mails of the thread with all patchstack mails but the first one being removed
+                return (list(keep = thread[setdiff(seq_len(nrow(thread)), seq_len(i)[-1]), ],
+                             patchstack = thread[seq_len(i), ]))
+            })
+
+            ## override thread data with filtered thread data
+            thread.data = lapply(result, function(x) x[["keep"]])
+
+            ## flatten the list of mail-dataframes (i.e. thread.data) to a single mail-dataframe
+            mails = plyr::rbind.fill(thread.data)
+
+            ## Retrieve patchstacks from the result above which are used to manipulate the PaStA data. This needs to be
+            ## done because the PaStA data relates to some of the filtered mails and must be adjusted accordingly.
+            patchstacks = lapply(result, function(x) x[["patchstack"]])
+
+            ## only patchstacks that contain at least two mails are considered patchstacks
+            patchstacks = patchstacks[lapply(patchstacks, nrow) > 1]
+
+            ## store patchstack information
+            private$mails.patchstacks = patchstacks
+
+            logging::logdebug("filter.patchstack.mails: finished.")
+            return(mails)
         },
 
         ## * * PaStA data --------------------------------------------------
+
+        #' Use the information about the deleted patchstack mails that are stored in the field \code{patchstack.mails}
+        #' to also filter out PaStA information that relates to the deleted mails.
+        #'
+        #' The PaStA information is not discarded completely however but instead is gathered for each patchstack and is
+        #' assigned to the first mail in each patchstack because this very first mail has not been filtered and
+        #' represents the patchstack.
+        #'
+        #' @return the filtered PaStA data
+        filter.pasta.data = function() {
+            logging::logdebug("filter.pasta.data: starting.")
+
+            new.pasta = parallel::mclapply(private$mails.patchstacks, function(patchstack) {
+
+                ## get all PaStA data that relates to the current patchstack (do not drop data.frame structure!)
+                pasta.tmp = private$pasta[private$pasta[["message.id"]] %in% patchstack[["message.id"]], , drop = FALSE]
+
+                ## override all old message IDs with the message ID of the first mail in the patchstack since it
+                ## is the only one that is kept (if any data is available in 'pasta.tmp')
+                if (nrow(pasta.tmp) > 0) {
+                    pasta.tmp["message.id"] = patchstack[1, "message.id"]
+                }
+
+                return(pasta.tmp)
+            })
+            ## combine new re-written PaStA data
+            new.pasta = plyr::rbind.fill(new.pasta)
+
+            ## remove potential duplicates
+            new.pasta = unique(new.pasta)
+
+            ## remove old items from PaStA data
+            ## 1) flatten the list of mail-dataframes (i.e. patchstacks) to a single mail-dataframe
+            patchstack.mails = plyr::rbind.fill(private$mails.patchstacks)
+            ## 2) delete any PaStA information that relate to message IDs of mails that will be discarded
+            pasta = private$pasta[!(private$pasta[["message.id"]] %in% patchstack.mails[["message.id"]]), ]
+
+            ## append the new pasta data to the old pasta data
+            pasta = plyr::rbind.fill(pasta, new.pasta)
+
+            ## reestablish ordering using the 'revision.set.id' column of the PaStA data
+            pasta = pasta[order(pasta[["revision.set.id"]]), ]
+
+            logging::logdebug("filter.pasta.data: finished.")
+            return(pasta)
+        },
 
         #' Aggregate PaStA data for convenient merging to main data sources.
         #'
@@ -153,17 +267,14 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' **Note**: The column \code{commit.hash} gets renamed to \code{hash} to match
         #' the corresponding column in the commit data (see \code{read.commits}).
-        #'
-        #' @param pasta.data a data.frame of PaStA data as retrieved from
-        #'                   \code{ProjectData$get.pasta.data}
-        aggregate.pasta.data = function(pasta.data) {
+        aggregate.pasta.data = function() {
             logging::logdebug("aggregate.pasta.data: starting.")
 
             ## check for data first
-            if (nrow(pasta.data) == 0) {
+            if (nrow(private$pasta) == 0) {
                 ## take (empty) input data and no rows from it
-                private$pasta.mails = pasta.data[0, ]
-                private$pasta.commits = pasta.data[0, ]
+                private$pasta.mails = create.empty.pasta.list()
+                private$pasta.commits = create.empty.pasta.list()
             } else {
                 ## compute aggregated data.frames for easier merging
                 ## 1) define group function (determines result in aggregated data.frame cells)
@@ -171,13 +282,13 @@ ProjectData = R6::R6Class("ProjectData",
                 ## 2) aggregate by message ID
                 group.col = "message.id"
                 private$pasta.mails = aggregate(
-                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    as.formula(sprintf(". ~ %s", group.col)), private$pasta,
                     group.fun, na.action = na.pass
                 )
                 ## 3) aggregate by commit hash
                 group.col = "commit.hash"
                 private$pasta.commits = aggregate(
-                    as.formula(sprintf(". ~ %s", group.col)), pasta.data,
+                    as.formula(sprintf(". ~ %s", group.col)), private$pasta,
                     group.fun, na.action = na.pass
                 )
             }
@@ -187,6 +298,107 @@ ProjectData = R6::R6Class("ProjectData",
             colnames(private$pasta.commits) = c("hash", "pasta", "revision.set.id")
 
             logging::logdebug("aggregate.pasta.data: finished.")
+        },
+
+        #' Update the PaStA-related columns \code{pasta} and \code{revision.set.id} that are appended to \code{commits}
+        #' using the currently available PaStA data from the field \code{pasta.commits}.
+        update.pasta.commit.data = function() {
+            logging::logdebug("update.pasta.commit.data: starting.")
+
+            ## return immediately if no commits available
+            if (!is.null(private$mails)) {
+
+                ## remove previous PaStA data
+                private$commits["pasta"] = NULL
+                private$commits["revision.set.id"] = NULL
+
+                ## merge PaStA data
+                private$commits = merge(private$commits, private$pasta.commits,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+            }
+
+            logging::logdebug("update.pasta.commit.data: finished.")
+        },
+
+        #' Update the PaStA-related columns \code{pasta} and \code{revision.set.id} that are appended to \code{mails}
+        #' using the currently available PaStA data from the field \code{pasta.mails}.
+        update.pasta.mail.data = function() {
+            logging::logdebug("update.pasta.mail.data: starting.")
+
+            ## return immediately if no mails available
+            if (!is.null(private$mails)) {
+
+                ## remove previous PaStA data
+                private$mails["pasta"] = NULL
+                private$mails["revision.set.id"] = NULL
+
+                ## merge PaStA data
+                private$mails = merge(private$mails, private$pasta.mails,
+                                      by = "message.id", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
+            }
+
+            logging::logdebug("update.pasta.mail.data: finished.")
+        },
+
+        #' Recompute the values of the cached fields \code{pasta.mails} and \code{pasta.commits} using the currrently
+        #' available PaStA information of the field \code{pasta} and also assign/update this PaStA information to
+        #' \code{mails} and \code{commits}.
+        #'
+        #' This method should be called whenever the field \code{pasta} is changed.
+        update.pasta.data = function() {
+            logging::logdebug("update.pasta.data: starting.")
+
+            ## filter patchstack mails from PaStA data if configured
+            if (private$project.conf$get.value("mails.filter.patchstack.mails")) {
+                private$pasta = private$filter.pasta.data()
+            }
+
+            ## aggregate by message IDs and commit hashes
+            private$aggregate.pasta.data()
+
+            ## update mail data by attaching PaStA data
+            if (!is.null(private$mails)) {
+                private$update.pasta.mail.data()
+            }
+
+            ## update commit data by attaching PaStA data
+            if (!is.null(private$commits)) {
+                private$update.pasta.commit.data()
+            }
+
+            logging::logdebug("update.pasta.data: finished.")
+        },
+
+        ## * * synchronicity data ------------------------------------------
+
+        #' Update the column \code{synchronicity} that is appended to commits using the currently available
+        #' synchronicity data from the field \code{synchronicity}.
+        #'
+        #' This method should be called whenever the field \code{synchronicity} is changed.
+        update.synchronicity.data = function() {
+            logging::logdebug("update.synchronicity.data: starting.")
+
+            ## update commit data by attaching synchronicity data
+            if (!is.null(private$commits)) {
+                ## remove previous synchronicity data
+                private$commits["synchronicity"] = NULL
+
+                ## merge synchronicity data
+                private$commits = merge(private$commits, private$synchronicity,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+
+            }
+
+            logging::logdebug("update.synchronicity.data: finished.")
         },
 
         ## * * timestamps --------------------------------------------------
@@ -388,6 +600,7 @@ ProjectData = R6::R6Class("ProjectData",
         get.commits.filtered = function() {
             if (is.null(private$commits.filtered)) {
                 private$commits.filtered = private$filter.commits(
+                    self$get.commits(),
                     private$project.conf$get.value("commits.filter.untracked.files"),
                     private$project.conf$get.value("commits.filter.base.artifact")
                 )
@@ -408,7 +621,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.commits.filtered
         get.commits.filtered.uncached = function(remove.untracked.files, remove.base.artifact) {
-            return (private$filter.commits(remove.untracked.files, remove.base.artifact))
+            return (private$filter.commits(self$get.commits(), remove.untracked.files, remove.base.artifact))
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -445,52 +658,45 @@ ProjectData = R6::R6Class("ProjectData",
         set.commits = function(commit.data) {
             logging::loginfo("Setting commit data.")
 
-            # TODO: Also check for correct shape (column names and data types) of the passed data
-
             if (is.null(commit.data)) {
                 commit.data = create.empty.commits.list()
             }
 
-            ## append synchronicity data if wanted
+            ## store commit data
+            private$commits = commit.data
+
+            ## add synchronicity data if wanted
             if (private$project.conf$get.value("synchronicity")) {
-                logging::loginfo("Adding synchronicity data.")
-                synchronicity.data = self$get.synchronicity()
-                ## remove previous synchronicity data
-                if ("synchronicity" %in% colnames(commit.data)) {
-                    commit.data["synchronicity"] = NULL
+                if (is.null(private$synchronicity)) {
+                    ## get data (no assignment because we just want to trigger anything synchronicity-related)
+                    self$get.synchronicity()
+                } else {
+                    ## update all synchronicity-related data
+                    private$update.synchronicity.data()
                 }
-                commit.data = merge(commit.data, synchronicity.data,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                logging::loginfo("Adding PaStA data.")
-                ## get data
-                self$get.pasta() # no assignment because we just want to trigger the read-in
-                ## remove previous PaStA data
-                if ("pasta" %in% colnames(commit.data)) {
-                    commit.data["pasta"] = NULL
-                    commit.data["revision.set.id"] = NULL
+                if (is.null(private$pasta)) {
+                    ## get data (no assignment because we just want to trigger anything PaStA-related)
+                    self$get.pasta()
+                } else {
+                    ## update all PaStA-related data
+                    private$update.pasta.data()
                 }
-                ## merge PaStA data
-                commit.data = merge(commit.data, private$pasta.commits,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
             }
 
-            ## sort by date again (because 'merge' is doing bullshit!)
-            commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
-
-            private$commits = commit.data
+            ## sort by date
+            private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
             private$commits.filtered = NULL
         },
 
-        #' Get the synchronicity data.
-        #' If it does not already exist call the read method.
-        #' Call the setter function to set the data.
+        #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
+        #' from disk.
         #'
         #' @return the synchronicity data
         get.synchronicity = function() {
@@ -500,16 +706,19 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("synchronicity")) {
                 ##  if data are not read already, read them
                 if (is.null(private$synchronicity)) {
-                    synchronicity.data = read.synchronicity(
+                    private$synchronicity = read.synchronicity(
                         self$get.data.path.synchronicity(),
                         private$project.conf$get.value("artifact"),
                         private$project.conf$get.value("synchronicity.time.window")
                     )
 
-                    ## set actual data
-                    self$set.synchronicity(synchronicity.data)
+                    ## no read of commit data needed here!
+
+                    ## update all synchronicity-related data
+                    private$update.synchronicity.data()
                 }
             } else {
+                logging::logwarn("You have not set the ProjectConf parameter 'synchronicity' to 'TRUE'! Ignoring...")
                 ## mark synchronicity data as empty
                 self$set.synchronicity(NULL)
             }
@@ -534,16 +743,16 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add synchronicity data to the commit data if configured
             if (private$project.conf$get.value("synchronicity")) {
-                logging::loginfo("Updating synchronicity data.")
-                if (!is.null(private$commits)) {
-                    self$set.commits(private$commits)
-                }
+
+                ## no read of commit data needed here!
+
+                ## update all synchronicity-related data
+                private$update.synchronicity.data()
             }
         },
 
-        #' Get the PaStA data.
-        #' If it does not already exist call the read method.
-        #' Call the setter function to set the data.
+        #' Get the PaStA data. If it is not already stored in the ProjectData, this function triggers a read in
+        #' from disk.
         #'
         #' @return the PaStA data
         get.pasta = function() {
@@ -553,12 +762,21 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("pasta")) {
                 ## if data are not read already, read them
                 if (is.null(private$pasta)) {
-                    pasta.data = read.pasta(self$get.data.path.pasta())
+                    ## read PaStA data from disk
+                    private$pasta = read.pasta(self$get.data.path.pasta())
 
-                    ## set actual data
-                    self$set.pasta(pasta.data)
+                    ## read mail data if filtering patchstack mails
+                    if (is.null(private$mails)
+                        && private$project.conf$get.value("mails.filter.patchstack.mails")) {
+                        ## just triggering read-in, no storage
+                        self$get.mails()
+                    } else {
+                        ## update all PaStA-related data
+                        private$update.pasta.data()
+                    }
                 }
             } else {
+                logging::logwarn("You have not set the ProjectConf parameter 'pasta' to 'TRUE'! Ignoring...")
                 ## mark PaStA data as empty
                 self$set.pasta(NULL)
             }
@@ -581,17 +799,19 @@ ProjectData = R6::R6Class("ProjectData",
             ## set the actual data
             private$pasta = data
 
-            ## aggregate by message IDs and commit hashes
-            private$aggregate.pasta.data(private$pasta)
-
             ## add PaStA data to commit and mail data if configured
             if (private$project.conf$get.value("pasta")) {
-                logging::loginfo("Updating PaStA data.")
-                if (!is.null(private$commits)) {
-                    self$set.commits(private$commits)
-                }
-                if (!is.null(private$mails)) {
-                    self$set.mails(private$mails)
+
+                ## read mail data if filtering patchstack mails
+                if (is.null(private$mails) &&
+                    private$project.conf$get.value("mails.filter.patchstack.mails")) {
+                    ## just triggering read-in, no storage
+                    self$get.mails()
+
+                } else {
+                    ## update all PaStA-related data
+                    private$update.pasta.data()
+
                 }
             }
         },
@@ -609,7 +829,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$mails)) {
                 mails.read = read.mails(self$get.data.path())
 
-                self$set.mails(data = mails.read)
+                self$set.mails(mails.read)
             }
             private$extract.timestamps(source = "mails")
 
@@ -619,33 +839,35 @@ ProjectData = R6::R6Class("ProjectData",
         #' Set the mail data to the given new data and add PaStA data
         #' if configured in the field \code{project.conf}.
         #'
-        #' @param data the new mail data
-        set.mails = function(data) {
+        #' @param mail.data the new mail data
+        set.mails = function(mail.data) {
             logging::loginfo("Setting e-mail data.")
 
-            if (is.null(data)) {
-                data = create.empty.mails.list()
+            if (is.null(mail.data)) {
+                mail.data = create.empty.mails.list()
+            }
+
+            ## store mail data
+            private$mails = mail.data
+
+            ## filter patchstack mails and store again
+            if (private$project.conf$get.value("mails.filter.patchstack.mails")) {
+                private$mails = private$filter.patchstack.mails()
             }
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                logging::loginfo("Adding PaStA data.")
-                ## get data
-                self$get.pasta() # no assignment because we just want to trigger the read-in
-                ## remove previous PaStA data
-                if ("pasta" %in% colnames(data)) {
-                    data["pasta"] = NULL
-                    data["revision.set.id"] = NULL
+                if (is.null(private$pasta)) {
+                    ## get data (no assignment because we just want to trigger anything PaStA-related)
+                    self$get.pasta()
+                } else {
+                    ## update all PaStA-related data
+                    private$update.pasta.data()
                 }
-                ## merge PaStA data
-                data = merge(data, private$pasta.mails,
-                             by = "message.id", all.x = TRUE, sort = FALSE)
             }
 
-            ## sort by date again (because 'merge' is doing bullshit!)
-            data = data[order(data[["date"]], decreasing = FALSE), ] # sort!
-
-            private$mails = data
+            ## sort by date
+            private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
         },
 
         #' Get the author data.
