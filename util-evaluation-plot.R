@@ -21,7 +21,7 @@ requireNamespace("ggplot2") ## plotting
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Plot functions ----------------------------------------------------------
+## Plots regarding commit edit and editor types ---------------------------------------
 
 #' Produces a barplot showing for every editor the number of commits for which he is only author, only committer, and
 #' both author and committer.
@@ -41,13 +41,13 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
 
     ## build data frame as required for plotting
     both = data.frame(and[["author.name"]], and[["freq"]])
-    colnames(both) = c("editor", "author and committer")
+    colnames(both) = c("editor", "author.and.committer")
 
     author = aggregate(or[["freq"]], by = list(or[["author.name"]]), FUN = sum)
-    colnames(author) = c("editor", "only author")
+    colnames(author) = c("editor", "only.author")
 
     committer = aggregate(or[["freq"]], by = list(or[["committer.name"]]), FUN = sum)
-    colnames(committer) = c("editor", "only committer")
+    colnames(committer) = c("editor", "only.committer")
 
     plot.data = merge(merge(both, author, all = TRUE), committer, all = TRUE)
     plot.data[is.na(plot.data)] = 0
@@ -65,19 +65,27 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
 
     ## compute order of bars from data: only author < author and committer < only committer
     ordered.editors = plot.data[["editor"]][with(plot.data,
-                                                 order(`only committer`, `author and committer`, `only author`))]
+                                                 order(`only.committer`, `author.and.committer`, `only.author`))]
 
     ## prepare data for a stacked barplot (prepare for stacking the editor types)
     plot.data = reshape2::melt(plot.data)
-    names(plot.data) = c("editor", "editor type", "commit count")
+    names(plot.data) = c("editor", "editor.type", "commit.count")
 
     ## draw plot
     plot = ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(x = factor(editor, levels = ordered.editors),
-                                                                    y = `commit count`, fill = `editor type`)) +
+                                                                    y = `commit.count`, fill = `editor.type`)) +
         ## use data frame values instead of counting entries
         ggplot2::geom_bar(stat = 'identity') +
         ## rotate y-axis labels by 90 degree
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+        ## set proper legend items and title
+        ggplot2::scale_fill_discrete(name = "Commit edit type",
+                                     labels = c("author and committer", "only author", "only committer")) +
+        ## add proper axis labels
+        ggplot2::labs(
+            x = "Authors",
+            y = "Commit count"
+        )
     return(plot)
 }
 
@@ -97,17 +105,25 @@ plot.commit.edit.types.in.project = function(data, relative.y.scale = FALSE) {
     or = get.committer.not.author.commit.count(data)
 
     ## build data frame as required for plotting
-    plot.data = data.frame(c("author /= committer", "author = committer"), c(sum(or[["freq"]]), sum(and[["freq"]])))
-    colnames(plot.data) = c("edit types", "commit count")
+    plot.data = data.frame(c("author.!=.committer", "author.=.committer"), c(sum(or[["freq"]]), sum(and[["freq"]])))
+    colnames(plot.data) = c("edit.types", "commit.count")
 
     ## if desired, calculate values for y axis labes showing percentage of all commits
     if (relative.y.scale) {
-        plot.data = cbind(plot.data[1], plot.data[2]/sum(plot.data[2]))
+        plot.data = cbind(plot.data[1], plot.data[2] / sum(plot.data[2]))
     }
 
     ## draw plot
-    plot = ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(y = `commit count`, x = `edit types`)) +
+    plot = ggplot2::ggplot(data = plot.data, mapping = ggplot2::aes(y = `commit.count`, x = `edit.types`)) +
         ## use data frame values instead of counting entries
-        ggplot2::geom_bar(stat = 'identity')
+        ggplot2::geom_bar(stat = 'identity') +
+        ## set proper bar labels
+        ggplot2::scale_x_discrete(labels = c("author.!=.committer" = "author != committer",
+                                             "author.=.committer" = "author = committer")) +
+        ## add proper axis labels
+        ggplot2::labs(
+            x = "Edit types",
+            y = "Commit count"
+        )
     return(plot)
 }

@@ -4,7 +4,7 @@
 
 ### Added
 - Add a parameter `editor.definition` to the function `add.vertex.attribute.artifact.editor.count` which can be used to define, if author or committer or both count as editors when computing the attribute values. (#92, ff1e147ba563b2d71f8228afd49492a315a5ad48)
-- Add a new file util-evaluation-plot.R containing functions to plot commit edit types per author and project. (60c6abaed87af421f8d6b42465638b7359e205f4, 193bdf9349dc752674056233b0f5ded5871597f4, d4465f325d2286e98a217eccdc4452721ed5db88)
+- Add a new file `util-evaluation-plot.R` containing functions to plot commit edit types per author and project. (60c6abaed87af421f8d6b42465638b7359e205f4, 193bdf9349dc752674056233b0f5ded5871597f4, d4465f325d2286e98a217eccdc4452721ed5db88)
 
 
 ## 3.5
