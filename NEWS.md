@@ -5,7 +5,7 @@
 ### Added
 - Add a parameter `editor.definition` to the function `add.vertex.attribute.artifact.editor.count` which can be used to define, if author or committer or both count as editors when computing the attribute values. (#92, ff1e147ba563b2d71f8228afd49492a315a5ad48)
 - Add the possibility to filter out patchstack mails from the mails of the `ProjectData`. The option can be toggled using the newly added configuration option `mails.filter.patchstack.mails`. (1608e28ca36610c58d2a5447d12ee2052c6eb976, a932c8cdaa6fe5149c798bc09d9e421ba679c48d)
-- Add a new file util-evaluation-plot.R containing functions to plot commit edit types per author and project. (PR #171, d4af515f859ce16ffaa0963d6d3d4086bcbb7377, aa542a215f59bc3ed869cfefbc5a25fa050b1fc9. 0a0a5903e7c609dfe805a3471749eb2241efafe2)
+- Add a new file `util-evaluation-plot.R` containing functions to plot commit edit types per author and project. (PR #171, d4af515f859ce16ffaa0963d6d3d4086bcbb7377, aa542a215f59bc3ed869cfefbc5a25fa050b1fc9. 0a0a5903e7c609dfe805a3471749eb2241efafe2)
 
 ### Changed/Improved
 
