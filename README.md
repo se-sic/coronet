@@ -415,7 +415,7 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality for the identification of network motifs (subgraph patterns)
 - `util-plot.R`
     * Everything needed for plotting networks
-- `util-evaluation-plot.R`
+- `util-plot-evaluation.R`
     * Plotting functions for data evaluation
 - `util-misc.R`
     * Helper functions and also legacy functions, both needed in the other files

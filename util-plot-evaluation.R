@@ -58,9 +58,9 @@ plot.commit.editor.types.by.author = function(data, percentage.per.author = FALS
         value.columns = plot.data[2:4]
 
         ## scale data values per author (represented by one line) to 100%
-        scaled.value.columns = apply(value.columns, 1, function(x) {x/sum(x)})
+        scaled.value.columns = t(apply(value.columns, 1, function(x) {x / sum(x)}))
 
-        plot.data = cbind(name.column, t(scaled.value.columns))
+        plot.data = cbind(name.column, scaled.value.columns)
     }
 
     ## compute order of bars from data: only author < author and committer < only committer
