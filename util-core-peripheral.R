@@ -14,7 +14,7 @@
 ## Copyright 2017 by Mitchell Joblin <mitchell.joblin@uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
-## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
@@ -637,7 +637,7 @@ get.committer.not.author.commit.count = function(range.data) {
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
                        WHERE `committer.name` <> `author.name`
                        GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC")
+                       ORDER BY `freq` DESC, `author.name` ASC")
 
     logging::logdebug("get.committer.not.author.commit.count: finished.")
     return(res)
@@ -664,7 +664,7 @@ get.committer.and.author.commit.count = function(range.data) {
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
                        WHERE `committer.name` = `author.name`
                        GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC")
+                       ORDER BY `freq` DESC, `author.name` ASC")
 
     logging::logdebug("get.committer.and.author.commit.count: finished.")
     return(res)
@@ -699,7 +699,7 @@ get.committer.or.author.commit.count = function(range.data) {
 
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `ungrouped`
                        GROUP BY `name`
-                       ORDER BY `freq` DESC")
+                       ORDER BY `freq` DESC, `name` ASC")
 
     logging::logdebug("get.committer.or.author.commit.count: finished.")
     return(res)
@@ -725,7 +725,7 @@ get.committer.commit.count = function(range.data) {
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `committer.name` ORDER BY `freq` DESC")
+                       GROUP BY `committer.name` ORDER BY `freq` DESC, `committer.name` ASC")
 
     logging::logdebug("get.committer.commit.count: finished.")
     return(res)
@@ -751,7 +751,7 @@ get.author.commit.count = function(proj.data) {
 
     ## Execute a query to get the commit count per author
     res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `author.name` ORDER BY `freq` DESC")
+                       GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC")
 
     logging::logdebug("get.author.commit.count: finished.")
     return(res)
@@ -813,7 +813,7 @@ get.author.loc.count = function(proj.data) {
     ## Execute a query to get the changed lines per author
     res = sqldf::sqldf("SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
                         FROM `commits.df`
-                        GROUP BY `author.name` ORDER BY `loc` DESC")
+                        GROUP BY `author.name` ORDER BY `loc` DESC, `author.name` ASC")
 
     logging::logdebug("get.author.loc.count: finished.")
     return(res)
