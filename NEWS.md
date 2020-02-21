@@ -1,5 +1,21 @@
 # coronet – Changelog
 
+## 3.6
+
+### Added
+- Add a parameter `editor.definition` to the function `add.vertex.attribute.artifact.editor.count` which can be used to define, if author or committer or both count as editors when computing the attribute values. (#92, ff1e147ba563b2d71f8228afd49492a315a5ad48)
+- Add the possibility to filter out patchstack mails from the mails of the `ProjectData`. The option can be toggled using the newly added configuration option `mails.filter.patchstack.mails`. (1608e28ca36610c58d2a5447d12ee2052c6eb976, a932c8cdaa6fe5149c798bc09d9e421ba679c48d)
+- Add a new file `util-plot-evaluation.R` containing functions to plot commit edit types per author and project. (PR #171, d4af515f859ce16ffaa0963d6d3d4086bcbb7377, aa542a215f59bc3ed869cfefbc5a25fa050b1fc9. 0a0a5903e7c609dfe805a3471749eb2241efafe2)
+
+### Changed/Improved
+
+- Add R version 3.6 to test suite (8b2a52d38475a59c55feb17bb54ed12b9252a937, #161)
+- Update `.travis.yml` to improve compatibility with Travis CI (41ce589b3b50fd581a10e6af33ac6b1bbea63bb8)
+
+### Fixed
+
+- Ensure sorting of commit-count and LOC-count data.frames to fix tests with R 3.3 (33d63fd50c4b29d45a9ca586c383650f7d29efd5)
+
 
 ## 3.5
 

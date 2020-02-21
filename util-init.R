@@ -16,6 +16,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
+## Copyright 2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## All Rights Reserved.
 
 
@@ -60,3 +61,4 @@ source("util-plot.R")
 source("util-core-peripheral.R")
 source("util-networks-metrics.R")
 source("util-networks-covariates.R")
+source("util-plot-evaluation.R")

@@ -11,36 +11,32 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2017-2018,2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## All Rights Reserved.
 
+# TravisCI container
+os: linux
+dist: xenial
+warnings_are_errors: false
 
+# R environment, dependencies and information
 language: r
 r:
   - 3.3
   - 3.4
   - 3.5
-
-# TravisCI container
-sudo: required
-dist: trusty
-warnings_are_errors: false
-
-# # Branches
-# branches:
-#   only:
-#     - travis
-#     - claus-updates
-
-# R dependencies and information
+  - 3.6
 cache: packages
 repos:
   CRAN: https://cloud.r-project.org
 
-# installation
+# Installation
 install:
+    # package dependencies
     - sudo apt-get install libudunits2-dev
+    # package installation
     - Rscript install.R
 
+# Tests
 script:
     - Rscript tests.R

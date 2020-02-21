@@ -103,7 +103,7 @@ While `proximity` triggers a file/function-based commit analysis in `Codeface`, 
 When using this network library, the user only needs to give the `artifact` parameter to the [`ProjectConf`](#projectconf) constructor, which automatically ensures that the correct tagging is selected.
 
 The configuration files `{project-name}_{tagging}.conf` are mandatory and contain some basic configuration regarding a performed `Codeface` analysis (e.g., project name, name of the corresponding repository, name of the mailing list, etc.).
-For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) files in the `Codeface` repository.
+For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) in the `Codeface` repository.
 
 All the `*.list` files listed above are output files of `codeface-extraction` and contain meta data of, e.g., commits or e-mails to the mailing list, etc., in CSV format.
 This network library lazily loads and processes these files when needed.
@@ -133,7 +133,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 
 Please insert the project into yours by use of [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 Furthermore, the file `install.R` installs all needed R packages (see [below](#needed-r-packages)) into your R library.
-Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
+Although, the use of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
 
 This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
@@ -415,6 +415,8 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality for the identification of network motifs (subgraph patterns)
 - `util-plot.R`
     * Everything needed for plotting networks
+- `util-plot-evaluation.R`
+    * Plotting functions for data evaluation
 - `util-misc.R`
     * Helper functions and also legacy functions, both needed in the other files
 - `showcase.R`
@@ -521,6 +523,10 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commits.filter.untracked.files`
     * Remove all information concerning untracked files from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commits that solely changed untracked files. Networks built on top of this `ProjectData` do also not contain any information about untracked files.
     * [*`TRUE`*, `FALSE`]
+- `mails.filter.patchstack.mails`
+    * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
+'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
+    * [`TRUE`, *`FALSE`*]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]

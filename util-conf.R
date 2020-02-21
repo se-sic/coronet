@@ -355,6 +355,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            mails.filter.patchstack.mails = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             synchronicity = list(
                 default = FALSE,
                 type = "logical",
