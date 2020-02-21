@@ -133,7 +133,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 
 Please insert the project into yours by use of [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 Furthermore, the file `install.R` installs all needed R packages (see [below](#needed-r-packages)) into your R library.
-Although, the use of of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
+Although, the use of [packrat](https://rstudio.github.io/packrat/) with your project is recommended.
 
 This library is written in a way to not interfere with the loading order of your project's `R` packages (i.e., `library()` calls), so that the library does not lead to masked definitions.
 
