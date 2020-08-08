@@ -128,6 +128,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `lubridate`: For convenient date conversion and parsing
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
+- `rTensor`: For calculating EDCPTD centrality
 
 ### Submodule
 
