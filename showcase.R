@@ -122,6 +122,17 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Calculate EDCPTD centrality ---------------------------------------------
+
+## get author networks for each relation
+author.networks = get.author.networks(x, c("cochange", "mail", "issue"))
+
+## create forth-order tensor
+forth.order.tensor = ForthOrderTensor$new(author.networks)
+
+## calculate EDCPTD scores
+edcptd.scores = calculate.EDCPTD.centrality(forth.order.tensor)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range-level data --------------------------------------------------------
