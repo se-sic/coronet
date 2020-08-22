@@ -18,6 +18,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
+## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## All Rights Reserved.
 
 
@@ -126,13 +127,13 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 ## Calculate EDCPTD centrality ---------------------------------------------
 
 ## get author networks for each relation
-author.networks = get.author.networks(x, c("cochange", "mail", "issue"))
+author.networks = get.author.networks.for.multiple.relations(x, c("cochange", "mail", "issue"))
 
-## create forth-order tensor
-forth.order.tensor = ForthOrderTensor$new(author.networks)
+## create fourth-order tensor
+fourth.order.tensor = FourthOrderTensor$new(author.networks)
 
 ## calculate EDCPTD scores
-edcptd.scores = calculate.EDCPTD.centrality(forth.order.tensor)
+edcptd.scores = calculate.EDCPTD.centrality(fourth.order.tensor)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range-level data --------------------------------------------------------

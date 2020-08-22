@@ -129,6 +129,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
 - `rTensor`: For calculating EDCPTD centrality
+- `Matrix`: For sparse matrix representation of large adjacency matrices
 
 ### Submodule
 
@@ -410,6 +411,10 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
     * A set of network-metric functions
+- `util-networks-misc.R`
+    * Helper functions for network creation (e.g., create adjacency matrices)
+- `util-tensor.R`
+    * Functionality to build fourth-order tensors
 - `util-core-peripheral.R`
     * Author classification (core and peripheral) and related functions
 - `util-motifs.R`

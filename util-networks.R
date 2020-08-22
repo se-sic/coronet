@@ -17,6 +17,7 @@
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## All Rights Reserved.
 
 
@@ -195,7 +196,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## also corresponding author information. Re-add author vertices back to the network now by accessing the
             ## complete author list:
             ## 1) get all authors on commits
-            authors = private$proj.data$get.authors.by.data.source(data.source = "commits")
+            authors = private$proj.data$get.authors.by.data.source(data.sources = "commits")
             ## 2) only select author names
             authors = authors["author.name"]
             ## 3) rename single column to "name" to correct mapping to vertex attribute "name"

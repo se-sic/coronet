@@ -18,7 +18,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
 ## All Rights Reserved.
 
 
@@ -1313,23 +1313,29 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        #' Get the list of authors by only looking only at the specified data source.
+        #' Get the list of authors for the specified data sources.
         #'
         #' *Note*: The constant \code{DATASOURCE.TO.ARTIFACT.FUNCTION} denotes the mapping between
         #' data source and the method which is retrieving the data for each data source.
         #'
-        #' @param data.source the data source which can be either \code{"commits"}, \code{"mails"},
-        #'                    or \code{"issues"} [default: "commits"]
+        #' @param data.sources the data sources from which the authors should be retrieved,
+        #'                    can be either \code{"commits"}, \code{"mails"}, or \code{"issues"},
+        #'                    or any combination of them [default: c("commits", "mails", "issues")]
         #'
         #' @return a data.frame of unique author names (columns \code{name} and \code{author.email}),
         #'         extracted from the specified data source
-        get.authors.by.data.source = function(data.source = c("commits", "mails", "issues")) {
+        get.authors.by.data.source = function(data.sources = c("commits", "mails", "issues")) {
 
-            data.source = match.arg(data.source)
+            data.sources = match.arg.or.default(data.sources, several.ok = TRUE)
 
             ## retrieve author names from chosen data source
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data = self[[data.source.func]]()[c("author.name", "author.email")]
+            data = lapply(data.sources, function(data.source){
+                data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+                data.source.authors = self[[data.source.func]]()[c("author.name", "author.email")]
+                return (data.source.authors)
+            })
+
+            data = plyr::rbind.fill(data)
 
             ## remove duplicates
             data = unique(data)
