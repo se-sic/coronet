@@ -17,6 +17,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -655,8 +656,51 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
 
     ## split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
-        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
-                                 remove.isolates = remove.isolates)
+        nets = split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
+                                        remove.isolates = remove.isolates)
+
+        ## perform additional steps for sliding-window approach
+        if (sliding.window && igraph::ecount(net) > 0) {
+            ## compute bins for sliding windows: pairwise middle between dates
+            bins.date.middle = mapply(
+                bins.date[1:(length(bins.date) - 1)],
+                bins.date[2:length(bins.date)],
+                FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
+            )
+            bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
+
+            ## order edges by date
+            edges.all = igraph::E(net)
+            edges.dates = igraph::get.edge.attribute(net, "date")
+
+            ## identify edges to cut for sliding-window approach
+            edges.cut = sapply(edges.dates, function(date) {
+                date < bins.date.middle[1] || date > bins.date.middle[length(bins.date.middle)]
+            })
+
+            ## delete edges from the network and create a new network
+            net.cut = igraph::delete.edges(net, edges.all[edges.cut])
+
+            ## split network for sliding windows
+            nets.sliding = split.network.time.based(net.cut, bins = bins.date.middle, sliding.window = FALSE)
+
+            ## append data to normally-split data
+            nets = append(nets, nets.sliding)
+
+            ## sort data object properly by bin starts
+            bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+            nets = nets[ order(bins.ranges.start) ]
+
+            ## construct proper bin vectors for configuration
+            bins.date = sort(c(bins.date, bins.date.middle))
+
+            attr(nets, "bins") = bins.date
+
+            ## set ranges as names
+            revs = get.date.string(bins.date)
+            names(nets) = construct.ranges(revs, sliding.window = sliding.window)
+        }
+        return(nets)
     })
 
     ## return the split networks
