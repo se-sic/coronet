@@ -1,5 +1,16 @@
 # coronet – Changelog
 
+## Unversioned
+
+### Added
+- Add a new file `util-tensor.R` containing the class `FourthOrderTensor` to create (author x relation x author x relation) tensors from a list of networks (with each network having a different relation) and its corresponding utility function `get.author.networks.for.multiple.relations` (PR #173, c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Add function `calculate.EDCPTD.centrality` for calculating the EDCPTD centrality for a fourth-order tensor in the above described form (c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Add new file `util-networks-misc.R` which contains miscellaneous functions for processing network data and creating and converting various kinds of adjacency matrices: `get.author.names.from.networks`, `get.author.names.from.data`, `get.expanded.adjacency`, `get.expanded.adjacency.matrices`, `get.expanded.adjacency.matrices.cumulated`, `convert.adjacency.matrix.list.to.array` (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+
+### Changed/Improved
+- Adjust the function `get.authors.by.data.source`: Rename its single parameter to `data.sources` and change the function so that it can extract the authors for multiple data sources at once. The default value of the parameter is a vector containing all the available data sources (commits, mails, issues) (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+
+
 ## 3.6
 
 ### Added

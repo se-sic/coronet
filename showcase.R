@@ -18,6 +18,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
+## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## All Rights Reserved.
 
 
@@ -122,6 +123,17 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 # net = x$get.author.network()
 # save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Calculate EDCPTD centrality ---------------------------------------------
+
+## get author networks for each relation
+author.networks = get.author.networks.for.multiple.relations(x, c("cochange", "mail", "issue"))
+
+## create fourth-order tensor
+fourth.order.tensor = FourthOrderTensor$new(author.networks)
+
+## calculate EDCPTD scores
+edcptd.scores = calculate.EDCPTD.centrality(fourth.order.tensor)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range-level data --------------------------------------------------------

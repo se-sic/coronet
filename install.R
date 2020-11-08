@@ -37,7 +37,9 @@ packages = c(
     "markovchain",
     "lubridate",
     "viridis",
-    "jsonlite"
+    "jsonlite",
+    "rTensor",
+    "Matrix"
 )
 
 
