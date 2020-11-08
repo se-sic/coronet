@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017-2018,2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 # TravisCI container
@@ -26,6 +27,7 @@ r:
   - 3.4
   - 3.5
   - 3.6
+  - 4.0
 cache: packages
 repos:
   CRAN: https://cloud.r-project.org
