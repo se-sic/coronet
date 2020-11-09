@@ -16,6 +16,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
@@ -62,14 +63,14 @@ test_that("Cut commit and mail data to same date range.", {
                                       artifact.type = c("Feature", "Feature"),
                                       artifact.diff.size = as.integer(c(1, 1)))
 
-    mail.data.expected = data.frame(author.name = c("Thomas"),
-                                    author.email = c("thomas@example.org"),
-                                    message.id = c("<65a1sf31sagd684dfv31@mail.gmail.com>"),
-                                    date = get.date.from.string("2016-07-12 16:04:40"),
-                                    date.offset = as.integer(c(100)),
-                                    subject = c("Re: Fw: busybox 2 tab"),
-                                    thread = sprintf("<thread-%s>", c(9)),
-                                    artifact.type = "Mail")
+    mail.data.expected = data.frame(author.name = c("Thomas", "Olaf"),
+                                    author.email = c("thomas@example.org", "olaf@example.org"),
+                                    message.id = c("<65a1sf31sagd684dfv31@mail.gmail.com>", "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"),
+                                    date = get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37")),
+                                    date.offset = as.integer(c(100, 200)),
+                                    subject = c("Re: Fw: busybox 2 tab", "Re: Fw: busybox 10"),
+                                    thread = sprintf("<thread-%s>", c(9, 9)),
+                                    artifact.type = c("Mail", "Mail"))
 
     commit.data = x.data$get.data.cut.to.same.date(data.sources = data.sources)$get.commits()
     rownames(commit.data) = 1:nrow(commit.data)

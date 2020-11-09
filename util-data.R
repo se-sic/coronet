@@ -13,6 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
@@ -1146,7 +1147,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## get the timestamp data as vector
             timestamps.df = self$get.data.timestamps(data.sources = data.sources , simple = TRUE)
-            timestamps = c(start = timestamps.df[, "start"], end = timestamps.df[, "end"])
+            timestamps = c(start = timestamps.df[, "start"], end = timestamps.df[, "end"] + 1)
 
             ## check consistency
             if (timestamps["start"] > timestamps["end"]) {
