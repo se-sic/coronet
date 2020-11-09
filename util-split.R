@@ -40,7 +40,7 @@ requireNamespace("lubridate") # for date conversion
 #'
 #' @param project.data the *Data object from which the data is retrieved
 #' @param time.period the time period describing the length of the ranges, a character string,
-#'                    e.g., "3 mins" or "15 days"
+#'                    e.g., "3 mins" or "15 days" [default: "3 months"]
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
 #'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' and
 #'             'sliding.window' do not make sense then either. [default: NULL]
@@ -49,7 +49,7 @@ requireNamespace("lubridate") # for date conversion
 #'                       consequently, 'split.basis' and 'sliding.window' do not make sense then either.
 #'                       [default: NULL]
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
-#'                    [default: commits]
+#'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #'
@@ -218,7 +218,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'
 #' @param project.data the *Data object from which the data is retrieved
 #' @param activity.type the type of activity used for splitting, either 'commits', 'mails', or 'issues'
-#'                      [default: commits]
+#'                      [default: "commits"]
 #' @param activity.amount the amount of activity describing the size of the ranges, a numeric, further
 #'                        specified by 'activity.type' [default: 5000]
 #' @param number.windows the number of consecutive data objects to get from this function
@@ -498,9 +498,10 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
 #'
 #' @param network the igraph network to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
-#'                    e.g., "3 mins" or "15 days"
+#'                    e.g., "3 mins" or "15 days" [default: "3 months"]
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
 #'             *exclusive* manner). If set, the 'time.period' and 'sliding.window' parameters are ignored.
+#'             [default: NULL]
 #' @param number.windows the number of consecutive networks to get from this function, implying equally
 #'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
 #'                       consequently, 'sliding.window' does not make sense then either.
@@ -584,9 +585,10 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 #'
 #' @param networks the igraph networks to split, needs to have an edge attribute named "date"
 #' @param time.period the time period describing the length of the ranges, a character string,
-#'                    e.g., "3 mins" or "15 days"
+#'                    e.g., "3 mins" or "15 days" [default: "3 months"]
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
 #'             *exclusive* manner). If set, the 'time.period' and 'sliding.window' parameters are ignored.
+#'             [default: NULL]
 #' @param number.windows the number of consecutive networks to get for each network, implying equally
 #'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
 #'                       consequently, 'sliding.window' does not make sense then either.
@@ -600,7 +602,6 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
 split.networks.time.based = function(networks, time.period = "3 months", bins = NULL,
                                      number.windows = NULL, sliding.window = FALSE,
                                      remove.isolates = TRUE) {
-
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -669,7 +670,7 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
 #'
 #' @param network the igraph network to split
 #' @param number.edges the amount of edges describing the size of the ranges
-#'                     (implying an open number of resulting ranges)
+#'                     (implying an open number of resulting ranges) [default: 5000]
 #' @param number.windows the number of consecutive networks to get from this function
 #'                       (implying an equally distributed amount of edges in each range and
 #'                       'sliding.window = FALSE) [default: NULL]
