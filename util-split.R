@@ -520,7 +520,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     if (!is.null(number.windows)) {
         ## reset bins for the later algorithm
         bins = NULL
-        ## remove sliding windows
+        ## ignore sliding windows
         sliding.window = FALSE
     }
 
@@ -531,56 +531,32 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         bins.vector = bins.info[["vector"]]
         bins.date = get.date.from.string(bins.info[["bins"]])
         bins = head(bins.info[["bins"]], -1)
-        ## logging
-        logging::loginfo("Splitting network into time ranges [%s].",
-                         paste(bins.info[["bins"]], collapse = ", "))
     } else {
-        ## remove sliding windows
+        ## specific bins are given, do not use sliding windows
         sliding.window = FALSE
         ## find bins for dates
         bins.date = get.date.from.string(bins)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
         bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
-        ## logging
-        logging::loginfo("Splitting network into bins [%s].", paste(bins.date, collapse = ", "))
     }
-
-    nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
     ## perform additional steps for sliding-window approach
     if (sliding.window) {
-        ## compute bins for sliding windows: pairwise middle between dates
-        bins.date.middle = mapply(
-            bins.date[1:(length(bins.date) - 1)],
-            bins.date[2:length(bins.date)],
-            FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
-        )
-        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
+        ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                              time.period = time.period, overlap = 0.5, raw = FALSE,
+                                              include.end.date = FALSE) # bins have already been prepared correctly
+        bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                                 time.period = time.period, overlap = 0.5, raw = TRUE,
+                                                 include.end.date = FALSE) # bins have already been prepared correctly
+        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
 
-        ## order edges by date
-        edges.all = igraph::E(network)
-        edges.dates = igraph::get.edge.attribute(network, "date")
-
-        ## identify edges to cut for sliding-window approach
-        edges.cut = sapply(edges.dates, function(date) {
-            date < bins.date.middle[1] || date > bins.date.middle[length(bins.date.middle)]
-        })
-
-        ## delete edges from the network and create a new network
-        network.cut = igraph::delete.edges(network, edges.all[edges.cut])
-
-        ## split network for sliding windows
-        nets.sliding = split.network.time.based(network.cut, bins = bins.date.middle, sliding.window = FALSE)
-
-        ## append data to normally-split data
-        nets = append(nets, nets.sliding)
-
-        ## sort data object properly by bin starts
-        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
-        nets = nets[ order(bins.ranges.start) ]
-
-        ## construct proper bin vectors for configuration
-        bins.date = sort(c(bins.date, bins.date.middle))
+        logging::loginfo("Splitting network into time ranges [%s].",
+                         paste(ranges, collapse = ", "))
+        nets = split.network.time.based.by.ranges(network, ranges, remove.isolates)
+    } else {
+        logging::loginfo("Splitting network into bins [%s].",
+                         paste(bins.date, collapse = ", "))
+        nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
     }
 
     ## set bin attribute
