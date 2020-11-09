@@ -842,7 +842,7 @@ split.data.by.bins = function(df, bins) {
 #'
 #' @return a list of networks, with the length of 'unique(bins.vector)'
 split.network.by.bins = function(network, bins, bins.vector, remove.isolates = TRUE) {
-    logging::logdebug("split.data.time.based: starting.")
+    logging::logdebug("split.network.by.bins: starting.")
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
         logging::logdebug("Splitting network: bin %s", bin)
@@ -852,7 +852,7 @@ split.network.by.bins = function(network, bins, bins.vector, remove.isolates = T
         g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
-    logging::logdebug("split.data.time.based: finished.")
+    logging::logdebug("split.network.by.bins: finished.")
     return(nets)
 }
 
