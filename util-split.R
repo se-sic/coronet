@@ -17,6 +17,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -629,7 +630,7 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
     if (!is.null(number.windows)) {
         ## reset bins for the later algorithm
         bins = NULL
-        ## remove sliding windows
+        ## ignore sliding windows
         sliding.window = FALSE
     }
 
@@ -644,10 +645,20 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
         dates = get.date.from.unix.timestamp(dates)
 
         ## 2) get bin information
-        bins.info = split.get.bins.time.based(dates, time.period, number.windows)
-        bins.date = get.date.from.string(bins.info[["bins"]])
+        if (sliding.window) {
+            ranges = construct.overlapping.ranges(start = min(dates), end = max(dates),
+                                                  time.period = time.period, overlap = 0.5, raw = FALSE,
+                                                  include.end.date = TRUE)
+            bins.info = construct.overlapping.ranges(start = min(dates), end = max(dates),
+                                                     time.period = time.period, overlap = 0.5, raw = TRUE,
+                                                     include.end.date = TRUE)
+            bins.date = unname(unique(get.date.from.unix.timestamp(unlist(bins.info))))
+        } else {
+            bins.info = split.get.bins.time.based(dates, time.period, number.windows)
+            bins.date = get.date.from.string(bins.info[["bins"]])
+        }
     } else {
-        ## remove sliding windows
+        ## specific bins are given, do not use sliding windows
         sliding.window = FALSE
         ## set the bins to use
         bins.date = bins
@@ -655,8 +666,16 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
 
     ## split all networks to the extracted bins
     networks.split = lapply(networks, function(net) {
-        split.network.time.based(net, bins = bins.date, sliding.window = sliding.window,
-                                 remove.isolates = remove.isolates)
+
+        if (sliding.window) {
+            nets = split.network.time.based.by.ranges(network = net, ranges = ranges,
+                                                      remove.isolates = remove.isolates)
+            attr(nets, "bins") = sort(bins.date)
+        } else {
+            nets = split.network.time.based(network = net, bins = bins.date, sliding.window = sliding.window,
+                                            remove.isolates = remove.isolates)
+        }
+        return(nets)
     })
 
     ## return the split networks
