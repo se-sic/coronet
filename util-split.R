@@ -114,77 +114,72 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     bins.ranges = construct.ranges(bins)
     names(bins.ranges) = bins.ranges
 
-    ## split data
-    data.split = parallel::mclapply(split.data, function(df.name) {
-        logging::logdebug("Splitting %s.", df.name)
-        ## identify bins for data
-        df = data[[df.name]]
-        df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
-        ## split data according to df.bins
-        df.split = split(df, df.bins)
-        ## add proper labels/names
-        names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
-        return(df.split)
-    })
-
-    ## re-arrange data to get the proper list of data per range
-    logging::logdebug("Re-arranging data.")
-    data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
-    names(data.split) = bins.ranges
-
-    ## adapt project configuration
-    project.data$get.project.conf()$set.revisions(bins, bins.date)
-
-    ## construct RangeData objects
-    logging::logdebug("Constructing RangeData objects.")
-    cf.data = parallel::mclapply(bins.ranges, function(range) {
-        logging::logdebug("Constructing data for range %s.", range)
-        ## construct object for current range
-        cf.range.data = RangeData$new(project.data$get.project.conf(), range)
-        ## get data for current range
-        df.list = data.split[[range]]
-
-        ## set main data sources: commits, mails, issues
-        for (data.source in split.data) {
-            setter.name = sprintf("set.%s", data.source)
-            cf.range.data[[setter.name]](df.list[[data.source]])
-        }
-        ## set additional data sources: authors, pasta, synchronicity
-        for (data.source in additional.data.sources) {
-            setter.name = sprintf("set.%s", data.source)
-            cf.range.data[[setter.name]](additional.data[[data.source]])
-        }
-
-        return(cf.range.data)
-    })
-
-    ## perform additional steps for sliding-window approach
-    ## (only if there is more than one range until here)
-    if (sliding.window && length(bins.ranges) <= 1) {
+    if ((length(bins.ranges) <= 1) && sliding.window) {
         logging::logwarn("Sliding-window approach does not apply for one range or less.")
-    } else if (sliding.window) {
-        ## compute bins for sliding windows: pairwise middle between dates
-        bins.date.middle = mapply(
-            bins.date[1:(length(bins.date) - 1)],
-            bins.date[2:length(bins.date)],
-            FUN = function(d1, d2) d1 + ((d2 - d1) / 2)
-        )
-        bins.date.middle = get.date.from.unix.timestamp(bins.date.middle)
+        sliding.window = FALSE
+    }
 
-        ## split data for sliding windows
-        cf.data.sliding = split.data.time.based(project.data, bins = bins.date.middle,
-                                                split.basis = split.basis, sliding.window = FALSE)
+    if (!sliding.window) {
 
-        ## append data to normally-split data
-        cf.data = append(cf.data, cf.data.sliding)
+        ## split data
+        data.split = parallel::mclapply(split.data, function(df.name) {
+            logging::logdebug("Splitting %s.", df.name)
+            ## identify bins for data
+            df = data[[df.name]]
+            df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
+            ## split data according to df.bins
+            df.split = split(df, df.bins)
+            ## add proper labels/names
+            names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
+            return(df.split)
+        })
 
-        ## sort data object properly by bin starts
-        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
-        cf.data = cf.data[ order(bins.ranges.start) ]
+        ## re-arrange data to get the proper list of data per range
+        logging::logdebug("Re-arranging data.")
+        data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
+        names(data.split) = bins.ranges
 
-        ## construct proper bin vectors for configuration
-        bins.date = sort(c(bins.date, bins.date.middle))
+        ## adapt project configuration
+        project.data$get.project.conf()$set.revisions(bins, bins.date)
+
+        ## construct RangeData objects
+        logging::logdebug("Constructing RangeData objects.")
+        cf.data = parallel::mclapply(bins.ranges, function(range) {
+            logging::logdebug("Constructing data for range %s.", range)
+            ## construct object for current range
+            cf.range.data = RangeData$new(project.data$get.project.conf(), range)
+            ## get data for current range
+            df.list = data.split[[range]]
+
+            ## set main data sources: commits, mails, issues
+            for (data.source in split.data) {
+                setter.name = sprintf("set.%s", data.source)
+                cf.range.data[[setter.name]](df.list[[data.source]])
+            }
+            ## set additional data sources: authors, pasta, synchronicity
+            for (data.source in additional.data.sources) {
+                setter.name = sprintf("set.%s", data.source)
+                cf.range.data[[setter.name]](additional.data[[data.source]])
+            }
+
+            return(cf.range.data)
+        })
+
+    } else {
+        ## perform different steps for sliding-window approach
+
+        ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                              time.period = time.period, overlap = 0.5, raw = FALSE,
+                                              include.end.date = FALSE) # bins have already been prepared correctly
+        bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                                 time.period = time.period, overlap = 0.5, raw = TRUE,
+                                                 include.end.date = FALSE) # bins have already been prepared correctly
+        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
         bins = get.date.string(bins.date)
+
+        logging::loginfo("Splitting data '%s' into time ranges using sliding windows [%s].",
+                         project.data$get.class.name(), ranges)
+        cf.data = split.data.time.based.by.ranges(project.data, ranges)
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
