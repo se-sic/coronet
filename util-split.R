@@ -298,12 +298,21 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## offsets used for cropping (half the first/last bin)
         offset.start = floor(activity.amount / 2)
-        offset.end = floor((items.unique.count %% activity.amount) / 2)
+        offset.end = (items.unique.count - offset.start) %% activity.amount
         ## cut the data appropriately
-        items.cut = c(
-            items.unique[1:offset.start],
-            items.unique[(items.unique.count - offset.end):items.unique.count]
-        )
+        if (offset.end > 0) {
+            items.cut = c(
+                items.unique[1:offset.start],
+                items.unique[(items.unique.count - offset.end + 1):items.unique.count]
+            )
+        } else {
+            items.cut = items.unique[1:offset.start]
+        }
+
+        ## determine end bin of last sliding-window range
+        end.event.id = items.unique[(items.unique.count - offset.end + 1)]
+        end.event.logical = data[[ activity.type ]][[ id.column[[activity.type]] ]] == end.event.id
+        end.event.date = data[[ activity.type ]][end.event.logical, ][[ "date" ]]
 
         ## store the data again
         data.to.cut = data[[ activity.type ]][[ id.column[[activity.type]] ]] %in% items.cut
@@ -332,6 +341,28 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
         bins = get.date.string(bins.date)
+
+        ## if last regular range and last sliding-window range end at the same time
+        ## and the data of the last regular range is contained in the last sliding-window range, then:
+        ## remove the last regular range as it is not complete and we don't loose data when removing it
+        last.regular.range = cf.data[[length(cf.data)]]
+        last.sliding.range = cf.data[[length(cf.data) - 1]]
+        get.activity.data = paste0("get.", activity.type)
+        last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
+        last.sliding.range.ids = (last.sliding.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
+        if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
+            && all(last.regular.range.ids %in% last.sliding.range.ids) ) {
+
+            cf.data = cf.data[-length(cf.data)]
+            bins.date = bins.date[-length(bins.date)]
+            bins = bins[-length(bins)]
+        } else if (!(bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)])) {
+            ## adjust the end date of the last sliding-window range
+            name.last.sliding.window = construct.ranges(c(bins[length(bins) - 3], get.date.string(end.event.date)))
+            names(cf.data)[length(cf.data) - 1] = name.last.sliding.window
+            bins.date[length(bins.date) - 1] = end.event.date
+            bins[length(bins) - 1] = get.date.string(end.event.date)
+        }
 
         ## update project configuration
         project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
