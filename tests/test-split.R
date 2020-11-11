@@ -14,6 +14,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
@@ -1085,7 +1086,7 @@ test_that("Split a network time-based (time.period = ...).", {
 ## Tests for split.networks.time.based(..., time.period = ...)
 ##
 
-test_that("Split a list of networks time-based.", {
+patrick::with_parameters_test_that("Split a list of networks time-based, ", {
 
     ## time period
     time.period = "2 years"
@@ -1110,7 +1111,7 @@ test_that("Split a list of networks time-based.", {
     net.split = split.networks.time.based(
         networks = list(net.cochange, net.mail),
         time.period = time.period,
-        sliding.window = FALSE
+        sliding.window = test.sliding.window
     )
 
     ## check whether the splitting information of the two split networks are identical
@@ -1120,10 +1121,13 @@ test_that("Split a list of networks time-based.", {
     net.split = split.networks.time.based(
         networks = list(net.mail),
         time.period = time.period,
-        sliding.window = FALSE
+        sliding.window = test.sliding.window
     )
 
-})
+}, patrick::cases(
+    "sliding window: FALSE" = list(test.sliding.window = FALSE),
+    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+))
 
 ## * * bins ----------------------------------------------------------------
 
@@ -1131,7 +1135,7 @@ test_that("Split a list of networks time-based.", {
 ## Tests for split.network.time.based(..., bins = ...)
 ##
 
-test_that("Split a network time-based (bins = ...).", {
+patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", {
 
     ## bins
     bins = c("2016-07-12 15:58:00", "2016-07-12 16:00:59", "2016-07-12 16:02:59",
@@ -1159,7 +1163,7 @@ test_that("Split a network time-based (bins = ...).", {
         "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph.edges(author.net, c()),
         "2016-07-12 16:04:59-2016-07-12 17:21:43" = igraph::subgraph.edges(author.net, c(3:8))
     )
-    results = split.network.time.based(author.net, bins = bins)
+    results = split.network.time.based(author.net, bins = bins, sliding.window = test.sliding.window)
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges.")
@@ -1181,9 +1185,13 @@ test_that("Split a network time-based (bins = ...).", {
     ## retrieve author network
     author.net = net.builder$get.author.network()
 
-    expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
+    expect_error(split.network.time.based(author.net, bins = bins, sliding.window = test.sliding.window),
+                 info = "Illegal split.")
 
-})
+}, patrick::cases(
+    "sliding window (ignored): FALSE" = list(test.sliding.window = FALSE),
+    "sliding window (ignored): TRUE" = list(test.sliding.window = TRUE)
+))
 
 ## * * ranges --------------------------------------------------------------------
 

@@ -33,6 +33,7 @@ packages = c(
     "logging",
     "sqldf",
     "testthat",
+    "patrick",
     "ggplot2",
     "ggraph",
     "markovchain",

@@ -42,8 +42,9 @@ sessionInfo()
 
 logging::loginfo("Running test suite.")
 
-## load package 'testthat'
+## load packages 'testthat' and 'patrick'
 requireNamespace("testthat")
+requireNamespace("patrick")
 
 ## starting tests
 do.tests = function(dir) {
