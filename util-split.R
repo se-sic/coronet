@@ -756,27 +756,39 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     ## split network by bins
     networks = split.network.by.bins(network, bins, bins.vector, remove.isolates)
 
+    if (number.edges >= edge.count) {
+        logging::logwarn("Sliding-window approach does not apply: not enough edges (%s) for number of edges %s",
+                         edge.count, number.edges)
+        sliding.window = FALSE
+    }
+
     ## perform additional steps for sliding-window approach
     ## for activity-based sliding-window bins to work, we need to crop edges appropriately and,
     ## then, compute bins on the cropped networks
     if (sliding.window) {
-        ## order edges by date
-        edges.by.date = igraph::E(network)[ order(df[["date"]]) ]
+
+        ## get edge ids ordered by date
+        edges.by.date = df[["my.unique.id"]]
 
         ## offsets used for cropping (half the first/last bin)
         offset.start = floor(number.edges / 2)
-        offset.end = floor((edge.count %% number.edges) / 2)
+        offset.end = (edge.count - offset.start) %% number.edges
         ## cut the data appropriately
-        edges.cut = c(
-            edges.by.date[1:offset.start],
-            edges.by.date[(edge.count - offset.end):edge.count]
-        )
+        if (offset.end > 0) {
+            edges.cut = c(
+                edges.by.date[1:offset.start],
+                edges.by.date[(edge.count - offset.end + 1):edge.count]
+            )
+        } else {
+            edges.cut = edges.by.date[1:offset.start]
+        }
 
         ## delete edges from the network and create a new network
-        network.cut = igraph::delete.edges(network, edges.cut)
+        network.cut = igraph::delete.edges(network, igraph::E(network)[edges.cut])
 
         ## split network for sliding windows
-        networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges, sliding.window = FALSE)
+        networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges,
+                                                        sliding.window = FALSE)
 
         ## append data to normally-split data
         networks = append(networks, networks.sliding)
@@ -790,6 +802,21 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
+
+        ## if last regular range and last sliding-window range end at the same time,
+        ## and the latter contains the former's edges, then:
+        ## remove the last regular range as it is not complete and we don't loose data when removing it
+        edges.last.regular = igraph::E(networks[[length(networks)]])
+        edges.last.sliding = igraph::E(networks[[length(networks) - 1]])
+        if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
+            && all(edges.last.regular %in% edges.last.sliding)
+            && table(edges.last.regular$date) %in% table(edges.last.sliding$date) ) {
+
+            networks = networks[-length(networks)]
+            bins.date = bins.date[-length(bins.date)]
+            bins = bins[-length(bins)]
+        }
+
     }
 
     ## set bin attribute
