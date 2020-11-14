@@ -46,11 +46,13 @@ PLOT.VERTEX.LABEL.COLOR = "gray60"
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
 #'
-#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' As a layout, by default, the "kk" layout from igraph (also known as "layout_kamada_kawai") is used,
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
-#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
 #' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
+#' specified on the Web site in the link given above.
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
@@ -68,11 +70,13 @@ plot.network = function(network, labels = TRUE) {
 
 #' Construct a ggplot2/ggraph plot object for the given network and print it directly.
 #'
-#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' As a layout, by default, the "kk" layout from igraph (also known as "layout_kamada_kawai") is used,
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
-#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
 #' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
+#' specified on the Web site in the link given above.
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
@@ -91,11 +95,13 @@ plot.print.network = function(network, labels = TRUE) {
 
 #' Construct a ggplot2/ggraph plot object for the given network.
 #'
-#' As a layout, by default, \code{igraph::layout.kamada.kawai} (also known as \code{igraph::layout_with_kk})
+#' As a layout, by default, the "kk" layout from igraph (also known as "layout_kamada_kawai") is used,
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
-#' on layouts in general, see \link{http://igraph.org/r/doc/layout_.html}.
+#' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
 #' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
+#' specified on the Web site in the link given above.
 #'
 #' Note: The names for the vertex types are taken from the variables \code{PLOT.VERTEX.TYPE.AUTHOR} and
 #' \code{PLOT.VERTEX.TYPE.ARTIFACT}. The defaults are \code{"Developer"} and \code{TYPE.ARTIFACT}, respectively.
@@ -123,13 +129,14 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network)
 
-    ## set network layout
+    ## set igraph network layout if not layout is set yet
     if (!("layout" %in% igraph::list.graph.attributes(network))) {
-        network = igraph::set.graph.attribute(network, "layout", igraph::layout.kamada.kawai)
+        network = igraph::set.graph.attribute(network, "layout", "kk")
     }
+    layout.algorithm = igraph::get.graph.attribute(network, "layout")
 
-    ## create a ggraph object
-    p = ggraph::ggraph(network)
+    ## create a ggraph object using the specified igraph layout
+    p = ggraph::ggraph(network, layout = "igraph", algorithm = layout.algorithm)
 
     ## plot edges if there are any
     if (igraph::ecount(network) > 0) {
