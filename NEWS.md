@@ -9,6 +9,8 @@
 
 ### Changed/Improved
 - Adjust the function `get.authors.by.data.source`: Rename its single parameter to `data.sources` and change the function so that it can extract the authors for multiple data sources at once. The default value of the parameter is a vector containing all the available data sources (commits, mails, issues) (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Adjust recommended R version to 3.6.3 in README (92be262514277acb774ab2885c1c0d1c10f03373)
+- Add R version 4.0 to test suite and adjust package installation in `install.R` to improve compatibility with Travis CI (40aa0d80e2a94434a8be75925dbefbde6d3518b2, 1ba036758a63767e2fcef525c98f5a4fd6938c39, #161)
 
 
 ## 3.6
