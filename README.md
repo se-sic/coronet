@@ -638,4 +638,4 @@ This project is licensed under [GNU General Public License v2.0](LICENSE).
 
 ## Work in progress
 
-To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-passau/coronet/issues).
+To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-sic/coronet/issues).
