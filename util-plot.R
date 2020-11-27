@@ -14,6 +14,7 @@
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -129,7 +130,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network)
 
-    ## set igraph network layout if not layout is set yet
+    ## set igraph network layout if no layout is set yet
     if (!("layout" %in% igraph::list.graph.attributes(network))) {
         network = igraph::set.graph.attribute(network, "layout", "kk")
     }

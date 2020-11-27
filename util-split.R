@@ -293,7 +293,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     } else if (sliding.window) {
         ## get the list of unique items that are used for the bin computation and, thus, also the
         ## cropping of data
-        items.unique = unique(data[[ activity.type ]][[ id.column[[activity.type]] ]])
+        items.unique = unique(data[[activity.type]][[ id.column[[activity.type]] ]])
         items.unique.count = length(items.unique)
 
         ## offsets used for cropping (half the first/last bin)
@@ -311,12 +311,12 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## determine end bin of last sliding-window range
         end.event.id = items.unique[(items.unique.count - offset.end + 1)]
-        end.event.logical = data[[ activity.type ]][[ id.column[[activity.type]] ]] == end.event.id
-        end.event.date = data[[ activity.type ]][end.event.logical, ][[ "date" ]]
+        end.event.logical = (data[[activity.type]][[ id.column[[activity.type]] ]] == end.event.id)
+        end.event.date = data[[activity.type]][end.event.logical, ][["date"]]
 
         ## store the data again
-        data.to.cut = data[[ activity.type ]][[ id.column[[activity.type]] ]] %in% items.cut
-        data[[ activity.type ]] = data[[ activity.type ]][ !data.to.cut, ]
+        data.to.cut = data[[activity.type]][[ id.column[[activity.type]] ]] %in% items.cut
+        data[[activity.type]] = data[[activity.type]][ !data.to.cut, ]
 
         ## clone the project data and update raw data to split it again
         project.data.clone = project.data$clone()
@@ -342,7 +342,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         bins.date = sort(c(bins.date, bins.date.middle))
         bins = get.date.string(bins.date)
 
-        ## if last regular range and last sliding-window range end at the same time
+        ## if the last regular range and the last sliding-window range end at the same time
         ## and the data of the last regular range is contained in the last sliding-window range, then:
         ## remove the last regular range as it is not complete and we don't loose data when removing it
         last.regular.range = cf.data[[length(cf.data)]]
@@ -803,7 +803,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         ## construct proper bin vectors for configuration
         bins.date = sort(c(bins.date, bins.date.middle))
 
-        ## if last regular range and last sliding-window range end at the same time,
+        ## if the last regular range and the last sliding-window range end at the same time
         ## and the latter contains the former's edges, then:
         ## remove the last regular range as it is not complete and we don't loose data when removing it
         edges.last.regular = igraph::E(networks[[length(networks)]])

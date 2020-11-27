@@ -55,7 +55,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Tests for split.data.time.based(..., split.basis = 'commits'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis == 'commits', sliding.window = TRUE).", {
+test_that("Split a data object time-based (split.basis = 'commits', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -142,7 +142,7 @@ test_that("Split a data object time-based (split.basis == 'commits', sliding.win
 ## Tests for split.data.time.based(..., split.basis = 'mails'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis == 'mails', sliding.window = TRUE).", {
+test_that("Split a data object time-based (split.basis = 'mails', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -241,7 +241,7 @@ test_that("Split a data object time-based (split.basis == 'mails', sliding.windo
 ## Tests for split.data.time.based(..., split.basis = 'issues'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis == 'issues', sliding.window = TRUE).", {
+test_that("Split a data object time-based (split.basis = 'issues', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -323,7 +323,7 @@ test_that("Split a data object time-based (split.basis == 'issues', sliding.wind
 ## Tests for split.data.time.based(..., bins = ...), sliding windows parameter ignored
 ##
 
-test_that("Split a data object time-based (bins == ... , sliding.window = TRUE).", {
+test_that("Split a data object time-based (bins = ... , sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)

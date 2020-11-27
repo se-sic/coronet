@@ -62,7 +62,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Tests for split.data.time.based(..., split.basis = 'commits')
 ##
 
-test_that("Split a data object time-based (split.basis == 'commits').", {
+test_that("Split a data object time-based (split.basis = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -137,7 +137,7 @@ test_that("Split a data object time-based (split.basis == 'commits').", {
 ## Tests for split.data.time.based(..., split.basis = 'mails')
 ##
 
-test_that("Split a data object time-based (split.basis == 'mails').", {
+test_that("Split a data object time-based (split.basis = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -219,7 +219,7 @@ test_that("Split a data object time-based (split.basis == 'mails').", {
 ## Tests for split.data.time.based(..., split.basis = 'issues')
 ##
 
-test_that("Split a data object time-based (split.basis == 'issues').", {
+test_that("Split a data object time-based (split.basis = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -296,7 +296,7 @@ test_that("Split a data object time-based (split.basis == 'issues').", {
 ## Tests for split.data.time.based(..., bins = ...)
 ##
 
-test_that("Split a data object time-based (bins == ... ).", {
+test_that("Split a data object time-based (bins = ... ).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
