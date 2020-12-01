@@ -137,7 +137,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     layout.algorithm = igraph::get.graph.attribute(network, "layout")
 
     ## create a ggraph object using the specified igraph layout
-    p = ggraph::ggraph(network, layout = "igraph", algorithm = layout.algorithm)
+    p = ggraph::ggraph(network, layout = layout.algorithm)
 
     ## plot edges if there are any
     if (igraph::ecount(network) > 0) {
