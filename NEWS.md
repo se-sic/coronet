@@ -14,10 +14,9 @@
 - Add R version 4.0 to test suite and adjust package installation in `install.R` to improve compatibility with Travis CI (40aa0d80e2a94434a8be75925dbefbde6d3518b2, 1ba036758a63767e2fcef525c98f5a4fd6938c39, #161)
 
 ### Fixed
-
-- Fix sliding-window creation in various splitting functions (`split.network.time.based`, `split.networks.time.based`, `split.data.time.based`, `split.data.activity.based`, `split.network.activity.based`) and also fix the computation of overlapping ranges in the function `construct.overlapping.ranges` to make sure that the last and the second-last range do not cover the same range) (1abc1b8dbfc65ccad0cbbc8e33b209e39d2f8118, c34c42aef32a30b82adc53384fd6a1b09fc75dee, 097cebcc477b1b65056d512124575f5a78229c3e, 9a1b6516f490b72b821be2d5365d98cac1907b2f, 0fc179e2735bec37d26a68c6c351ab43770007d2, cad28bf221f942eb25e997aaa2de553181956680, PR #184)
+- Fix sliding-window creation in various splitting functions (`split.network.time.based`, `split.networks.time.based`, `split.data.time.based`, `split.data.activity.based`, `split.network.activity.based`) and also fix the computation of overlapping ranges in the function `construct.overlapping.ranges` to make sure that the last and the second-last range do not cover the same range) (1abc1b8dbfc65ccad0cbbc8e33b209e39d2f8118, c34c42aef32a30b82adc53384fd6a1b09fc75dee, 097cebcc477b1b65056d512124575f5a78229c3e, 9a1b6516f490b72b821be2d5365d98cac1907b2f, 0fc179e2735bec37d26a68c6c351ab43770007d2, cad28bf221f942eb25e997aaa2de553181956680, 7602af2cf46f699b2285d53819dec614c71754c6, PR #184)
 - Fix off-by-1 error in the function `get.data.cut.to.same.date` (f0744c0e14543292cccb1aa9a61f822755ee7183)
-- Fix missing or wrongly set layout when plotting networks (#186, 720cc7ba7bdb635129c7669911aef8e7c6200a6b)
+- Fix missing or wrongly set layout when plotting networks (#186, 720cc7ba7bdb635129c7669911aef8e7c6200a6b, 877931b94f87ca097c2f8f3c55e4b4bcc6087742)
 
 
 ## 3.6
