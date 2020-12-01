@@ -559,7 +559,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## convert columns accordingly
             revisions.cols = c(revision = "as.character", date = "get.date.from.string")
             for (i in 1:ncol(revisions.df)) {
-                revisions.df[i] = do.call(c, lapply(revisions.df[[i]], revisions.cols[i]))
+                revisions.df[i] = do.call(base::c, lapply(revisions.df[[i]], revisions.cols[i]))
                 colnames(revisions.df)[i] = names(revisions.cols)[i]
             }
             revisions = revisions.df[["revision"]]

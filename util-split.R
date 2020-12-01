@@ -1060,7 +1060,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
         ))
     })
     ## unlist bins
-    bins.date = do.call(c, bins.date)
+    bins.date = do.call(base::c, bins.date)
     ## convert to character strings
     bins.date.char = get.date.string(bins.date)
 

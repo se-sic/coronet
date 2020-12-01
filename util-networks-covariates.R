@@ -456,7 +456,7 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
         ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
         if (combine.activity.types) {
             data = parallel::mclapply(data, function(item.list) {
-                min.value = min(do.call(c, item.list), na.rm = TRUE)
+                min.value = min(do.call(base::c, item.list), na.rm = TRUE)
                 return(list(all.activities = min.value))
             })
         }
