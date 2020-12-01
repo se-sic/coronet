@@ -302,17 +302,17 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## cut the data appropriately
         if (offset.end > 0) {
             items.cut = c(
-                items.unique[1:offset.start],
-                items.unique[(items.unique.count - offset.end + 1):items.unique.count]
+                items.unique[seq_len(offset.start)],
+                items.unique[seq(from = (items.unique.count - offset.end + 1), to = items.unique.count)]
             )
         } else {
-            items.cut = items.unique[1:offset.start]
+            items.cut = items.unique[seq_len(offset.start)]
         }
 
         ## determine end bin of last sliding-window range
         end.event.id = items.unique[(items.unique.count - offset.end + 1)]
         end.event.logical = (data[[activity.type]][[ id.column[[activity.type]] ]] == end.event.id)
-        end.event.date = data[[activity.type]][end.event.logical, ][["date"]]
+        end.event.date = unique(data[[activity.type]][end.event.logical, ][["date"]])
 
         ## store the data again
         data.to.cut = data[[activity.type]][[ id.column[[activity.type]] ]] %in% items.cut
@@ -356,8 +356,17 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
             cf.data = cf.data[-length(cf.data)]
             bins.date = bins.date[-length(bins.date)]
             bins = bins[-length(bins)]
-        } else if (!(bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)])) {
-            ## adjust the end date of the last sliding-window range
+        } else if (bins.date[length(bins.date)] != bins.date.middle[length(bins.date.middle)]) {
+            ## adjust the end date of the last sliding-window range, as it might be shorter than it should be:
+            ## The end of the last range usually is one second after the last event (as end dates are exclusive).
+            ## In case of sliding windows, the end of the last sliding range needs to be extended to the date of the
+            ## next event after that range (as end dates are exclusive) to get a full range as for all the previous
+            ## ranges which end at the beginning of the next range, which is the date of the first event after the
+            ## actual range.
+
+            ## When we have sliding windows, there are, at least, three ranges (two regular ranges and one
+            ## sliding-window range. Hence, there are always more than three elements in the bins vector, so accessing
+            ## bins[length(bins) - 3] cannot throw errors in this case.
             name.last.sliding.window = construct.ranges(c(bins[length(bins) - 3], get.date.string(end.event.date)))
             names(cf.data)[length(cf.data) - 1] = name.last.sliding.window
             bins.date[length(bins.date) - 1] = end.event.date
@@ -564,7 +573,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         ## find bins for dates
         bins.date = get.date.from.string(bins)
         bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
-        bins = 1:(length(bins.date) - 1) # the last item just closes the last bin
+        bins = seq_len(length(bins.date) - 1) # the last item just closes the last bin
     }
 
     ## perform additional steps for sliding-window approach
@@ -655,7 +664,7 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
             bins.info = construct.overlapping.ranges(start = min(dates), end = max(dates),
                                                      time.period = time.period, overlap = 0.5, raw = TRUE,
                                                      include.end.date = TRUE)
-            bins.date = unname(unique(get.date.from.unix.timestamp(unlist(bins.info))))
+            bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
         } else {
             bins.info = split.get.bins.time.based(dates, time.period, number.windows)
             bins.date = get.date.from.string(bins.info[["bins"]])
@@ -673,7 +682,7 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
         if (sliding.window) {
             nets = split.network.time.based.by.ranges(network = net, ranges = ranges,
                                                       remove.isolates = remove.isolates)
-            attr(nets, "bins") = sort(bins.date)
+            attr(nets, "bins") = bins.date
         } else {
             nets = split.network.time.based(network = net, bins = bins.date, sliding.window = sliding.window,
                                             remove.isolates = remove.isolates)
@@ -776,11 +785,11 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         ## cut the data appropriately
         if (offset.end > 0) {
             edges.cut = c(
-                edges.by.date[1:offset.start],
-                edges.by.date[(edge.count - offset.end + 1):edge.count]
+                edges.by.date[seq_len(offset.start)],
+                edges.by.date[seq(from = (edge.count - offset.end + 1), to = edge.count)]
             )
         } else {
-            edges.cut = edges.by.date[1:offset.start]
+            edges.cut = edges.by.date[seq_len(offset.start)]
         }
 
         ## delete edges from the network and create a new network
@@ -1018,7 +1027,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     bins.number.complete = length(ids.unique) %/% activity.amount
     bins.number.incomplete = length(ids.unique) %% activity.amount
     bins.activity = c(
-        if (bins.number.complete != 0) rep(1:bins.number.complete, each = activity.amount),
+        if (bins.number.complete != 0) rep(seq_len(bins.number.complete), each = activity.amount),
         rep(bins.number.complete + 1, bins.number.incomplete)
     )
     bins.number = max(bins.activity)
@@ -1030,7 +1039,7 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
     )
 
     ## get the start (and end) date for all bins
-    bins.date = parallel::mclapply(1:bins.number, function(bin) {
+    bins.date = parallel::mclapply(seq_len(bins.number), function(bin) {
         ## get the ids in the bin
         ids = bins.mapping[ bins.mapping[["bin"]] == bin, "id"]
         ## grab dates for the ids
