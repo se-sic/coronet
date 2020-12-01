@@ -430,7 +430,7 @@ PASTA.LIST.DATA.TYPES = c(
     "character", "character", "character"
 )
 
-#' Read and parse the PaStA data from the 'mbox-result' file.
+#' Read and parse the PaStA data from the 'patch-groups' file.
 #' The form in the file is : <message-id> <possibly another message.id> ... => commit.hash commit.hash2 ....
 #' The parsed form is a data frame with message IDs as keys, commit hashes as values, and a revision set id.
 #' If the message ID does not get mapped to a commit hash, the value for the commit hash is \code{NA}.
@@ -444,7 +444,7 @@ read.pasta = function(data.path) {
     KEY.SEPERATOR = " "
 
     ## get file name of PaStA data
-    filepath = file.path(data.path, "mbox-result")
+    filepath = file.path(data.path, "patch-groups")
 
     ## read data from disk [can be empty]
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
@@ -463,7 +463,6 @@ read.pasta = function(data.path) {
         }
 
         if (!grepl("<", line)) {
-            logging::logwarn("Faulty line: %s", line)
             return(NULL)
         }
 
