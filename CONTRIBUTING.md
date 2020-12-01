@@ -129,7 +129,7 @@ The current build status is as follows:
   * Code must be reviewed by one other project member and, if needed, be properly adapted/fixed.
   * We add the `Reviewed-by` tag only for the merge commit.
 
-There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
+There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Style Conventions
 

@@ -124,6 +124,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `testthat`: For the test suite
+- `patrick`: For the test suite
 - `ggplot2`: For plotting of data
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities

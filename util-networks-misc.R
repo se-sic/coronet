@@ -11,9 +11,10 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016 by Sofie Kemper <kemperso@fim.uni-passau.de>
-## Copyright 2016 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
+## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2016-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Angelika Schmid <schmidang@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
@@ -224,7 +225,7 @@ convert.adjacency.matrix.list.to.array = function(adjacency.list){
     colnames(array) = colnames(adjacency.list[[1]])
 
     ## copy the activity values from the adjacency matrices in the list to the corresponding array slices
-    for (i in seq_along(adjacency.ist)){
+    for (i in seq_along(adjacency.list)){
         adjacency = adjacency.list[[i]]
         activity.indices = which(adjacency != 0, arr.ind = TRUE)
 
