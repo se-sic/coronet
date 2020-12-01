@@ -11,11 +11,12 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2016-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2016-2018, 2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -331,10 +332,10 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 #         panel.border = ggplot2::element_blank(),
 #         legend.position = "none"
 #     ) +
-#     ggraph::facet_edges( ~ edge.type.char)
+#     ggraph::facet_edges( ~ edge.type)
 # # ggraph::facet_edges( ~ weight)
-# # ggraph::facet_nodes( ~ vertex.type.char)
-# # ggraph::facet_graph(edge.type.char ~ vertex.type.char)
+# # ggraph::facet_nodes( ~ vertex.type)
+# # ggraph::facet_graph(edge.type ~ vertex.type)
 # print(p)
 
 # ## generate network plot from README file and save it to disk
