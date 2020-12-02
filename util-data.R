@@ -162,6 +162,12 @@ ProjectData = R6::R6Class("ProjectData",
         filter.patchstack.mails = function() {
             logging::logdebug("filter.patchstack.mails: starting.")
 
+            ## return immediately if no mails are available
+            if (nrow(private$mails) == 0) {
+                private$mails.patchstacks = NULL
+                return(private$mails)
+            }
+
             ## retrieve mails grouped by thread IDs
             thread.data = self$group.authors.by.data.column("mails", "thread")
 
