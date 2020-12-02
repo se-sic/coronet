@@ -7,7 +7,7 @@
 - Add function `calculate.EDCPTD.centrality` for calculating the EDCPTD centrality for a fourth-order tensor in the above described form (c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
 - Add new file `util-networks-misc.R` which contains miscellaneous functions for processing network data and creating and converting various kinds of adjacency matrices: `get.author.names.from.networks`, `get.author.names.from.data`, `get.expanded.adjacency`, `get.expanded.adjacency.matrices`, `get.expanded.adjacency.matrices.cumulated`, `convert.adjacency.matrix.list.to.array` (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
 - Add tests for sliding-window functionality and make parameterized tests possible (a3ad0a81015c7f23bce958d5c1922e3b82b28bda, 2ed84ac55d434f62341297b1aa9676c12e383491, PR #184)
-- Add function `cleanup.pasta.data` to remove wrong commit hashes and message ids from the PaStA data (0d53142444ac06b605f3a92096697f3286b36103, PR #189)
+- Add function `cleanup.pasta.data` to remove wrong commit hashes and message ids from the PaStA data (1797e0324c39ad7b88dc22a14391340f4d26aea8, PR #189)
 
 ### Changed/Improved
 - Adjust the function `get.authors.by.data.source`: Rename its single parameter to `data.sources` and change the function so that it can extract the authors for multiple data sources at once. The default value of the parameter is a vector containing all the available data sources (commits, mails, issues) (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
@@ -19,8 +19,9 @@
 - Fix off-by-1 error in the function `get.data.cut.to.same.date` (f0744c0e14543292cccb1aa9a61f822755ee7183)
 - Fix missing or wrongly set layout when plotting networks (#186, 720cc7ba7bdb635129c7669911aef8e7c6200a6b, 877931b94f87ca097c2f8f3c55e4b4bcc6087742)
 - Fix reading of the PaStA data since the file format has changed (712bbafde3fb8f7b7c0fc847cb9c1838eb4cf86e, PR #189)
-- Fix bug that duplicates revision set ids in the mail and commit data when merging the PaStA data and also copy-paste error when merging PaStA data to commit data (0d53142444ac06b605f3a92096697f3286b36103, PR #189)
+- Fix bug that duplicates revision set ids in the mail and commit data when merging the PaStA data and also copy-paste error when merging PaStA data to commit data (1797e0324c39ad7b88dc22a14391340f4d26aea8, PR #189)
 - Fix bug that results in an error when there is a variable called 'c' in the R environment (de42eb24be131c261ccad7d807007f27d5559d68, PR #189)
+- Fix bug that when applying `filter.patchstack.mails()` to an environment with no mail data, the mail data gets set to `NULL` (82614754fb3d75b0e5856d1ef42ada737859ee37, PR #189)
 
 
 
