@@ -1,5 +1,29 @@
 # coronet – Changelog
 
+## 3.7
+
+### Added
+- Add a new file `util-tensor.R` containing the class `FourthOrderTensor` to create (author x relation x author x relation) tensors from a list of networks (with each network having a different relation) and its corresponding utility function `get.author.networks.for.multiple.relations` (PR #173, c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Add function `calculate.EDCPTD.centrality` for calculating the EDCPTD centrality for a fourth-order tensor in the above described form (c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Add new file `util-networks-misc.R` which contains miscellaneous functions for processing network data and creating and converting various kinds of adjacency matrices: `get.author.names.from.networks`, `get.author.names.from.data`, `get.expanded.adjacency`, `get.expanded.adjacency.matrices`, `get.expanded.adjacency.matrices.cumulated`, `convert.adjacency.matrix.list.to.array` (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Add tests for sliding-window functionality and make parameterized tests possible (a3ad0a81015c7f23bce958d5c1922e3b82b28bda, 2ed84ac55d434f62341297b1aa9676c12e383491, PR #184)
+- Add function `cleanup.pasta.data` to remove wrong commit hashes and message ids from the PaStA data (1797e0324c39ad7b88dc22a14391340f4d26aea8, PR #189)
+
+### Changed/Improved
+- Adjust the function `get.authors.by.data.source`: Rename its single parameter to `data.sources` and change the function so that it can extract the authors for multiple data sources at once. The default value of the parameter is a vector containing all the available data sources (commits, mails, issues) (051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
+- Adjust recommended R version to 3.6.3 in README (92be262514277acb774ab2885c1c0d1c10f03373)
+- Add R version 4.0 to test suite and adjust package installation in `install.R` to improve compatibility with Travis CI (40aa0d80e2a94434a8be75925dbefbde6d3518b2, 1ba036758a63767e2fcef525c98f5a4fd6938c39, #161)
+
+### Fixed
+- Fix sliding-window creation in various splitting functions (`split.network.time.based`, `split.networks.time.based`, `split.data.time.based`, `split.data.activity.based`, `split.network.activity.based`) and also fix the computation of overlapping ranges in the function `construct.overlapping.ranges` to make sure that the last and the second-last range do not cover the same range) (1abc1b8dbfc65ccad0cbbc8e33b209e39d2f8118, c34c42aef32a30b82adc53384fd6a1b09fc75dee, 097cebcc477b1b65056d512124575f5a78229c3e, 9a1b6516f490b72b821be2d5365d98cac1907b2f, 0fc179e2735bec37d26a68c6c351ab43770007d2, cad28bf221f942eb25e997aaa2de553181956680, 7602af2cf46f699b2285d53819dec614c71754c6, PR #184)
+- Fix off-by-1 error in the function `get.data.cut.to.same.date` (f0744c0e14543292cccb1aa9a61f822755ee7183)
+- Fix missing or wrongly set layout when plotting networks (#186, 720cc7ba7bdb635129c7669911aef8e7c6200a6b, 877931b94f87ca097c2f8f3c55e4b4bcc6087742)
+- Fix reading of the PaStA data since the file format has changed (712bbafde3fb8f7b7c0fc847cb9c1838eb4cf86e, PR #189)
+- Fix bug that duplicates revision set ids in the mail and commit data when merging the PaStA data and also copy-paste error when merging PaStA data to commit data (1797e0324c39ad7b88dc22a14391340f4d26aea8, PR #189)
+- Fix bug that results in an error when there is a variable called 'c' in the R environment (de42eb24be131c261ccad7d807007f27d5559d68, PR #189)
+- Fix bug that when applying `filter.patchstack.mails()` to an environment with no mail data, the mail data gets set to `NULL` (82614754fb3d75b0e5856d1ef42ada737859ee37, PR #189)
+
+
 ## 3.6
 
 ### Added
@@ -8,19 +32,16 @@
 - Add a new file `util-plot-evaluation.R` containing functions to plot commit edit types per author and project. (PR #171, d4af515f859ce16ffaa0963d6d3d4086bcbb7377, aa542a215f59bc3ed869cfefbc5a25fa050b1fc9. 0a0a5903e7c609dfe805a3471749eb2241efafe2)
 
 ### Changed/Improved
-
 - Add R version 3.6 to test suite (8b2a52d38475a59c55feb17bb54ed12b9252a937, #161)
 - Update `.travis.yml` to improve compatibility with Travis CI (41ce589b3b50fd581a10e6af33ac6b1bbea63bb8)
 
 ### Fixed
-
 - Ensure sorting of commit-count and LOC-count data.frames to fix tests with R 3.3 (33d63fd50c4b29d45a9ca586c383650f7d29efd5)
 
 
 ## 3.5
 
 ### Announcement
-
 - Rename project to `coronet` (#10, 929f8cec7b52adef1389ce1691b783c235eb815d, ac1ce80b9f5da812f90b5fed63f26dc8c812a4d6)
     * Be sure to update Git remotes and submodules to the new URL!
 

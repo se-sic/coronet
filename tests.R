@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -42,8 +43,9 @@ sessionInfo()
 
 logging::loginfo("Running test suite.")
 
-## load package 'testthat'
+## load packages 'testthat' and 'patrick'
 requireNamespace("testthat")
+requireNamespace("patrick")
 
 ## starting tests
 do.tests = function(dir) {

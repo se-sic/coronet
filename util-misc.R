@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## All Rights Reserved.
 
@@ -568,7 +569,10 @@ construct.overlapping.ranges = function(start, end, time.period, overlap, imperf
     ## compute negative overlap
     overlap.negative = time.period - overlap
     ## compute number of complete bins
-    bins.number = round(bins.duration / overlap.negative)
+    bins.number = floor(bins.duration / overlap.negative)
+    if (bins.number < 1) {
+        bins.number = 1
+    }
 
     ## generate a approximate sequence of dates which can be streamlined later
     seq.start = start.date + overlap

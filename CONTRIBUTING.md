@@ -1,6 +1,6 @@
 # Contributing to the network library `coronet`
 
-The following is a set of guidelines for contributing to the network library `coronet`, which is hosted in the [se-passau](https://github.com/se-passau) organization on GitHub.
+The following is a set of guidelines for contributing to the network library `coronet`, which is hosted in the [se-sic](https://github.com/se-sic) organization on GitHub.
 These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
@@ -39,7 +39,7 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 #### Before Submitting A Bug Report
 
 * **Check the code.**
-  You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem in the latest version of the library (see [branch `dev`](https://github.com/se-passau/coronet/tree/dev)).
+  You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem in the latest version of the library (see [branch `dev`](https://github.com/se-sic/coronet/tree/dev)).
 * **Search for previous issues describing the same problem.**
   If an old issue includes also a fix or a workaround for your problem, you do not need to file a new issue. Although, if the problem still persists after applying potential fixes, please file a new issue including detailed information to reproduce the problem. If there is an old issue that is still open, add a comment to the existing issue instead of opening a new one.
 * **Run the test suite.**
@@ -112,8 +112,8 @@ In our development process, we pursue the following idea:
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
-- `master`: [![Build Status](https://travis-ci.com/se-passau/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=master)](https://travis-ci.com/se-passau/coronet)
-- `dev`: [![Build Status](https://travis-ci.com/se-passau/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=dev)](https://travis-ci.com/se-passau/coronet)
+- `master`: [![Build Status](https://travis-ci.com/se-sic/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=master)](https://travis-ci.com/se-sic/coronet)
+- `dev`: [![Build Status](https://travis-ci.com/se-sic/coronet.svg?token=8VFPdy2kjPXtstT72yww&branch=dev)](https://travis-ci.com/se-sic/coronet)
 
 
 ### Pull Requests
@@ -129,7 +129,7 @@ The current build status is as follows:
   * Code must be reviewed by one other project member and, if needed, be properly adapted/fixed.
   * We add the `Reviewed-by` tag only for the merge commit.
 
-There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE/pull-request.md).
+There will be another checklist for you when you open an actual pull request provided by [the corresponding template](.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Style Conventions
 

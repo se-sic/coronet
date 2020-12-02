@@ -13,7 +13,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 - [Integration](#integration)
     * [Requirements](#requirements)
-        * [R](#r-331)
+        * [R](#r)
         * [packrat (recommended)](#packrat)
         * [Folder structure of the input data](#folder-structure-of-the-input-data)
         * [Needed R packages](#needed-r-packages)
@@ -53,9 +53,11 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 While using the package, we require the following infrastructure.
 
-#### [`R`](https://www.r-project.org/) `3.3.1`
+#### [`R`](https://www.r-project.org/) 
 
-Later `R` versions should work (and are tested using our TravisCI script), but, for reliability reasons and `packrat` compatibility, only version `3.3.1` is supported.
+Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
+
+We currently recommend version `3.6.3` for reliability reasons and `packrat` compatibility, but also later versions (`>=4`) should work (and are tested using our TravisCI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
@@ -122,12 +124,15 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `testthat`: For the test suite
+- `patrick`: For the test suite
 - `ggplot2`: For plotting of data
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
+- `rTensor`: For calculating EDCPTD centrality
+- `Matrix`: For sparse matrix representation of large adjacency matrices
 
 ### Submodule
 
@@ -409,6 +414,10 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
     * A set of network-metric functions
+- `util-networks-misc.R`
+    * Helper functions for network creation (e.g., create adjacency matrices)
+- `util-tensor.R`
+    * Functionality to build fourth-order tensors
 - `util-core-peripheral.R`
     * Author classification (core and peripheral) and related functions
 - `util-motifs.R`
@@ -630,4 +639,4 @@ This project is licensed under [GNU General Public License v2.0](LICENSE).
 
 ## Work in progress
 
-To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-passau/coronet/issues).
+To see what will be the next things to be implemented, please have a look at the [list of issues](https://github.com/se-sic/coronet/issues).

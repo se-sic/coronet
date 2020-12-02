@@ -16,6 +16,7 @@
 ## Copyright 2015 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2015-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
@@ -32,12 +33,15 @@ packages = c(
     "logging",
     "sqldf",
     "testthat",
+    "patrick",
     "ggplot2",
     "ggraph",
     "markovchain",
     "lubridate",
     "viridis",
-    "jsonlite"
+    "jsonlite",
+    "rTensor",
+    "Matrix"
 )
 
 
@@ -53,5 +57,7 @@ filter.installed.packages = function(packageList)  {
 p = filter.installed.packages(packages)
 if (length(p) > 0) {
     print(sprintf("Installing package '%s'.", p))
-    install.packages(p, dependencies = TRUE, verbose = FALSE, quiet = FALSE)
+
+    ## set dependencies to 'NA' to install only necessary dependencies (i.e., "Depends", "Imports", "LinkingTo")
+    install.packages(p, dependencies = NA, verbose = TRUE, quiet = TRUE)
 }

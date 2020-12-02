@@ -13,6 +13,7 @@
 ##
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -86,7 +87,8 @@ compare.edge.and.vertex.lists = function(split.author.networks.one = NULL, split
     }
 }
 
-test_that("Compare the bipartite and author network constructed in two ways with author/artifact relation 'cochange'", {
+patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
+                                    with author/artifact relation 'cochange', ", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -106,7 +108,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## split the networks
     split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = FALSE)
+                                               time.period = splitting.period, sliding.window = test.sliding.window)
 
     ## separate the author and bipartite networks
     split.author.networks.one = split.networks[[1]]
@@ -116,7 +118,8 @@ test_that("Compare the bipartite and author network constructed in two ways with
     multi.network = network.builder$get.multi.network()
 
     ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period)
+    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
+                                                   sliding.window = test.sliding.window)
 
     split.author.networks.two = list()
     split.bipartite.networks.two = list()
@@ -134,10 +137,13 @@ test_that("Compare the bipartite and author network constructed in two ways with
     ## created with different approaches
     compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
-})
+}, patrick::cases(
+    "sliding window: FALSE"  = list(test.sliding.window = FALSE),
+    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+))
 
-test_that("Compare the bipartite and author network constructed in two ways with author relation 'mail' and artifact relation
-          'cochange'", {
+patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
+                                    with author relation 'mail' and artifact relation 'cochange', ", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -158,7 +164,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## split the networks
     split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = FALSE)
+                                               time.period = splitting.period, sliding.window = test.sliding.window)
 
     ## separate the author and bipartite networks
     split.author.networks.one = split.networks[[1]]
@@ -168,7 +174,8 @@ test_that("Compare the bipartite and author network constructed in two ways with
     multi.network = network.builder$get.multi.network()
 
     ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period)
+    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
+                                                   sliding.window = test.sliding.window)
 
     split.author.networks.two = list()
     split.bipartite.networks.two = list()
@@ -187,9 +194,13 @@ test_that("Compare the bipartite and author network constructed in two ways with
     ## created with different approaches
     compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
-})
+}, patrick::cases(
+    "sliding window: FALSE" = list(test.sliding.window = FALSE),
+    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+))
 
-test_that("Compare the bipartite and author network constructed in two ways with author and artifact relation 'mail'", {
+patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
+                                    with author and artifact relation 'mail', ", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -210,7 +221,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
 
     ## split the networks
     split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = FALSE)
+                                               time.period = splitting.period, sliding.window = test.sliding.window)
 
     ## separate the author and bipartite networks
     split.author.networks.one = split.networks[[1]]
@@ -220,7 +231,8 @@ test_that("Compare the bipartite and author network constructed in two ways with
     multi.network = network.builder$get.multi.network()
 
     ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period)
+    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
+                                                   sliding.window = test.sliding.window)
 
     split.author.networks.two = list()
     split.bipartite.networks.two = list()
@@ -239,4 +251,7 @@ test_that("Compare the bipartite and author network constructed in two ways with
     ## created with different approaches
     compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
                                    split.bipartite.networks.one, split.bipartite.networks.two)
-})
+}, patrick::cases(
+    "sliding window: FALSE" = list(test.sliding.window = FALSE),
+    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+))
