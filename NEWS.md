@@ -1,6 +1,6 @@
 # coronet – Changelog
 
-## Unversioned
+## 3.7
 
 ### Added
 - Add a new file `util-tensor.R` containing the class `FourthOrderTensor` to create (author x relation x author x relation) tensors from a list of networks (with each network having a different relation) and its corresponding utility function `get.author.networks.for.multiple.relations` (PR #173, c136b1f6127d73c25f08ae2f317246747aa9ea2b, e4ee0dc926b22ff75d5fd801c1f131bcff4c22eb, 051a5f0287022f97e2367ed0e9591b9df9dbdb3d)
@@ -24,7 +24,6 @@
 - Fix bug that when applying `filter.patchstack.mails()` to an environment with no mail data, the mail data gets set to `NULL` (82614754fb3d75b0e5856d1ef42ada737859ee37, PR #189)
 
 
-
 ## 3.6
 
 ### Added
@@ -33,19 +32,16 @@
 - Add a new file `util-plot-evaluation.R` containing functions to plot commit edit types per author and project. (PR #171, d4af515f859ce16ffaa0963d6d3d4086bcbb7377, aa542a215f59bc3ed869cfefbc5a25fa050b1fc9. 0a0a5903e7c609dfe805a3471749eb2241efafe2)
 
 ### Changed/Improved
-
 - Add R version 3.6 to test suite (8b2a52d38475a59c55feb17bb54ed12b9252a937, #161)
 - Update `.travis.yml` to improve compatibility with Travis CI (41ce589b3b50fd581a10e6af33ac6b1bbea63bb8)
 
 ### Fixed
-
 - Ensure sorting of commit-count and LOC-count data.frames to fix tests with R 3.3 (33d63fd50c4b29d45a9ca586c383650f7d29efd5)
 
 
 ## 3.5
 
 ### Announcement
-
 - Rename project to `coronet` (#10, 929f8cec7b52adef1389ce1691b783c235eb815d, ac1ce80b9f5da812f90b5fed63f26dc8c812a4d6)
     * Be sure to update Git remotes and submodules to the new URL!
 
