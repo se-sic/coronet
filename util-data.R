@@ -16,6 +16,7 @@
 ## Copyright 2020 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -160,6 +161,12 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the mail data after filtering patchstack mails
         filter.patchstack.mails = function() {
             logging::logdebug("filter.patchstack.mails: starting.")
+
+            ## return immediately if no mails are available
+            if (nrow(private$mails) == 0) {
+                private$mails.patchstacks = NULL
+                return(private$mails)
+            }
 
             ## retrieve mails grouped by thread IDs
             thread.data = self$group.authors.by.data.column("mails", "thread")
@@ -307,7 +314,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.commit.data: starting.")
 
             ## return immediately if no commits available
-            if (!is.null(private$mails)) {
+            if (!is.null(private$commits)) {
 
                 ## remove previous PaStA data
                 private$commits["pasta"] = NULL
@@ -319,6 +326,11 @@ ProjectData = R6::R6Class("ProjectData",
 
                 ## sort by date again because 'merge' disturbs the order
                 private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+
+                ## remove duplicated revision set ids
+                private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
             logging::logdebug("update.pasta.commit.data: finished.")
@@ -342,6 +354,11 @@ ProjectData = R6::R6Class("ProjectData",
 
                 ## sort by date again because 'merge' disturbs the order
                 private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
+
+                ## remove duplicated revision set ids
+                private$mails[["revision.set.id"]] = sapply(private$mails[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
             logging::logdebug("update.pasta.mail.data: finished.")
@@ -373,6 +390,8 @@ ProjectData = R6::R6Class("ProjectData",
                 private$update.pasta.commit.data()
             }
 
+            logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
+                              To clean this up you can call the function 'cleanup.pasta.data()'.")
             logging::logdebug("update.pasta.data: finished.")
         },
 
@@ -815,6 +834,31 @@ ProjectData = R6::R6Class("ProjectData",
 
                 }
             }
+        },
+
+        #' Remove lines in the PaStA data that contain message ids or commit hashes
+        #' that don't appear in the commit or mail data.
+        cleanup.pasta.data = function() {
+            logging::loginfo("Cleaning up PaStA data")
+
+            ## remove message ids that don't appear in the mail data
+            if (!is.null(private$mails)) {
+                rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails[["revision.set.id"]]
+                private$pasta = private$pasta[rev.id.contained, ]
+            }
+
+            ## remove commit hashes that don't appear in the commit data
+            if (!is.null(private$commits)) {
+                pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
+                commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits[["hash"]]
+                commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = unlist(private$pasta[["commit.hash"]]) %in% commit.hashes.to.eliminate
+                private$pasta = private$pasta[!rows.to.remove, ]
+            }
+
+            ## update pasta data again
+            private$update.pasta.data()
         },
 
         #' Get the mail data.
