@@ -19,6 +19,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -58,6 +59,19 @@ COMMITS.LIST.DATA.TYPES = c(
     "POSIXct", "character", "character",
     "character", "numeric", "numeric", "numeric", "numeric",
     "character", "character", "character", "numeric"
+)
+
+
+## column names of a dataframe containing commit messages (see file 'commitMessages.list' and function \code{read.commit.messages})
+COMMIT.MESSAGE.LIST.COLUMNS = c(
+    "commit.id", # id
+    "hash", "title", "message.body"
+)
+
+## declare the datatype for each column in the constant 'COMMIT.MESSAGE.LIST.COLUMNS'
+COMMIT.MESSAGE.LIST.DATA.TYPES = c(
+    "character",
+    "character", "character", "character"
 )
 
 #' Read the commits from the 'commits.list' file.
@@ -167,6 +181,96 @@ read.commits = function(data.path, artifact) {
     logging::logdebug("read.commits: finished.")
     return(commit.data)
 }
+
+
+#'
+#' @return the empty dataframe
+create.empty.commit.message.list = function() {
+    return (create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
+}
+
+
+#' Read the commit messages from the 'commitMessages.list' file.
+#'
+#' @param data.path the path to the commit list
+#'
+#' @return a dataframe with id, hash, title and message body´
+read.commit.messages = function(data.path) {
+    logging::logdebug("read.commit.messages: starting.")
+
+    ## read the file with the commit messages
+    file = file.path(data.path, "commitMessages.list")
+
+    commit.message.data.unprocessed = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                 encoding = "UTF-8"), silent = TRUE)
+
+
+    ## handle the case that the list of commits is empty
+    if (inherits(commit.message.data.unprocessed, "try-error")) {
+        logging::logwarn("There are no commits available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        logging::loginfo("Hello error")
+
+        ## return a dataframe with the correct columns but zero rows
+        return(create.empty.commit.message.list())
+    }
+
+    ## split the message string with the new line symbol.
+    message.split = strsplit(commit.message.data.unprocessed[[3]], "    ")
+
+    ## prepare the message.split-object so that it contains a two-element
+    ## vector for each commit
+    for (i in seq(1, length(message.split))) {
+        v = message.split[[i]]
+
+        ## clear the message from empty lines
+        message.split[[i]] = v[v != ""]
+
+        ## if the commit message was completely empty, add empty title and body
+        if (length(message.split[[i]]) == 0) {
+            message.split[[i]] = c("", "")
+        }
+
+        ## if there is only one line, create an empty body
+        else if (length(message.split[[i]]) == 1) {
+            message.split[[i]] = c(message.split[[i]], "")
+        }
+
+        ## if there are more than two lines, merge all except for the first one
+        else if (length(message.split[[i]]) > 2) {
+            message.split[[i]] = c(message.split[[i]][[1]],
+                                  paste(tail(message.split[[i]], -1),
+                                        collapse = "    "))
+        }
+    }
+
+    ## split the list of vectors from above into two vectors
+    commit.titles = 1 : length(message.split)
+    commit.message.bodies = 1 : length(message.split)
+    for (i in seq(1, length(message.split))) {
+        ## put the first element of each vector in the title vector
+        commit.titles[[i]] = message.split[[i]][[1]]
+        ## put the second one in the body vector
+        commit.message.bodies[[i]] = message.split[[i]][[2]]
+    }
+
+    ## create a data frame containing all four necessary columns
+    commit.message.data = data.frame(commit.message.data.unprocessed[[1]], # commit.id
+                                     commit.message.data.unprocessed[[2]], # hash
+                                     commit.titles, # title
+                                     commit.message.bodies) #message.body
+
+    ## set column names for new data frame
+    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
+
+    ## Make commit.id have numeric type and set row names
+    commit.message.data[["commit.id"]] = sprintf("<commit-%s>", commit.message.data[["commit.id"]])
+    row.names(commit.message.data) = seq_len(nrow(commit.message.data))
+
+    return(commit.message.data)
+}
+
 
 #' Create an empty dataframe which has the same shape as a dataframe containing commits. The dataframe has the column
 #' names and column datatypes defined in \code{COMMITS.LIST.COLUMNS} and \code{COMMITS.LIST.DATA.TYPES}, respectively.
@@ -565,3 +669,5 @@ read.synchronicity = function(data.path, artifact, time.window) {
 create.empty.synchronicity.list = function() {
     return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
+
+
