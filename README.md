@@ -57,7 +57,7 @@ While using the package, we require the following infrastructure.
 
 Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
 
-We currently recommend version `3.6.3` for reliability reasons and `packrat` compatibility, but also later versions (`>=4`) should work (and are tested using our TravisCI script).
+We currently recommend version `3.6.3` for reliability reasons and `packrat` compatibility, but also later versions (`>=4`) should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
@@ -67,7 +67,7 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
+The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosaar-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
