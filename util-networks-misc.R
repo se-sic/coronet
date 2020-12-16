@@ -79,7 +79,7 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
 
         active.authors = range.data$get.authors.by.data.source(data.sources)
 
-        active.authors.names = active.authors$author.name
+        active.authors.names = active.authors[["author.name"]]
 
         return(active.authors.names)
 

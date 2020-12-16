@@ -1,5 +1,10 @@
 # coronet – Changelog
 
+## Unversioned
+
+### Changed/Improved
+- Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
+
 ## 3.7
 
 ### Added
