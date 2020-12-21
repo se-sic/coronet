@@ -21,6 +21,7 @@
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2020 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -104,6 +105,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits = NULL, # data.frame
+        commit.messages = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         mails.patchstacks = NULL, # list
@@ -508,6 +510,7 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits = NULL
+            private$commit.messages = NULL
             private$mails = NULL
             private$issues = NULL
             private$authors = NULL
@@ -671,8 +674,27 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits)
         },
 
+        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
+        #' If the list of commits is not cached in the field \code{commit.messages}, call the read method first.
+        #'
+        #' @return the list of commit messages
+        get.commit.messages = function() {
+            logging::loginfo("Getting commit messages.´")
+
+            ## if commit messages are not read already, do this
+            if (is.null(private$commit.messages)) {
+                commit.message.data = read.commit.messages(self$get.data.path())
+
+                ## cache the result
+                private$commit.messages = commit.message.data
+            }
+
+            return(commit.message.data)
+        },
+
         #' Set the commit list of the project to a new one.
-        #' Add PaStA and sychronicity data if configured in the \code{project.conf}.
+        #' Add PaStA and synchronicity data if configured in the \code{project.conf}
+        #' as well as commit message data.
         #'
         #' @param commit.data the new list of commits
         set.commits = function(commit.data) {
@@ -680,6 +702,27 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(commit.data)) {
                 commit.data = create.empty.commits.list()
+            }
+
+
+            ## add commit message data if wanted
+            if (private$project.conf$get.value("commit.messages") != "none") {
+                logging::loginfo("Merging commit messages into commit data.")
+
+                ## get commit messages
+                commit.messages = self$get.commit.messages()
+
+                ## drop the hash column as we do not want it twice
+                commit.messages = commit.messages = commit.messages[-2]
+
+                ## now there are only three columns left: commit.id, title, message.body
+                ## check whether to include only title or also the messages
+                if (private$project.conf$get.value("commit.messages") == "title") {
+                    commit.messages = commit.messages[-2]
+                }
+
+                ## merge them into the commit data
+                commit.data = merge(commit.data, commit.messages, by = "commit.id")
             }
 
             ## store commit data
@@ -706,6 +749,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$update.pasta.data()
                 }
             }
+
 
             ## sort by date
             private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
