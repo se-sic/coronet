@@ -223,7 +223,7 @@ read.commit.messages = function(data.path) {
 
     ## prepare the message.split-object so that it contains a two-element
     ## vector for each commit
-    for (i in seq(1, length(message.split))) {
+    for (i in seq_along(message.split)) {
         v = message.split[[i]]
 
         ## clear the message from empty lines
@@ -275,6 +275,8 @@ read.commit.messages = function(data.path) {
     ## Make commit.id have numeric type and set row names
     commit.message.data[["commit.id"]] = sprintf("<commit-%s>", commit.message.data[["commit.id"]])
     row.names(commit.message.data) = seq_len(nrow(commit.message.data))
+
+    logging::logdebug("read.commit.messages: finished.")
 
     return(commit.message.data)
 }
