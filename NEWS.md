@@ -1,6 +1,6 @@
 # coronet – Changelog
 
-## 3.8
+## Unversioned
 
 ### Added
 - Add functionality to read and process commit messages in order to merge them to the commit data (See issue #180). Three values are available for the new attribute `commit.messages` in `proj.conf`: 
