@@ -1,5 +1,15 @@
 # coronet – Changelog
 
+## 3.8
+
+### Added
+- Add functionality to read and process commit messages in order to merge them to the commit data (See issue #180). Three values are available for the new attribute `commit.messages` in `proj.conf`: 
+  1. `none` is the default value and does not change the previous behaviour of `proj.data$set.commits`.
+  2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
+  3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message.body`.
+
+
+
 ## 3.7
 
 ### Added
