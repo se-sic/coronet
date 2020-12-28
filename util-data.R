@@ -718,11 +718,11 @@ ProjectData = R6::R6Class("ProjectData",
                 ## now there are only three columns left: commit.id, title, message.body
                 ## check whether to include only title or also the messages
                 if (private$project.conf$get.value("commit.messages") == "title") {
-                    commit.messages = commit.messages[-2]
+                    commit.messages = commit.messages[-3]
                 }
 
                 ## merge them into the commit data
-                commit.data = merge(commit.data, commit.messages, by = "commit.id")
+                commit.data = merge(commit.data, commit.messages, by.x = "commit.id")
             }
 
             ## store commit data
