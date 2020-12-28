@@ -8,7 +8,8 @@
   2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
   3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message.body`.
 
-
+### Changed/Improved
+- Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
 
 ## 3.7
 
