@@ -243,11 +243,10 @@ read.commit.messages = function(data.path) {
 
         ## if there are more than two lines, merge all except for the first one
         else if (length(message.split[[i]]) > 2) {
-            message.split[[i]]
-                = c(message.split[[i]][[1]],
-                        paste(tail(message.split[[i]], -1),
-                        ## use an ascii line break instead
-                        collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
+            message.split[[i]] = c(message.split[[i]][[1]],
+                                    paste(tail(message.split[[i]], -1),
+                                    ## use an ascii line break instead
+                                    collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
         }
     }
 
