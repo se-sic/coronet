@@ -92,7 +92,6 @@ test_that("Read the raw commit data with the feature artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
-
 test_that("Read the raw commit data with the file artifact.", {
 
     ## configuration object for the datapath
@@ -138,7 +137,6 @@ test_that("Read the raw commit data with the file artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
-
 test_that("Read the commit message data.", {
 
     ## configuration object for the datapath
@@ -159,10 +157,6 @@ test_that("Read the commit message data.", {
     ## check the results
     expect_identical(commit.message.data.read, commit.data.expected, info = "Commit message data.")
 })
-
-
-
-
 
 test_that("Read the synchronicity data.", {
     ## configuration object

@@ -189,8 +189,6 @@ read.commits = function(data.path, artifact) {
     return(commit.data)
 }
 
-
-
 #' Read the commit messages from the 'commitMessages.list' file.
 #' Turn line breaks represented with five spaces into \n line breaks and
 #' ignore initial spaces. Also remove spaces at the beginning and the end of
@@ -198,7 +196,7 @@ read.commits = function(data.path, artifact) {
 #'
 #' @param data.path the path to the commit list
 #'
-#' @return a dataframe with id, hash, title and message body´
+#' @return a data frame with id, hash, title and message body´
 read.commit.messages = function(data.path) {
     logging::logdebug("read.commit.messages: starting.")
 
@@ -207,7 +205,6 @@ read.commit.messages = function(data.path) {
 
     commit.message.data.unprocessed = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                  encoding = "UTF-8"), silent = TRUE)
-
 
     ## handle the case that the list of commits is empty
     if (inherits(commit.message.data.unprocessed, "try-error")) {
@@ -234,7 +231,6 @@ read.commit.messages = function(data.path) {
         ## remove spaces at the end of the message
         message.split[[i]] = gsub("$\\s+", "", message.split[[i]])
 
-        ##print(gsub("^\\s+", "", message.split[[i]]))
         ## if the commit message was completely empty, add empty title and body
         if (length(message.split[[i]]) == 0) {
             message.split[[i]] = c("", "")
@@ -247,9 +243,11 @@ read.commit.messages = function(data.path) {
 
         ## if there are more than two lines, merge all except for the first one
         else if (length(message.split[[i]]) > 2) {
-            message.split[[i]] = c(message.split[[i]][[1]],
-                                  paste(tail(message.split[[i]], -1),
-                                        collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))   # use an ascii line break instead
+            message.split[[i]]
+                = c(message.split[[i]][[1]],
+                        paste(tail(message.split[[i]], -1),
+                        ## use an ascii line break instead
+                        collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
         }
     }
 
@@ -689,5 +687,3 @@ read.synchronicity = function(data.path, artifact, time.window) {
 create.empty.synchronicity.list = function() {
     return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
-
-

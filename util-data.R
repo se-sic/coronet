@@ -704,7 +704,6 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.data = create.empty.commits.list()
             }
 
-
             ## add commit message data if wanted
             if (private$project.conf$get.value("commit.messages") != "none") {
                 logging::loginfo("Merging commit messages into commit data.")
@@ -713,7 +712,7 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.messages = self$get.commit.messages()
 
                 ## drop the hash column as we do not want it twice
-                commit.messages = commit.messages = commit.messages[-2]
+                commit.messages = commit.messages[-2]
 
                 ## now there are only three columns left: commit.id, title, message.body
                 ## check whether to include only title or also the messages
@@ -722,7 +721,7 @@ ProjectData = R6::R6Class("ProjectData",
                 }
 
                 ## merge them into the commit data
-                commit.data = merge(commit.data, commit.messages, by.x = "commit.id")
+                commit.data = merge(commit.data, commit.messages, by.x = "hash")
             }
 
             ## store commit data
@@ -749,7 +748,6 @@ ProjectData = R6::R6Class("ProjectData",
                     private$update.pasta.data()
                 }
             }
-
 
             ## sort by date
             private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
