@@ -226,6 +226,7 @@ test_that("Merge commit messages to commit data", {
     # we do not care for their order in the test
     rownames(commits) = NULL
     rownames(commit.data.expected) = NULL
+
     expect_identical(commits, commit.data.expected)
 })
 
