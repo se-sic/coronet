@@ -66,7 +66,7 @@ COMMITS.LIST.DATA.TYPES = c(
 ## 'commitMessages.list' and function \code{read.commit.messages})
 COMMIT.MESSAGE.LIST.COLUMNS = c(
     "commit.id", # id
-    "hash", "title", "message.body"
+    "hash", "title", "message"
 )
 
 ## declare the datatype for each column in the constant 'COMMIT.MESSAGE.LIST.COLUMNS'
@@ -264,7 +264,7 @@ read.commit.messages = function(data.path) {
     commit.message.data = data.frame(commit.message.data.unprocessed[[1]], # commit.id
                                      commit.message.data.unprocessed[[2]], # hash
                                      commit.titles, # title
-                                     commit.message.bodies) #message.body
+                                     commit.message.bodies) #message
 
     ## set column names for new data frame
     colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS

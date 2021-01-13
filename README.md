@@ -189,7 +189,7 @@ There are two distinguishable types of data sources that are both handled by the
     * Commit messages are available through the parameter `commit.messages`. Three values can be used:
         1. `none` is the default value and does not impact the configuration at all.
         2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
-        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message.body`.
+        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
    
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 

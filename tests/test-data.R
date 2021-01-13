@@ -220,7 +220,7 @@ test_that("Merge commit messages to commit data", {
                                                         UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "Feature", "Feature"),
                                       artifact.diff.size = as.integer(c(1, 1, 1, 1, 0, 0, 1, 1)),
                                       title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", "", ""),
-                                      message.body = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "", ""))
+                                      message = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "", ""))
 
     # throw away the row names as they are permuted when merging and
     # we do not care for their order in the test

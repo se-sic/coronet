@@ -152,7 +152,7 @@ test_that("Read the commit message data.", {
                                                "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                                "0a1a5c523d835459c42f33e863623138555e2526"),
                                       title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", ""),
-                                      message.body = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "" ))
+                                      message = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "" ))
 
     ## check the results
     expect_identical(commit.message.data.read, commit.data.expected, info = "Commit message data.")
