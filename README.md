@@ -11,40 +11,43 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 ## Table of contents
 
-- [Integration](#integration)
-    * [Requirements](#requirements)
-        * [R](#r)
-        * [packrat (recommended)](#packrat)
-        * [Folder structure of the input data](#folder-structure-of-the-input-data)
-        * [Needed R packages](#needed-r-packages)
-    * [Submodule](#submodule)
-    * [Selecting the correct version](#selecting-the-correct-version)
-- [Functionality](#functionality)
-    * [Configuration](#configuration)
-    * [Data sources](#data-sources)
-    * [Network construction](#network-construction)
-        * [Data sources for network construction](#data-sources-for-network-construction)
-        * [Types of networks](#types-of-networks)
-        * [Relations](#relations)
-        * [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
-        * [Vertex and edge attributes](#vertex-and-edge-attributes)
-    * [Further functionalities](#further-functionalities)
-        * [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
-        * [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
-        * [Handling data independently](#handling-data-independently)
-    * [How-to](#how-to)
-    * [File/Module overview](#filemodule-overview)
-- [Configuration classes](#configuration-classes)
-    * [ProjectConf](#projectconf)
-        * [Basic information](#basic-information)
-        * [Artifact-related information](#artifact-related-information)
-        * [Revision-related information](#revision-related-information)
-        * [Data paths](#data-paths)
-        * [Splitting information](#splitting-information)
-        * [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
-    * [NetworkConf](#networkconf)
-- [License](#license)
-- [Work in progress](#work-in-progress)
+- [coronet - The network library](#coronet---the-network-library)
+  - [Table of contents](#table-of-contents)
+  - [Integration](#integration)
+    - [Requirements](#requirements)
+      - [`R`](#r)
+      - [`packrat` (recommended)](#packrat-recommended)
+      - [Folder structure of the input data](#folder-structure-of-the-input-data)
+      - [Needed R packages](#needed-r-packages)
+    - [Submodule](#submodule)
+    - [Selecting the correct version](#selecting-the-correct-version)
+  - [Functionality](#functionality)
+    - [Configuration](#configuration)
+    - [Data sources](#data-sources)
+    - [Network construction](#network-construction)
+      - [Data sources for network construction](#data-sources-for-network-construction)
+      - [Types of networks](#types-of-networks)
+      - [Relations](#relations)
+      - [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
+      - [Vertex and edge attributes](#vertex-and-edge-attributes)
+    - [Further functionalities](#further-functionalities)
+      - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
+      - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
+      - [Handling data independently](#handling-data-independently)
+    - [How-to](#how-to)
+    - [File/Module overview](#filemodule-overview)
+  - [Configuration classes](#configuration-classes)
+    - [ProjectConf](#projectconf)
+      - [Basic information](#basic-information)
+      - [Artifact-related information](#artifact-related-information)
+      - [Revision-related information](#revision-related-information)
+      - [Data paths](#data-paths)
+      - [Splitting information](#splitting-information)
+      - [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
+    - [NetworkConf](#networkconf)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Work in progress](#work-in-progress)
 
 
 ## Integration
@@ -183,7 +186,11 @@ There are two distinguishable types of data sources that are both handled by the
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
-
+    * Commit messages are available through the parameter `commit.messages`. Three values can be used:
+        1. `none` is the default value and does not impact the configuration at all.
+        2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
+        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message.body`.
+   
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 
  The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
