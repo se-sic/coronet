@@ -425,10 +425,9 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * commit messages ---------------------------------------------
 
-        #' Add the columns \code{title} and \code{messages} to commits using the currently available
-        #' synchronicity data from the field \code{synchronicity}.
-        #'
-        #' This method should be called whenever the field \code{synchronicity} is changed.
+        #' Add the columns \code{title} and \code{messages} to commits using the selected
+        #' configuration option of \code{commit.messages} and the results of the
+        #' \code{get.commit.messages}.
         update.commit.message.data = function() {
             logging::loginfo("Merging commit messages into commit data.")
 
@@ -727,7 +726,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$commit.messages = commit.message.data
             }
 
-            return(commit.message.data)
+            return(private$commit.messages)
         },
 
         #' Set the commit list of the project to a new one.
