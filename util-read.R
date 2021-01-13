@@ -203,11 +203,11 @@ read.commit.messages = function(data.path) {
     ## read the file with the commit messages
     file = file.path(data.path, "commitMessages.list")
 
-    commit.message.data.unprocessed = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+    commit.message.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                  encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.message.data.unprocessed, "try-error")) {
+    if (inherits(commit.message.data, "try-error")) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -215,8 +215,11 @@ read.commit.messages = function(data.path) {
         return(create.empty.commit.message.list())
     }
 
+    ## set column names for new data frame
+    ## unprocessed data only has three columns so omit the "title" column
+    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS[-3]
     ## split the message string with the new line symbol
-    message.split = strsplit(commit.message.data.unprocessed[[3]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
+    message.split = strsplit(commit.message.data[["message"]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
 
     ## prepare the message.split-object so that it contains a two-element
     ## vector for each commit
@@ -235,24 +238,22 @@ read.commit.messages = function(data.path) {
         if (length(message.split[[i]]) == 0) {
             message.split[[i]] = c("", "")
         }
-
         ## if there is only one line, create an empty body
         else if (length(message.split[[i]]) == 1) {
             message.split[[i]] = c(message.split[[i]], "")
         }
-
         ## if there are more than two lines, merge all except for the first one
         else if (length(message.split[[i]]) > 2) {
             message.split[[i]] = c(message.split[[i]][[1]],
                                     paste(tail(message.split[[i]], -1),
-                                    ## use an ascii line break instead
-                                    collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
+                                        ## use an ascii line break instead
+                                        collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
         }
     }
 
     ## split the list of vectors from above into two vectors
-    commit.titles = 1 : length(message.split)
-    commit.message.bodies = 1 : length(message.split)
+    commit.titles = seq_along(message.split)
+    commit.message.bodies = seq_along(message.split)
     for (i in seq(1, length(message.split))) {
         ## put the first element of each vector in the title vector
         commit.titles[[i]] = message.split[[i]][[1]]
@@ -261,12 +262,12 @@ read.commit.messages = function(data.path) {
     }
 
     ## create a data frame containing all four necessary columns
-    commit.message.data = data.frame(commit.message.data.unprocessed[[1]], # commit.id
-                                     commit.message.data.unprocessed[[2]], # hash
+    commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
+                                     commit.message.data[["hash"]], # hash
                                      commit.titles, # title
                                      commit.message.bodies) #message
 
-    ## set column names for new data frame
+    ## set all the column names
     colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
 
     ## Make commit.id have numeric type and set row names
