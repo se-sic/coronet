@@ -425,20 +425,19 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * commit messages ---------------------------------------------
 
-        #' Add the columns \code{title} and \code{messages} to commits using the selected
-        #' configuration option of \code{commit.messages} and the results of the
-        #' \code{get.commit.messages}.
+        #' Add the columns \code{title} and \code{message} to commits using the selected
+        #' configuration option of \code{commit.messages} and the results of the function \code{get.commit.messages}.
         update.commit.message.data = function() {
             logging::loginfo("Merging commit messages into commit data.")
 
             if (!is.null(private$commits)) {
                 ## get commit messages
-                commit.messages = self$get.commit.messages()
+                commit.messages = private$commit.messages
 
                 ## drop the commit.id column as we do not want it twice
                 commit.messages = commit.messages[ , colnames(commit.messages) != "commit.id"]
 
-                ## now there are only three columns left: commit.id, title, message.body
+                ## now there are only three columns left: commit.id, title, message
                 ## check whether to include only title or also the messages
                 if (private$project.conf$get.value("commit.messages") == "title") {
                     commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
@@ -711,24 +710,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits)
         },
 
-        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
-        #' If the list of commits is not cached in the field \code{commit.messages}, call the read method first.
-        #'
-        #' @return the list of commit messages
-        get.commit.messages = function() {
-            logging::loginfo("Getting commit messages.´")
-
-            ## if commit messages are not read already, do this
-            if (is.null(private$commit.messages)) {
-                commit.message.data = read.commit.messages(self$get.data.path())
-
-                ## cache the result
-                private$commit.messages = commit.message.data
-            }
-
-            return(private$commit.messages)
-        },
-
         #' Set the commit list of the project to a new one.
         #' Add PaStA and synchronicity data if configured in the \code{project.conf}
         #' as well as commit message data.
@@ -743,6 +724,18 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## store commit data
             private$commits = commit.data
+
+            ## add commit message data if wanted
+            if (private$project.conf$get.value("commit.messages") != "none") {
+                if (is.null(private$synchronicity)) {
+                    ## get data that has been cached before
+                    self$get.commit.messages()
+                } else {
+                    ## update the commit message data
+                    private$update.commit.message.data()
+                }
+
+            }
 
             ## add synchronicity data if wanted
             if (private$project.conf$get.value("synchronicity")) {
@@ -766,17 +759,56 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
 
-            ## add commit message data if wanted
-            if (private$project.conf$get.value("commit.messages") != "none") {
-                private$update.commit.message.data()
-            }
-
             ## sort by date
             private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
             private$commits.filtered = NULL
+        },
+
+        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
+        #' If the list of commits is not cached in the field \code{commit.messages}, call the read method first.
+        #'
+        #' @return the list of commit messages
+        get.commit.messages = function() {
+            logging::loginfo("Getting commit messages.´")
+
+            if (private$project.conf$get.value("commit.messages") != "none") {
+                ## if commit messages are not read already, do this
+                if (is.null(private$commit.messages)) {
+                    commit.message.data = read.commit.messages(self$get.data.path())
+
+                    ## cache the result
+                    private$commit.messages = commit.message.data
+
+                    private$update.commit.message.data()
+                }
+            } else {
+                logging::logwarn("You have set the ProjectConf parameter 'commit.messages' to 'none'! Ignoring...")
+                ## mark synchronicity data as empty
+                self$set.commit.messages(NULL)
+            }
+
+            return(private$commit.messages)
+        },
+
+        #' Set the commit message data to the given new data and, if configured in the field \code{project.conf},
+        #' also update it for the commit data.
+        #'
+        #' @param data the new commit message data
+        set.commit.messages = function(data) {
+            logging::loginfo("Setting commit messages data.")
+
+            if (is.null(data)) {
+                data = create.empty.commit.message.list()
+            }
+
+            ## set the actual data
+            private$commit.messages = data
+
+            ## add commit message data to the commit data if configured
+            update.commit.message.data()
         },
 
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
