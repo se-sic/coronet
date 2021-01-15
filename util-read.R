@@ -251,21 +251,25 @@ read.commit.messages = function(data.path) {
         }
     }
 
-    ## split the list of vectors from above into two vectors
-    commit.titles = seq_along(message.split)
-    commit.message.bodies = seq_along(message.split)
-    for (i in seq(1, length(message.split))) {
-        ## put the first element of each vector in the title vector
-        commit.titles[[i]] = message.split[[i]][[1]]
-        ## put the second one in the body vector
-        commit.message.bodies[[i]] = message.split[[i]][[2]]
-    }
+    ## convert list of vectors to a data frame with two columns
+    message.split = as.data.frame(do.call(rbind, message.split))
+    colnames(message.split) = c("title", "message")
 
+    ## split the list of vectors from above into two vectors
+    # commit.titles = lapply(message.split, function (v) v[[1]][1])
+    # commit.message.bodies = lapply(message.split, function (v) v[[2]])
+    # for (i in seq(1, length(message.split))) {
+    #     ## put the first element of each vector in the title vector
+    #     commit.titles[[i]] = message.split[[i]][[1]]
+    #     ## put the second one in the body vector
+    #     commit.message.bodies[[i]] = message.split[[i]][[2]]
+    # }
+    # print(commit.titles)
     ## create a data frame containing all four necessary columns
     commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
                                      commit.message.data[["hash"]], # hash
-                                     commit.titles, # title
-                                     commit.message.bodies) #message
+                                     message.split[["title"]], # title
+                                     message.split[["message"]]) # message
 
     ## set all the column names
     colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
