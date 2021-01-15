@@ -161,7 +161,7 @@ read.commits = function(data.path, artifact) {
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for commit ID for better recognition
-    commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
+    commit.data[["commit.id"]] = format.commit.ids(commit.data[["commit.id"]])
     row.names(commit.data) = seq_len(nrow(commit.data))
 
     ## store the commit data
@@ -516,7 +516,7 @@ read.commit.messages = function(data.path) {
     colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
 
     ## Make commit.id have numeric type and set row names
-    commit.message.data[["commit.id"]] = sprintf("<commit-%s>", commit.message.data[["commit.id"]])
+    commit.message.data[["commit.id"]] = format.commit.ids(commit.message.data[["commit.id"]])
     row.names(commit.message.data) = seq_len(nrow(commit.message.data))
 
     logging::logdebug("read.commit.messages: finished.")
@@ -679,3 +679,20 @@ read.synchronicity = function(data.path, artifact, time.window) {
 create.empty.synchronicity.list = function() {
     return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
+
+
+## Helper functions --------------------------------------------------------
+
+## declare a global format for the commit.id column in several data frames
+COMMIT.ID.FORMAT = "<commit-%s>"
+
+#' Format a vector of commit ids into a global format
+#'
+#' @param commit.ids a vector containing all the commit ids to be formatted
+#'
+#' @return a vector with the formatted commit ids
+format.commit.ids = function(commit.ids) {
+    return (sprintf(COMMIT.ID.FORMAT, commit.ids))
+}
+
+
