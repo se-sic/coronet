@@ -61,26 +61,6 @@ COMMITS.LIST.DATA.TYPES = c(
     "character", "character", "character", "numeric"
 )
 
-
-## column names of a dataframe containing commit messages (see file
-## 'commitMessages.list' and function \code{read.commit.messages})
-COMMIT.MESSAGE.LIST.COLUMNS = c(
-    "commit.id", # id
-    "hash", "title", "message"
-)
-
-## declare the datatype for each column in the constant 'COMMIT.MESSAGE.LIST.COLUMNS'
-COMMIT.MESSAGE.LIST.DATA.TYPES = c(
-    "character",
-    "character", "character", "character"
-)
-
-## declare the constant (5 spaces) which is used by codeface to separate lines in
-## commit messages
-COMMIT.MESSAGE.LINE.SEP.CODEFACE = "     "
-## declare the constant to how line breaks should look like in the data
-COMMIT.MESSAGE.LINE.SEP.REPLACE = "\n"
-
 #' Read the commits from the 'commits.list' file.
 #'
 #' @param data.path the path to the commit list
@@ -189,101 +169,6 @@ read.commits = function(data.path, artifact) {
     return(commit.data)
 }
 
-#' Read the commit messages from the 'commitMessages.list' file.
-#' Turn line breaks represented with five spaces into \n line breaks and
-#' ignore initial spaces. Also remove spaces at the beginning and the end of
-#' the message.
-#'
-#' @param data.path the path to the commit list
-#'
-#' @return a data frame with id, hash, title and message body´
-read.commit.messages = function(data.path) {
-    logging::logdebug("read.commit.messages: starting.")
-
-    ## read the file with the commit messages
-    file = file.path(data.path, "commitMessages.list")
-
-    commit.message.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 encoding = "UTF-8"), silent = TRUE)
-
-    ## handle the case that the list of commits is empty
-    if (inherits(commit.message.data, "try-error")) {
-        logging::logwarn("There are no commits available for the current environment.")
-        logging::logwarn("Datapath: %s", data.path)
-
-        ## return a dataframe with the correct columns but zero rows
-        return(create.empty.commit.message.list())
-    }
-
-    ## set column names for new data frame
-    ## unprocessed data only has three columns so omit the "title" column
-    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS[-3]
-    ## split the message string with the new line symbol
-    message.split = strsplit(commit.message.data[["message"]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
-
-    ## prepare the message.split-object so that it contains a two-element
-    ## vector for each commit
-    for (i in seq_along(message.split)) {
-        v = message.split[[i]]
-
-        ## clear the message from empty lines
-        message.split[[i]] = v[v != ""]
-
-        ## remove spaces before first line
-        message.split[[i]] = gsub("^\\s+", "", message.split[[i]])
-        ## remove spaces at the end of the message
-        message.split[[i]] = gsub("$\\s+", "", message.split[[i]])
-
-        ## if the commit message was completely empty, add empty title and body
-        if (length(message.split[[i]]) == 0) {
-            message.split[[i]] = c("", "")
-        }
-        ## if there is only one line, create an empty body
-        else if (length(message.split[[i]]) == 1) {
-            message.split[[i]] = c(message.split[[i]], "")
-        }
-        ## if there are more than two lines, merge all except for the first one
-        else if (length(message.split[[i]]) > 2) {
-            message.split[[i]] = c(message.split[[i]][[1]],
-                                    paste(tail(message.split[[i]], -1),
-                                        ## use an ascii line break instead
-                                        collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
-        }
-    }
-
-    ## convert list of vectors to a data frame with two columns
-    message.split = as.data.frame(do.call(rbind, message.split))
-    colnames(message.split) = c("title", "message")
-
-    ## split the list of vectors from above into two vectors
-    # commit.titles = lapply(message.split, function (v) v[[1]][1])
-    # commit.message.bodies = lapply(message.split, function (v) v[[2]])
-    # for (i in seq(1, length(message.split))) {
-    #     ## put the first element of each vector in the title vector
-    #     commit.titles[[i]] = message.split[[i]][[1]]
-    #     ## put the second one in the body vector
-    #     commit.message.bodies[[i]] = message.split[[i]][[2]]
-    # }
-    # print(commit.titles)
-    ## create a data frame containing all four necessary columns
-    commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
-                                     commit.message.data[["hash"]], # hash
-                                     message.split[["title"]], # title
-                                     message.split[["message"]]) # message
-
-    ## set all the column names
-    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
-
-    ## Make commit.id have numeric type and set row names
-    commit.message.data[["commit.id"]] = sprintf("<commit-%s>", commit.message.data[["commit.id"]])
-    row.names(commit.message.data) = seq_len(nrow(commit.message.data))
-
-    logging::logdebug("read.commit.messages: finished.")
-
-    return(commit.message.data)
-}
-
-
 #' Create an empty dataframe which has the same shape as a dataframe containing commits. The dataframe has the column
 #' names and column datatypes defined in \code{COMMITS.LIST.COLUMNS} and \code{COMMITS.LIST.DATA.TYPES}, respectively.
 #'
@@ -291,16 +176,6 @@ read.commit.messages = function(data.path) {
 create.empty.commits.list = function() {
     return (create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
 }
-
-
-#' Create a empty dataframe which has the same shape as a dataframe containing commit messages. The dataframe has the column
-#' names and column datatypes defined in \code{COMMIT.MESSAGE.LIST.COLUMNS} and \code{COMMIT.MESSAGE.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.commit.message.list = function() {
-    return (create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
-}
-
 
 ## * Mail data -------------------------------------------------------------
 
@@ -543,6 +418,119 @@ read.authors = function(data.path) {
 #' @return the empty dataframe
 create.empty.authors.list = function() {
     return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
+}
+
+## * Commit message data ---------------------------------------------------
+
+## column names of a dataframe containing commit messages (see file
+## 'commitMessages.list' and function \code{read.commit.messages})
+COMMIT.MESSAGE.LIST.COLUMNS = c(
+    "commit.id", # id
+    "hash", "title", "message"
+)
+
+## declare the datatype for each column in the constant 'COMMIT.MESSAGE.LIST.COLUMNS'
+COMMIT.MESSAGE.LIST.DATA.TYPES = c(
+    "character",
+    "character", "character", "character"
+)
+
+## declare the constant (5 spaces) which is used by codeface to separate lines in
+## commit messages
+COMMIT.MESSAGE.LINE.SEP.CODEFACE = paste0(rep(" ", 5), collapse = "")
+## declare the constant to how line breaks should look like in the data
+COMMIT.MESSAGE.LINE.SEP.REPLACE = "\n"
+
+#' Read the commit messages from the 'commitMessages.list' file.
+#' Turn line breaks represented with five spaces into \n line breaks and
+#' ignore initial spaces. Also remove spaces at the beginning and the end of
+#' the message.
+#'
+#' @param data.path the path to the commit-messages list
+#'
+#' @return a data frame with id, hash, title and message body´
+read.commit.messages = function(data.path) {
+    logging::logdebug("read.commit.messages: starting.")
+
+    ## read the file with the commit messages
+    file = file.path(data.path, "commitMessages.list")
+
+    commit.message.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                         encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the list of commits is empty
+    if (inherits(commit.message.data, "try-error")) {
+        logging::logwarn("There are no commit messages available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return a dataframe with the correct columns but zero rows
+        return(create.empty.commit.message.list())
+    }
+
+    ## set column names for new data frame; unprocessed data only has three columns so omit the "title" column
+    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS[COMMIT.MESSAGE.LIST.COLUMNS != "title"]
+    ## split the message string with the new line symbol
+    message.split = strsplit(commit.message.data[["message"]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
+
+    ## prepare the 'message.split' object so that it contains a two-element
+    ## vector for each commit
+    for (i in seq_along(message.split)) {
+        v = message.split[[i]]
+
+        ## clear the message from empty lines
+        message.split[[i]] = v[v != ""]
+
+        ## remove spaces before first line
+        message.split[[i]] = gsub("^\\s+", "", message.split[[i]])
+        ## remove spaces at the end of the message
+        message.split[[i]] = gsub("$\\s+", "", message.split[[i]])
+
+        ## if the commit message was completely empty, add empty title and body
+        if (length(message.split[[i]]) == 0) {
+            message.split[[i]] = c("", "")
+        }
+        ## if there is only one line, create an empty body
+        else if (length(message.split[[i]]) == 1) {
+            message.split[[i]] = c(message.split[[i]], "")
+        }
+        ## if there are more than two lines, merge all except for the first one
+        else if (length(message.split[[i]]) > 2) {
+            message.split[[i]] = c(message.split[[i]][[1]],
+                                   paste(tail(message.split[[i]], -1),
+                                         ## use an ascii line break instead
+                                         collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
+        }
+    }
+
+    ## convert list of vectors to a data frame with two columns
+    message.split = as.data.frame(do.call(rbind, message.split))
+    colnames(message.split) = c("title", "message")
+
+    ## create a data frame containing all four necessary columns
+    commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
+                                     commit.message.data[["hash"]], # hash
+                                     message.split[["title"]], # title
+                                     message.split[["message"]]) # message
+
+    ## set all the column names
+    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
+
+    ## Make commit.id have numeric type and set row names
+    commit.message.data[["commit.id"]] = sprintf("<commit-%s>", commit.message.data[["commit.id"]])
+    row.names(commit.message.data) = seq_len(nrow(commit.message.data))
+
+    logging::logdebug("read.commit.messages: finished.")
+
+    return(commit.message.data)
+}
+
+#' Create a empty dataframe which has the same shape as a dataframe containing commit messages.
+#' The dataframe has the column names and column datatypes defined in \code{COMMIT.MESSAGE.LIST.COLUMNS} and
+#' \code{COMMIT.MESSAGE.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.commit.message.list = function() {
+    return (create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
 }
 
 ## * PaStA data ------------------------------------------------------------

@@ -436,12 +436,12 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.messages = self$get.commit.messages()
 
                 ## drop the commit.id column as we do not want it twice
-                commit.messages = subset(commit.messages, select=-c(commit.id))
+                commit.messages = commit.messages[ , colnames(commit.messages) != "commit.id"]
 
                 ## now there are only three columns left: commit.id, title, message.body
                 ## check whether to include only title or also the messages
                 if (private$project.conf$get.value("commit.messages") == "title") {
-                    commit.messages = subset(commit.messages, select=-c(message))
+                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
                 }
 
                 ## merge them into the commit data
