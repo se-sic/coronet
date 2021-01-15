@@ -434,28 +434,19 @@ ProjectData = R6::R6Class("ProjectData",
                 ## get commit messages
                 commit.messages = private$commit.messages
 
-                ## drop the commit.id column as we do not want it twice
-                commit.messages = commit.messages[ , colnames(commit.messages) != "commit.id"]
-
                 ## now there are only three columns left: commit.id, title, message
                 ## check whether to include only title or also the messages
                 if (private$project.conf$get.value("commit.messages") == "title") {
                     commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
                 }
 
+                ## get a vector with the column names in the right order
+                col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
                 ## merge them into the commit data
-                commit.data = merge(private$commits, commit.messages, by.x = "hash", by.y = "hash")
-
-                ## when merging by hash, the hash column is taken as the first column of the
-                ## resulting data frame
-                ## change that order back depending on how many columns the new data frame has
-                if (private$project.conf$get.value("commit.messages") == "title") {
-                    ## one column less as message.body is not included
-                    private$commits = commit.data[, c(2, 3, 4, 5, 6, 7, 8, 1, 9, 10, 11, 12, 13, 14, 15, 16, 17)]
-                }
-                else {
-                    private$commits = commit.data[, c(2, 3, 4, 5, 6, 7, 8, 1, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)]
-                }
+                private$commits = merge(private$commits, commit.messages,
+                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                ## adjust the column order
+                private$commits = private$commits[col.names]
             }
         },
 
@@ -774,7 +765,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.commit.messages = function() {
             logging::loginfo("Getting commit messages.´")
 
-            if (private$project.conf$get.value("commit.messages") != "none") {
+            if (private$project.conf$get.value("commit.messages") == "title" |
+                private$project.conf$get.value("commit.messages") == "message") {
                 ## if commit messages are not read already, do this
                 if (is.null(private$commit.messages)) {
                     commit.message.data = read.commit.messages(self$get.data.path())
