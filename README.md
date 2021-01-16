@@ -11,8 +11,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 ## Table of contents
 
-- [coronet - The network library](#coronet---the-network-library)
-  - [Table of contents](#table-of-contents)
+
   - [Integration](#integration)
     - [Requirements](#requirements)
       - [`R`](#r)
@@ -182,14 +181,15 @@ There are two distinguishable types of data sources that are both handled by the
     * Issue data (called `"issues"` internally)
 
 - Additional (orthogonal) data sources (augmentable to main data sources, not splittable)
+    * Commit messages are available through the parameter `commit.messages` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class. Three values can be used:
+        1. `none` is the default value and does not impact the configuration at all.
+        2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
+        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
     * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
-    * Commit messages are available through the parameter `commit.messages`. Three values can be used:
-        1. `none` is the default value and does not impact the configuration at all.
-        2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
-        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
+   
    
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 

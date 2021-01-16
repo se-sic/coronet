@@ -220,6 +220,33 @@ ProjectData = R6::R6Class("ProjectData",
             return(mails)
         },
 
+        ## * * commit message data ------------------------------------------
+
+        #' Add the columns \code{title} and \code{message} to commits using the selected
+        #' configuration option of \code{commit.messages} and the results of the function \code{get.commit.messages}.
+        update.commit.message.data = function() {
+            logging::loginfo("Merging commit messages into commit data.")
+
+            if (!is.null(private$commits)) {
+                ## get commit messages
+                commit.messages = private$commit.messages
+
+                ## now there are only three columns left: commit.id, title, message
+                ## check whether to include only title or also the messages
+                if (private$project.conf$get.value("commit.messages") == "title") {
+                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                }
+
+                ## get a vector with the column names in the right order
+                col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+                ## merge them into the commit data
+                private$commits = merge(private$commits, commit.messages,
+                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                ## adjust the column order
+                private$commits = private$commits[col.names]
+            }
+        },
+
         ## * * PaStA data --------------------------------------------------
 
         #' Use the information about the deleted patchstack mails that are stored in the field \code{patchstack.mails}
@@ -421,33 +448,6 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             logging::logdebug("update.synchronicity.data: finished.")
-        },
-
-        ## * * commit messages ---------------------------------------------
-
-        #' Add the columns \code{title} and \code{message} to commits using the selected
-        #' configuration option of \code{commit.messages} and the results of the function \code{get.commit.messages}.
-        update.commit.message.data = function() {
-            logging::loginfo("Merging commit messages into commit data.")
-
-            if (!is.null(private$commits)) {
-                ## get commit messages
-                commit.messages = private$commit.messages
-
-                ## now there are only three columns left: commit.id, title, message
-                ## check whether to include only title or also the messages
-                if (private$project.conf$get.value("commit.messages") == "title") {
-                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
-                }
-
-                ## get a vector with the column names in the right order
-                col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
-                ## merge them into the commit data
-                private$commits = merge(private$commits, commit.messages,
-                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
-                ## adjust the column order
-                private$commits = private$commits[col.names]
-            }
         },
 
         ## * * timestamps --------------------------------------------------
