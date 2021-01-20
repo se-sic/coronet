@@ -36,7 +36,7 @@ requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
 requireNamespace("sqldf") # for SQL-selections on data.frames
-
+requireNamespace("data.table") # for faster data.frame processing
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Main data sources -------------------------------------------------------
@@ -503,7 +503,7 @@ read.commit.messages = function(data.path) {
     }
 
     ## convert list of vectors to a data frame with two columns
-    message.split = as.data.frame(do.call(rbind, message.split))
+    message.split = data.table::rbindlist(lapply(message.split, as.data.frame.list))
     colnames(message.split) = c("title", "message")
 
     ## create a data frame containing all four necessary columns
