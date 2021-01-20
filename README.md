@@ -123,7 +123,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `parallel`: For parallelization
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
-- `data.table`: For faster data processing.
+- `data.table`: For faster data processing
 - `testthat`: For the test suite
 - `patrick`: For the test suite
 - `ggplot2`: For plotting of data
