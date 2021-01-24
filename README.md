@@ -1,4 +1,6 @@
-# coronet - The network library
+![coronet](./pictures/5.coronet_with_font_radiused_rectangle.png)
+
+# coronet––The network library
 
 Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
 
@@ -6,7 +8,7 @@ The network library `coronet` can be used to construct analyzable networks based
 
 If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
 
-![Exemplary plot of multi network](plot-multi.png)
+![Exemplary plot of multi network](./plot-multi.png)
 
 
 ## Table of contents
@@ -53,7 +55,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 While using the package, we require the following infrastructure.
 
-#### [`R`](https://www.r-project.org/) 
+#### [`R`](https://www.r-project.org/)
 
 Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
 
