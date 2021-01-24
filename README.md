@@ -1,4 +1,6 @@
-![coronet](./pictures/5.coronet_with_font_radiused_rectangle.png)
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
+![coronet](./logo/5.coronet_with_font_radiused_rectangle.png)
 
 # coronet––The network library
 
@@ -9,7 +11,6 @@ The network library `coronet` can be used to construct analyzable networks based
 If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
 
 ![Exemplary plot of multi network](./plot-multi.png)
-
 
 ## Table of contents
   - [Integration](#integration)
@@ -44,6 +45,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Splitting information](#splitting-information)
       - [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
     - [NetworkConf](#networkconf)
+  - [Changelog](#changelog)
   - [Contributing](#contributing)
   - [License](#license)
   - [Work in progress](#work-in-progress)
@@ -190,8 +192,8 @@ There are two distinguishable types of data sources that are both handled by the
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
-   
-   
+
+
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 
  The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
@@ -637,6 +639,9 @@ You can also update the `NetworkConf` object at any time by calling `NetworkBuil
 
 For more examples, please have a look into the file `showcase.R`.
 
+## Changelog
+
+For the most recent changes and releases, please have a look at our [NEWS](NEWS.md).
 
 ## Contributing
 
@@ -645,7 +650,7 @@ If you want to contribute to this project, please have a look at the file [CONTR
 
 ## License
 
-This project is licensed under [GNU General Public License v2.0](LICENSE).
+This project is licensed under [GNU General Public License v2.0](https://github.com/se-sic/coronet/blob/master/LICENSE).
 
 
 ## Work in progress

@@ -1,0 +1,13 @@
+title: <img src="https://se-sic.github.io/coronet/logo/4.coronet_only_logo_radiused_rectangle.png" style="height:50px"><a href="https://github.com/se-sic/coronet">se-sic/coronet</a>
+github:
+  license: false
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - CONTRIBUTING.md
+  - README.md
+  - NEWS.md
+  - .github

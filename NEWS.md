@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
 # coronet – Changelog
 
 ## Unversioned
