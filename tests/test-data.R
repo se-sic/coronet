@@ -190,7 +190,7 @@ test_that("Merge commit messages to commit data", {
 
     commits = proj.data$get.commits()
 
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32713, 32710, 32714, 32715, 32716,
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                                     "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
@@ -233,7 +233,7 @@ test_that("Merge commit message titles to commit data", {
 
     commits = proj.data$get.commits()
 
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32713, 32710, 32714, 32715, 32716,
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                                     "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
