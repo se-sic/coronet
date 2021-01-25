@@ -19,6 +19,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -70,6 +71,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## initialize additional data sources to avoid multiple redundant initalizations later
     additional.data = list(
         authors = project.data$get.authors(),
+        commit.messages = project.data$get.commit.messages(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -157,7 +159,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](df.list[[data.source]])
             }
-            ## set additional data sources: authors, pasta, synchronicity
+            ## set additional data sources: authors, commit.messages, pasta, synchronicity
             for (data.source in additional.data.sources) {
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](additional.data[[data.source]])
