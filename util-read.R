@@ -472,45 +472,42 @@ read.commit.messages = function(data.path) {
     ## split the message string with the new line symbol
     message.split = strsplit(commit.message.data[["message"]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
 
-    ## prepare the 'message.split' object so that it contains a two-element
-    ## vector for each commit
-    for (i in seq_along(message.split)) {
-        v = message.split[[i]]
-
+    ## prepare the 'message.split' object so that it contains a two-element vector for each commit
+    message.split.df = lapply(message.split, function(tuple) {
         ## clear the message from empty lines
-        message.split[[i]] = v[v != ""]
+        lines = tuple[tuple != ""]
 
         ## remove spaces before first line
-        message.split[[i]] = gsub("^\\s+", "", message.split[[i]])
+        lines = gsub("^\\s+", "", lines)
         ## remove spaces at the end of the message
-        message.split[[i]] = gsub("$\\s+", "", message.split[[i]])
+        lines = gsub("$\\s+", "", lines)
 
-        ## if the commit message was completely empty, add empty title and body
-        if (length(message.split[[i]]) == 0) {
-            message.split[[i]] = c("", "")
-        }
+        ## set title and message empty in case there was on actual commit message or it was consisting of spaces only
+        title = ""
+        message = ""
+
         ## if there is only one line, create an empty body
-        else if (length(message.split[[i]]) == 1) {
-            message.split[[i]] = c(message.split[[i]], "")
+        if (length(lines) == 1) {
+            title = lines[[1]]
         }
         ## if there are more than two lines, merge all except for the first one
-        else if (length(message.split[[i]]) > 2) {
-            message.split[[i]] = c(message.split[[i]][[1]],
-                                   paste(tail(message.split[[i]], -1),
-                                         ## use an ascii line break instead
-                                         collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE))
+        else if (length(lines) >= 2) {
+            title = lines[[1]]
+            ## use an ascii line break instead
+            message = paste(tail(lines, -1), collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE)
         }
-    }
 
-    ## convert list of vectors to a data frame with two columns
-    message.split = data.table::rbindlist(lapply(message.split, as.data.frame.list))
-    colnames(message.split) = c("title", "message")
+        return(data.table::data.table(title = title, message = message))
+    })
+
+    ## convert to a data.table with two columns
+    message.split.df = data.table::rbindlist(message.split.df)
 
     ## create a data frame containing all four necessary columns
     commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
                                      commit.message.data[["hash"]], # hash
-                                     message.split[["title"]], # title
-                                     message.split[["message"]]) # message
+                                     message.split.df[["title"]], # title
+                                     message.split.df[["message"]]) # message
 
     ## set all the column names
     colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
