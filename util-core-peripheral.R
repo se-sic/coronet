@@ -705,31 +705,46 @@ get.committer.or.author.commit.count = function(range.data) {
     return(res)
 }
 
+
+#' Helper function that aggregates counts of things like commits, mails, ... on a per-author basis
+#'
+#' @param name the name the function will be bound to, for logging
+#' @param data.extractor a function to be called on the main argument that gets the dataframe from which to aggregate from
+#' @param grouping.keys the dataframe keys to group by
+#' @param distrinctize Whether to remove duplicates
+#' @param distrinctize.key if distinctize, then the key by which to remove duplicates
+#'
+#' @return A function that aggregates data according to the above specification contained in a given \code{ProjectData}.
+#'         This function itself returns a dataframe consisting of |grouping.keys|+1 columns, the last holding the count,
+#'         and the others the respective grouping
+#'
+group.data.by.key = function(name, data.extractor, grouping.keys, distinctize, distinctize.key) {
+    return (function(proj.data) {
+        logging::logdebug(paste(name, ": starting.", sep=""))
+
+        df = data.extractor(proj.data)
+        if (distinctize) {
+            df = df[!duplicated(df[[distinctize.key]]), ]
+        }
+        df = df[grouping.keys]
+        grouping.keys.formatted = paste(grouping.keys, sep="`, `")
+        stmt = paste("SELECT `",grouping.keys.formatted,"`, COUNT(*) as `freq` FROM `df`
+                                 GROUP BY `",grouping.keys.formatted,"` ORDER BY `freq` DESC, `",grouping.keys.formatted,"`",sep="")
+        logging::logdebug(paste(name, ": running SQL ", stmt,sep=""))
+        res = sqldf::sqldf(stmt)
+        logging::logdebug(paste(name, ": finished",sep=""))
+        return(res)
+    })
+}
+
 #' Get the commit count per committer in the given range data, where the committer
 #' may match the author of the respective commits
 #'
 #' @param range.data The data to count on
 #'
 #' @return A data frame in descending order by the commit count.
-get.committer.commit.count = function(range.data) {
-    logging::logdebug("get.committer.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("committer.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `committer.name` ORDER BY `freq` DESC, `committer.name` ASC")
-
-    logging::logdebug("get.committer.commit.count: finished.")
-    return(res)
-}
+get.committer.commit.count = group.data.by.key("get.committer.commit.count", function(proj.data) {return(proj.data$get.commits.filtered())},
+                                               c("committer.name"), TRUE, c("hash"))
 
 #' Get the commit count for each author based on the commit data contained in the specified \code{ProjectData}.
 #'
@@ -737,25 +752,241 @@ get.committer.commit.count = function(range.data) {
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective commit counts
-get.author.commit.count = function(proj.data) {
-    logging::logdebug("get.author.commit.count: starting.")
+get.author.commit.count = group.data.by.key("get.author.commit.count", function(proj.data) {return(proj.data$get.commits.filtered())},
+                                            c("author.name"), TRUE, c("hash"))
 
-    ## Get commit data
-    commits.df = proj.data$get.commits.filtered()
 
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Mail-based classification ---------------------------------------------
 
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name")]
+## * Count-based classification --------------------------------------------
 
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC")
+#' Get the mail count for each author based on the mail data contained in the specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.mail.count = group.data.by.key("get.author.mail.count", function(proj.data) {return(proj.data$get.mails())},
+                                          c("author.name"), TRUE, c("message.id"))
 
-    logging::logdebug("get.author.commit.count: finished.")
+#' Get the mail thread count for each author based on the mail data contained in the specified \code{ProjectData}.
+#' This is the number of threads the author participated in, i.e. contributed at least one e-mail
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail thread counts
+get.author.mail.thread.count = function(proj.data) {
+    logging::logdebug("get.author.mail.thread.count: starting.")
+
+    df = proj.data$get.mails()
+    df = df[!duplicated(df[["message.id"]]), ]
+    df = df[c("author.name", "message.id", "thread")]
+    stmt = "SELECT `author.name`, COUNT(DISTINCT thread) as `freq` FROM `df`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.mail.thread.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.mail.thread.count: finished")
     return(res)
 }
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Issues-based classification ---------------------------------------------
+
+## * Count-based classification --------------------------------------------
+
+
+#' Get the issues count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The issues count is the number of issues the author participated in (which can mean anything,
+#' from commenting to closing to assigning the issue to others, to assigning tags, ...)
+#'
+#' Issues do not include pull requests
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.issues.count = function(proj.data) {
+    logging::logdebug("get.author.issues.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("issue" %in% df$issue.type[[rnum]]) {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.issues.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.issues.count: finished")
+    return(res)
+}
+
+#' Get the issues count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The issues count here is the number of issues the author participated in by commenting
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.issues.commented.in.count = function(proj.data) {
+    logging::logdebug("get.author.issues.commented.in.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("issue" %in% df$issue.type[[rnum]] && df$event.name[[rnum]] == "commented") {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.issues.commented.in.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.issues.commented.in.count: finished")
+    return(res)
+}
+#' Get the issues count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The issues count is the number of issues the author commented in.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.issue.comments.count = function(proj.data) {
+    logging::logdebug("get.author.issue.comments.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("issue" %in% df$issue.type[[rnum]] && df$event.name[[rnum]] == "commented") {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT(`issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.issue.comments.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.issue.comments.count: finished")
+    return(res)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Pull-Request-based classification ---------------------------------------------
+
+## * Count-based classification --------------------------------------------
+
+
+#' Get the pull request count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The pull request count is the number of pull requests the author created.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.pull.requests.created.count = function(proj.data) {
+    logging::logdebug("get.author.pull.requests.created.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("pull request" %in% df$issue.type[[rnum]] && df$event.name[[rnum]] == "created") {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT(DISTINCT `issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.pull.requests.created.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.pull.requests.created.count: finished")
+    return(res)
+}
+
+#' Get the pull request count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The pull request count is the number of pull requests the author added a commit to.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.pull.requests.commited.in.count = function(proj.data) {
+    logging::logdebug("get.author.pull.requests.commited.in.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("pull request" %in% df$issue.type[[rnum]] && df$event.name[[rnum]] == "commit_added") {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT(DISTINCT `issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.pull.requests.commited.in.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.pull.requests.commited.in.count: finished")
+    return(res)
+}
+
+#' Get the pull request count for each author based on the issues data contained in the specified \code{ProjectData}.
+#' The pull request count is the number of pull requests the author contributed to in any way (see get.author.issues.count)
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.pull.requests.count = function(proj.data) {
+    logging::logdebug("get.author.pull.requests.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("pull request" %in% df$issue.type[[rnum]]) {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT(DISTINCT `issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.pull.requests.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.pull.requests.count: finished")
+    return(res)
+}
+
+#' Get the number of comments to pull requests for each author based on the issues data contained in the specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective mail counts
+get.author.pull.request.comments.count = function(proj.data) {
+    logging::logdebug("get.author.pull.request.comments.count: starting.")
+
+    df = proj.data$get.issues.unfiltered()
+    df = df[c("author.name", "issue.id", "issue.type", "event.name")]
+    df.new = data.frame(author.name=character(),issue.id=character())
+    for (rnum in 1:nrow(df)) {
+        if ("pull request" %in% df$issue.type[[rnum]]) {
+            df.new[nrow(df.new)+1,] <- list(df$author.name[[rnum]], df$issue.id[[rnum]])
+        }
+    }
+    stmt = "SELECT `author.name`, COUNT(`issue.id`) as `freq` FROM `df.new`
+                             GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
+    logging::logdebug(paste("get.author.pull.request.comments.count: running SQL ", stmt,sep=""))
+    res = sqldf::sqldf(stmt)
+    logging::logdebug("get.author.pull.request.comments.count: finished")
+    return(res)
+}
+
 
 ## * LOC-based classification ----------------------------------------------
 

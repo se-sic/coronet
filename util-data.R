@@ -1087,6 +1087,22 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        #' Get the issue data, unfiltered.
+        #' Unfiltered means that we ignore the "issues.only.comments" config and always return the full data
+        #' If it does not already exist call the read method.
+        #'
+        #' @return the issue data
+        get.issues.unfiltered = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if (is.null(private$issues)) {
+                private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
+            }
+            private$extract.timestamps(source = "issues")
+            return(private$issues)
+        },
+
         #' Set the issue data to the given new data.
         #'
         #' @param data the new issue data
