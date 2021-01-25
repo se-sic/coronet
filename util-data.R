@@ -718,7 +718,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add commit message data if wanted
             if (private$project.conf$get.value("commit.messages") != "none") {
-                if (is.null(private$synchronicity)) {
+                if (is.null(private$scommit.messages)) {
                     ## get data that has been cached before
                     self$get.commit.messages()
                 } else {
@@ -778,7 +778,7 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             } else {
                 logging::logwarn("You have set the ProjectConf parameter 'commit.messages' to 'none'! Ignoring...")
-                ## mark synchronicity data as empty
+                ## mark commit messages data as empty
                 self$set.commit.messages(NULL)
             }
 
@@ -800,7 +800,10 @@ ProjectData = R6::R6Class("ProjectData",
             private$commit.messages = data
 
             ## add commit message data to the commit data if configured
-            update.commit.message.data()
+            if (private$project.conf$get.value("commit.messages") == "title" |
+                private$project.conf$get.value("commit.messages") == "message") {
+                update.commit.message.data()
+            }
         },
 
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
