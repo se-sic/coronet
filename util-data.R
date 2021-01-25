@@ -718,7 +718,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add commit message data if wanted
             if (private$project.conf$get.value("commit.messages") != "none") {
-                if (is.null(private$scommit.messages)) {
+                if (is.null(private$commit.messages)) {
                     ## get data that has been cached before
                     self$get.commit.messages()
                 } else {

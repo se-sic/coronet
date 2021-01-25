@@ -482,7 +482,7 @@ read.commit.messages = function(data.path) {
         ## remove spaces at the end of the message
         lines = gsub("$\\s+", "", lines)
 
-        ## set title and message empty in case there was on actual commit message or it was consisting of spaces only
+        ## set title and message empty in case there was no actual commit message or it was consisting of spaces only
         title = ""
         message = ""
 
