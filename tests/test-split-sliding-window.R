@@ -423,9 +423,9 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
 
 ## * activity-based --------------------------------------------------------
 
-#
-# Tests for split.data.activity.based(..., activity.type = 'commits') using sliding windows
-#
+##
+## Tests for split.data.activity.based(..., activity.type = 'commits') using sliding windows
+##
 
 test_that("Split a data object activity-based (activity.type = 'commits', sliding.window = TRUE).", {
 
