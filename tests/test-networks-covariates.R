@@ -17,6 +17,7 @@
 ## Copyright 2018-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -62,6 +63,32 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     ## retrieve project data and network builder
     project.data = ProjectData$new(proj.conf)
     project.data$set.issues(NULL)
+
+    ## split data
+    input.data = split.data.time.based(project.data, bins = mybins)
+    input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)[[network.type.function]]())
+
+    return(list("networks" = input.data.networks, "project.data" = project.data))
+}
+
+
+#' Load test data and generate test networks, but including issues
+#'
+#' @return Tuple containing project data and list of networks
+get.network.covariates.test.networks.with.issues = function(network.type = c("author", "artifact")) {
+
+    network.type.function = paste("get", match.arg(network.type), "network", sep = ".")
+
+    ## configuration and data objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", TRUE)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
+
+    ## retrieve project data and network builder
+    project.data = ProjectData$new(proj.conf)
 
     ## split data
     input.data = split.data.time.based(project.data, bins = mybins)
@@ -485,6 +512,143 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
 })
+
+#' Test the add.vertex.attribute.mail.count method
+test_that("Test add.vertex.attribute.mail.count", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(1L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 0L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 0L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(3L), c(1L), c(2L, 0L,  1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L)),
+        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "mail.count")
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' Test the add.vertex.attribute.mail.count method
+test_that("Test add.vertex.attribute.mail.thread.count", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(1L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 0L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 0L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(3L), c(1L), c(2L, 0L,  1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L)),
+        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "mail.thread.count")
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' Test the add.vertex.attribute.mail.count method
+test_that("Test add.vertex.attribute.issue.count", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks.with.issues()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(0L), c(0L), c(1L, 1L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(0L), c(1L), c(1L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(1L), c(1L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 1L,  3L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issues.count")
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+
+#' Test the add.vertex.attribute.mail.count method
+test_that("Test add.vertex.attribute.issue.count.by.commenting", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks.with.issues()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(0L), c(0L), c(0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(0L), c(0L), c(0L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L), c(1L), c(1L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(3L), c(1L), c(1L, 1L,  2L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.count.by.commenting(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issues.count.by.commenting")
+
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' Test the add.vertex.attribute.mail.count method
+test_that("Test add.vertex.attribute.issue.comment.count", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks.with.issues()
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(c(0L), c(0L), c(0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(0L), c(0L), c(0L, 1L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(0L), c(0L, 1L,  1L)),
+        project.cumulative = network.covariates.test.build.expected(c(6L), c(4L), c(4L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(8L), c(4L), c(4L, 1L,  2L)),
+        complete = network.covariates.test.build.expected(c(9L), c(4L), c(4L, 1L,  2L))
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.comment.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.comment.count")
+        logging::logdebug(level)
+        expect_identical(expected.attributes[[level]], actual.attributes)
+    })
+})
+
 
 #' Test the add.vertex.attribute.author.email method
 test_that("Test add.vertex.attribute.author.email", {
