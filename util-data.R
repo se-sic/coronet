@@ -887,7 +887,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (!is.null(private$commits)) {
                 synchronicity.hashes = unlist(private$synchronicity[["hash"]])
                 synchronicity.hashes.contained = unlist(private$synchronicity[["hash"]]) %in% private$commits[["hash"]]
-                commit.hashes.to.eliminate = commit.message.hashes[!synchronicity.hashes.contained]
+                commit.hashes.to.eliminate = synchronicity.hashes[!synchronicity.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
                 rows.to.remove = unlist(private$synchronicity[["hash"]]) %in% commit.hashes.to.eliminate
                 private$synchronicity = private$synchronicity[!rows.to.remove, ]
