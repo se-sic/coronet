@@ -806,6 +806,22 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        #' Remove lines in the commit message data that contain message ids or commit hashes
+        #' that don't appear in the commit data.
+        cleanup.commit.message.data = function() {
+            logging::loginfo("Cleaning up commit message data")
+
+            ## remove commit hashes that don't appear in the commit data
+            if (!is.null(private$commits)) {
+                commit.message.hashes = unlist(private$commit.messages[["hash"]])
+                commit.message.hashes.contained = unlist(private$commit.messages[["hash"]]) %in% private$commits[["hash"]]
+                commit.hashes.to.eliminate = commit.message.hashes[!commit.message.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = unlist(private$commit.messages[["hash"]]) %in% commit.hashes.to.eliminate
+                private$commit.messages = private$commit.messages[!rows.to.remove, ]
+            }
+        },
+
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
         #' from disk.
         #'
@@ -859,6 +875,22 @@ ProjectData = R6::R6Class("ProjectData",
 
                 ## update all synchronicity-related data
                 private$update.synchronicity.data()
+            }
+        },
+
+        #' Remove lines in the synchronicity data that contain message ids or commit hashes
+        #' that don't appear in the commit data.
+        cleanup.synchronicity.data = function() {
+            logging::loginfo("Cleaning up synchronicity data")
+
+            ## remove commit hashes that don't appear in the commit data
+            if (!is.null(private$commits)) {
+                synchronicity.hashes = unlist(private$synchronicity[["hash"]])
+                synchronicity.hashes.contained = unlist(private$synchronicity[["hash"]]) %in% private$commits[["hash"]]
+                commit.hashes.to.eliminate = commit.message.hashes[!synchronicity.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = unlist(private$synchronicity[["hash"]]) %in% commit.hashes.to.eliminate
+                private$synchronicity = private$synchronicity[!rows.to.remove, ]
             }
         },
 
