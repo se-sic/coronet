@@ -480,7 +480,7 @@ read.commit.messages = function(data.path) {
         ## remove spaces before first line
         lines = gsub("^\\s+", "", lines)
         ## remove spaces at the end of the message
-        lines = gsub("$\\s+", "", lines)
+        lines = gsub("\\s+$", "", lines)
 
         ## set title and message empty in case there was no actual commit message or it was consisting of spaces only
         title = ""
@@ -504,13 +504,10 @@ read.commit.messages = function(data.path) {
     message.split.df = data.table::rbindlist(message.split.df)
 
     ## create a data frame containing all four necessary columns
-    commit.message.data = data.frame(commit.message.data[["commit.id"]], # commit.id
-                                     commit.message.data[["hash"]], # hash
-                                     message.split.df[["title"]], # title
-                                     message.split.df[["message"]]) # message
-
-    ## set all the column names
-    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS
+    commit.message.data["title"] = message.split.df[["title"]] # title
+    commit.message.data["message"] = message.split.df[["message"]] # message
+    ## reorder columns because they are added alphabetically
+    commit.message.data = commit.message.data[, COMMIT.MESSAGE.LIST.COLUMNS]
 
     ## Make commit.id have numeric type and set row names
     commit.message.data[["commit.id"]] = format.commit.ids(commit.message.data[["commit.id"]])
