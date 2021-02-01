@@ -4,7 +4,7 @@
 
 ### Added
 - Add functionality to read and process commit messages in order to merge them to the commit data (see issue #180). Three values are available for the new attribute `commit.messages` in `ProjectConf`: `none`, `title` and `messages` (PR #193, 85b1d0572c0fb9f4c062bceb1363b0398f98b85f, fdc414ade1a640f533e809a25cfe012e42b3cffa, 43e1894998e18faff3a65114fa65ee54e1d2f66e)
-
+- Add functions `cleanup.commit.message.data` and `cleanup.synchronicity.data` to remove commit hashes that are not any more present in the commit data from the commit message data or synchronicity data (PR #193, 98e83b037ecc88d9a29e8e4ca93598a9978e85a2)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
