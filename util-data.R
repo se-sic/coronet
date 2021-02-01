@@ -245,6 +245,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## adjust the column order
                 private$commits = private$commits[col.names]
             }
+
+            logging::logwarn("There might be commit message data that does not appear in the commit data.
+                              To clean this up you can call the function 'cleanup.commit.message.data()'.")
         },
 
         ## * * PaStA data --------------------------------------------------
@@ -447,6 +450,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             }
 
+            logging::logwarn("There might be synchronicity data that does not appear in the commit data.
+                              To clean this up you can call the function 'cleanup.synchronicity.data()'.")
             logging::logdebug("update.synchronicity.data: finished.")
         },
 
@@ -806,18 +811,18 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        #' Remove lines in the commit message data that contain message ids or commit hashes
+        #' Remove lines in the commit message data that contain commit hashes
         #' that don't appear in the commit data.
         cleanup.commit.message.data = function() {
             logging::loginfo("Cleaning up commit message data")
 
             ## remove commit hashes that don't appear in the commit data
             if (!is.null(private$commits)) {
-                commit.message.hashes = unlist(private$commit.messages[["hash"]])
-                commit.message.hashes.contained = unlist(private$commit.messages[["hash"]]) %in% private$commits[["hash"]]
+                commit.message.hashes = private$commit.messages[["hash"]]
+                commit.message.hashes.contained = private$commit.messages[["hash"]] %in% private$commits[["hash"]]
                 commit.hashes.to.eliminate = commit.message.hashes[!commit.message.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
-                rows.to.remove = unlist(private$commit.messages[["hash"]]) %in% commit.hashes.to.eliminate
+                rows.to.remove = private$commit.messages[["hash"]] %in% commit.hashes.to.eliminate
                 private$commit.messages = private$commit.messages[!rows.to.remove, ]
             }
         },
@@ -878,18 +883,18 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        #' Remove lines in the synchronicity data that contain message ids or commit hashes
+        #' Remove lines in the synchronicity data that contain commit hashes
         #' that don't appear in the commit data.
         cleanup.synchronicity.data = function() {
             logging::loginfo("Cleaning up synchronicity data")
 
             ## remove commit hashes that don't appear in the commit data
             if (!is.null(private$commits)) {
-                synchronicity.hashes = unlist(private$synchronicity[["hash"]])
-                synchronicity.hashes.contained = unlist(private$synchronicity[["hash"]]) %in% private$commits[["hash"]]
+                synchronicity.hashes = private$synchronicity[["hash"]]
+                synchronicity.hashes.contained = private$synchronicity[["hash"]] %in% private$commits[["hash"]]
                 commit.hashes.to.eliminate = synchronicity.hashes[!synchronicity.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
-                rows.to.remove = unlist(private$synchronicity[["hash"]]) %in% commit.hashes.to.eliminate
+                rows.to.remove = private$synchronicity[["hash"]] %in% commit.hashes.to.eliminate
                 private$synchronicity = private$synchronicity[!rows.to.remove, ]
             }
         },
