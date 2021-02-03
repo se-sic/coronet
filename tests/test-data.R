@@ -14,6 +14,7 @@
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -33,7 +34,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 test_that("Compare two ProjectData objects", {
 
-    ##initialize a ProjectData object with the ProjectConf and clone it into another one
+    ## initialize a ProjectData object with the ProjectConf and clone it into another one
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("pasta", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
@@ -44,7 +45,7 @@ test_that("Compare two ProjectData objects", {
     ## Always change one data source in the one object, test for inequality, change it in the
     ## second object, as well, and test for equality.
 
-    ##change the second data object
+    ## change the second data object
 
     proj.data.two$get.pasta()
 
@@ -178,4 +179,90 @@ test_that("Filter patchstack mails with PaStA enabled", {
 
     ## ensure that there are no other entries than the ones that have been verified to exist above
     expect_equal(6, nrow(filtered.pasta))
+})
+
+
+test_that("Merge commit messages to commit data", {
+    ## initialize a ProjectData object with the ProjectConf
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    commits = proj.data$get.commits()
+
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
+                                                                           32711, 32711)),
+                                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      author.name = c("Björn", "Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas"),
+                                      author.email = c("bjoern@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
+                                                       "karl@example.org", "thomas@example.org", "thomas@example.org", "thomas@example.org"),
+                                      committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-20 10:00:44", "2016-07-12 17:05:55",
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                              "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Thomas", "Karl", "Karl", "Thomas",  "Thomas", "Thomas"),
+                                      committer.email = c("bjoern@example.org", "bjoern@example.org", "thomas@example.org", "karl@example.org",
+                                                          "karl@example.org", "thomas@example.org", "thomas@example.org", "thomas@example.org"),
+                                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                               "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      changed.files = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 0, 0, 0, 0, 0, 0, 0)),
+                                      diff.size = as.integer(c(2, 1, 1, 1, 1, 1, 1, 1)),
+                                      file = c("test.c", "test.c", "test2.c", "test3.c", UNTRACKED.FILE,
+                                               UNTRACKED.FILE, "test2.c", "test2.c"),
+                                      artifact = c("A", "A", "Base_Feature", "Base_Feature",
+                                                   UNTRACKED.FILE.EMPTY.ARTIFACT, UNTRACKED.FILE.EMPTY.ARTIFACT, "Base_Feature", "foo"),
+                                      artifact.type = c("Feature", "Feature", "Feature","Feature", UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                                        UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "Feature", "Feature"),
+                                      artifact.diff.size = as.integer(c(1, 1, 1, 1, 0, 0, 1, 1)),
+                                      title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", "", ""),
+                                      message = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "", ""))
+
+    expect_identical(commits, commit.data.expected, info = "Add commit messages with title")
+})
+
+test_that("Merge commit message titles to commit data", {
+    ## initialize a ProjectData object with the ProjectConf
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commit.messages", "title")
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    commits = proj.data$get.commits()
+
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
+                                                                           32711, 32711)),
+                                      date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                                                    "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      author.name = c("Björn", "Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas"),
+                                      author.email = c("bjoern@example.org", "olaf@example.org", "olaf@example.org", "karl@example.org",
+                                                       "karl@example.org", "thomas@example.org", "thomas@example.org", "thomas@example.org"),
+                                      committer.date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-20 10:00:44", "2016-07-12 17:05:55",
+                                                                              "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
+                                                                              "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                      committer.name = c("Björn", "Björn", "Thomas", "Karl", "Karl", "Thomas",  "Thomas", "Thomas"),
+                                      committer.email = c("bjoern@example.org", "bjoern@example.org", "thomas@example.org", "karl@example.org",
+                                                          "karl@example.org", "thomas@example.org", "thomas@example.org", "thomas@example.org"),
+                                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                               "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      changed.files = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1)),
+                                      added.lines = as.integer(c(1, 1, 1, 1, 1, 1, 1, 1)),
+                                      deleted.lines = as.integer(c(1, 0, 0, 0, 0, 0, 0, 0)),
+                                      diff.size = as.integer(c(2, 1, 1, 1, 1, 1, 1, 1)),
+                                      file = c("test.c", "test.c", "test2.c", "test3.c", UNTRACKED.FILE,
+                                               UNTRACKED.FILE, "test2.c", "test2.c"),
+                                      artifact = c("A", "A", "Base_Feature", "Base_Feature",
+                                                   UNTRACKED.FILE.EMPTY.ARTIFACT, UNTRACKED.FILE.EMPTY.ARTIFACT, "Base_Feature", "foo"),
+                                      artifact.type = c("Feature", "Feature", "Feature","Feature", UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
+                                                        UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "Feature", "Feature"),
+                                      artifact.diff.size = as.integer(c(1, 1, 1, 1, 0, 0, 1, 1)),
+                                      title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", "", ""))
+
+    expect_identical(commits, commit.data.expected, info = "Add only commit title")
 })

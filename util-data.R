@@ -21,6 +21,7 @@
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -104,6 +105,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## commits and commit data
         commits.filtered = NULL, # data.frame
         commits = NULL, # data.frame
+        commit.messages = NULL, # data.frame
         ## mails
         mails = NULL, # data.frame
         mails.patchstacks = NULL, # list
@@ -216,6 +218,36 @@ ProjectData = R6::R6Class("ProjectData",
 
             logging::logdebug("filter.patchstack.mails: finished.")
             return(mails)
+        },
+
+        ## * * commit message data ------------------------------------------
+
+        #' Add the columns \code{title} and \code{message} to commits using the selected
+        #' configuration option of \code{commit.messages} and the results of the function \code{get.commit.messages}.
+        update.commit.message.data = function() {
+            logging::loginfo("Merging commit messages into commit data.")
+
+            if (!is.null(private$commits)) {
+                ## get commit messages
+                commit.messages = private$commit.messages
+
+                ## now there are only three columns left: commit.id, title, message
+                ## check whether to include only title or also the messages
+                if (private$project.conf$get.value("commit.messages") == "title") {
+                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                }
+
+                ## get a vector with the column names in the right order
+                col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+                ## merge them into the commit data
+                private$commits = merge(private$commits, commit.messages,
+                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                ## adjust the column order
+                private$commits = private$commits[col.names]
+            }
+
+            logging::logwarn("There might be commit message data that does not appear in the commit data.
+                              To clean this up you can call the function 'cleanup.commit.message.data()'.")
         },
 
         ## * * PaStA data --------------------------------------------------
@@ -418,6 +450,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             }
 
+            logging::logwarn("There might be synchronicity data that does not appear in the commit data.
+                              To clean this up you can call the function 'cleanup.synchronicity.data()'.")
             logging::logdebug("update.synchronicity.data: finished.")
         },
 
@@ -426,7 +460,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Call the getters of the specified data sources in order to
         #' initialize the sources and extract the timestamps.
         #'
-        #' @param data.sources the data sources to be prepated
+        #' @param data.sources the data sources to be prepared
         prepare.timestamps = function(data.sources) {
             for (source in data.sources) {
                 self[[ paste0("get.", source) ]]()
@@ -508,6 +542,7 @@ ProjectData = R6::R6Class("ProjectData",
         reset.environment = function() {
             private$commits.filtered = NULL
             private$commits = NULL
+            private$commit.messages = NULL
             private$mails = NULL
             private$issues = NULL
             private$authors = NULL
@@ -672,7 +707,8 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Set the commit list of the project to a new one.
-        #' Add PaStA and sychronicity data if configured in the \code{project.conf}.
+        #' Add PaStA and synchronicity data if configured in the \code{project.conf}
+        #' as well as commit message data.
         #'
         #' @param commit.data the new list of commits
         set.commits = function(commit.data) {
@@ -684,6 +720,18 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## store commit data
             private$commits = commit.data
+
+            ## add commit message data if wanted
+            if (private$project.conf$get.value("commit.messages") != "none") {
+                if (is.null(private$commit.messages)) {
+                    ## get data that has been cached before
+                    self$get.commit.messages()
+                } else {
+                    ## update the commit message data
+                    private$update.commit.message.data()
+                }
+
+            }
 
             ## add synchronicity data if wanted
             if (private$project.conf$get.value("synchronicity")) {
@@ -713,6 +761,70 @@ ProjectData = R6::R6Class("ProjectData",
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
             private$commits.filtered = NULL
+        },
+
+        #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
+        #' If the list of commits is not cached in the field \code{commit.messages}, call the read method first.
+        #'
+        #' @return the list of commit messages
+        get.commit.messages = function() {
+            logging::loginfo("Getting commit messages.´")
+
+            if (private$project.conf$get.value("commit.messages") == "title" |
+                private$project.conf$get.value("commit.messages") == "message") {
+                ## if commit messages are not read already, do this
+                if (is.null(private$commit.messages)) {
+                    commit.message.data = read.commit.messages(self$get.data.path())
+
+                    ## cache the result
+                    private$commit.messages = commit.message.data
+
+                    private$update.commit.message.data()
+                }
+            } else {
+                logging::logwarn("You have set the ProjectConf parameter 'commit.messages' to 'none'! Ignoring...")
+                ## mark commit messages data as empty
+                self$set.commit.messages(NULL)
+            }
+
+            return(private$commit.messages)
+        },
+
+        #' Set the commit message data to the given new data and, if configured in the field \code{project.conf},
+        #' also update it for the commit data.
+        #'
+        #' @param data the new commit message data
+        set.commit.messages = function(data) {
+            logging::loginfo("Setting commit messages data.")
+
+            if (is.null(data)) {
+                data = create.empty.commit.message.list()
+            }
+
+            ## set the actual data
+            private$commit.messages = data
+
+            ## add commit message data to the commit data if configured
+            if (private$project.conf$get.value("commit.messages") == "title" |
+                private$project.conf$get.value("commit.messages") == "message") {
+                update.commit.message.data()
+            }
+        },
+
+        #' Remove lines in the commit message data that contain commit hashes
+        #' that don't appear in the commit data.
+        cleanup.commit.message.data = function() {
+            logging::loginfo("Cleaning up commit message data")
+
+            ## remove commit hashes that don't appear in the commit data
+            if (!is.null(private$commits)) {
+                commit.message.hashes = private$commit.messages[["hash"]]
+                commit.message.hashes.contained = private$commit.messages[["hash"]] %in% private$commits[["hash"]]
+                commit.hashes.to.eliminate = commit.message.hashes[!commit.message.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = private$commit.messages[["hash"]] %in% commit.hashes.to.eliminate
+                private$commit.messages = private$commit.messages[!rows.to.remove, ]
+            }
         },
 
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
@@ -768,6 +880,22 @@ ProjectData = R6::R6Class("ProjectData",
 
                 ## update all synchronicity-related data
                 private$update.synchronicity.data()
+            }
+        },
+
+        #' Remove lines in the synchronicity data that contain commit hashes
+        #' that don't appear in the commit data.
+        cleanup.synchronicity.data = function() {
+            logging::loginfo("Cleaning up synchronicity data")
+
+            ## remove commit hashes that don't appear in the commit data
+            if (!is.null(private$commits)) {
+                synchronicity.hashes = private$synchronicity[["hash"]]
+                synchronicity.hashes.contained = private$synchronicity[["hash"]] %in% private$commits[["hash"]]
+                commit.hashes.to.eliminate = synchronicity.hashes[!synchronicity.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = private$synchronicity[["hash"]] %in% commit.hashes.to.eliminate
+                private$synchronicity = private$synchronicity[!rows.to.remove, ]
             }
         },
 

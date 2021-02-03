@@ -21,6 +21,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -356,6 +357,24 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            commit.messages = list(
+                default = "none",
+                type = "character",
+                allowed = c("none", "title", "message"),
+                allowed.number = 1
+            ),
+            issues.only.comments = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            issues.from.source = list(
+                default = c("jira", "github"),
+                type = "character",
+                allowed = c("jira", "github"),
+                allowed.number = Inf
+            ),
             mails.filter.patchstack.mails = list(
                 default = FALSE,
                 type = "logical",
@@ -379,18 +398,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
-            ),
-            issues.only.comments = list(
-                default = TRUE,
-                type = "logical",
-                allowed = c(TRUE, FALSE),
-                allowed.number = 1
-            ),
-            issues.from.source = list(
-                default = c("jira", "github"),
-                type = "character",
-                allowed = c("jira", "github"),
-                allowed.number = Inf
             )
         ),
 

@@ -64,7 +64,7 @@ steps:
 
 - name: R-3.3
   pull: if-not-exists
-  image: r-base:3.3.3
+  image: r-base:3.3.2
   commands: *runTests
   depends_on: [clone]
 

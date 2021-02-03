@@ -10,41 +10,41 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 
 ## Table of contents
-
-- [Integration](#integration)
-    * [Requirements](#requirements)
-        * [R](#r)
-        * [packrat (recommended)](#packrat)
-        * [Folder structure of the input data](#folder-structure-of-the-input-data)
-        * [Needed R packages](#needed-r-packages)
-    * [Submodule](#submodule)
-    * [Selecting the correct version](#selecting-the-correct-version)
-- [Functionality](#functionality)
-    * [Configuration](#configuration)
-    * [Data sources](#data-sources)
-    * [Network construction](#network-construction)
-        * [Data sources for network construction](#data-sources-for-network-construction)
-        * [Types of networks](#types-of-networks)
-        * [Relations](#relations)
-        * [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
-        * [Vertex and edge attributes](#vertex-and-edge-attributes)
-    * [Further functionalities](#further-functionalities)
-        * [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
-        * [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
-        * [Handling data independently](#handling-data-independently)
-    * [How-to](#how-to)
-    * [File/Module overview](#filemodule-overview)
-- [Configuration classes](#configuration-classes)
-    * [ProjectConf](#projectconf)
-        * [Basic information](#basic-information)
-        * [Artifact-related information](#artifact-related-information)
-        * [Revision-related information](#revision-related-information)
-        * [Data paths](#data-paths)
-        * [Splitting information](#splitting-information)
-        * [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
-    * [NetworkConf](#networkconf)
-- [License](#license)
-- [Work in progress](#work-in-progress)
+  - [Integration](#integration)
+    - [Requirements](#requirements)
+      - [`R`](#r)
+      - [`packrat` (recommended)](#packrat-recommended)
+      - [Folder structure of the input data](#folder-structure-of-the-input-data)
+      - [Needed R packages](#needed-r-packages)
+    - [Submodule](#submodule)
+    - [Selecting the correct version](#selecting-the-correct-version)
+  - [Functionality](#functionality)
+    - [Configuration](#configuration)
+    - [Data sources](#data-sources)
+    - [Network construction](#network-construction)
+      - [Data sources for network construction](#data-sources-for-network-construction)
+      - [Types of networks](#types-of-networks)
+      - [Relations](#relations)
+      - [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
+      - [Vertex and edge attributes](#vertex-and-edge-attributes)
+    - [Further functionalities](#further-functionalities)
+      - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
+      - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
+      - [Handling data independently](#handling-data-independently)
+    - [How-to](#how-to)
+    - [File/Module overview](#filemodule-overview)
+  - [Configuration classes](#configuration-classes)
+    - [ProjectConf](#projectconf)
+      - [Basic information](#basic-information)
+      - [Artifact-related information](#artifact-related-information)
+      - [Revision-related information](#revision-related-information)
+      - [Data paths](#data-paths)
+      - [Splitting information](#splitting-information)
+      - [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
+    - [NetworkConf](#networkconf)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Work in progress](#work-in-progress)
 
 
 ## Integration
@@ -123,6 +123,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `parallel`: For parallelization
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
+- `data.table`: For faster data processing
 - `testthat`: For the test suite
 - `patrick`: For the test suite
 - `ggplot2`: For plotting of data
@@ -179,11 +180,16 @@ There are two distinguishable types of data sources that are both handled by the
     * Issue data (called `"issues"` internally)
 
 - Additional (orthogonal) data sources (augmentable to main data sources, not splittable)
+    * Commit messages are available through the parameter `commit.messages` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class. Three values can be used:
+        1. `none` is the default value and does not impact the configuration at all.
+        2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
+        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
     * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
-
+   
+   
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 
  The *additional data sources* are orthogonal to the main data sources, can augment them by additional information, and, thus, are not split at any time.
@@ -532,16 +538,23 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commits.filter.untracked.files`
     * Remove all information concerning untracked files from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commits that solely changed untracked files. Networks built on top of this `ProjectData` do also not contain any information about untracked files.
     * [*`TRUE`*, `FALSE`]
-- `mails.filter.patchstack.mails`
-    * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
-'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
-    * [`TRUE`, *`FALSE`*]
+- `commmit.messages`
+  * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
+  * [*`none`*, `title`, `messages`]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
     * [*`github`, `jira`*]
+- `mails.filter.patchstack.mails`
+    * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
+'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
+    * [`TRUE`, *`FALSE`*]
+- `pasta`
+    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 - `synchronicity`
     * Read and add synchronicity data to commits (column `synchronicity`)
     * [`TRUE`, *`FALSE`*]
@@ -550,10 +563,6 @@ There is no way to update the entries, except for the revision-based parameters.
     * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
     * [1, *5*, 10, 15]
     * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
-- `pasta`
-    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
-    * [`TRUE`, *`FALSE`*]
-    * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 
 ### NetworkConf
 

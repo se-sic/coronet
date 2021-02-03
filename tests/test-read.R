@@ -17,6 +17,7 @@
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -43,7 +44,7 @@ test_that("Read the raw commit data with the feature artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:05:41",
@@ -91,7 +92,6 @@ test_that("Read the raw commit data with the feature artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
-
 test_that("Read the raw commit data with the file artifact.", {
 
     ## configuration object for the datapath
@@ -101,7 +101,7 @@ test_that("Read the raw commit data with the file artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32720, 32721, 32715)),
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32716, 32717, 32718, 32719, 32720, 32721, 32715)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                                     "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
                                                                     "2016-07-12 16:06:32")),
@@ -137,6 +137,26 @@ test_that("Read the raw commit data with the file artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
+test_that("Read the commit message data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+
+    ## read the actual data
+    commit.message.data.read = read.commit.messages(proj.conf$get.value("datapath"))
+
+    ## build the expected data.frame
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716, 32711)),
+                                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                               "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                               "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", ""),
+                                      message = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "" ))
+
+    ## check the results
+    expect_identical(commit.message.data.read, commit.data.expected, info = "Commit message data.")
+})
 
 test_that("Read the synchronicity data.", {
     ## configuration object

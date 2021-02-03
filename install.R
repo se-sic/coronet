@@ -32,6 +32,7 @@ packages = c(
     "parallel",
     "logging",
     "sqldf",
+    "data.table",
     "testthat",
     "patrick",
     "ggplot2",
