@@ -112,6 +112,7 @@ ProjectData = R6::R6Class("ProjectData",
         mails.patchstacks = NULL, # list
         ## issues
         issues = NULL, #data.frame
+        issues.filtered = NULL, #data.frame
         ## authors
         authors = NULL, # data.frame
         ## additional data sources
@@ -546,6 +547,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$commit.messages = NULL
             private$mails = NULL
             private$issues = NULL
+            private$issues.filtered = NULL
             private$authors = NULL
             private$synchronicity = NULL
             private$pasta = NULL
@@ -1067,7 +1069,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Get the issue data.
+        #' Get the issue data, filtered
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
@@ -1075,17 +1077,13 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
-            if (is.null(private$issues)) {
-                private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
+            if (is.null(private$issues.filtered)) {
+                private$issues.filtered = self$get.issues.unfiltered()
+                if (private$project.conf$get.value("issues.only.comments")) {
+                    private$issues.filtered = private$issues.filtered[private$issues[["event.name"]] == "commented", ]
+                }
             }
-            private$extract.timestamps(source = "issues")
-
-            if (private$project.conf$get.value("issues.only.comments")) {
-                df = private$issues[private$issues[["event.name"]] == "commented", ]
-                return(df)
-            } else {
-                return(private$issues)
-            }
+            return(private$issues)
         },
 
         #' Get the issue data, unfiltered.
@@ -1115,6 +1113,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             private$issues = data
+            private$issues.filtered = NULL
         },
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
