@@ -32,7 +32,7 @@ requireNamespace("igraph")
 #' Determine the maximum degree for the given network.
 #'
 #' @param network the network to be examined
-#' @param mode the mode to be used for determining the degrees
+#' @param mode the mode to be used for determining the degrees [default: c("total", "in", "out")]
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
@@ -46,7 +46,7 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
 #' Calculate the average degree of a network.
 #'
 #' @param network the network to be examined
-#' @param mode the mode to be used for determining the degrees
+#' @param mode the mode to be used for determining the degrees [default: c("total", "in", "out")]
 #'
 #' @return The average degree of the vertices in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
@@ -59,9 +59,9 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
 #' Calculate all vertex degrees for the given network
 #'
 #' @param network the network to be examined
-#' @param sort whether the resulting dataframe is to be sorted by the vertex degree
+#' @param sort whether the resulting dataframe is to be sorted by the vertex degree [default: TRUE]
 #' @param sort.decreasing if sorting is active, this says whether the dataframe is to be
-#'            sorted in descending or ascending order
+#'                        sorted in descending or ascending order [default: TRUE]
 #'
 #' @return A dataframe containing the vertices and their respective degrees.
 metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
@@ -105,6 +105,7 @@ metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) 
 #'
 #' @param network the network to be examined
 #' @param cc.type the type of cluserting coefficient to be calculated
+#'                [default: c("global", "local", "barrat", "localaverage")]
 #'
 #' @return The clustering coefficient of the network.
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
@@ -117,7 +118,7 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 #'
 #' @param network the network to be examined
 #' @param community.detection.algorithm the algorithm to be used for the detection of communities
-#'            which is required for the calculation of the clustering coefficient
+#'            which is required for the calculation of the clustering coefficient [default: igraph::cluster_walktrap]
 #'
 #' @return The modularity value for the given network.
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
