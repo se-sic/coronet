@@ -173,6 +173,18 @@ metrics.smallworldness = function(network) {
     return (c(smallworldness = s.delta))
 }
 
+#' Decide, whether a network is smallworld or not.
+#'
+#' @param network the network to be examined
+#'
+#' @return \code{TRUE}, if the network is smallworld,
+#'         \code{FALSE}, otherwise.
+metrics.is.smallworld = function(network) {
+    s.delta = metrics.smallworldness(network)
+    return(s.delta > 1)
+}
+
+
 #' Determine scale freeness of a network using the power law fitting method.
 #'
 #' @param network the network to be examined
