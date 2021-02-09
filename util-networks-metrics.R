@@ -16,6 +16,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -85,11 +86,14 @@ metrics.density = function(network) {
 #' Calculate the average path length for the given network.
 #'
 #' @param network the network to be examined
-#' @param directed whether to consider directed paths in directed networks
-#' @param unconnected whether all vertices of the network are connected
+#' @param directed whether to consider directed paths in directed networks [default: TRUE]
+#' @param unconnected whether there are vertices in the network that are not connected.
+#'                    If TRUE only the lengths of the existing paths are considered and averaged;
+#'                    if FALSE the length of the missing paths are counted having length vcount(graph), one longer than
+#'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
 #'
-#' @return The average pathlength of the given network.
-metrics.avg.pathlength = function(network, directed, unconnected) {
+#' @return The average path length of the given network.
+metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) {
     avg.pathlength = igraph::average.path.length(network, directed = directed, unconnected = unconnected)
     return(c(avg.pathlength = avg.pathlength))
 }
