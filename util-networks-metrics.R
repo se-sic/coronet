@@ -138,38 +138,45 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' The algorithm relies on the Erdös-Renyi random network with the same number
 #' of vertices and edges as the given network.
 #'
-#' To check the result value \code{s.delta} for a binary (true/false) decision on smallworldness,
-#' do this: \code{is.smallworld = s.delta > 1}.
+#' In order to get a binary (true/false) decision on smallworldness of a network,
+#' use \code{metrics.is.smallworld} instead.
 #'
 #' Important: The given network needs to be simplified for the calculation to work!
 #'
 #' @param network the simplified network to be examined
 #'
-#' @return The smallworldness value of the network.
+#' @return The smallworldness value of the network. \code{-1} if the number of edges is too large.
 metrics.smallworldness = function(network) {
-    # construct Erdös-Renyi network with same number of vertices and edges as g
-    h = igraph::erdos.renyi.game(n = igraph::vcount(network),
-                                 p.or.m = igraph::ecount(network),
-                                 type = "gnm",
-                                 directed = FALSE)
+    ## construct Erdös-Renyi network with same number of vertices and edges as g
+    h = try(igraph::erdos.renyi.game(n = igraph::vcount(network),
+                                     p.or.m = igraph::ecount(network),
+                                     type = "gnm",
+                                     directed = FALSE))
 
-    # compute clustering coefficients
+    ## handle the case that there are too many edges
+    if (inherits(h, "try-error")) {
+        # print user warning instead of igraph error
+        logging::logwarn("The input network has too many edges. Try again with a simplified network..")
+
+        # stop the execution and return NA
+        return(NA)
+    }
+
+    ## compute clustering coefficients
     g.cc = igraph::transitivity(network, type = "global")
     h.cc = igraph::transitivity(h, type = "global")
-    # compute average shortest-path length
+    ## compute average shortest-path length
     g.l = igraph::average.path.length(network, unconnected = TRUE)
     h.l = igraph::average.path.length(h, unconnected = TRUE)
 
-    # binary decision
-    # intermediate variables
+    ## binary decision
+    ## intermediate variables
     gamma = g.cc / h.cc
     lambda = g.l / h.l
 
-    # indicator s.delta
+    ## indicator s.delta
     s.delta = gamma / lambda
 
-    ## if s.delta > 1, then the network is a small-world network
-    # is.smallworld = s.delta > 1
     return (c(smallworldness = s.delta))
 }
 
@@ -178,9 +185,17 @@ metrics.smallworldness = function(network) {
 #' @param network the network to be examined
 #'
 #' @return \code{TRUE}, if the network is smallworld,
-#'         \code{FALSE}, otherwise.
+#'         \code{FALSE}, if it is not,
+#'         \code{NA}, if the network has too many edges and an error occured in \code{metrics.smallworldness}.
 metrics.is.smallworld = function(network) {
     s.delta = metrics.smallworldness(network)
+
+    ## return NA if an error occurred
+    if (is.na(s.delta)) {
+        return (NA)
+    }
+
+    ## else return whether the network is smallworld
     return(s.delta > 1)
 }
 
