@@ -32,7 +32,7 @@ requireNamespace("igraph")
 #' Determine the maximum degree for the given network.
 #'
 #' @param network the network to be examined
-#' @param mode the mode to be used for determining the degrees [default: c("total", "in", "out")]
+#' @param mode the mode to be used for determining the degrees [default: "total"]
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
@@ -46,7 +46,7 @@ metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
 #' Calculate the average degree of a network.
 #'
 #' @param network the network to be examined
-#' @param mode the mode to be used for determining the degrees [default: c("total", "in", "out")]
+#' @param mode the mode to be used for determining the degrees [default: "total"]
 #'
 #' @return The average degree of the vertices in the network.
 metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
@@ -88,8 +88,8 @@ metrics.density = function(network) {
 #' @param network the network to be examined
 #' @param directed whether to consider directed paths in directed networks [default: TRUE]
 #' @param unconnected whether there are vertices in the network that are not connected.
-#'                    If TRUE only the lengths of the existing paths are considered and averaged;
-#'                    if FALSE the length of the missing paths are counted having length vcount(graph), one longer than
+#'                    If \code{TRUE} only the lengths of the existing paths are considered and averaged;
+#'                    if \code{FALSE} the length of the missing paths are counted having length vcount(graph), one longer than
 #'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
 #'
 #' @return The average path length of the given network.
@@ -145,7 +145,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #'
 #' @param network the simplified network to be examined
 #'
-#' @return The smallworldness value of the network. \code{-1} if the number of edges is too large.
+#' @return The smallworldness value of the network. \code{NA} if the number of edges is too large.
 metrics.smallworldness = function(network) {
     ## construct Erdös-Renyi network with same number of vertices and edges as g
     h = try(igraph::erdos.renyi.game(n = igraph::vcount(network),
