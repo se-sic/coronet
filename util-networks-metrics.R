@@ -24,6 +24,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("igraph")
+requireNamespace("util-core-peripheral")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -34,14 +35,14 @@ requireNamespace("igraph")
 #' @param network the network to be examined
 #' @param mode the mode to be used for determining the degrees [default: "total"]
 #'
-#' @return A dataframe containing the name of the vertex with with maximum degree its degree.
+#' @return A data frame containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
     ## check whether network is empty, i.e. if it has no vertices
     if (network.vcount() == 0) {
-        # print user warning instead of igraph error
+        ## print user warning instead of igraph error
         logging::logwarn("The input network has no vertices. Try again with network consisting of at least one vertex.")
 
-        # stop the execution and return NA
+        ## stop the execution and return NA
         return(NA)
     }
 
@@ -274,7 +275,7 @@ metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
 #'
 #' @param network the network to be examined
 #'
-#' @return A data.frame containing the following columns:
+#' @return a data.frame containing the following columns:
 #'         - \code{"deg"}: the vertex degrees for all vertices in the given network,
 #'         - \code{"cc"}: the local clustering coefficient for all vertices in the given network, and
 #'         - \code{"log.deg"} and \code{"log.cc"}: the logarithmic values for the columns
@@ -291,3 +292,48 @@ metrics.hierarchy = function(network) {
 }
 
 
+## The column headers for a centrality data frame calculated by the function \code{metrics.centrality}
+CENTRALITY_COLUMN_NAMES = c("author.name", "centrality")
+
+#' Calculate the centrality value for authors from a network and project data.
+#' Only considers authors from the network that are also present in the project data and the
+#' \code{restrict.classification.to.authors} vector.
+#'
+#' @param network the network containing the authors to classify
+#' @param proj.data the \code{ProjectData} containing the authors to classify
+#' @param type a character string declaring the classification metric. The classification metric determines which
+#'             numerical characteristic of authors is chosen as their centrality value.
+#'             The parameter only supports network-based options/metrics:
+#'              - "network.degree"
+#'              - "network.eigen"
+#'              - "network.hierarchy"
+#'             [defalt: "network.degree"]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#' @return a data.frame with the columns \code{"author.name"} and \code{"centrality"} containing the centrality values
+#'         for each respective author
+metrics.centrality = function(network,
+                              proj.data,
+                              type = c("network.degree",
+                                       "network.eigen",
+                                       "network.hierarchy"),
+                              restrict.classification.to.authors = NULL) {
+    type = match.arg(type)
+
+    ## Calculate the centrality tables
+    class = get.auther.class.by.type(network = network,
+                                     proj.data = proj.data,
+                                     type = type,
+                                     restrict.classification.to.authors = restrict.classification.to.authors)
+
+    ## bind the two data frames for core and peripheral together
+    centrality = rbind(class$core, class$peripheral)
+
+    ## set column names accordingly
+    colnames(centrality) = CENTRALITY_COLUMN_NAMES
+
+    return(centrality)
+}
