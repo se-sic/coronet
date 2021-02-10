@@ -36,6 +36,15 @@ requireNamespace("igraph")
 #'
 #' @return A dataframe containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
+    ## check whether network is empty, i.e. if it has no vertices
+    if (network.vcount() == 0) {
+        # print user warning instead of igraph error
+        logging::logwarn("The input network has no vertices. Try again with network consisting of at least one vertex.")
+
+        # stop the execution and return NA
+        return(NA)
+    }
+
     mode = match.arg(mode)
     degrees = igraph::degree(network, mode = c(mode))
     vertex = which.max(degrees)
