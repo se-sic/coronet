@@ -1568,6 +1568,26 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions---------------------------------------------------------
+
+#' Calculate the data sources of a network based on its edge relations
+#'
+#' @param network the network with the relations to be extracted
+#' @return a vector with all data.sources from the network
+get.data.sources.from.relations = function(network) {
+    ## get all relations in the network
+    data.sources = unique(igraph::E(network)[["relation"]])
+
+    ## map them to data sources respectively using the defined translation constant
+    data.sources = sapply(data.sources, function(relation) {
+        return(RELATION.TO.DATASOURCE[["relation"]])
+    })
+
+    return(data.sources)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
 SAMPLE.DATA = normalizePath("./sample")
@@ -1609,25 +1629,4 @@ get.sample.network = function() {
     network = igraph::set.graph.attribute(network, "layout", lay)
 
     return(network)
-}
-
-
-## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Helper functions---------------------------------------------------------
-
-#' Calculate the data sources of a network based on its edge relations and compute all authors from these
-#'
-#' @param proj.data the \code{Proj.Data} object corresponding to the network
-#' @param network the network with the relations to be extracted
-#' @return a list of authors from the data sources of the relations in the network
-relations.to.authors = function(proj.data, network) {
-    ## get all relations in the network
-    data.sources = unique(E(net)$relation)
-
-    ## map them to data sources respectively using the defined translation constant
-    data.sources = apply(data.sources, 2, function(relation) {
-        return(RELATION.TO.DATASOURCE[relation])
-    })
-
-    return(get.authors.by.data.source(data.sources))
 }

@@ -24,7 +24,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("igraph")
-requireNamespace("util-core-peripheral")
+#requireNamespace("util-core-peripheral")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -330,8 +330,10 @@ metrics.centrality = function(network,
     if (is.null(restrict.classification.to.authors)) {
         ## now check whether both data and network are present
         if (!is.null(network) && !is.null(proj.data)) {
-            ## in this case calculate the restrict parameter based on the edge relation
-            restrict.classification.to.authors = relations.to.authors(proj.data, network)
+            ## in this case calculate the restrict parameter based on the edge relation along with the authors from
+            ## these data.sources
+            restrict.classification.to.authors = get.authors.by.data.source(get.data.sources.from.relations(network),
+                                                                            proj.Data)
         }
         ## else leave the parameter at \code{NULL} which still serves as a default value for the
         ## \code{get.auther.class.by.type} function
@@ -344,13 +346,13 @@ metrics.centrality = function(network,
                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
     ## bind the two data frames for core and peripheral together
-    centrality = rbind(class$core, class$peripheral)
+    centrality = rbind(class[["core"]], class[["peripheral"]])
 
     ## set column names accordingly
     colnames(centrality) = CENTRALITY_COLUMN_NAMES
 
     ## order by centrality (desc) (with NA being at the bottom) and then by name (asc)
-    centrality = centrality[order(-centrality$centrality, centrality$name), ]
+    centrality = centrality[order(-centrality[["centrality"]], centrality[["name"]]), ]
 
     return(centrality)
 }
