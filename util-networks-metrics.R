@@ -293,7 +293,7 @@ metrics.hierarchy = function(network) {
 
 
 ## The column headers for a centrality data frame calculated by the function \code{metrics.centrality}
-CENTRALITY_COLUMN_NAMES = c("author.name", "centrality")
+CENTRALITY_COLUMN_NAMES = c("name", "centrality")
 
 #' Calculate the centrality value for authors from a network and project data.
 #' Only considers authors from the network that are also present in the project data and the
@@ -312,7 +312,10 @@ CENTRALITY_COLUMN_NAMES = c("author.name", "centrality")
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
 #'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           \code{NA}). \code{NULL} means that the restriction is automatically
+#'                                           calculated from the network's edge relations if and only if both network
+#'                                           and data are present. In any other case \code{NULL} will not introduce any
+#'                                           further restriction. [default: NULL]
 #' @return a data.frame with the columns \code{"author.name"} and \code{"centrality"} containing the centrality values
 #'         for each respective author
 metrics.centrality = function(network,
@@ -323,7 +326,18 @@ metrics.centrality = function(network,
                               restrict.classification.to.authors = NULL) {
     type = match.arg(type)
 
-    ## Calculate the centrality tables
+    ## check whether the restrict parameter is set to default (\code{NULL})
+    if (is.null(restrict.classification.to.authors)) {
+        ## now check whether both data and network are present
+        if (!is.null(network) && !is.null(proj.data)) {
+            ## in this case calculate the restrict parameter based on the edge relation
+            restrict.classification.to.authors = relations.to.authors(proj.data, network)
+        }
+        ## else leave the parameter at \code{NULL} which still serves as a default value for the
+        ## \code{get.auther.class.by.type} function
+    }
+
+    ## calculate the centrality tables
     class = get.auther.class.by.type(network = network,
                                      proj.data = proj.data,
                                      type = type,
@@ -334,6 +348,9 @@ metrics.centrality = function(network,
 
     ## set column names accordingly
     colnames(centrality) = CENTRALITY_COLUMN_NAMES
+
+    ## order by centrality (desc) (with NA being at the bottom) and then by name (asc)
+    centrality = centrality[order(-centrality$centrality, centrality$name), ]
 
     return(centrality)
 }
