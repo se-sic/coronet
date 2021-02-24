@@ -1610,3 +1610,24 @@ get.sample.network = function() {
 
     return(network)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions---------------------------------------------------------
+
+#' Calculate the data sources of a network based on its edge relations and compute all authors from these
+#'
+#' @param proj.data the \code{Proj.Data} object corresponding to the network
+#' @param network the network with the relations to be extracted
+#' @return a list of authors from the data sources of the relations in the network
+relations.to.authors = function(proj.data, network) {
+    ## get all relations in the network
+    data.sources = unique(E(net)$relation)
+
+    ## map them to data sources respectively using the defined translation constant
+    data.sources = apply(data.sources, 2, function(relation) {
+        return(RELATION.TO.DATASOURCE[relation])
+    })
+
+    return(get.authors.by.data.source(data.sources))
+}
