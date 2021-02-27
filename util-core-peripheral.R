@@ -93,7 +93,7 @@ LONGTERM.CORE.THRESHOLD = 0.5
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
-#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         entries in this list (\code{core} and \code{peripheral) are data frames containing the authors' names in the
 #'         first column and their centrality values in the second column.
 get.author.class.by.type = function(network = NULL,
                                     proj.data = NULL,
@@ -198,7 +198,7 @@ get.author.class.by.type = function(network = NULL,
         centrality.dataframe = get.author.loc.count(proj.data)
     }
 
-    # rename the second column of the centrality dataframe to the correct name with respect to the classification type
+    # rename the second column of the centrality data frame to the correct name with respect to the classification type
     names(centrality.dataframe)[2] = metric.name
 
     ## If the parameter 'restrict.classification.to.authors' is 'NULL', no restriction is made.

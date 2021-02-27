@@ -351,7 +351,7 @@ metrics.centrality = function(network,
     ## set column names accordingly
     colnames(centrality) = CENTRALITY_COLUMN_NAMES
 
-    ## order by centrality (desc) (with NA being at the bottom) and then by name (asc)
+    ## order by centrality (descending) (with NA being at the bottom) and then by name (ascending)
     centrality = centrality[order(-centrality[["centrality"]], centrality[["name"]]), ]
 
     return(centrality)
