@@ -153,22 +153,22 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #'
 #' @param network the simplified network to be examined
 #'
-#' @return The smallworldness value of the network. \code{NA} if the number of edges is too large.
+#' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
-    ## construct Erdös-Renyi network 'h' with same number of vertices and edges as the given network 'network'
-    h = try(igraph::erdos.renyi.game(n = igraph::vcount(network),
-                                     p.or.m = igraph::ecount(network),
-                                     type = "gnm",
-                                     directed = FALSE))
-
-    ## handle the case that there are too many edges
-    if (inherits(h, "try-error")) {
-        # print user warning instead of igraph error
-        logging::logwarn("The input network has too many edges. Try again with a simplified network.")
-
-        # stop the execution and return NA
-        return(NA)
+    ## first check whether the network is simplified
+    if (!is.simple(network)) {
+        ## if this is not the case, raise an error and stop the execution
+        error.message = "The input network has too many edges. Try again with a simplified network."
+        logging::error(error.message)
+        stop(error.message)
     }
+
+    ## else construct Erdös-Renyi network 'h' with same number of vertices and edges as the given network 'network',
+    ## as the requirement of the function is fulfilled
+    h = igraph::erdos.renyi.game(n = igraph::vcount(network),
+                                 p.or.m = igraph::ecount(network),
+                                 type = "gnm",
+                                 directed = FALSE)
 
     ## compute clustering coefficients
     g.cc = igraph::transitivity(network, type = "global")
@@ -194,14 +194,9 @@ metrics.smallworldness = function(network) {
 #'
 #' @return \code{TRUE}, if the network is smallworld,
 #'         \code{FALSE}, if it is not,
-#'         \code{NA}, if the network has too many edges and an error occured in \code{metrics.smallworldness}.
+#'         \code{NA}, if an error occured.
 metrics.is.smallworld = function(network) {
     s.delta = metrics.smallworldness(network)
-
-    ## return NA if an error occurred
-    if (is.na(s.delta)) {
-        return (NA)
-    }
 
     ## else return whether the network is smallworld
     return(s.delta > 1)
