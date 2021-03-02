@@ -18,6 +18,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1570,7 +1571,7 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions---------------------------------------------------------
 
-#' Calculate the data sources of a network based on its edge relations
+#' Calculate the data sources of a network based on its edge relations.
 #'
 #' @param network the network with the relations to be extracted
 #' @return a vector with all data.sources from the network; an element is set to \code{NA} if the network contains an
