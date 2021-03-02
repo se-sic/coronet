@@ -13,10 +13,8 @@ and their respective centrality values (3f41aa7af1c35947035ce7cf0e6c6edcec7a1cf8
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
-- Add more explanation to `metrics.avg.path.length` and as well as default values for that function (PR #195, 6bf6e4056692e5265a065c91da779355b3fbf66a)
-- Add default parameters to documentation of several other methods missing them (PR #195, 2085024661fcdc287a009cf6aa7f438cad7459ae)
-- Handle error in igraph function by printing user warning instead. When calling  `metrics.smallworldness` with a network that is too large, i.e. that has too many edges a warning is being printed and `NA` is returned (PR #195, 8489c055557aba9a21bec0c7704fc2e1176a3a2c)
-- Add check for empty network in `metrics.hub-degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 231affc5d1c201b0cc3ea093477afde6acd6b9a5)
+- Update documentation in `util-network-metrics.R` (PR #195, 2085024661fcdc287a009cf6aa7f438cad7459ae, 6bf6e4056692e5265a065c91da779355b3fbf66a)
+- Add check for empty network in `metrics-hub-degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 231affc5d1c201b0cc3ea093477afde6acd6b9a5)
 
 
 ## 3.7
