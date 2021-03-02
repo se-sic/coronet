@@ -285,64 +285,67 @@ metrics.hierarchy = function(network) {
 }
 
 
-## The column headers for a centrality data frame calculated by the function \code{metrics.centrality}
-CENTRALITY_COLUMN_NAMES = c("name", "centrality")
+## The column headers for a centrality data frame calculated by the function \code{metrics.vertex.centralities}
+VERTEX_CENTRALITIES_COLUMN_NAMES = c("vertex.name", "centrality")
 
-#' Calculate the centrality value for authors from a network and project data.
-#' Only considers authors from the network that are also present in the project data and the
-#' \code{restrict.classification.to.authors} vector.
+#' Calculate the centrality value for vertices from a network and project data.
+#' Only considers vertices from the network that are also present in the project data and the
+#' \code{restrict.classification.to.vertices} vector.
+#' If a \code{ProjectData} is supplied, only vertices from the network that are also present in the project data are
+#' considered. Otherwise, if no custom vector \code{restrict.classification.to.vertices} is supplied, all vertices of
+#' the network are considered.
 #'
-#' @param network the network containing the authors to classify
-#' @param proj.data the \code{ProjectData} containing the authors to classify
+#' @param network the network containing the vertices to classify
+#' @param proj.data the \code{ProjectData} containing the vertices to classify
 #' @param type a character string declaring the classification metric. The classification metric determines which
-#'             numerical characteristic of authors is chosen as their centrality value.
+#'             numerical characteristic of vertices is chosen as their centrality value.
 #'             The parameter only supports network-based options/metrics:
 #'              - "network.degree"
 #'              - "network.eigen"
 #'              - "network.hierarchy"
 #'             [defalt: "network.degree"]
-#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
-#'                                           vector are to be classified. Authors that appear in the vector but are not
-#'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that the restriction is automatically
-#'                                           calculated from the network's edge relations if and only if both network
-#'                                           and data are present. In any other case \code{NULL} will not introduce any
-#'                                           further restriction. [default: NULL]
-#' @return a data.frame with the columns \code{"author.name"} and \code{"centrality"} containing the centrality values
-#'         for each respective author
-metrics.centrality = function(network,
+#' @param restrict.classification.to.vertices a vector of vertex names. Only vertices that are contained within this
+#'                                            vector are to be classified. Vertices that appear in the vector but are
+#'                                            not part of the classification result (i.e., they are not present in the
+#'                                            underlying data) will be added to it afterwards (with a centrality value
+#'                                            of \code{NA}). \code{NULL} means that the restriction is automatically
+#'                                            calculated from the data based on the network's edge relations if and only
+#'                                            if both network and data are present. In any other case \code{NULL} will
+#'                                            not introduce any further restriction. [default: NULL]
+#' @return a data.frame with the columns \code{"vertex.name"} and \code{"centrality"} containing the centrality values
+#'         for each respective vertex
+metrics.vertex.centralities = function(network,
                               proj.data,
                               type = c("network.degree",
                                        "network.eigen",
                                        "network.hierarchy"),
-                              restrict.classification.to.authors = NULL) {
+                              restrict.classification.to.vertices = NULL) {
     type = match.arg(type)
 
-    ## check whether the restrict parameter is set to default (\code{NULL})
-    if (is.null(restrict.classification.to.authors)) {
+    ## check whether the restrict parameter is set to default 'NULL'
+    if (is.null(restrict.classification.to.vertices)) {
         ## now check whether both data and network are present
         if (!is.null(network) && !is.null(proj.data)) {
-            ## in this case calculate the restrict parameter based on the edge relation along with the authors from
+            ## in this case calculate the restrict parameter based on the edge relation along with the vertices from
             ## these data.sources
-            restrict.classification.to.authors = get.authors.by.data.source(get.data.sources.from.relations(network),
-                                                                            proj.Data)
+            restrict.classification.to.vertices = get.authors.by.data.source(get.data.sources.from.relations(network),
+                                                                             proj.Data)
         }
-        ## else leave the parameter at \code{NULL} which still serves as a default value for the
-        ## \code{get.auther.class.by.type} function
+        ## else leave the parameter at 'NULL' which still serves as a default value for the
+        ## 'get.auther.class.by.type' function
     }
 
     ## calculate the centrality tables
     class = get.auther.class.by.type(network = network,
                                      proj.data = proj.data,
                                      type = type,
-                                     restrict.classification.to.authors = restrict.classification.to.authors)
+                                     restrict.classification.to.authors = restrict.classification.to.vertices)
 
     ## bind the two data frames for core and peripheral together
     centrality = rbind(class[["core"]], class[["peripheral"]])
 
     ## set column names accordingly
-    colnames(centrality) = CENTRALITY_COLUMN_NAMES
+    colnames(centrality) = VERTEX_CENTRALITIES_COLUMN_NAMES
 
     ## order by centrality (descending) (with NA being at the bottom) and then by name (ascending)
     centrality = centrality[order(-centrality[["centrality"]], centrality[["name"]]), ]
