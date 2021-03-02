@@ -1577,7 +1577,7 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 #' empty relation, i.e. \code{character(0)}
 get.data.sources.from.relations = function(network) {
     ## get all relations in the network
-    data.sources = unique(igraph::E(network)[["relation"]])
+    data.sources = unique(igraph::E(network)$relation)
 
     ## map them to data sources respectively using the defined translation constant
     data.sources = sapply(data.sources, function(relation) {
@@ -1588,8 +1588,8 @@ get.data.sources.from.relations = function(network) {
         }
 
         ## use the translation constant to get the appropriate data source
-        return(RELATION.TO.DATASOURCE[["relation"]])
-    })
+        return(RELATION.TO.DATASOURCE[[relation]])
+    }, USE.NAMES = FALSE) # avoid element names as we only want the data source's name
 
     return(data.sources)
 }
@@ -1604,7 +1604,6 @@ SAMPLE.DATA = normalizePath("./sample")
 #'
 #' @return the sample network
 get.sample.network = function() {
-
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
     proj.conf$update.values(list(commits.filter.base.artifact = FALSE))
