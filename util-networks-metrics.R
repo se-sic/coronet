@@ -24,7 +24,6 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("igraph")
-#requireNamespace("util-core-peripheral")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -37,12 +36,12 @@ requireNamespace("igraph")
 #'
 #' @return A data frame containing the name of the vertex with with maximum degree its degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
-    ## check whether network is empty, i.e. if it has no vertices
-    if (network.vcount() == 0) {
+    ## check whether the network is empty, i.e., if it has no vertices
+    if (igraph::vcount(network) == 0) {
         ## print user warning instead of igraph error
-        logging::logwarn("The input network has no vertices. Try again with network consisting of at least one vertex.")
+        logging::logwarn("The input network has no vertices. Will return NA right away.")
 
-        ## stop the execution and return NA
+        ## cancel the execution and return NA
         return(NA)
     }
 
@@ -99,7 +98,7 @@ metrics.density = function(network) {
 #' @param directed whether to consider directed paths in directed networks [default: TRUE]
 #' @param unconnected whether there are vertices in the network that are not connected.
 #'                    If \code{TRUE} only the lengths of the existing paths are considered and averaged;
-#'                    if \code{FALSE} the length of the missing paths are counted having length vcount(graph), one longer than
+#'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)}, one longer than
 #'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
 #'
 #' @return The average path length of the given network.
@@ -114,8 +113,7 @@ metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) 
 #' Such vertices are removed from all average calculations for any averaging \code{cc.type}.
 #'
 #' @param network the network to be examined
-#' @param cc.type the type of cluserting coefficient to be calculated
-#'                [default: c("global", "local", "barrat", "localaverage")]
+#' @param cc.type the type of cluserting coefficient to be calculated [default: "global"]
 #'
 #' @return The clustering coefficient of the network.
 metrics.clustering.coeff = function(network, cc.type = c("global", "local", "barrat", "localaverage")) {
@@ -157,7 +155,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #'
 #' @return The smallworldness value of the network. \code{NA} if the number of edges is too large.
 metrics.smallworldness = function(network) {
-    ## construct Erdös-Renyi network with same number of vertices and edges as g
+    ## construct Erdös-Renyi network 'h' with same number of vertices and edges as the given network 'network'
     h = try(igraph::erdos.renyi.game(n = igraph::vcount(network),
                                      p.or.m = igraph::ecount(network),
                                      type = "gnm",
@@ -166,7 +164,7 @@ metrics.smallworldness = function(network) {
     ## handle the case that there are too many edges
     if (inherits(h, "try-error")) {
         # print user warning instead of igraph error
-        logging::logwarn("The input network has too many edges. Try again with a simplified network..")
+        logging::logwarn("The input network has too many edges. Try again with a simplified network.")
 
         # stop the execution and return NA
         return(NA)
