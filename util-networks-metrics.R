@@ -286,11 +286,9 @@ metrics.hierarchy = function(network) {
 
 
 ## The column headers for a centrality data frame calculated by the function \code{metrics.vertex.centralities}
-VERTEX_CENTRALITIES_COLUMN_NAMES = c("vertex.name", "centrality")
+VERTEX.CENTRALITIES.COLUMN.NAMES = c("vertex.name", "centrality")
 
 #' Calculate the centrality value for vertices from a network and project data.
-#' Only considers vertices from the network that are also present in the project data and the
-#' \code{restrict.classification.to.vertices} vector.
 #' If a \code{ProjectData} is supplied, only vertices from the network that are also present in the project data are
 #' considered. Otherwise, if no custom vector \code{restrict.classification.to.vertices} is supplied, all vertices of
 #' the network are considered.
@@ -345,7 +343,7 @@ metrics.vertex.centralities = function(network,
     centrality = rbind(class[["core"]], class[["peripheral"]])
 
     ## set column names accordingly
-    colnames(centrality) = VERTEX_CENTRALITIES_COLUMN_NAMES
+    colnames(centrality) = VERTEX.CENTRALITIES.COLUMN.NAMES
 
     ## order by centrality (descending) (with NA being at the bottom) and then by name (ascending)
     centrality = centrality[order(-centrality[["centrality"]], centrality[["name"]]), ]
