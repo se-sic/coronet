@@ -545,7 +545,7 @@ test_that("Test add.vertex.attribute.mail.thread.count", {
     })
 })
 
-#' Test the add.vertex.attribute.mail.count method
+#' Test the add.vertex.attribute.issue.count method
 test_that("Test add.vertex.attribute.issue.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues=TRUE)
@@ -562,10 +562,10 @@ test_that("Test add.vertex.attribute.issue.count", {
     expected.attributes.prs.only = list(
         range = network.covariates.test.build.expected(c(1L), c(3L), c(1L, 0L, 0L)),
         cumulative = network.covariates.test.build.expected(c(1L), c(3L), c(3L, 0L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(2L), c(3L), c(3L, 0L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L)),
         project.cumulative = network.covariates.test.build.expected(c(1L), c(3L), c(3L, 0L,  1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L), c(3L), c(3L, 0L,  1L)),
-        complete = network.covariates.test.build.expected(c(2L), c(3L), c(3L, 0L,  1L))
+        project.all.ranges = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L)),
+        complete = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L))
     )
 
     ## Test issues only
@@ -594,8 +594,8 @@ test_that("Test add.vertex.attribute.issue.count", {
 })
 
 
-#' Test the add.vertex.attribute.mail.count method
-test_that("Test add.vertex.attribute.issue.count.by.commenting", {
+#' Test the add.vertex.attribute.issues.commented.count method
+test_that("Test add.vertex.attribute.issues.commented.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE)
 
@@ -620,11 +620,11 @@ test_that("Test add.vertex.attribute.issue.count.by.commenting", {
     ## Test issues only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.count.by.commenting(
+        networks.with.attr = add.vertex.attribute.issues.commented.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.count.by.commenting")
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issues.commented.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -632,17 +632,17 @@ test_that("Test add.vertex.attribute.issue.count.by.commenting", {
     # Test PRs only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.count.by.commenting(
-            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "pull.requests", name = "pull.request.count.by.commenting"
+        networks.with.attr = add.vertex.attribute.issues.commented.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "pull.requests", name = "pull.requests.commented.count"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.count.by.commenting")
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.requests.commented.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
 })
 
-#' Test the add.vertex.attribute.mail.count method
+#' Test the add.vertex.attribute.issue.creation.count method
 test_that("Test add.vertex.attribute.issue.creation.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE)
@@ -690,7 +690,7 @@ test_that("Test add.vertex.attribute.issue.creation.count", {
     })
 })
 
-#' Test the add.vertex.attribute.mail.count method
+#' Test the add.vertex.attribute.issue.comment.count method
 test_that("Test add.vertex.attribute.issue.comment.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE)

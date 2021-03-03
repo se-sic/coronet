@@ -721,21 +721,21 @@ get.committer.or.author.commit.count = function(range.data) {
 #' @param name the name the function will be bound to, for logging
 #' @param data.extractor a function which given the project data, extracts the relevant dataframe (i.e. the commit data.frame) from it
 #' @param grouping.keys the dataframe keys to group by
-#' @param distinctize Whether to remove duplicates
-#' @param distinctize.key if distinctize, then the key by which to remove duplicates
+#' @param remove.duplicates Whether to remove duplicates
+#' @param remove.duplicates.by if distinctize, then the key by which to remove duplicates
 #'
 #' @return A function that aggregates data according to the above specification contained in a given \code{ProjectData}.
 #'         This function itself returns a dataframe consisting of |grouping.keys|+1 columns, the last holding the count,
 #'         and the others the respective grouping
 #'
-group.data.by.key = function(name, data.extractor, grouping.keys, distinctize, distinctize.key) {
+group.data.by.key = function(name, data.extractor, grouping.keys, remove.duplicates, remove.duplicates.by) {
     return(function(proj.data) {
-        logging::logdebug(paste0(name, ": starting."))
+        logging::logdebug("%s: starting", name)
         #get the data we want to group
         df = data.extractor(proj.data)
-        #if necessary, make sure that there is only one entry for each distinctizing key
-        if (distinctize) {
-            df = df[!duplicated(df[[distinctize.key]]), ]
+        #if necessary, make sure that there is only one entry for each remove-duplicate key (combination)
+        if (remove.duplicates) {
+            df = df[!duplicated(df[[remove.duplicates.by]]), ]
         }
         #throw away unnecessary columns
         df = df[grouping.keys]
@@ -745,7 +745,7 @@ group.data.by.key = function(name, data.extractor, grouping.keys, distinctize, d
                                  GROUP BY `", grouping.keys.formatted, "` ORDER BY `freq` DESC, `", grouping.keys.formatted, "`")
         logging::logdebug(paste0(name, ": running SQL ", stmt))
         res = sqldf::sqldf(stmt)
-        logging::logdebug(paste0(name, ": finished"))
+        logging::logdebug("%s: finished", name)
         return(res)
     })
 }
@@ -822,7 +822,8 @@ get.author.mail.thread.count = function(proj.data) {
 #'             [default: "all"]
 #'
 #'
-preprocess.issue.data = function(proj.data, type = "all") {
+preprocess.issue.data = function(proj.data, type = c("all", "pull.requests", "issues")) {
+    type = match.arg(type)
     df = proj.data$get.issues.unfiltered()
     # if k is a list, and nrow(df) == 0, then df[k, ..] fails
     # so we abort beforehand
@@ -839,7 +840,7 @@ preprocess.issue.data = function(proj.data, type = "all") {
             pull.requests = {
                 df = df[sapply(df[["issue.type"]], function (k) {return ("pull request" %in% k)}), c("author.name", "issue.id", "event.name")]
             },
-            stop("Unknown issue data kind " + type)
+            logging::logerror("Requested unknown issue type %s", type)
     )
     return(df)
 }

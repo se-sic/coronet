@@ -408,7 +408,7 @@ add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "issues.count"]
+#' @param name The attribute name to add. You might want to change this [default: "issues.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -432,7 +432,7 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues participated by commenting in where the person represented by the vertex is the author.
+#' Add issues-count attribute based on the number of issues participated in by commenting in where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -446,8 +446,8 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
 #' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.count.by.commenting = function(list.of.networks, project.data,
-                                                          name = "issue.count.by.commenting",
+add.vertex.attribute.issues.commented.count = function(list.of.networks, project.data,
+                                                          name = "issues.commented.count",
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),

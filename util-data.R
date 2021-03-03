@@ -1083,7 +1083,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$issues.filtered = private$issues.filtered[private$issues[["event.name"]] == "commented", ]
                 }
             }
-            return(private$issues)
+            return(private$issues.filtered)
         },
 
         #' Get the issue data, unfiltered.

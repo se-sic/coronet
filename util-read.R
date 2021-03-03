@@ -342,6 +342,21 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+
+    # fix all dates to be after the creation date.
+    # violations can happen for commit_added events if the commit was made before the PR was opened
+    # the original date for commit_added events is stored in event.info.2 in any case
+    for (i in 1:nrow(issue.data)) {
+        if (issue.data[[i, "event.name"]] == "commit_added") {
+            logging::logdebug("Checking up %d %s %s", i, issue.data[[i,"date"]], issue.data[[i,"creation.date"]])
+            issue.data[[i,"event.info.2"]] = issue.data[[i, "date"]]
+            if (issue.data[[i,"date"]] < issue.data[[i,"creation.date"]]) {
+                issue.data[[i,"date"]] = issue.data[[i,"creation.date"]]
+                logging::logdebug("Fixing up %d", i)
+            }
+        }
+    }
+
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## generate a unique event ID from issue ID, author, and date
