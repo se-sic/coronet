@@ -336,10 +336,17 @@ metrics.vertex.centralities = function(network,
                     get.data.sources.from.relations(network),
                     proj.Data)
             }
-            else if ("artifact" %in% vertex.types) {
+            else if (vertex.types == c("artifact")) {
                 ## in this case, always use artifact relation, as both unipartite edges connecting to artifact vertices
                 ## as well as bipartite have an artifact relation
                 restrict.classification.to.vertices = get.artifacts(get.data.sources.from.relations(network))
+            }
+            else {
+                ## when both vertex types are present, compute both authors and artifacts into one vector
+                restrict.authors = get.authors.by.data.source(get.data.sources.from.relations(network),
+                                                              proj.Data)
+                restrict.artifacts = get.artifacts(get.data.sources.from.relations(network))
+                restrict.classification.to.vertices = append(restrict.authors, restrict.artifacts)
             }
         }
         ## else leave the parameter at 'NULL' which still serves as a default value for the
