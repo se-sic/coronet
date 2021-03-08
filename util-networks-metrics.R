@@ -198,7 +198,7 @@ metrics.smallworldness = function(network) {
 metrics.is.smallworld = function(network) {
     s.delta = metrics.smallworldness(network)
 
-    ## else return whether the network is smallworld
+    ## return whether the network is smallworld
     return(s.delta > 1)
 }
 
@@ -294,7 +294,7 @@ VERTEX.CENTRALITIES.COLUMN.NAMES = c("vertex.name", "centrality")
 #' the network are considered.
 #'
 #' @param network the network containing the vertices to classify
-#' @param proj.data the \code{ProjectData} containing the vertices to classify
+#' @param proj.data the \code{ProjectData} containing the authors or artifacts to classify
 #' @param type a character string declaring the classification metric. The classification metric determines which
 #'             numerical characteristic of vertices is chosen as their centrality value.
 #'             The parameter only supports network-based options/metrics:
@@ -343,11 +343,11 @@ metrics.vertex.centralities = function(network,
             }
         }
         ## else leave the parameter at 'NULL' which still serves as a default value for the
-        ## 'get.auther.class.by.type' function
+        ## 'get.author.class.by.type' function
     }
 
     ## calculate the centrality tables
-    class = get.auther.class.by.type(network = network,
+    class = get.author.class.by.type(network = network,
                                      proj.data = proj.data,
                                      type = type,
                                      restrict.classification.to.authors = restrict.classification.to.vertices)

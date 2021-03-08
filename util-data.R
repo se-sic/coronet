@@ -1110,11 +1110,11 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting artifact data.")
 
             data.source = match.arg.or.default(data.source, several.ok = TRUE)
-            data.source.func = sapply(data.source, function (d) {
+            data.source.func = sapply(data.source, function(d) {
                 return(DATASOURCE.TO.ARTIFACT.FUNCTION[[d]])
             }, USE.NAMES = FALSE)
 
-            data.source.col = sapply(data.source, function (d) {
+            data.source.col = sapply(data.source, function(d) {
                 return(DATASOURCE.TO.ARTIFACT.COLUMN[[d]])
             }, USE.NAMES = FALSE)
 

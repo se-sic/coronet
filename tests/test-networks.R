@@ -701,14 +701,14 @@ test_that("Addition of edge attributes with data", {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Extract data sources ----------------------------------------------------
 test_that("Get the data sources from a network with two relations", {
-    expected.relations = c("mails", "commits")
+    expected.data.sources = c("mails", "commits")
     network = get.sample.network()
 
-    expect_identical(expected.relations, get.data.sources.from.relations(network), info = "data sources: mails, commits")
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails, commits")
 })
 
 test_that("Get the data sources from a network with one relation", {
-    expected.relations = c("mails")
+    expected.data.sources = c("mails")
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -724,5 +724,5 @@ test_that("Get the data sources from a network with one relation", {
     ## build network
     network = network.builder$get.author.network()
 
-    expect_identical(expected.relations, get.data.sources.from.relations(network), info = "data sources: mails")
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails")
 })
