@@ -1126,7 +1126,6 @@ ProjectData = R6::R6Class("ProjectData",
             artifacts = c()
             for (df in data) {
                 unique.artifacts = unique(df[[data.source.col]])
-                print(unique.artifacts)
                 artifacts = append(artifacts, unique.artifacts)
             }
 

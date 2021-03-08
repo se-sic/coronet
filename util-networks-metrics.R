@@ -96,7 +96,7 @@ metrics.density = function(network) {
 #'
 #' @param network the network to be examined
 #' @param directed whether to consider directed paths in directed networks [default: TRUE]
-#' @param unconnected whether there are vertices in the network that are not connected.
+#' @param unconnected whether there are subnetworks in the network that are not connected.
 #'                    If \code{TRUE} only the lengths of the existing paths are considered and averaged;
 #'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)}, one longer than
 #'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
