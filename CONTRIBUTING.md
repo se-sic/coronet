@@ -120,6 +120,7 @@ The current build status is as follows:
 ### Pull Requests
 
 * Do not include issue numbers in the PR title, but rather in the PR message body.
+* Base your changes on the current `dev` branch and open your PR against the `dev` branch.
 * Follow the [style conventions](#style-conventions).
 * Document new code and provide proper tests.
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
@@ -166,7 +167,7 @@ There will be another checklist for you when you open an actual pull request pro
 
 ### R Coding Conventions
 
-* Use [Google's style guide for R](https://google.github.io/styleguide/Rguide.xml) as a start.
+* Use [Google's style guide for R](https://google.github.io/styleguide/Rguide.xml) as a start. Recently, Google has, unfortunately, changed its naming conventions, but coronet still uses the previously established naming conventions, which can be found [here](https://github.com/google/styleguide/blob/505ba68c74eb97e6966f60907ce893001bedc706/Rguide.xml).
 * Additionally or, rather, in contrast, we settle on the following style:
     * **indentation width**: 4 spaces,
     * **line length**: more than 80 characters are allowed, 120 characters should be the maximum,
