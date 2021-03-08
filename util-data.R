@@ -1103,20 +1103,32 @@ ProjectData = R6::R6Class("ProjectData",
         #' Get the list of artifacts from the given \code{data.source} of the project.
         #'
         #' @param data.source The specified data source. One of \code{"commits"},
-        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #'                    \code{"mails"}, and \code{"issues"} or multiple of them. [default: "commits"]
         #'
         #' @return the character vector of unique artifacts (can be empty)
         get.artifacts = function(data.source = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact data.")
 
-            ## check given data source
-            data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+            data.source = match.arg.or.default(data.source, several.ok = TRUE)
+            data.source.func = sapply(data.source, function (d) {
+                return(DATASOURCE.TO.ARTIFACT.FUNCTION[[d]])
+            }, USE.NAMES = FALSE)
+
+            data.source.col = sapply(data.source, function (d) {
+                return(DATASOURCE.TO.ARTIFACT.COLUMN[[d]])
+            }, USE.NAMES = FALSE)
 
             ## get actual artifact data
-            data = self[[data.source.func]]()
-            artifacts = unique(data[[data.source.col]])
+            data = lapply(data.source.func, function(d) {
+                return(self[[d]]())
+            })
+
+            artifacts = c()
+            for (df in data) {
+                unique.artifacts = unique(df[[data.source.col]])
+                print(unique.artifacts)
+                artifacts = append(artifacts, unique.artifacts)
+            }
 
             ## empty vector if no data exist
             if (is.null(artifacts)) {

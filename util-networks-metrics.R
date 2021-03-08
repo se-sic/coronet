@@ -326,8 +326,21 @@ metrics.vertex.centralities = function(network,
         if (!is.null(network) && !is.null(proj.data)) {
             ## in this case calculate the restrict parameter based on the edge relation along with the vertices from
             ## these data.sources
-            restrict.classification.to.vertices = get.authors.by.data.source(get.data.sources.from.relations(network),
-                                                                             proj.Data)
+
+            ## first check whether the network only consists of author vertices
+            ## therefore get a vector with all vertex types
+            vertex.types = unique(igraph::V(network)$type)
+            if (vertex.types == c("author")) {
+                ## in this case, use the 'get.authors.by.data.source' function to get the author list
+                restrict.classification.to.vertices = get.authors.by.data.source(
+                    get.data.sources.from.relations(network),
+                    proj.Data)
+            }
+            else if ("artifact" %in% vertex.types) {
+                ## in this case, always use artifact relation, as both unipartite edges connecting to artifact vertices
+                ## as well as bipartite have an artifact relation
+                restrict.classification.to.vertices = get.artifacts(get.data.sources.from.relations(network))
+            }
         }
         ## else leave the parameter at 'NULL' which still serves as a default value for the
         ## 'get.auther.class.by.type' function
