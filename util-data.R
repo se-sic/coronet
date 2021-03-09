@@ -1109,7 +1109,23 @@ ProjectData = R6::R6Class("ProjectData",
         get.artifacts = function(data.source = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact data.")
 
-            data.source = match.arg.or.default(data.source, several.ok = TRUE)
+            ## check whether the argument 'data.source' is missing and set the default manually because
+            ## the 'match.arg.or.default' function returns the whole vector when no argument is passed with 'several.ok'
+            ## set to 'TRUE'
+            if (missing(data.source)) {
+                ## get the arguments of the function calling 'formals', resulting in the arguments of this
+                ## 'get.artifacts' function, according to the documentation
+                formal.args = formals()
+                ## get the fixed default value of the argument 'data.source'
+                choices = eval(formal.args[[as.character(substitute(data.source))]])
+                ## set the value to its first element as this is the expected behavior
+                data.source = choices[[1]]
+            }
+            else {
+                ## if an argument is passed, use the match function to sort it out for us
+                data.source = match.arg.or.default(data.source, several.ok = TRUE)
+            }
+
             data.source.func = sapply(data.source, function(d) {
                 return(DATASOURCE.TO.ARTIFACT.FUNCTION[[d]])
             }, USE.NAMES = FALSE)
