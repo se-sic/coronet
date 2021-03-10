@@ -1102,11 +1102,11 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
         #'
-        #' @param data.source The specified data source. One of \code{"commits"},
-        #'                    \code{"mails"}, and \code{"issues"} or multiple of them. [default: "commits"]
+        #' @param data.sources The specified data source. One of \code{"commits"},
+        #'                     \code{"mails"}, and \code{"issues"} or multiple of them. [default: "commits"]
         #'
         #' @return the character vector of unique artifacts (can be empty)
-        get.artifacts = function(data.source = c("commits", "mails", "issues")) {
+        get.artifacts = function(data.sources = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact data.")
 
             ## get the right value when nothing is passed for 'data.source'
@@ -1115,24 +1115,24 @@ ProjectData = R6::R6Class("ProjectData",
             ## behavior: if 'data.source' is missing, 'several.ok' will be 'FALSE' making the function return
             ## the first element of the choice vector. If an argument is present, 'several.ok' will be 'TRUE' allowing
             ## multiple values for the argument
-            data.source = match.arg(data.source, several.ok = !missing(data.source))
+            data.sources = match.arg(data.sources, several.ok = !missing(data.sources))
 
-            data.source.func = sapply(data.source, function(d) {
+            data.source.funcs = sapply(data.sources, function(d) {
                 return(DATASOURCE.TO.ARTIFACT.FUNCTION[[d]])
             }, USE.NAMES = FALSE)
 
-            data.source.col = sapply(data.source, function(d) {
+            data.source.cols = sapply(data.sources, function(d) {
                 return(DATASOURCE.TO.ARTIFACT.COLUMN[[d]])
             }, USE.NAMES = FALSE)
 
             ## get actual artifact data
-            data = lapply(data.source.func, function(d) {
+            data = lapply(data.source.funcs, function(d) {
                 return(self[[d]]())
             })
 
             artifacts = c()
             for (df in data) {
-                unique.artifacts = unique(df[[data.source.col]])
+                unique.artifacts = unique(df[[data.source.cols]])
                 artifacts = append(artifacts, unique.artifacts)
             }
 
