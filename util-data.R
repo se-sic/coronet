@@ -1117,24 +1117,15 @@ ProjectData = R6::R6Class("ProjectData",
             ## multiple values for the argument
             data.sources = match.arg(data.sources, several.ok = !missing(data.sources))
 
-            data.source.funcs = sapply(data.sources, function(d) {
-                return(DATASOURCE.TO.ARTIFACT.FUNCTION[[d]])
-            }, USE.NAMES = FALSE)
-
-            data.source.cols = sapply(data.sources, function(d) {
-                return(DATASOURCE.TO.ARTIFACT.COLUMN[[d]])
-            }, USE.NAMES = FALSE)
-
-            ## get actual artifact data
-            data = lapply(data.source.funcs, function(d) {
-                return(self[[d]]())
+            artifacts = lapply(data.sources, function(data.source) {
+                data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+                data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+                data = self[[data.source.func]]()
+                return(unique(data[[data.source.col]]))
             })
 
-            artifacts = c()
-            for (df in data) {
-                unique.artifacts = unique(df[[data.source.cols]])
-                artifacts = append(artifacts, unique.artifacts)
-            }
+            ## make it a vector
+            artifacts = unlist(artifacts)
 
             ## empty vector if no data exist
             if (is.null(artifacts)) {
