@@ -71,11 +71,11 @@ test_that("Compare two ProjectData objects", {
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
-    proj.data.one$get.issues()
+    proj.data.one$get.issues.filtered()
 
     expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
 
-    proj.data.two$get.issues()
+    proj.data.two$get.issues.filtered()
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 

@@ -64,7 +64,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     data = list(
         commits = project.data$get.commits(),
         mails = project.data$get.mails(),
-        issues = project.data$get.issues.unfiltered()
+        issues = project.data$get.issues()
     )
     split.data = names(data)
     names(split.data) = split.data
@@ -238,7 +238,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     data = list(
         commits = project.data$get.commits(),
         mails = project.data$get.mails(),
-        issues = project.data$get.issues.unfiltered()
+        issues = project.data$get.issues()
     )
 
     ## define ID columns for mails and commits

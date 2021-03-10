@@ -57,7 +57,7 @@ BASE.ARTIFACTS = c(
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
     "commits" = "get.commits.filtered",
     "mails"   = "get.mails",
-    "issues"  = "get.issues"
+    "issues"  = "get.issues.filtered"
 )
 
 ## mapping of data source to artifact column
@@ -1073,12 +1073,12 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
-        get.issues = function() {
+        get.issues.filtered = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
             if (is.null(private$issues.filtered)) {
-                private$issues.filtered = self$get.issues.unfiltered()
+                private$issues.filtered = self$get.issues()
                 if (private$project.conf$get.value("issues.only.comments")) {
                     private$issues.filtered = private$issues.filtered[private$issues[["event.name"]] == "commented", ]
                 }
@@ -1091,7 +1091,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
-        get.issues.unfiltered = function() {
+        get.issues = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this

@@ -824,7 +824,7 @@ get.author.mail.thread.count = function(proj.data) {
 #'
 preprocess.issue.data = function(proj.data, type = c("all", "pull.requests", "issues")) {
     type = match.arg(type)
-    df = proj.data$get.issues.unfiltered()
+    df = proj.data$get.issues()
     # if k is a list, and nrow(df) == 0, then df[k, ..] fails
     # so we abort beforehand
     if (nrow(df) == 0) {
