@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -695,4 +696,33 @@ test_that("Addition of edge attributes with data", {
         info = "multi network – issue/cochange"
     )
 
+})
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Extract data sources ----------------------------------------------------
+test_that("Get the data sources from a network with two relations", {
+    expected.data.sources = c("mails", "commits")
+    network = get.sample.network()
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails, commits")
+})
+
+test_that("Get the data sources from a network with one relation", {
+    expected.data.sources = c("mails")
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    ## construct network builder
+    net.conf = NetworkConf$new()
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+
+    ## build network
+    network = network.builder$get.author.network()
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails")
 })

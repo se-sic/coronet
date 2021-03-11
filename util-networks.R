@@ -18,6 +18,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1568,6 +1569,34 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions---------------------------------------------------------
+
+#' Calculate the data sources of a network based on its edge relations.
+#'
+#' @param network the network with the relations to be extracted
+#' @return a vector with all data.sources from the network; an element is set to \code{NA} if the network contains an
+#' empty relation, i.e. \code{character(0)}
+get.data.sources.from.relations = function(network) {
+    ## get all relations in the network
+    data.sources = unique(igraph::E(network)$relation)
+
+    ## map them to data sources respectively using the defined translation constant
+    data.sources = sapply(data.sources, function(relation) {
+        ## check for a \code{character(0)} relation and abort if there is one
+        if (length(relation) == 0) {
+            logging::logwarn("There seems to be an empty relation in the network. Cannot proceed.")
+            return (NA)
+        }
+
+        ## use the translation constant to get the appropriate data source
+        return(RELATION.TO.DATASOURCE[[relation]])
+    }, USE.NAMES = FALSE) # avoid element names as we only want the data source's name
+
+    return(data.sources)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
 SAMPLE.DATA = normalizePath("./sample")
@@ -1576,7 +1605,6 @@ SAMPLE.DATA = normalizePath("./sample")
 #'
 #' @return the sample network
 get.sample.network = function() {
-
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
     proj.conf$update.values(list(commits.filter.base.artifact = FALSE))

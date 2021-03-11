@@ -1102,21 +1102,30 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
         #'
-        #' @param data.source The specified data source. One of \code{"commits"},
-        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param data.sources The specified data source. One of \code{"commits"},
+        #'                     \code{"mails"}, and \code{"issues"} or multiple of them. [default: "commits"]
         #'
         #' @return the character vector of unique artifacts (can be empty)
-        get.artifacts = function(data.source = c("commits", "mails", "issues")) {
+        get.artifacts = function(data.sources = c("commits", "mails", "issues")) {
             logging::loginfo("Getting artifact data.")
 
-            ## check given data source
-            data.source = match.arg.or.default(data.source, several.ok = FALSE)
-            data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
-            data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+            ## get the right value when nothing is passed for 'data.source'
+            ## here we need to do a trick, because 'match.arg' returns the whole choice vector instead of the first
+            ## element if nothing is passed but 'several.ok' is set to 'TRUE'. With this solution we get the following
+            ## behavior: if 'data.source' is missing, 'several.ok' will be 'FALSE' making the function return
+            ## the first element of the choice vector. If an argument is present, 'several.ok' will be 'TRUE' allowing
+            ## multiple values for the argument
+            data.sources = match.arg(data.sources, several.ok = !missing(data.sources))
 
-            ## get actual artifact data
-            data = self[[data.source.func]]()
-            artifacts = unique(data[[data.source.col]])
+            artifacts = lapply(data.sources, function(data.source) {
+                data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+                data.source.col = DATASOURCE.TO.ARTIFACT.COLUMN[[data.source]]
+                data = self[[data.source.func]]()
+                return(unique(data[[data.source.col]]))
+            })
+
+            ## make it a vector
+            artifacts = unlist(artifacts)
 
             ## empty vector if no data exist
             if (is.null(artifacts)) {
