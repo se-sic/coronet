@@ -1,0 +1,31 @@
+## This file is part of coronet, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## All Rights Reserved.
+
+# GitHubPages Setup
+
+title: <img src="https://se-sic.github.io/coronet/logo/4.coronet_only_logo_radiused_rectangle.png" style="height:50px"><a href="https://github.com/se-sic/coronet">se-sic/coronet</a>
+github:
+  license: false
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - CONTRIBUTING.md
+  - README.md
+  - NEWS.md
+  - .github

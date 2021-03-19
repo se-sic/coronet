@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
 # Contributing to the network library `coronet`
 
 The following is a set of guidelines for contributing to the network library `coronet`, which is hosted in the [se-sic](https://github.com/se-sic) organization on GitHub.
@@ -118,6 +120,7 @@ The current build status is as follows:
 ### Pull Requests
 
 * Do not include issue numbers in the PR title, but rather in the PR message body.
+* Base your changes on the current `dev` branch and open your PR against the `dev` branch.
 * Follow the [style conventions](#style-conventions).
 * Document new code and provide proper tests.
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
@@ -164,7 +167,7 @@ There will be another checklist for you when you open an actual pull request pro
 
 ### R Coding Conventions
 
-* Use [Google's style guide for R](https://google.github.io/styleguide/Rguide.xml) as a start.
+* Use [Google's style guide for R](https://google.github.io/styleguide/Rguide.xml) as a start. Recently, Google has, unfortunately, changed its naming conventions, but coronet still uses the previously established naming conventions, which can be found [here](https://github.com/google/styleguide/blob/505ba68c74eb97e6966f60907ce893001bedc706/Rguide.xml).
 * Additionally or, rather, in contrast, we settle on the following style:
     * **indentation width**: 4 spaces,
     * **line length**: more than 80 characters are allowed, 120 characters should be the maximum,
@@ -191,7 +194,7 @@ There will be another checklist for you when you open an actual pull request pro
         * For each parameter of a function or method, a parameter description (`@param parameter.name description`) must be added. The same holds for descriptions of return values (`@return description`) – if something is returned. For both items, the descriptions should always be a phrase (i.e., no verbs should be used), should start with a lower-case letter, and should *not* end with a period – *unless* there are further phrases or sentences following. If the description covers multiple lines, all but the first lines are indented along the start of the description in the first line.
         * For parameters that take a default value, the default value must be placed directly after the description of the parameter using the following format: `[default: value]`.
           **Note:** As `value` usually is code, we omit the `\code{...}` notation within `[default: ...]`.
-        * Add references to notable other classes, methods, constants, and functions using `@seealso reference`. As `reference` usually is code, we omit the `\code{...}` notation for it. 
+        * Add references to notable other classes, methods, constants, and functions using `@seealso reference`. As `reference` usually is code, we omit the `\code{...}` notation for it.
         * Example for a function/method documentation:
           ```R
           #' Group the data items of the given \code{data.source} by the given \code{group.column}.

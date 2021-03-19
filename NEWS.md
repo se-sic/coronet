@@ -1,6 +1,11 @@
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
 # coronet – Changelog
 
 ## Unversioned
+
+### Announcement
+- `coronet` now has a logo and a website: https://se-sic.github.io/coronet (#167, PR #196)
 
 ### Added
 - Add functionality to read and process commit messages in order to merge them to the commit data (see issue #180). Three values are available for the new attribute `commit.messages` in `ProjectConf`: `none`, `title` and `messages` (PR #193, 85b1d0572c0fb9f4c062bceb1363b0398f98b85f, fdc414ade1a640f533e809a25cfe012e42b3cffa, 43e1894998e18faff3a65114fa65ee54e1d2f66e)
@@ -10,12 +15,13 @@
 and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7)
 - Add `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
 - Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
+- Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
-- Update documentation in `util-network-metrics.R` (PR #195, f929248, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
+- Update documentation in `util-network-metrics.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
-- Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted.
+- Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
 
 
 ## 3.7
