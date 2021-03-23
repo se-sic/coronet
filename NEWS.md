@@ -16,15 +16,17 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 - Add `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
 - Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
 - Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
-- Added per-author vertex attributes regarding issue/pull request/mail count and derived quantities (i.e. mail thread count, issue creation count) (PR #194, d578d2845c16346c2245668d9ca2f5b7ad97d3c2, 25bc00659b0c2ffa20678b2cc02c7b9a6c672893, d996e2892e9ec48bb8a70189b60ef8366f6f1fc0, f2d6421643fe17f0aa5f007420e327b1ef45568f, 47f37d50499712ab587a422c73047994e5b64c10)
-- Fixed fencing issue timing data so that all issue actions "happen" after the issue was created (issue #185, 89fa1592a1406098fcf318d4178bcb3f62102b33, e3d8c97451dfad64a4b13ae490429f2cea902d9a)
-- Rename get.issues to get.issues.filtered, and get.issues.unfiltered to get.issues so that these methods follow the established naming scheme (4a6183d146f1dd119fe3cc52784d9daeaef6ddfd)
+- Add per-author vertex attributes regarding issue/pull request/mail count and derived quantities (like mail thread count, issue creation count) (PR #194, 9f9150a97ffbb64607df0ddcbce299e16c2580da, 7260d62cf6f1470584753f76970d19664638eeed, 139f70b67903909bcd4c57e26afa458681a869f2, eb4f649c04155e22195627072e0f08bb8fe65dc4, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 1e1406f4a0898cac3e61a7bc9a5aa665dceef79f, 98e11abc651b5fe0ec994eddea078635b0d6f0b2, cc64b9b3e3f3e33798a6d138225f745bd2f550a0)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
 - Update documentation in `util-network-metrics.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
 - Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
+- Rename `get.issues` to `get.issues.filtered`, and write a new `get.issues` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits (b9dd94c8575b8cab40d0d1185368854f84299d87)
+
+### Fixed
+- Fix fencing issue timing data so that all issue actions "happen" after the issue was created (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
 
 
 ## 3.7

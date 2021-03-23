@@ -424,6 +424,8 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
     * A set of network-metric functions
+- `util-data-metrics.R`
+    * A set of functions that manipulate data in certain specific ways
 - `util-networks-misc.R`
     * Helper functions for network creation (e.g., create adjacency matrices)
 - `util-tensor.R`

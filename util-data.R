@@ -1069,7 +1069,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Get the issue data, filtered
+        #' Get the issue data, filtered.
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data

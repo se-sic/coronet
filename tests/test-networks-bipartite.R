@@ -17,6 +17,7 @@
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -266,7 +267,8 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>"),
+                  name = c("<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                           "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>"),
                   kind = "Issue",
                   type = TYPE.ARTIFACT
               )
@@ -276,9 +278,12 @@ test_that("Construction of the bipartite network for the feature artifact with a
               network.expected.data = data.frame(
                   from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Karl", "Max",
                            "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas"),
-                  to   = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
-                           "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
-                           "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>"),
+                  to   = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                           "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                           "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>",
+                           "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                           "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                           "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>"),
                   date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34", # Björn
                                                 "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                                 "2016-07-12 14:59:25", "2016-07-12 16:02:30", "2016-07-12 16:06:01",
@@ -289,9 +294,12 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                                 "2013-06-01 06:50:26", "2016-07-12 16:01:01", "2016-07-12 16:02:02", # Olaf
                                                 "2013-04-21 23:52:09", "2016-07-12 15:59:25", "2016-07-12 16:03:59")), # Thomas
                   artifact.type = "IssueEvent",
-                  issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
-                               "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
-                               "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>"),
+                  issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                               "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                               "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>",
+                               "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                               "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                               "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>"),
                   event.name = "commented",
                   weight = 1,
                   type = TYPE.EDGES.INTER,

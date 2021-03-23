@@ -709,41 +709,41 @@ get.committer.or.author.commit.count = function(range.data) {
 
 #' Helper function that aggregates counts of things like commits, mails, ... on a per-author basis.
 #'
-#' For example, called with name="commit.count", data.extractor=function(proj.data) {return(proj.data$get.commits.filtered())},
-#' grouping.keys=c("committer.name"), distinctize=true and distinctize.key=c("hash"), the returned function will
+#' For example, called with \code{name = "commit.count"}, \code{data.extractor = function(proj.data) {return(proj.data$get.commits.filtered())}},
+#' \code{grouping.keys = c("committer.name")}, \code{remove.duplicates = TRUE} and \code{remove.duplicates.by = c("hash")}, the returned function will
 #'
-#' 1. get the data frame using the extractor (in this case, the commit df)
+#' 1. get the data frame using the extractor (in this case, the commit data frame)
 #' 2. remove duplicate entries so that there is only one entry per commit hash
-#' 3. project away unneeded columns, leaving only committer.name
+#' 3. project away unneeded columns, leaving only "committer.name"
 #' 4. count the commits grouped by the commiter name
-#' 5. return a dataframe with cols commiter.name and freq, which contains the number of commits authored by each author
+#' 5. return a data frame with columns "commiter.name" and "freq", which contains the number of commits authored by each author
 #'
 #' @param name the name the function will be bound to, for logging
 #' @param data.extractor a function which given the project data, extracts the relevant dataframe (i.e. the commit data.frame) from it
 #' @param grouping.keys the dataframe keys to group by
 #' @param remove.duplicates Whether to remove duplicates
-#' @param remove.duplicates.by if distinctize, then the key by which to remove duplicates
+#' @param remove.duplicates.by if \code{remove.duplicates}, then the key by which to remove duplicates
 #'
-#' @return A function that aggregates data according to the above specification contained in a given \code{ProjectData}.
+#' @return a function that aggregates data according to the above specification contained in a given \code{ProjectData}.
 #'         This function itself returns a dataframe consisting of |grouping.keys|+1 columns, the last holding the count,
 #'         and the others the respective grouping
 #'
 group.data.by.key = function(name, data.extractor, grouping.keys, remove.duplicates, remove.duplicates.by) {
     return(function(proj.data) {
         logging::logdebug("%s: starting", name)
-        #get the data we want to group
+        ## get the data we want to group
         df = data.extractor(proj.data)
-        #if necessary, make sure that there is only one entry for each remove-duplicate key (combination)
+        ## if necessary, make sure that there is only one entry for each remove-duplicate key (combination)
         if (remove.duplicates) {
             df = df[!duplicated(df[[remove.duplicates.by]]), ]
         }
-        #throw away unnecessary columns
+        ## throw away unnecessary columns
         df = df[grouping.keys]
         grouping.keys.formatted = paste(grouping.keys, sep="`, `")
-        #execute a query that counts the number of occurrences of the grouping.keys
+        ## execute a query that counts the number of occurrences of the grouping.keys
         stmt = paste0("SELECT `", grouping.keys.formatted, "`, COUNT(*) as `freq` FROM `df`
-                                 GROUP BY `", grouping.keys.formatted, "` ORDER BY `freq` DESC, `", grouping.keys.formatted, "`")
-        logging::logdebug(paste0(name, ": running SQL ", stmt))
+                       GROUP BY `", grouping.keys.formatted, "` ORDER BY `freq` DESC, `", grouping.keys.formatted, "`")
+        logging::logdebug("%s: running SQL %s", name, stmt)
         res = sqldf::sqldf(stmt)
         logging::logdebug("%s: finished", name)
         return(res)
@@ -753,9 +753,9 @@ group.data.by.key = function(name, data.extractor, grouping.keys, remove.duplica
 #' Get the commit count per committer in the given range data, where the committer
 #' may match the author of the respective commits.
 #'
-#' @param range.data The data to count on
+#' @param range.data the data to count on
 #'
-#' @return A data frame in descending order by the commit count.
+#' @return a data frame in descending order by the commit count.
 get.committer.commit.count = group.data.by.key("get.committer.commit.count", function(proj.data) {return(proj.data$get.commits.filtered())},
                                                c("committer.name"), TRUE, c("hash"))
 
@@ -798,7 +798,7 @@ get.author.mail.thread.count = function(proj.data) {
     df = df[c("author.name", "message.id", "thread")]
     stmt = "SELECT `author.name`, COUNT(DISTINCT thread) as `freq` FROM `df`
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
-    logging::logdebug(paste("get.author.mail.thread.count: running SQL ", stmt,sep=""))
+    logging::logdebug("get.author.mail.thread.count: running SQL %s", stmt)
     res = sqldf::sqldf(stmt)
     logging::logdebug("get.author.mail.thread.count: finished")
     return(res)
@@ -808,42 +808,6 @@ get.author.mail.thread.count = function(proj.data) {
 ## Issue-/PR-based classification ---------------------------------------------
 
 ## * Count-based classification --------------------------------------------
-
-#' Gets and preprocesses issue data, removing unnecessary columns and rows were are not interested in.
-#'
-#' Retained rows are \code{author.name}, \code{issue.id} and \code{"event.type"}
-#'
-#' Retained colums depend on type. If it is \code{"all"}, then all rows are retained.
-#' Otherwise, only the rows containing information about either issues or pull requests are retained
-#'
-#' @param proj.data the \code{ProjectData} containing the mail data
-#' @param type which issue type to consider.
-#'             One of \code{"issues"}, \code{"pull.requests"} or \{"all"}
-#'             [default: "all"]
-#'
-#'
-preprocess.issue.data = function(proj.data, type = c("all", "pull.requests", "issues")) {
-    type = match.arg(type)
-    df = proj.data$get.issues()
-    # if k is a list, and nrow(df) == 0, then df[k, ..] fails
-    # so we abort beforehand
-    if (nrow(df) == 0) {
-        return (df[c("author.name", "issue.id", "event.name")]);
-    }
-    switch (type,
-            all = {
-                df = df[c("author.name", "issue.id", "event.name")]
-            },
-            issues = {
-                df = df[sapply(df[["issue.type"]], function (k) {return ("issue" %in% k)}), c("author.name", "issue.id", "event.name")]
-            },
-            pull.requests = {
-                df = df[sapply(df[["issue.type"]], function (k) {return ("pull request" %in% k)}), c("author.name", "issue.id", "event.name")]
-            },
-            logging::logerror("Requested unknown issue type %s", type)
-    )
-    return(df)
-}
 
 #' Get the issue/pr count for each author based on the issues data contained in the specified \code{ProjectData}.
 #' The issue count here is the number of issues the author participated in (which can mean anything,
@@ -861,7 +825,7 @@ preprocess.issue.data = function(proj.data, type = c("all", "pull.requests", "is
 #'         their respective issue counts
 get.author.issue.count = function(proj.data, type = "all") {
     logging::logdebug("get.author.issue.count: starting.")
-    df = preprocess.issue.data(proj.data, type)
+    df = preprocess.issue.data(proj.data, type = type)
     #count distinct since an author may appear in multiple issues at the same time,
     #or in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
@@ -885,7 +849,7 @@ get.author.issue.count = function(proj.data, type = "all") {
 #'         their respective issue counts
 get.author.issues.created.count = function(proj.data, type = "all") {
     logging::logdebug("get.author.issues.created.count: starting.")
-    df = preprocess.issue.data(proj.data, type)
+    df = preprocess.issue.data(proj.data, type = type)
     #count distinct since an author may appear in multiple issues at the same time,
     #or in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
@@ -910,7 +874,7 @@ get.author.issues.created.count = function(proj.data, type = "all") {
 #'         their respective issue counts
 get.author.issues.commented.in.count = function(proj.data, type = "all") {
     logging::logdebug("get.author.issues.commented.in.count: starting.")
-    df = preprocess.issue.data(proj.data, type)
+    df = preprocess.issue.data(proj.data, type = type)
     #count distinct since an author may appear in multiple issues at the same time,
     #or in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
@@ -935,7 +899,7 @@ get.author.issues.commented.in.count = function(proj.data, type = "all") {
 #'         their respective comment counts
 get.author.issue.comment.count = function(proj.data, type = "all") {
     logging::logdebug("get.author.issue.comment.count: starting.")
-    df = preprocess.issue.data(proj.data, type)
+    df = preprocess.issue.data(proj.data, type = type)
     stmt = "SELECT `author.name`, COUNT(*) as `freq` FROM `df`
                              WHERE `event.name` = 'commented'
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"

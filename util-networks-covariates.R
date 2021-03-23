@@ -349,7 +349,7 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
 
 ## * Mail count ----------------------------------------------------------
 
-#' Add mail-count attribute based on the total number of mails send where the person represented by the vertex is the author.
+#' Add mail-count attribute based on the total number of mails sent where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -404,7 +404,7 @@ add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data
 
 ## * Issue / PR count --------------------------------------------------------------
 
-#' Add issues-count attribute based on the number of issues participated in where the person represented by the vertex is the author.
+#' Add issues-count attribute based on the number of issues participated in, where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -426,13 +426,13 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                             default.value = 0L, issue.type = "all") {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return (get.author.issue.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {return(get.author.issue.count(data, type = issue.type))}, "author.name"
     )
 
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues participated in by commenting in where the person represented by the vertex is the author.
+#' Add issues-count attribute based on the number of issues participated in by commenting, where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -454,13 +454,13 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
                                                           default.value = 0L, issue.type = "all") {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return (get.author.issues.commented.in.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {return(get.author.issues.commented.in.count(data, type = issue.type))}, "author.name"
     )
 
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues created in where the person represented by the vertex is the author.
+#' Add issues-count attribute based on the number of issues created, where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -482,13 +482,13 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
                                                           default.value = 0L, issue.type = "all") {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return (get.author.issues.created.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {return(get.author.issues.created.count(data, type = issue.type))}, "author.name"
     )
 
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues participated by commenting in where the person represented by the vertex is the author.
+#' Add issue-comments-count attribute based on the number of issues participated in by commenting, where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -510,7 +510,7 @@ add.vertex.attribute.issue.comment.count = function(list.of.networks, project.da
                                                           default.value = 0L, issue.type = "all") {
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return (get.author.issue.comment.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {return(get.author.issue.comment.count(data, type = issue.type))}, "author.name"
     )
 
     return(nets.with.attr)
