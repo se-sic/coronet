@@ -465,26 +465,39 @@ test_that("Network construction of the undirected author-issue network with all 
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    vertices = data.frame(name = c("Karl", "Olaf", "Thomas", "udo", "Björn", "Max"),
+    vertices = data.frame(name = c("Thomas", "Olaf", "Björn", "Karl", "udo", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c(rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-github-3>
+    edges = data.frame(from = c(rep("Thomas", 5), rep("Thomas", 4), rep("Olaf", 3), # <issue-github-1>
+                                rep("Olaf", 4), # <issue-github-2>
+                                rep("Karl", 6), rep("Karl", 5), rep("Olaf", 3), # <issue-github-3>
+                                rep("Olaf", 3), # <issue-github-4>
                                 rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Thomas", 7), rep("Thomas", 3), rep("Björn", 6), # <issue-github-6>
                                 rep("Thomas", 9), rep("Thomas", 6), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
                                 rep("Björn", 6) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       to = c(rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-github-3>
+                       to = c(rep("Olaf", 5), rep("Björn", 4), rep("Björn", 3), # <issue-github-1>
+                              rep("Björn", 4), # <issue-github-2>
+                              rep("Olaf", 6), rep("Thomas", 5), rep("Thomas", 3), # <issue-github-3>
+                              rep("Björn", 3), # <issue-github-4>
                               rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-github-6>
                               rep("Björn", 9), rep("Olaf", 6), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
                               rep("Max", 6) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-github-3>
+                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:59", # <issue-github-1>
+                                                      "2016-07-12 16:01:01", "2016-07-14 13:37:00", "2016-07-12 15:59:25",
+                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-07-12 16:06:01",
+                                                      "2016-07-12 16:01:01", "2016-07-14 13:37:00", "2016-07-12 16:06:01",
+                                                      "2016-07-12 14:59:25", "2016-07-12 14:59:25", "2016-07-12 16:04:59", # <issue-github-2>
+                                                      "2016-07-12 16:04:59",
+                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-github-3>
                                                       "2016-08-31 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
                                                       "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02",
                                                       "2016-08-31 16:45:09", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
                                                       "2016-07-12 16:06:30", "2016-10-05 16:45:09",
+                                                      "2016-07-12 16:02:02", "2016-07-12 16:02:02", "2016-07-12 16:02:02", # <issue-github-4>
                                                       "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-github-6>
                                                       "2016-10-13 15:30:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
                                                       "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
@@ -508,10 +521,15 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52"
                                                       )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( rep("<issue-github-3>", 14), rep("<issue-github-6>", 30), rep("<issue-jira-ZEPPELIN-328>", 26),
+                       issue.id = c( rep("<issue-github-1>", 12), rep("<issue-github-2>", 4), rep("<issue-github-3>", 14),
+                                     rep("<issue-github-4>", 3), rep("<issue-github-6>", 30), rep("<issue-jira-ZEPPELIN-328>", 26),
                                      rep("<issue-jira-ZEPPELIN-332>", 6)),
-                       event.name = c("created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
+                       event.name = c("created", "commented", "state_updated", "commented", "state_updated", "created", # <issue-github-1>
+                                      "commented", "state_updated", "commented", "commented", "state_updated", "commented",
+                                      "created", "commented", "merged", "state_updated", # <issue-github-2>
+                                      "created", "commented", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
                                       "commented", "add_link", "referenced", "referenced", "assigned", "state_updated", "referenced",
+                                      "commit_added", "created", "commented", # <issue-github-4>
                                       "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "mentioned", # <issue-github-6>
                                       "subscribed", "mentioned", "subscribed", "commented", "mentioned", "subscribed", "labeled",
                                       "commented", "add_link", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
@@ -550,20 +568,24 @@ test_that("Network construction of the undirected author-issue network with just
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    vertices = data.frame(name = c("Karl", "Thomas", "Björn", "Olaf", "Max"),
+    vertices = data.frame(name = c("Thomas", "Olaf", "Björn", "Karl", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c(rep("Thomas", 2), # <issue-github-6>
+    edges = data.frame(from = c(rep("Thomas", 2), rep("Thomas", 2), rep("Olaf", 2), # <issue-github-1>
+                                rep("Thomas", 2), # <issue-github-6>
                                 rep("Thomas", 7), rep("Thomas", 5), rep("Björn", 10), # <issue-jira-ZEPPELIN-328>
                                 rep("Björn", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       to = c(rep("Björn", 2), # <issue-github-6>
+                       to = c(rep("Olaf", 2), rep("Björn", 2), rep("Björn", 2), # <issue-github-1>
+                              rep("Björn", 2), # <issue-github-6>
                               rep("Björn", 7), rep("Olaf", 5), rep("Olaf", 10), # <issue-jira-ZEPPELIN-328>
                               rep("Max", 5) # <issue-jira-ZEPPELIN-332>
                               ),
-                       date = get.date.from.string(c( "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-github-6>
+                       date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 16:01:01", "2016-07-12 15:59:25", # <issue-github-1>
+                                                      "2016-07-12 16:06:01", "2016-07-12 16:01:01", "2016-07-12 16:06:01",
+                                                      "2016-07-12 16:03:59", "2017-05-23 12:32:39", # <issue-github-6>
                                                       "2013-04-21 23:52:09", "2013-05-05 21:46:30", "2013-05-05 21:49:21", # <issue-jira-ZEPPELIN-328>
                                                       "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
                                                       "2013-05-25 04:08:07", "2013-04-21 23:52:09", "2013-05-25 03:25:06",
@@ -576,7 +598,8 @@ test_that("Network construction of the undirected author-issue network with just
                                                       "2016-07-27 20:12:08", "2016-07-28 06:27:52"
                                                       )),
                        artifact.type = "IssueEvent",
-                       issue.id = c( rep("<issue-github-6>", 2), rep("<issue-jira-ZEPPELIN-328>", 22), rep("<issue-jira-ZEPPELIN-332>", 5) ),
+                       issue.id = c( rep("<issue-github-1>", 6), rep("<issue-github-6>", 2),
+                                     rep("<issue-jira-ZEPPELIN-328>", 22), rep("<issue-jira-ZEPPELIN-332>", 5) ),
                        event.name = "commented",
                        weight = 1,
                        type = TYPE.EDGES.INTRA,

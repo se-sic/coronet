@@ -560,9 +560,9 @@ test_that("Test add.vertex.attribute.issue.count", {
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L), c(3L), c(1L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(3L), c(3L, 0L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L)),
+        range = network.covariates.test.build.expected(c(0L), c(3L), c(1L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(0L), c(3L), c(3L, 0L,  1L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(3L), c(3L, 0L,  1L)),
         project.cumulative = network.covariates.test.build.expected(c(1L), c(3L), c(3L, 0L,  1L)),
         project.all.ranges = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L)),
         complete = network.covariates.test.build.expected(c(3L), c(3L), c(3L, 0L,  1L))
