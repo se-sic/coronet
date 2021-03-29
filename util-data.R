@@ -272,8 +272,8 @@ ProjectData = R6::R6Class("ProjectData",
             caller = NULL
 
             ## only assign the last but one element if the stack is long enough
-            if (length(stacktrace >= 2)) {
-                tail(stacktrace, n=2)[[1]]
+            if (length(stacktrace) >= 2) {
+                caller = tail(stacktrace, n=2)[[1]]
             }
 
             ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
@@ -462,8 +462,8 @@ ProjectData = R6::R6Class("ProjectData",
             caller = NULL
 
             ## only assign the last but one element if the stack is long enough
-            if (length(stacktrace >= 2)) {
-                tail(stacktrace, n=2)[[1]]
+            if (length(stacktrace) >= 2) {
+                caller = tail(stacktrace, n=2)[[1]]
             }
 
             ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
@@ -503,8 +503,8 @@ ProjectData = R6::R6Class("ProjectData",
             caller = NULL
 
             ## only assign the last but one element if the stack is long enough
-            if (length(stacktrace >= 2)) {
-                tail(stacktrace, n=2)[[1]]
+            if (length(stacktrace) >= 2) {
+                caller = tail(stacktrace, n=2)[[1]]
             }
 
             ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
