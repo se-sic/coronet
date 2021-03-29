@@ -561,18 +561,19 @@ ProjectData = R6::R6Class("ProjectData",
         #' Has to be called whenever the project configuration or data gets
         #' changed.
         reset.environment = function() {
+            private$authors = NULL
             private$commits.filtered = NULL
             private$commits = NULL
             private$commit.messages = NULL
-            private$mails = NULL
-            private$issues = NULL
+            private$data.timestamps = NULL
             private$issues.filtered = NULL
-            private$authors = NULL
-            private$synchronicity = NULL
-            private$pasta = NULL
+            private$issues = NULL
+            private$mails = NULL
+            private$mails.patchstacks = NULL
             private$pasta.mails = NULL
             private$pasta.commits = NULL
-            private$data.timestamps = NULL
+            private$pasta = NULL
+            private$synchronicity = NULL
         },
 
         ## * * configuration -----------------------------------------------

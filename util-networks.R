@@ -555,11 +555,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
-            private$authors.network.mail = NULL
             private$authors.network.cochange = NULL
+            private$authors.network.mail = NULL
             private$authors.network.issue = NULL
-            private$artifacts.network.cochange = NULL
             private$artifacts.network.callgraph = NULL
+            private$artifacts.network.cochange = NULL
+            private$artifacts.network.issue = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
