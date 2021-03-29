@@ -939,7 +939,7 @@ ProjectData = R6::R6Class("ProjectData",
                     ## read mail data if filtering patchstack mails
                     if (is.null(private$mails)
                         && private$project.conf$get.value("mails.filter.patchstack.mails")) {
-                        ## just triggering read-in, no storage
+                        ## just triggering read-in, no assignment; the mails are stored within 'get.mails'
                         self$get.mails()
                     } else {
                         ## update all PaStA-related data
