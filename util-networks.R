@@ -561,6 +561,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.callgraph = NULL
             private$artifacts.network.cochange = NULL
             private$artifacts.network.issue = NULL
+            private$artifacts.network.mail = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
