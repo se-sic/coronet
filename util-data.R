@@ -267,8 +267,22 @@ ProjectData = R6::R6Class("ProjectData",
                 private$commits = private$commits[col.names]
             }
 
-            logging::logwarn("There might be commit message data that does not appear in the commit data.
-                              To clean this up you can call the function 'cleanup.commit.message.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = NULL
+
+            ## only assign the last but one element if the stack is long enough
+            if (length(stacktrace >= 2)) {
+                tail(stacktrace, n=2)[[1]]
+            }
+
+            ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
+            ## case that it is called manually, i.e. the stack is too short.
+            if(caller != "cleanup.pasta.data()") {
+                logging::logwarn("There might be commit message data that does not appear in the commit data.
+                                  To clean this up you can call the function 'cleanup.commit.message.data()'.")
+
+            }
         },
 
         ## * * PaStA data --------------------------------------------------
@@ -443,8 +457,21 @@ ProjectData = R6::R6Class("ProjectData",
                 private$update.pasta.commit.data()
             }
 
-            logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
-                              To clean this up you can call the function 'cleanup.pasta.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = NULL
+
+            ## only assign the last but one element if the stack is long enough
+            if (length(stacktrace >= 2)) {
+                tail(stacktrace, n=2)[[1]]
+            }
+
+            ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
+            ## that it is called manually, i.e. the stack is too short.
+            if(caller != "cleanup.pasta.data()") {
+                logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
+                                  To clean this up you can call the function 'cleanup.pasta.data()'.")
+            }
             logging::logdebug("update.pasta.data: finished.")
         },
 
@@ -471,8 +498,21 @@ ProjectData = R6::R6Class("ProjectData",
 
             }
 
-            logging::logwarn("There might be synchronicity data that does not appear in the commit data.
-                              To clean this up you can call the function 'cleanup.synchronicity.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = NULL
+
+            ## only assign the last but one element if the stack is long enough
+            if (length(stacktrace >= 2)) {
+                tail(stacktrace, n=2)[[1]]
+            }
+
+            ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
+            ## that it is called manually, i.e. the stack is too short.
+            if(caller != "cleanup.synchronicity.data()") {
+                logging::logwarn("There might be synchronicity data that does not appear in the commit data.
+                                  To clean this up you can call the function 'cleanup.synchronicity.data()'.")
+            }
             logging::logdebug("update.synchronicity.data: finished.")
         },
 
