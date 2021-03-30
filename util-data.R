@@ -1069,7 +1069,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Get the issue data, filtered.
+        #' Get the issue data, filtered according to options in the project configuration.
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
@@ -1087,7 +1087,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the issue data, unfiltered.
-        #' Unfiltered means that we ignore the "issues.only.comments" config and always return the full data
+        #' Unfiltered means that we ignore the "issues.only.comments" config and always return the full data.
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
