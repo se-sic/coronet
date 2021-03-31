@@ -1638,7 +1638,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
     private = list(
         range = NULL, # character
-        revision.callgraph = NA # character
+        revision.callgraph = NA, # character
+        built.from.range.data = FALSE # logical
     ),
 
     ## * public ------------------------------------------------------------
@@ -1691,7 +1692,15 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
             range = private$project.conf$get.value("ranges.paths")[[private$range]]
-            return(file.path(data.path, range))
+
+            ## only return the path to the codeface range data if the object was created from such
+            if (private$built.from.range.datav) {
+                return(file.path(data.path, range))
+            }
+            ## else return the normal data path
+            else {
+                return(file.path(data.path))
+            }
         },
 
         #' Construct and return the absolute path to the range's result folder for callgraphs
