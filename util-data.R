@@ -1684,7 +1684,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @return the value of \code{built.from.range.data} attribute
         is.built.from.range.data = function() {
             return(private$built.from.range.data)
-        }
+        },
 
         ## * * printing ----------------------------------------------------
 
@@ -1707,9 +1707,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
             range = private$project.conf$get.value("ranges.paths")[[private$range]]
-
             ## only return the path to the codeface range data if the object was created from such
-            if (private$built.from.range.datav) {
+            if (private$built.from.range.data) {
                 return(file.path(data.path, range))
             }
             ## else return the normal data path

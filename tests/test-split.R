@@ -1780,3 +1780,34 @@ test_that("Check and correct duplicate range names during network activity-based
     expect_identical(result, expected, info = "Removal of duplicate ranges.")
 
 })
+
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Data paths --------------------------------------------------------------
+
+##
+## Tests that check RangeData objects for the right data path
+##
+
+test_that("Split data and check for right data path", {
+    ## Build the ProjectData object and cut its data to same dates
+    project.configuration = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    project.configuration$update.value("mails.filter.patchstack.mails", TRUE)
+    project.data = ProjectData$new(project.configuration)
+
+    # cut the data from different data sources to overlapping ranges
+    project.data = project.data$get.data.cut.to.same.date(data.sources = c("mails", "commits"))
+
+    commit.data = project.data$get.commits()
+
+    ## Update project configuration, for example, add pasta data, and retrieve mail data afterwards
+    project.data$update.project.conf(updated.values = list("pasta" = TRUE))
+    pasta <- project.data$get.pasta()
+    mails <- project.data$get.mails()
+
+    expected = "./codeface-data/results/testing/test_feature/feature"
+    result = project.data$get.data.path()
+
+    expect_identical(result, expected, info = "RangeData data path.")
+})
