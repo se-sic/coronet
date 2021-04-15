@@ -47,7 +47,7 @@ myranges = construct.ranges(mybins, sliding.window = FALSE)
 
 #' Load test data and generate test networks
 #'
-#' @param network.type which network to get (author vs artifact).
+#' @param network.type which network to get (\code{"author"} or \code{"artifact"}). [default: "author"]
 #' @param issues whether to retain issue data. If \code{FALSE}, issue data is deleted. [default: FALSE]
 #'
 #' @return Tuple containing project data and list of networks

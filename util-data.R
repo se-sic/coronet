@@ -1069,8 +1069,11 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Get the issue data, filtered according to options in the project configuration.
-        #' If it does not already exist call the read method.
+        #' Get the issue data, filtered according to options in the project configuration:
+        #' * The option \code{issues.only.comments} removes all events that are not comments
+        #'   from the issue data.
+        #'
+        #' If it does not already exist, call the read method.
         #'
         #' @return the issue data
         get.issues.filtered = function() {

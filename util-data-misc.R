@@ -23,66 +23,72 @@ requireNamespace("logging") # for logging
 
 #' Helper function to mask all issues in the issue data array.
 #'
-#' ProjectData::get.issues() returns a dataframe that mixes issue and PR data.
+#' \code{ProjectData$get.issues()} and its cousins returns a dataframe that mixes issue and PR data.
 #' This helper function creates a vector of length \code{nrow(issue.data)} which has
 #' entry \code{TRUE} iff the corresponding row in \code{issue.data} is an issue.
 #'
-#' @param issue.data the issue data, returned from calling get.issues() on a project data object
+#' @param issue.data the issue data, returned from calling \code{get.issues()}
+#' or \code{get.issues.filtered()} on a project data object
 #'
 #' @return a vector containing \code{TRUE} or \code{FALSE}
+#'
+#' @seealso ProjectData$get.issues.filtered()
 mask.issues = function(issue.data) {
-    return(sapply(issue.data[["issue.type"]], function (k) {return ("issue" %in% k)}))
+    return(sapply(issue.data[["issue.type"]], function(tags) {return("issue" %in% tags)}))
 }
 
-#' Helper function to mask all issues in the issue data array.
+#' Helper function to mask all pull requests in the issue data frame.
 #'
-#' ProjectData::get.issues() returns a dataframe that mixes issue and PR data.
+#' \code{ProjectData$get.issues()} returns a dataframe that mixes issue and PR data.
 #' This helper function creates a vector of length \code{nrow(issue.data)} which has
-#' entry \code{TRUE} iff the corresponding row in \code{issue.data} is a pull request
+#' entry \code{TRUE} iff the corresponding row in \code{issue.data} is a pull request.
 #'
-#' @param issue.data the issue data, returned from calling get.issues() on a project data object
+#' @param issue.data the pull request data, returned from calling \code{get.issues()}
+#' or \code{get.issues.filtered()} on a project data object
 #'
 #' @return a vector containing \code{TRUE} or \code{FALSE}
+#'
+#' @seealso ProjectData$get.issues.filtered()
 mask.pull.requests = function(issue.data) {
-    return(sapply(issue.data[["issue.type"]], function (k) {return ("pull request" %in% k)}))
+    return(sapply(issue.data[["issue.type"]], function(tags) {return("pull request" %in% tags)}))
 }
 
-#' Get and preprocess issue data, removing unnecessary columns and rows we are are not interested in.
+#' Get and preprocess issue data, removing unnecessary columns and rows we are not interested in.
 #'
-#' Retained rows are given in \code{retained.rows}, which defaults to
-#' \code{author.name}, \code{issue.id} and \code{"event.type"}.
+#' Retained columns are given in \code{retained.cols}, which defaults to
+#' \code{author.name}, \code{issue.id} and \code{event.type}.
 #'
-#' Retained colums depend on type. If it is \code{"all"}, then all rows are retained.
+#' Retained rows depend on the parameter \code{type}. If it is \code{"all"}, then all rows are retained.
 #' Otherwise, only the rows containing information about either issues or pull requests are retained.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
-#' @param retained.rows the rows to be retained. [default: "c("author.name", "issue.id", "event.name")"]
+#' @param retained.cols the columns to be retained. [default: c("author.name", "issue.id", "event.name")]
 #' @param type which issue type to consider.
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #'
-#'
-preprocess.issue.data = function(proj.data, retained.rows = c("author.name", "issue.id", "event.name"),
+#' @return a filtered sub-data frame of the unfiltered issue data from \code{proj.data}.
+preprocess.issue.data = function(proj.data, retained.cols = c("author.name", "issue.id", "event.name"),
                                  type = c("all", "pull.requests", "issues")) {
   type = match.arg(type)
   df = proj.data$get.issues()
-  ## if k is a list, and nrow(df) == 0, then df[k, ..] fails
-  ## so we abort beforehand
 
+  ## forall vectors k, if nrow(df) == 0, then df[k, ..] fails
+  ## so we abort beforehand
   if (nrow(df) == 0) {
-      return(df[retained.rows])
+      return(df[retained.cols])
   }
 
   switch (
       type,
       all = {
-          df = df[retained.rows]
+          df = df[retained.cols]
       },
       issues = {
-          df = df[mask.issues(df), retained.rows]
+          df = df[mask.issues(df), retained.cols]
       },
       pull.requests = {
-          df = df[mask.pull.requests(df), retained.rows]
+          df = df[mask.pull.requests(df), retained.cols]
       },
       logging::logerror("Requested unknown issue type %s", type)
   )
@@ -92,40 +98,9 @@ preprocess.issue.data = function(proj.data, retained.rows = c("author.name", "is
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Commit-based classification ---------------------------------------------
+## Commit-based statistics -------------------------------------------------
 
-## * Count-based classification --------------------------------------------
-
-#' Classify authors into "core" and "peripheral" based on authors' commit-counts and return the classification result.
-#'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
-#'
-#' @param proj.data the \code{ProjectData} containing the authors' commit data
-#' @param result.limit the maximum number of authors contained in the classification result. Only the top
-#'                     \code{result.limit} authors of the classification stack will be contained within the returned
-#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
-#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
-#'                                           vector are to be classified. Authors that appear in the vector but are not
-#'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
-#'
-#' @return the classification result, that is, a list containing two named list members \code{core} and
-#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
-#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
-#'         first column and their centrality values in the second column.
-#'
-#' @seealso get.author.class.by.type
-get.author.class.commit.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL) {
-
-    logging::logdebug("get.author.class.commit.count: starting.")
-
-    result = get.author.class.by.type(proj.data = proj.data, type = "commit.count", result.limit = result.limit,
-                                      restrict.classification.to.authors = restrict.classification.to.authors)
-
-    logging::logdebug("get.author.class.commit.count: finished.")
-    return(result)
-}
+## * Count-based statistics ------------------------------------------------
 
 #' Get the commit count per comitter in the given range data, where the committer
 #' does not match the author of the respective commits
@@ -221,45 +196,51 @@ get.committer.or.author.commit.count = function(range.data) {
 #' Helper function that aggregates counts of things like commits, mails, ... on a per-author basis.
 #'
 #' For example, called with \code{name = "commit.count"}, \code{data.source = "commits"},
-#' \code{grouping.keys = c("committer.name")}, \code{remove.duplicates = TRUE} and \code{remove.duplicates.by = c("hash")}, the returned function will
+#' \code{grouping.keys = c("committer.name")}, \code{remove.duplicates = TRUE} and
+#' \code{remove.duplicates.by = c("hash")}, the returned function will:
 #'
-#' 1. get the proper data frame (using \code{DATASOURCE.TO.ARTIFACT.FUNCTION}).
-#' 2. remove duplicate entries so that there is only one entry per commit hash
-#' 3. project away unneeded columns, leaving only "committer.name"
-#' 4. count the commits grouped by the commiter name
-#' 5. return a data frame with columns "commiter.name" and "freq", which contains the number of commits authored by each author
+#' 1. get the proper data frame (using \code{DATASOURCE.TO.ARTIFACT.FUNCTION}),
+#' 2. remove duplicate entries so that there is only one entry per commit hash,
+#' 3. project away unneeded columns, leaving only "committer.name",
+#' 4. count the commits grouped by the commiter name,
+#' 5. return a data frame with columns "commiter.name" and "freq",
+#'    which contains the number of commits authored by each author.
 #'
 #' The signature of the returned function is \code{function(project.data)}.
 #'
 #' @param name the name the function will be bound to, for logging
-#' @param data.sources one of \code{"commits"}, \code{"mails"}, \code{"issues"}
+#' @param data.source one of \code{"commits"}, \code{"mails"}, \code{"issues"}
 #' @param grouping.keys the dataframe keys to group by
-#' @param remove.duplicates Whether to remove duplicates
+#' @param remove.duplicates whether to remove duplicates
 #' @param remove.duplicates.by if \code{remove.duplicates}, then the key by which to remove duplicates
 #'
 #' @return a function that aggregates data according to the above specification contained in a given \code{ProjectData}.
 #'         This function itself returns a dataframe consisting of |grouping.keys|+1 columns, the last holding the count,
 #'         and the others the respective grouping
-#'
-group.data.by.key = function(name, data.sources = c("commits", "mails", "issues"), grouping.keys, remove.duplicates, remove.duplicates.by) {
-    data.sources = match.arg(data.sources)
-    data.extractor = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.sources]]
+group.data.by.key = function(name, data.source = c("commits", "mails", "issues"),
+                             grouping.keys, remove.duplicates, remove.duplicates.by) {
+    data.source = match.arg(data.source)
+    data.extractor = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
     return(function(proj.data) {
         logging::logdebug("%s: starting", name)
+
         ## get the data we want to group
         df = proj.data[[data.extractor]]()
         ## if necessary, make sure that there is only one entry for each remove-duplicate key (combination)
         if (remove.duplicates) {
             df = df[!duplicated(df[[remove.duplicates.by]]), ]
         }
+
         ## throw away unnecessary columns
         df = df[grouping.keys]
         grouping.keys.formatted = paste(grouping.keys, sep="`, `")
+
         ## execute a query that counts the number of occurrences of the grouping.keys
         stmt = paste0("SELECT `", grouping.keys.formatted, "`, COUNT(*) as `freq` FROM `df`
                        GROUP BY `", grouping.keys.formatted, "` ORDER BY `freq` DESC, `", grouping.keys.formatted, "`")
         logging::logdebug("%s: running SQL %s", name, stmt)
         res = sqldf::sqldf(stmt)
+
         logging::logdebug("%s: finished", name)
         return(res)
     })
@@ -285,9 +266,9 @@ get.author.commit.count = group.data.by.key("get.author.commit.count", "commits"
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Mail-based classification ---------------------------------------------
+## Mail-based statistics ---------------------------------------------------
 
-## * Count-based classification --------------------------------------------
+## * Count-based statistics ------------------------------------------------
 
 #' Get the mail count for each author based on the mail data contained in the specified \code{ProjectData}.
 #'
@@ -298,8 +279,8 @@ get.author.commit.count = group.data.by.key("get.author.commit.count", "commits"
 get.author.mail.count = group.data.by.key("get.author.mail.count", "mails",
                                           c("author.name"), TRUE, c("message.id"))
 
-#' Get the mail thread count for each author based on the mail data contained in the specified \code{ProjectData}.
-#' This is the number of threads the author participated in, i.e. contributed at least one e-mail to.
+#' Get the mail-thread count for each author based on the mail data contained in the specified \code{ProjectData}.
+#' This is the number of threads the author participated in, i.e., contributed at least one e-mail to.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
 #'
@@ -308,10 +289,12 @@ get.author.mail.count = group.data.by.key("get.author.mail.count", "mails",
 get.author.mail.thread.count = function(proj.data) {
     logging::logdebug("get.author.mail.thread.count: starting.")
 
-    df = proj.data$get.mails()
-    df = df[!duplicated(df[["message.id"]]), ]
-    df = df[c("author.name", "message.id", "thread")]
-    stmt = "SELECT `author.name`, COUNT(DISTINCT thread) as `freq` FROM `df`
+    mails.df = proj.data$get.mails()
+    ## Remove unnecessary rows and columns
+    mails.df = mails.df[!duplicated(mails.df[["message.id"]]), ]
+    mails.df = mails.df[c("author.name", "message.id", "thread")]
+    ## Only count each thread once
+    stmt = "SELECT `author.name`, COUNT(DISTINCT thread) as `freq` FROM `mails.df`
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
     logging::logdebug("get.author.mail.thread.count: running SQL %s", stmt)
     res = sqldf::sqldf(stmt)
@@ -320,9 +303,9 @@ get.author.mail.thread.count = function(proj.data) {
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Issue-/PR-based classification ---------------------------------------------
+## Issue-/PR-based statistics ----------------------------------------------
 
-## * Count-based classification --------------------------------------------
+## * Count-based statistics ------------------------------------------------
 
 #' Get the issue/pr count for each author based on the issues data contained in the specified \code{ProjectData}.
 #' The issue count here is the number of issues the author participated in (which can mean anything,
@@ -333,7 +316,7 @@ get.author.mail.thread.count = function(proj.data) {
 #'
 #' @param proj.data the \code{ProjectData} containing the issue data
 #' @param type which issue type to consider. see \code{preprocess.issue.data}
-#'             One of \code{"issues"}, \code{"pull.requests"} or \{"all"}
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
@@ -356,7 +339,7 @@ get.author.issue.count = function(proj.data, type = "all") {
 #'
 #' @param proj.data the \code{ProjectData} containing the issue data
 #' @param type which issue type to consider. see \code{preprocess.issue.data}
-#'             One of \code{"issues"}, \code{"pull.requests"} or \{"all"}
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
@@ -380,7 +363,7 @@ get.author.issues.created.count = function(proj.data, type = "all") {
 #'
 #' @param proj.data the \code{ProjectData} containing the issue data
 #' @param type which issue type to consider. see \code{preprocess.issue.data}
-#'             One of \code{"issues"}, \code{"pull.requests"} or \{"all"}
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
@@ -404,7 +387,7 @@ get.author.issues.commented.in.count = function(proj.data, type = "all") {
 #'
 #' @param proj.data the \code{ProjectData} containing the issue data
 #' @param type which issue type to consider. see \code{preprocess.issue.data}
-#'             One of \code{"issues"}, \code{"pull.requests"} or \{"all"}
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding

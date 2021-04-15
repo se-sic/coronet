@@ -579,6 +579,44 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL, rest
     return(result)
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit-based classification ---------------------------------------------
+
+## * Count-based classification --------------------------------------------
+
+
+#' Classify authors into "core" and "peripheral" based on authors' commit-counts and return the classification result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' commit data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value of
+#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.commit.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL) {
+
+    logging::logdebug("get.author.class.commit.count: starting.")
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "commit.count", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.commit.count: finished.")
+    return(result)
+}
+
+
 ## * LOC-based classification ----------------------------------------------
 
 #' Classify authors into "core" and "peripheral" based on authors' lines of code (LOC) and return the classification
