@@ -22,15 +22,17 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
-- Update documentation in `util-network-metrics.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
+- Update documentation in `util-network-metrics.R` and `util.conf.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a, PR #199, accc366d2f6e5a6eaf00822054c324b8b6990140)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
 - Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
 - Rename `get.issues` to `get.issues.filtered`, and write a new `get.issues` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits(b9dd94c8575b8cab40d0d1185368854f84299d87)
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
-
-
+- Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, 87a243f5fea4d9c40aa5418965fff4e0c23c3358)
+- Adjust the function `update.pasta.data()`: no warning is being printed anymore when calling the cleanup function (PR #199, 432c66b839932660f144050c6399dc9112b023f3)
+- Fix issue where the data path on `ProjectData` objects was wrong in special cases. Introduce a (private) flag that is set according to how the object has been created (splitting manually or reading codeface ranges) and calculating the data path accordingly (PR #199, a5063ccdd7b4da75afd2c71655615b182b9f0f28, c2bf849f3b3ae902d411429298e853b748216b9c) Also add tests for this new behaviour (PR #199, 28cf3db267c68dc0892c2f63f741434ab165d079, 033567f3d1a4d43b188bf160edcd86779727965c)
+  
 ## 3.7
 
 ### Added
