@@ -1811,3 +1811,19 @@ test_that("Split data and check for right data path", {
 
     expect_identical(result, expected, info = "RangeData data path.")
 })
+
+test_that("Split data with bulk methods and check data path", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    data = construct.data(proj.conf, callgraphs = TRUE)
+
+    range.paths = run.lapply(data, "get.data.path")
+    range.paths = unlist(range.paths, use.names = FALSE)
+
+    expected.paths = c("./codeface-data/results/testing/test_feature/feature/001--v1-v2",
+                       "./codeface-data/results/testing/test_feature/feature/002--v2-v3")
+
+    print(range.paths)
+    print(expected.paths)
+
+    expect_identical(range.paths, expected.paths, "RangeData data paths")
+})
