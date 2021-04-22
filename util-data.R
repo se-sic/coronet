@@ -1089,11 +1089,32 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$issues.filtered)
         },
 
+        #' Get the issue data, filtered according the parameters
+        #'
+        #' Unlike \code{get.issues.filtered}, this method does not use caching. If you want caching, please use
+        #' that method instead.
+        #'
+        #' @param issues.only.comments flag whether issue events that are not comments are retained (i.e. opening, closing, ...)
+        #'
+        #' @return the issue data
+        #'
+        #' @seealso get.issues.filtered
+        get.issues.filtered.uncached = function(issues.only.comments) {
+            logging::loginfo("Getting issue data")
+
+            local.issues.filtered = self$get.issues()
+            if (issues.only.comments) {
+                local.issues.filtered = local.issues.filtered[private$issues[["event.name"]] == "commented", ]
+            }
+            return(local.issues.filtered)
+        },
+
         #' Get the issue data, unfiltered.
-        #' Unfiltered means that we ignore the "issues.only.comments" config and always return the full data.
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
+        #'
+        #' @seealso get.issues.filtered for a detailed description of filtering options
         get.issues = function() {
             logging::loginfo("Getting issue data")
 

@@ -33,6 +33,7 @@ requireNamespace("logging") # for logging
 #' @return a vector containing \code{TRUE} or \code{FALSE}
 #'
 #' @seealso ProjectData$get.issues.filtered()
+#' @seealso ProjectData$get.issues()
 mask.issues = function(issue.data) {
     return(sapply(issue.data[["issue.type"]], function(tags) {return("issue" %in% tags)}))
 }
@@ -49,6 +50,7 @@ mask.issues = function(issue.data) {
 #' @return a vector containing \code{TRUE} or \code{FALSE}
 #'
 #' @seealso ProjectData$get.issues.filtered()
+#' @seealso ProjectData$get.issues()
 mask.pull.requests = function(issue.data) {
     return(sapply(issue.data[["issue.type"]], function(tags) {return("pull request" %in% tags)}))
 }
@@ -60,6 +62,9 @@ mask.pull.requests = function(issue.data) {
 #'
 #' Retained rows depend on the parameter \code{type}. If it is \code{"all"}, then all rows are retained.
 #' Otherwise, only the rows containing information about either issues or pull requests are retained.
+#'
+#' Note that we preprocess the unfiltered issue data, since common filtering options typically
+#' strip out some of the data we might explicitly want to retain
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
 #' @param retained.cols the columns to be retained. [default: c("author.name", "issue.id", "event.name")]
@@ -99,8 +104,6 @@ preprocess.issue.data = function(proj.data, retained.cols = c("author.name", "is
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit-based statistics -------------------------------------------------
-
-## * Count-based statistics ------------------------------------------------
 
 #' Get the commit count per comitter in the given range data, where the committer
 #' does not match the author of the respective commits
@@ -268,8 +271,6 @@ get.author.commit.count = group.data.by.key("get.author.commit.count", "commits"
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Mail-based statistics ---------------------------------------------------
 
-## * Count-based statistics ------------------------------------------------
-
 #' Get the mail count for each author based on the mail data contained in the specified \code{ProjectData}.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
@@ -305,8 +306,6 @@ get.author.mail.thread.count = function(proj.data) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Issue-/PR-based statistics ----------------------------------------------
 
-## * Count-based statistics ------------------------------------------------
-
 #' Get the issue/pr count for each author based on the issues data contained in the specified \code{ProjectData}.
 #' The issue count here is the number of issues the author participated in (which can mean anything,
 #' from commenting to closing to assigning the issue to others, to labeling, referencing it in other issues,
@@ -321,7 +320,8 @@ get.author.mail.thread.count = function(proj.data) {
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issue.count = function(proj.data, type = "all") {
+get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
     logging::logdebug("get.author.issue.count: starting.")
     df = preprocess.issue.data(proj.data, type = type)
     ## count distinct since an author may appear in the same issues at the same time
@@ -344,7 +344,8 @@ get.author.issue.count = function(proj.data, type = "all") {
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.created.count = function(proj.data, type = "all") {
+get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
     logging::logdebug("get.author.issues.created.count: starting.")
     df = preprocess.issue.data(proj.data, type = type)
     ## count distinct since an author may appear in the same issues at the same time
@@ -368,7 +369,8 @@ get.author.issues.created.count = function(proj.data, type = "all") {
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.commented.in.count = function(proj.data, type = "all") {
+get.author.issues.commented.in.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
     logging::logdebug("get.author.issues.commented.in.count: starting.")
     df = preprocess.issue.data(proj.data, type = type)
     ## count distinct since an author may appear in the same issues at the same time
@@ -392,7 +394,8 @@ get.author.issues.commented.in.count = function(proj.data, type = "all") {
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective comment counts
-get.author.issue.comment.count = function(proj.data, type = "all") {
+get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
     logging::logdebug("get.author.issue.comment.count: starting.")
     df = preprocess.issue.data(proj.data, type = type)
     stmt = "SELECT `author.name`, COUNT(*) as `freq` FROM `df`
