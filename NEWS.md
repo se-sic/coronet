@@ -30,7 +30,7 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
 - Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, 87a243f5fea4d9c40aa5418965fff4e0c23c3358)
-- Adjust the function `update.pasta.data()`: no warning is being printed anymore when calling the cleanup function (PR #199, 432c66b839932660f144050c6399dc9112b023f3)
+- Adjust the function `update.pasta.data()`: no warning is being printed anymore when being called by the corresponding cleanup function (PR #199, 432c66b839932660f144050c6399dc9112b023f3)
 - Fix issue where the data path on `RangeData` objects was wrong in special cases. Introduce a (private) flag that is set according to how the object has been created (splitting manually or reading codeface ranges) and calculating the data path accordingly (PR #199, a5063ccdd7b4da75afd2c71655615b182b9f0f28, c2bf849f3b3ae902d411429298e853b748216b9c). Also add tests for this new behaviour (PR #199, 28cf3db267c68dc0892c2f63f741434ab165d079, 033567f3d1a4d43b188bf160edcd86779727965c)
 
 ## 3.7
