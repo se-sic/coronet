@@ -586,17 +586,17 @@ ProjectData = R6::R6Class("ProjectData",
         #' changed.
         reset.environment = function() {
             private$authors = NULL
-            private$commits.filtered = NULL
             private$commits = NULL
+            private$commits.filtered = NULL
             private$commit.messages = NULL
             private$data.timestamps = NULL
             private$issues.filtered = NULL
             private$issues = NULL
             private$mails = NULL
             private$mails.patchstacks = NULL
+            private$pasta = NULL
             private$pasta.mails = NULL
             private$pasta.commits = NULL
-            private$pasta = NULL
             private$synchronicity = NULL
         },
 
@@ -1640,7 +1640,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @param revision.callgraph the revision callgraph for the new instance
         #'                           [default: ""]
         #' @param built.from.range.data logical indicating whether this \code{RangeData} object was obtained using
-        #'                              the splitting routines (\code{FALSE}) or by reading codeface range data
+        #'                              the splitting routines (\code{FALSE}) or by reading Codeface range data
         #'                              (\code{TRUE})
         #'                              [default: FALSE]
         initialize = function(project.conf, range, revision.callgraph = "", built.from.range.data = FALSE) {
@@ -1659,15 +1659,6 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             private$built.from.range.data = built.from.range.data
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
-        },
-
-        ## * * getter for private attributes -------------------------------
-
-        #' Getter for the private logical \code{built.from.range.data} attribute
-        #'
-        #' @return the value of \code{built.from.range.data} attribute
-        is.built.from.range.data = function() {
-            return(private$built.from.range.data)
         },
 
         ## * * printing ----------------------------------------------------
@@ -1691,7 +1682,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
             range = private$project.conf$get.value("ranges.paths")[[private$range]]
-            ## only return the path to the codeface range data if the object was created from such
+            ## only return the path to the Codeface range data if the object was created from such
             if (private$built.from.range.data) {
                 return(file.path(data.path, range))
             }
@@ -1793,7 +1784,7 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
     column.key = "data.coupling"
     column.value = "data.vertices"
 
-    ## if there is not data to subset, return am empty list directly
+    ## if there is not data to subset, return an empty list directly
     if (nrow(base.data) == 0) {
         logging::logwarn("Trying to get subset of non-existent data.")
         logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))
