@@ -273,7 +273,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
             ## case that it is called manually, i.e. the stack is too short.
-            if(is.na(caller) || caller != "cleanup.commit.message.data()") {
+            if (is.na(caller) || caller != "cleanup.commit.message.data()") {
                 logging::logwarn("There might be commit message data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
@@ -457,7 +457,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
             ## that it is called manually, i.e. the stack is too short.
-            if(is.na(caller) || caller != "cleanup.pasta.data()") {
+            if (is.na(caller) || caller != "cleanup.pasta.data()") {
                 logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
                                   To clean this up you can call the function 'cleanup.pasta.data()'.")
             }
@@ -493,7 +493,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
             ## that it is called manually, i.e. the stack is too short.
-            if(is.na(caller) || caller != "cleanup.synchronicity.data()") {
+            if (is.na(caller) || caller != "cleanup.synchronicity.data()") {
                 logging::logwarn("There might be synchronicity data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.synchronicity.data()'.")
             }

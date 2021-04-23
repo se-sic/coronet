@@ -282,6 +282,10 @@ test_that("Cut data and check for right data path", {
     project.data = ProjectData$new(project.configuration)
     project.data = project.data$get.data.cut.to.same.date(data.sources = c("mails", "commits"))
 
+    expected = "./codeface-data/results/testing/test_feature/feature"
+    result = project.data$get.data.path()
+    expect_identical(result, expected, info = "RangeData data path.")
+
     commit.data = project.data$get.commits()
 
     ## Update project configuration, for example, add pasta data, and retrieve mail data afterwards
@@ -289,12 +293,7 @@ test_that("Cut data and check for right data path", {
     pasta = project.data$get.pasta()
     mails = project.data$get.mails()
 
-    expected = "./codeface-data/results/testing/test_feature/feature"
-    result = project.data$get.data.path()
-
-    expect_identical(result, expected, info = "RangeData data path.")
-
-    ## reset environment and check whether mail data is still the same
+    ## reset environment
     project.data$reset.environment()
 
     ## check whether mail data is still the same after resetting the environment
