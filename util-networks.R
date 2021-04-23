@@ -556,8 +556,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
             private$authors.network.cochange = NULL
-            private$authors.network.mail = NULL
             private$authors.network.issue = NULL
+            private$authors.network.mail = NULL
             private$artifacts.network.callgraph = NULL
             private$artifacts.network.cochange = NULL
             private$artifacts.network.issue = NULL
