@@ -82,7 +82,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
 #' @return the bipartite networks
 collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## we need to iterate over all ranges
-    ranges = project.conf$get.value("ranges", TRUE)
+    ranges = project.conf$get.value("ranges")
     ## subset according to given step size
     ranges = ranges[seq(1, length(ranges), step)]
 
