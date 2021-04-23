@@ -1623,7 +1623,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
     private = list(
         range = NULL, # character
         revision.callgraph = NA, # character
-        built.from.range.data = FALSE # logical
+        built.from.range.data.read = FALSE # logical
     ),
 
     ## * public ------------------------------------------------------------
@@ -1639,11 +1639,11 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @param range the range for the new instance
         #' @param revision.callgraph the revision callgraph for the new instance
         #'                           [default: ""]
-        #' @param built.from.range.data logical indicating whether this \code{RangeData} object was obtained using
+        #' @param built.from.range.data.read logical indicating whether this \code{RangeData} object was obtained using
         #'                              the splitting routines (\code{FALSE}) or by reading Codeface range data
         #'                              (\code{TRUE})
         #'                              [default: FALSE]
-        initialize = function(project.conf, range, revision.callgraph = "", built.from.range.data = FALSE) {
+        initialize = function(project.conf, range, revision.callgraph = "", built.from.range.data.read = FALSE) {
             ## call super constructor
             super$initialize(project.conf)
 
@@ -1656,7 +1656,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
                 private$revision.callgraph = NA
             }
 
-            private$built.from.range.data = built.from.range.data
+            private$built.from.range.data.read = built.from.range.data.read
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
         },
@@ -1683,7 +1683,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             data.path = private$project.conf$get.value("datapath")
             range = private$project.conf$get.value("ranges.paths")[[private$range]]
             ## only return the path to the Codeface range data if the object was created from such
-            if (private$built.from.range.data) {
+            if (private$built.from.range.data.read) {
                 return(file.path(data.path, range))
             }
             ## else return the normal data path

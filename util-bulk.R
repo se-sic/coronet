@@ -46,7 +46,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, range, built.from.range.data = TRUE)
+        range.data = RangeData$new(project.conf, range, built.from.range.data.read = TRUE)
 
         ## construct network builder
         network.builder <- NetworkBuilder$new(range.data, network.conf)
@@ -89,7 +89,7 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, range, built.from.range.data = TRUE)
+        range.data = RangeData$new(project.conf, range, built.from.range.data.read = TRUE)
 
         ## construct network builder
         network.builder <- NetworkBuilder$new(range.data, network.conf)
@@ -132,7 +132,7 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, range, built.from.range.data = TRUE)
+        range.data = RangeData$new(project.conf, range, built.from.range.data.read = TRUE)
 
         ## construct network builder
         network.builder <- NetworkBuilder$new(range.data, network.conf)
@@ -175,7 +175,7 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
     ## collect the network objects for all the ranges
     networks = lapply(ranges, function(range) {
         ## construct range data
-        range.data = RangeData$new(project.conf, range, built.from.range.data = TRUE)
+        range.data = RangeData$new(project.conf, range, built.from.range.data.read = TRUE)
 
         ## construct network builder
         network.builder <- NetworkBuilder$new(range.data, network.conf)
@@ -222,7 +222,7 @@ construct.data = function(project.conf, callgraphs = FALSE, step = 1) {
                                     "")
 
         ## construct range data
-        range.data = RangeData$new(project.conf, range, revision.callgraph, built.from.range.data = TRUE)
+        range.data = RangeData$new(project.conf, range, revision.callgraph, built.from.range.data.read = TRUE)
         attr(range.data, "range") = range
 
         # add to global list
