@@ -210,7 +210,7 @@ create.empty.data.frame = function(columns, data.types = NULL) {
 #' @param v the vector of which to retrieve the last element but one
 #'
 #' @return the last element but one of \code{v}. If the vector has less than two elements, return \code{NA}.
-get.last.but.one = function(v) {
+get.last.but.one.element = function(v) {
     if (length(v) >= 2) {
         return(tail(v, n = 2)[[1]])
     } else {
