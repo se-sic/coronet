@@ -538,7 +538,7 @@ test_that("Test add.vertex.attribute.mail.thread.count", {
 
     ## Test
 
-    lapply(AGGREGATION.LEVELS, function(level) {logging::logerror(level)
+    lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.mail.thread.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
@@ -800,7 +800,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.comment.count")
-        logging::logdebug(level)
+
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
 

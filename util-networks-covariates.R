@@ -493,7 +493,7 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
     return(nets.with.attr)
 }
 
-#' Add issue-comments-count attribute based on the number of issues participated in by commenting, where the person represented by the vertex is the author.
+#' Add issue-comments-count attribute based on the number of comments in issues, where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
