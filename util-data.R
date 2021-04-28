@@ -148,6 +148,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
             return(commits)
         },
+
         ## * * issue filtering --------------------------------------------
 
         #' Filter issue by potentially removing all issue events that are not comments.
@@ -155,7 +156,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param issues the data.frame of issues on which filtering will be applied
         #' @param issues.only.comments flag whether non-comment issue events are removed
         #'
-        #' @return the commits after all filters have been applied
+        #' @return the issues after all filters have been applied
         filter.issues = function(issues, issues.only.comments) {
             logging::logdebug("filter.issues: starting.")
 

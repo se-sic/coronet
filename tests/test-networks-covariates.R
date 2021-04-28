@@ -498,15 +498,15 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
 #' Test the add.vertex.attribute.mail.count method
 test_that("Test add.vertex.attribute.mail.count", {
     ## Test setup
-    networks.and.data = get.network.covariates.test.networks()
+    networks.and.data = get.network.covariates.test.networks(author.relation = "mail")
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(1L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 0L, 1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 0L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(c(3L), c(1L), c(2L, 0L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L)),
-        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L))
+        range = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(1L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 2L), c(1L), c(2L)),
+        project.cumulative = network.covariates.test.build.expected(c(3L, 1L), c(1L), c(2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L)),
+        complete = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L))
     )
 
     ## Test
@@ -525,20 +525,20 @@ test_that("Test add.vertex.attribute.mail.count", {
 #' Test the add.vertex.attribute.mail.count method
 test_that("Test add.vertex.attribute.mail.thread.count", {
     ## Test setup
-    networks.and.data = get.network.covariates.test.networks()
+    networks.and.data = get.network.covariates.test.networks(author.relation = "mail")
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(1L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 0L, 1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 0L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(c(3L), c(1L), c(2L, 0L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L)),
-        complete = network.covariates.test.build.expected(c(3L), c(2L), c(2L, 0L, 1L))
+        range = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(1L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 2L), c(1L), c(2L)),
+        project.cumulative = network.covariates.test.build.expected(c(3L, 1L), c(1L), c(2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L)),
+        complete = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L))
     )
 
     ## Test
 
-    lapply(AGGREGATION.LEVELS, function(level) {
+    lapply(AGGREGATION.LEVELS, function(level) {logging::logerror(level)
         networks.with.attr = add.vertex.attribute.mail.thread.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )

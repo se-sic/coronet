@@ -370,7 +370,7 @@ get.author.issues.created.count = function(proj.data, type = c("all", "issues", 
     logging::logdebug("get.author.issues.created.count: finished")
     return(res)
 }
-0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901
+
 #' Get the issue/pr count for each author based on the issue data contained in the specified \code{ProjectData}.
 #' The issue count here is the number of issues the author commented in.
 #'
