@@ -349,7 +349,8 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     ## the original date for "commit_added" events is stored in "event.info.2" in any case
     commit.added.events = issue.data[["event.name"]] == "commit_added"
     issue.data[commit.added.events, "event.info.2"] = get.date.string(issue.data[commit.added.events, "date"])
-    commit.added.events.before.creation = commit.added.events & (issue.data["date"] < issue.data["creation.date"])
+    commit.added.events.before.creation = commit.added.events &
+        !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
     issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
 
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!

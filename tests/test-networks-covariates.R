@@ -53,8 +53,9 @@ myranges = construct.ranges(mybins, sliding.window = FALSE)
 #'
 #' @return Tuple containing project data and list of networks
 get.network.covariates.test.networks = function(network.type = c("author", "artifact"), issues = FALSE,
-                                                author.relation = "cochange") {
+                                                author.relation = c("cochange", "issue", "mail")) {
 
+    author.relation = match.arg(author.relation)
     network.type.function = paste("get", match.arg(network.type), "network", sep = ".")
 
     ## configuration and data objects

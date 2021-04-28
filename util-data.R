@@ -148,6 +148,24 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.commits: finished.")
             return(commits)
         },
+        ## * * issue filtering --------------------------------------------
+
+        #' Filter issue by potentially removing all issue events that are not comments.
+        #'
+        #' @param issues the data.frame of issues on which filtering will be applied
+        #' @param issues.only.comments flag whether non-comment issue events are removed
+        #'
+        #' @return the commits after all filters have been applied
+        filter.issues = function(issues, issues.only.comments) {
+            logging::logdebug("filter.issues: starting.")
+
+            if (issues.only.comments) {
+                issues = issues[issues[["event.name"]] == "commented", ]
+            }
+
+            logging::logdebug("filter.issues: finished.")
+            return(issues)
+        },
 
         ## * * mail filtering ----------------------------------------------
 
@@ -1081,32 +1099,27 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if issues have not been read yet do this
             if (is.null(private$issues.filtered)) {
-                private$issues.filtered = self$get.issues()
-                if (private$project.conf$get.value("issues.only.comments")) {
-                    private$issues.filtered = private$issues.filtered[private$issues[["event.name"]] == "commented", ]
-                }
+                private$issues.filtered = private$filter.issues(
+                    self$get.issues(),
+                    private$project.conf$get.value("issues.only.comments"))
             }
             return(private$issues.filtered)
         },
 
-        #' Get the issue data, filtered according the parameters
+        #' Get the issue data, filtered according the parameters.
         #'
         #' Unlike \code{get.issues.filtered}, this method does not use caching. If you want caching, please use
         #' that method instead.
         #'
-        #' @param issues.only.comments flag whether issue events that are not comments are retained (i.e. opening, closing, ...)
+        #' @param issues.only.comments flag whether issue events that are not comments are retained
+        #'                             (i.e. opening, closing, ...).
         #'
         #' @return the issue data
         #'
         #' @seealso get.issues.filtered
         get.issues.filtered.uncached = function(issues.only.comments) {
             logging::loginfo("Getting issue data")
-
-            local.issues.filtered = self$get.issues()
-            if (issues.only.comments) {
-                local.issues.filtered = local.issues.filtered[private$issues[["event.name"]] == "commented", ]
-            }
-            return(local.issues.filtered)
+            return(private$filter.issues(self$get.issues(), issues.only.comments))
         },
 
         #' Get the issue data, unfiltered.

@@ -349,7 +349,8 @@ add.vertex.attribute.commit.count.helper = function(list.of.networks, project.da
 
 ## * Mail count ----------------------------------------------------------
 
-#' Add mail-count attribute based on the total number of mails sent where the person represented by the vertex is the author.
+#' Add mail-count attribute based on the total number of mails sent,
+#' where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -375,7 +376,8 @@ add.vertex.attribute.mail.count = function(list.of.networks, project.data,
 
     return(nets.with.attr)
 }
-#' Add mail-count attribute based on the number of mail threads participated in where the person represented by the vertex is the author.
+#' Add mail-thread-count attribute based on the number of mail threads participated in,
+#' where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
@@ -404,11 +406,12 @@ add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data
 
 ## * Issue / PR count --------------------------------------------------------------
 
-#' Add issues-count attribute based on the number of issues participated in, where the person represented by the vertex is the author.
+#' Add issue-count attribute based on the number of issues participated in,
+#' where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add. You might want to change this [default: "issues.count"]
+#' @param name The attribute name to add. You might want to change this [default: "issue.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -432,11 +435,12 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues participated in by commenting, where the person represented by the vertex is the author.
+#' Add issue-count attribute based on the number of issues participated in by commenting,
+#' where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "issue.count.by.commenting"]
+#' @param name The attribute name to add [default: "issues.commented.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -460,11 +464,12 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
     return(nets.with.attr)
 }
 
-#' Add issues-count attribute based on the number of issues created, where the person represented by the vertex is the author.
+#' Add issue-count attribute based on the number of issues created,
+#' where the person represented by the vertex is the author.
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "issues.count.by.commenting"]
+#' @param name The attribute name to add [default: "issue.creation.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
