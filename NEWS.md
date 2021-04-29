@@ -16,8 +16,8 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 - Add `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
 - Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
 - Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
-- Add function `preprocess.issue.data`, which implements common issue data filtering operations.
-- Add function `get.issues.filtered.uncached`, which gets the issues filtered without poisoning or using the cache.
+- Add function `preprocess.issue.data`, which implements common issue data filtering operations. (fcf5cee64c809d62a33275cbd3272b8087869eea, a566caec6d7e649cc495d292a19eca8a7ffccde8, 5ba6feb988c44e2ba398bccce6c88e69d3bb552e)
+- Add function `get.issues.filtered.uncached`, which gets the issues filtered without poisoning or using the cache. (eb919fad9519d6e1a23261977bb3bfa2b899aaf9)
 - Add per-author vertex attributes regarding counting of issues, issue-creations, issue-comments, mails, mail-threads, ... (like mail thread count, issue creation count) (PR #194, issue #188, 9f9150a97ffbb64607df0ddcbce299e16c2580da, 7260d62cf6f1470584753f76970d19664638eeed, 139f70b67903909bcd4c57e26afa458681a869f2, eb4f649c04155e22195627072e0f08bb8fe65dc4, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 1e1406f4a0898cac3e61a7bc9a5aa665dceef79f, 98e11abc651b5fe0ec994eddea078635b0d6f0b2, a566caec6d7e649cc495d292a19eca8a7ffccde8)
 
 ### Changed/Improved
@@ -25,10 +25,10 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 - Update documentation in `util-network-metrics.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
 - Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
-- Rename `get.issues` to `get.issues.filtered`, write a new `get.issues` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits, and add `get.issues.filtered.uncached` (b9dd94c8575b8cab40d0d1185368854f84299d87)
+- Rename `get.issues` to `get.issues.filtered`, and write a new `get.issues` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits(b9dd94c8575b8cab40d0d1185368854f84299d87)
 
 ### Fixed
-- Fix fencing issue timing data so that all issue events "happen" after the issue was created (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
+- Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
 
 
 ## 3.7

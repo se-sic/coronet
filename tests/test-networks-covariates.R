@@ -40,6 +40,8 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 mybins = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-31 18:00:00")
 myranges = construct.ranges(mybins, sliding.window = FALSE)
+mybins.since.2010 = c("2010-07-12 12:00:00", "2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-31 18:00:00")
+myranges.since.2010 = construct.ranges(mybins.since.2010, sliding.window = FALSE)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -50,10 +52,12 @@ myranges = construct.ranges(mybins, sliding.window = FALSE)
 #' @param network.type which network to get (\code{"author"} or \code{"artifact"}). [default: "author"]
 #' @param issues whether to retain issue data. If \code{FALSE}, issue data is deleted. [default: FALSE]
 #' @param author.relation passed to the network config. [default: "cochange"]
+#' @param bins the bins which control splitting. [default: mybins]
 #'
 #' @return Tuple containing project data and list of networks
 get.network.covariates.test.networks = function(network.type = c("author", "artifact"), issues = FALSE,
-                                                author.relation = c("cochange", "issue", "mail")) {
+                                                author.relation = c("cochange", "issue", "mail"),
+                                                bins = mybins) {
 
     author.relation = match.arg(author.relation)
     network.type.function = paste("get", match.arg(network.type), "network", sep = ".")
@@ -73,7 +77,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     }
 
     ## split data
-    input.data = split.data.time.based(project.data, bins = mybins)
+    input.data = split.data.time.based(project.data, bins = bins)
     input.data.networks = lapply(input.data, function(d) NetworkBuilder$new(d, net.conf)[[network.type.function]]())
 
     return(list("networks" = input.data.networks, "project.data" = project.data))
@@ -369,6 +373,20 @@ network.covariates.test.build.expected = function(x, y, z) {
     return(arguments)
 }
 
+#' Build list with appropriate range names
+#'
+#' @param x Value for first range
+#' @param y Value for second range
+#' @param z Value for third range
+#'
+#' @return The list of x, y, z with range names
+network.covariates.test.build.expected.since.2010 = function(w, x, y, z) {
+    arguments = list(w, x, y, z)
+    names(arguments) = myranges.since.2010
+
+    return(arguments)
+}
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Unit tests for author networks ------------------------------------------
 
@@ -498,15 +516,15 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
 #' Test the add.vertex.attribute.mail.count method
 test_that("Test add.vertex.attribute.mail.count", {
     ## Test setup
-    networks.and.data = get.network.covariates.test.networks(author.relation = "mail")
+    networks.and.data = get.network.covariates.test.networks(author.relation = "mail", bins = mybins.since.2010)
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(1L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(2L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 2L), c(1L), c(2L)),
-        project.cumulative = network.covariates.test.build.expected(c(3L, 1L), c(1L), c(2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L)),
-        complete = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L))
+        range = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(1L, 1L), c(1L), c(1L)),
+        cumulative = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(1L, 1L), c(1L), c(2L)),
+        all.ranges = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(1L, 2L), c(1L), c(2L)),
+        project.cumulative = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(3L, 1L), c(1L), c(2L)),
+        project.all.ranges = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(3L, 2L), c(1L), c(2L)),
+        complete = network.covariates.test.build.expected.since.2010(c(1L, 7L), c(3L, 2L), c(1L), c(2L))
     )
 
     ## Test
@@ -525,15 +543,15 @@ test_that("Test add.vertex.attribute.mail.count", {
 #' Test the add.vertex.attribute.mail.count method
 test_that("Test add.vertex.attribute.mail.thread.count", {
     ## Test setup
-    networks.and.data = get.network.covariates.test.networks(author.relation = "mail")
+    networks.and.data = get.network.covariates.test.networks(author.relation = "mail", bins = mybins.since.2010)
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(1L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 1L), c(1L), c(2L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 2L), c(1L), c(2L)),
-        project.cumulative = network.covariates.test.build.expected(c(3L, 1L), c(1L), c(2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L)),
-        complete = network.covariates.test.build.expected(c(3L, 2L), c(1L), c(2L))
+        range = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(1L, 1L), c(1L), c(1L)),
+        cumulative = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(1L, 1L), c(1L), c(2L)),
+        all.ranges = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(1L, 2L), c(1L), c(2L)),
+        project.cumulative = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(3L, 1L), c(1L), c(2L)),
+        project.all.ranges = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(3L, 2L), c(1L), c(2L)),
+        complete = network.covariates.test.build.expected.since.2010(c(1L, 2L), c(3L, 2L), c(1L), c(2L))
     )
 
     ## Test

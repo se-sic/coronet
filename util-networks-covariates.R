@@ -426,7 +426,10 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                             aggregation.level = c("range", "cumulative", "all.ranges",
                                                                   "project.cumulative", "project.all.ranges",
                                                                   "complete"),
-                                            default.value = 0L, issue.type = "all") {
+                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.count"
+    }
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, function(data) {return(get.author.issue.count(data, type = issue.type))}, "author.name"
@@ -455,7 +458,10 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
-                                                          default.value = 0L, issue.type = "all") {
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.requests.commented.count"
+    }
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, function(data) {return(get.author.issues.commented.in.count(data, type = issue.type))}, "author.name"
@@ -484,7 +490,10 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
-                                                          default.value = 0L, issue.type = "all") {
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.creation.count"
+    }
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, function(data) {return(get.author.issues.created.count(data, type = issue.type))}, "author.name"
@@ -512,7 +521,10 @@ add.vertex.attribute.issue.comment.count = function(list.of.networks, project.da
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
-                                                          default.value = 0L, issue.type = "all") {
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.comment.count"
+    }
     nets.with.attr = add.vertex.attribute.commit.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, function(data) {return(get.author.issue.comment.count(data, type = issue.type))}, "author.name"
