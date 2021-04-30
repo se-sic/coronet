@@ -278,7 +278,6 @@ test_that("Merge commit message titles to commit data", {
 test_that("Cut data and check for right data path", {
     ## Build the ProjectData object and cut its data to same dates
     project.configuration = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    project.configuration$update.value("mails.filter.patchstack.mails", TRUE)
     project.data = ProjectData$new(project.configuration)
     project.data = project.data$get.data.cut.to.same.date(data.sources = c("mails", "commits"))
 

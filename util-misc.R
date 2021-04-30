@@ -205,7 +205,7 @@ create.empty.data.frame = function(columns, data.types = NULL) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Vector misc--------------------------------------------------------------
 
-#' Get the last element of a vector but one.
+#' Get the last element of a vector but one, if it has, at least, two elements.
 #'
 #' @param v the vector of which to retrieve the last element but one
 #'
