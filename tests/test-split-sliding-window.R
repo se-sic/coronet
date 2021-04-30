@@ -88,7 +88,9 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
         "2016-07-12 16:04:59-2016-07-12 16:06:33"
     )
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -186,7 +188,9 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
     )
 
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
 
     ## check data for all ranges
@@ -294,7 +298,9 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
     )
 
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -382,7 +388,9 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
         "2016-12-31 23:59:59-2017-06-03 03:03:03"
     )
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -459,7 +467,9 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (activity.amount).")})
+                     info = "Time ranges (activity.amount).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -524,7 +534,9 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (too-large activity amount).")})
+                     info = "Time ranges (too-large activity amount).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -572,7 +584,9 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")})
+                     info = "Time ranges (number.windows).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -667,7 +681,9 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (activity.amount).")})
+                     info = "Time ranges (activity.amount).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -767,7 +783,9 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
         "2016-07-12 15:58:50-2016-07-12 16:05:38"
     )
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -868,7 +886,9 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (too-large activity amount).")})
+                     info = "Time ranges (too-large activity amount).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -916,7 +936,9 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")})
+                     info = "Time ranges (number.windows).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -1009,7 +1031,9 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
         "2016-10-05 15:30:02-2017-05-23 12:32:40"
     )
     lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")})
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -1104,7 +1128,9 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (too-large activity amount).")})
+                     info = "Time ranges (too-large activity amount).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
@@ -1152,7 +1178,9 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")})
+                     info = "Time ranges (number.windows).")
+    })
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"))
 
     ## check data for all ranges
     expected.data = list(
