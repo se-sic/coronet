@@ -15,6 +15,7 @@
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -71,11 +72,11 @@ test_that("Compare two ProjectData objects", {
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
-    proj.data.one$get.issues()
+    proj.data.one$get.issues.filtered()
 
     expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
 
-    proj.data.two$get.issues()
+    proj.data.two$get.issues.filtered()
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 

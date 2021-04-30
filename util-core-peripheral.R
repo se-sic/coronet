@@ -20,6 +20,7 @@
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -578,15 +579,15 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL, rest
     return(result)
 }
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit-based classification ---------------------------------------------
 
 ## * Count-based classification --------------------------------------------
 
+
 #' Classify authors into "core" and "peripheral" based on authors' commit-counts and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param proj.data the \code{ProjectData} containing the authors' commit data
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
@@ -615,147 +616,6 @@ get.author.class.commit.count = function(proj.data, result.limit = NULL, restric
     return(result)
 }
 
-#' Get the commit count per comitter in the given range data, where the committer
-#' does not match the author of the respective commits
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.not.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.not.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       WHERE `committer.name` <> `author.name`
-                       GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.committer.not.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per person in the given range data for commits where the author equals the committer.
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.and.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.and.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute a query to get the commit count per person
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       WHERE `committer.name` = `author.name`
-                       GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.committer.and.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per person in the given range data where the person is committer or author or both.
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.or.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.or.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute queries to get the commit count per person
-    ungrouped = sqldf::sqldf("SELECT `committer.name` AS `name` FROM `commits.df`
-                             WHERE `committer.name` = `author.name`
-                                UNION ALL
-                             SELECT `author.name` AS `name` FROM `commits.df`
-                             WHERE `author.name` <> `committer.name`
-                                UNION ALL
-                             SELECT `committer.name` AS `name` FROM `commits.df`
-                             WHERE `author.name` <> `committer.name`")
-
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `ungrouped`
-                       GROUP BY `name`
-                       ORDER BY `freq` DESC, `name` ASC")
-
-    logging::logdebug("get.committer.or.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per committer in the given range data, where the committer
-#' may match the author of the respective commits
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count.
-get.committer.commit.count = function(range.data) {
-    logging::logdebug("get.committer.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("committer.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `committer.name` ORDER BY `freq` DESC, `committer.name` ASC")
-
-    logging::logdebug("get.committer.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count for each author based on the commit data contained in the specified \code{ProjectData}.
-#'
-#' @param proj.data the \code{ProjectData} containing the commit data
-#'
-#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
-#'         their respective commit counts
-get.author.commit.count = function(proj.data) {
-    logging::logdebug("get.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = proj.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.author.commit.count: finished.")
-    return(res)
-}
 
 ## * LOC-based classification ----------------------------------------------
 

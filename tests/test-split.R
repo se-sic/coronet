@@ -19,6 +19,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -75,7 +76,7 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -107,9 +108,9 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(14, 20:22), ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(15,29), ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(14, 20:22, 37:40), ],
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(15,29, 47:49), ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(23,41,45:46), ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
@@ -130,7 +131,7 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -157,7 +158,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -196,7 +197,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$issues[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29), ]
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29, 37:40, 43:49), ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
@@ -220,7 +221,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -246,7 +247,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -280,7 +281,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
         ),
         issues = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% 14:34, ],
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(14:34, 37:49), ],
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 35:36, ]
         ),
         mails = list(
@@ -302,7 +303,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -330,7 +331,7 @@ test_that("Split a data object time-based (bins = ... ).", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -356,7 +357,7 @@ test_that("Split a data object time-based (bins = ... ).", {
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commit.messages
         ),
         issues = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% 14:34, ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(14:34, 37:49), ]
         ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
@@ -371,7 +372,7 @@ test_that("Split a data object time-based (bins = ... ).", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -476,7 +477,7 @@ test_that("Test splitting data by ranges", {
     expected.data = list(
         commits = lapply(expected.results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(expected.results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(expected.results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(expected.results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(expected.results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(expected.results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(expected.results, function(cf.data) cf.data$get.synchronicity())
@@ -484,7 +485,7 @@ test_that("Test splitting data by ranges", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -510,7 +511,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -542,7 +543,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
             "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 23, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$issues[0, ]
         ),
@@ -565,7 +566,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -596,7 +597,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(14:15, 20:23, 29), ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(14:15, 20:23, 29, 37:41, 45:49), ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) %in% 16:17, ]
@@ -611,7 +612,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -645,7 +646,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
         ),
         mails = list(
@@ -664,7 +665,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -702,7 +703,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -746,8 +747,8 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$issues[0, ],
             "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$issues[0, ],
             "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$issues[0, ],
-            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 27:28), ],
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 27:28, 43:44), ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:40, 45:49), ],
             "2016-07-12 16:05:37-2016-07-12 16:05:38" = data$issues[0, ]
         ),
         mails = list(
@@ -778,7 +779,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -809,7 +810,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commit.messages
         ),
         issues = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29), ]
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:45, 46:49), ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
@@ -824,7 +825,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -859,7 +860,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         ),
         issues = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29), ]
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:45, 46:49), ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
@@ -877,7 +878,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -914,7 +915,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     data = list(
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
-        issues = project.data$get.issues(),
+        issues = project.data$get.issues.filtered(),
         mails = project.data$get.mails(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
@@ -927,8 +928,9 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     ## check time ranges
     expected = c(
         "2013-04-21 23:52:09-2013-05-25 06:22:23",
-        "2013-05-25 06:22:23-2016-07-12 16:03:59",
-        "2016-07-12 16:03:59-2016-10-05 15:30:02",
+        "2013-05-25 06:22:23-2016-07-12 15:59:59",
+        "2016-07-12 15:59:59-2016-07-12 16:06:30",
+        "2016-07-12 16:06:30-2016-10-05 15:30:02",
         "2016-10-05 15:30:02-2017-05-23 12:32:40"
     )
     result = proj.conf$get.value("ranges")
@@ -938,45 +940,51 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     expected.data = list(
         commits = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$commits[0, ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$commits[1:2, ],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$commits[3:8, ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$commits[1, ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$commits[2:5, ],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$commits[6:8, ],
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$commits[0, ]
         ),
         commit.messages = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$commit.messages,
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$commit.messages,
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$commit.messages,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$commit.messages,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$commit.messages,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$commit.messages,
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$issues[rownames(data$issues) %in% 1:10, ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$issues[rownames(data$issues) %in% c(11:15, 20:22, 27:28), ],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 29:30), ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 20:21, 27:28, 43:44, 37:38), ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(14:15, 22, 29, 39:41, 45:49), ],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 30, 42), ],
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(26, 31:36), ]
         ),
         mails = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$mails[0, ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$mails[0, ],
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         pasta = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$pasta,
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$pasta,
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$pasta,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$pasta,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$pasta,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$pasta,
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$pasta
         ),
         synchronicity = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$synchronicity,
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$synchronicity,
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$synchronicity,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$synchronicity,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$synchronicity,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$synchronicity,
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$synchronicity
         )
     )
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -1022,7 +1030,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -1039,8 +1047,8 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## check time ranges
     expected = c(
-        "2013-04-21 23:52:09-2016-07-12 16:02:30",
-        "2016-07-12 16:02:30-2017-05-23 12:32:40"
+        "2013-04-21 23:52:09-2016-07-12 16:02:02",
+        "2016-07-12 16:02:02-2017-05-23 12:32:40"
     )
     result = proj.conf$get.value("ranges")
     expect_equal(result, expected, info = "Time ranges (number.windows).")
@@ -1048,34 +1056,34 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     ## check data for all ranges
     expected.data = list(
         commits = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$commits[1:2, ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$commits[3:8, ]
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commits[1:2, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commits[3:8, ]
         ),
         commit.messages = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$commit.messages,
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$commit.messages
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commit.messages,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28), ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36), ]
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28, 37:40, 43:44), ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36, 41:42, 45:49), ]
         ),
         mails = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
         ),
         pasta = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$pasta,
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$pasta
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$pasta,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$pasta
         ),
         synchronicity = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$synchronicity,
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$synchronicity
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$synchronicity,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$synchronicity
         )
     )
     results.data = list(
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
         mails = lapply(results, function(cf.data) cf.data$get.mails()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
@@ -1085,7 +1093,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     ## too large number of windows
 
     expect_error(
-        split.data.activity.based(project.data, activity.type = "issues", number.windows = nrow(project.data$get.issues()) + 10),
+        split.data.activity.based(project.data, activity.type = "issues", number.windows = nrow(project.data$get.issues.filtered()) + 10),
         info = "Error expected (number.windows) (1)."
     )
 

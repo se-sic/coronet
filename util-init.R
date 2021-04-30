@@ -18,6 +18,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -54,6 +55,7 @@ source("util-misc.R")
 source("util-conf.R")
 source("util-read.R")
 source("util-data.R")
+source("util-data-misc.R")
 source("util-networks.R")
 source("util-split.R")
 source("util-motifs.R")

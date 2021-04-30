@@ -20,6 +20,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -283,6 +284,10 @@ ISSUES.LIST.DATA.TYPES = c(
 
 #' Read and parse the issue data from the 'issues.list' file.
 #'
+#' Note: The dates in the \code{"date"} column may be remapped to the creation date of the corresponding issue,
+#' especially for \code{"commit_added"} events. This happens when the event has happened before the issue creation date.
+#' The original date of these events can always be found in the \code{"event.info.2"} column.
+#'
 #' @param data.path the path to the issue data
 #' @param issues.sources the sources of the issue data. One or both of \code{"jira"} and \code{"github"}.
 #'
@@ -293,7 +298,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     ## check arguments
     issues.sources = match.arg(arg = issues.sources, several.ok = TRUE)
 
-    ## read data from choosen sources
+    ## read data from chosen sources
     issue.data = lapply(issues.sources, function(issue.source) {
 
         ## get file name of source issue data
@@ -342,6 +347,15 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+
+    ## fix all dates to be after the creation date.
+    ## violations can happen for "commit_added" events if the commit was made before the PR was opened
+    ## the original date for "commit_added" events is stored in "event.info.2" in any case
+    commit.added.events = issue.data[["event.name"]] == "commit_added"
+    issue.data[commit.added.events, "event.info.2"] = get.date.string(issue.data[commit.added.events, "date"])
+    commit.added.events.before.creation = commit.added.events &
+        !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
+    issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
     issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## generate a unique event ID from issue ID, author, and date

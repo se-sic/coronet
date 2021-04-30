@@ -22,6 +22,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -56,7 +57,7 @@ BASE.ARTIFACTS = c(
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
     "commits" = "get.commits.filtered",
     "mails"   = "get.mails",
-    "issues"  = "get.issues"
+    "issues"  = "get.issues.filtered"
 )
 
 ## mapping of data source to artifact column
@@ -111,6 +112,7 @@ ProjectData = R6::R6Class("ProjectData",
         mails.patchstacks = NULL, # list
         ## issues
         issues = NULL, #data.frame
+        issues.filtered = NULL, #data.frame
         ## authors
         authors = NULL, # data.frame
         ## additional data sources
@@ -145,6 +147,25 @@ ProjectData = R6::R6Class("ProjectData",
 
             logging::logdebug("filter.commits: finished.")
             return(commits)
+        },
+
+        ## * * issue filtering --------------------------------------------
+
+        #' Filter issue by potentially removing all issue events that are not comments.
+        #'
+        #' @param issues the data.frame of issues on which filtering will be applied
+        #' @param issues.only.comments flag whether non-comment issue events are removed
+        #'
+        #' @return the issues after all filters have been applied
+        filter.issues = function(issues, issues.only.comments) {
+            logging::logdebug("filter.issues: starting.")
+
+            if (issues.only.comments) {
+                issues = issues[issues[["event.name"]] == "commented", ]
+            }
+
+            logging::logdebug("filter.issues: finished.")
+            return(issues)
         },
 
         ## * * mail filtering ----------------------------------------------
@@ -545,6 +566,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$commit.messages = NULL
             private$mails = NULL
             private$issues = NULL
+            private$issues.filtered = NULL
             private$authors = NULL
             private$synchronicity = NULL
             private$pasta = NULL
@@ -1066,10 +1088,47 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Get the issue data.
+        #' Get the issue data, filtered according to options in the project configuration:
+        #' * The option \code{issues.only.comments} removes all events that are not comments
+        #'   from the issue data.
+        #'
+        #' If it does not already exist, call the read method.
+        #'
+        #' @return the issue data
+        get.issues.filtered = function() {
+            logging::loginfo("Getting issue data")
+
+            ## if issues have not been read yet do this
+            if (is.null(private$issues.filtered)) {
+                private$issues.filtered = private$filter.issues(
+                    self$get.issues(),
+                    private$project.conf$get.value("issues.only.comments"))
+            }
+            return(private$issues.filtered)
+        },
+
+        #' Get the issue data, filtered according the parameters.
+        #'
+        #' Unlike \code{get.issues.filtered}, this method does not use caching. If you want caching, please use
+        #' that method instead.
+        #'
+        #' @param issues.only.comments flag whether issue events that are not comments are retained
+        #'                             (i.e. opening, closing, ...).
+        #'
+        #' @return the issue data
+        #'
+        #' @seealso get.issues.filtered
+        get.issues.filtered.uncached = function(issues.only.comments) {
+            logging::loginfo("Getting issue data")
+            return(private$filter.issues(self$get.issues(), issues.only.comments))
+        },
+
+        #' Get the issue data, unfiltered.
         #' If it does not already exist call the read method.
         #'
         #' @return the issue data
+        #'
+        #' @seealso get.issues.filtered for a detailed description of filtering options
         get.issues = function() {
             logging::loginfo("Getting issue data")
 
@@ -1078,13 +1137,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
             }
             private$extract.timestamps(source = "issues")
-
-            if (private$project.conf$get.value("issues.only.comments")) {
-                df = private$issues[private$issues[["event.name"]] == "commented", ]
-                return(df)
-            } else {
-                return(private$issues)
-            }
+            return(private$issues)
         },
 
         #' Set the issue data to the given new data.
@@ -1098,6 +1151,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             private$issues = data
+            private$issues.filtered = NULL
         },
 
         #' Get the list of artifacts from the given \code{data.source} of the project.

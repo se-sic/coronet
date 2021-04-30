@@ -186,7 +186,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # sample.cumulative = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "cumulative")
 # ## add email-address vertex attribute
 # sample.mail = add.vertex.attribute.author.email(my.networks, x.data, "author.email")
-
+# sample.mail.thread = add.vertex.attribute.mail.thread.count(my.networks, x.data)
+# sample.issues.created = add.vertex.attribute.issue.creation.count(my.networks, x.data)
+# sample.pull.requests = add.vertex.attribute.issue.count(my.networks, x.data, issue.type = "pull.requests")
 # ## add vertex attributes for the project-level network
 # x.net.as.list = list("1970-01-01 00:00:00-2030-01-01 00:00:00" = x$get.author.network())
 # sample.entire = add.vertex.attribute.commit.count.author(x.net.as.list, x.data, aggregation.level = "complete")
