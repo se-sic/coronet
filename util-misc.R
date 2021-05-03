@@ -205,12 +205,12 @@ create.empty.data.frame = function(columns, data.types = NULL) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Vector misc--------------------------------------------------------------
 
-#' Get the last element of a vector but one, if it has, at least, two elements.
+#' Get the second last element of a vector, if it has, at least, two elements.
 #'
 #' @param v the vector of which to retrieve the last element but one
 #'
-#' @return the last element but one of \code{v}. If the vector has less than two elements, return \code{NA}.
-get.last.but.one.element = function(v) {
+#' @return the second last element of \code{v}. If the vector has less than two elements, return \code{NA}.
+get.second.last.element = function(v) {
     if (length(v) >= 2) {
         return(tail(v, n = 2)[[1]])
     } else {

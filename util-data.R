@@ -269,7 +269,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
-            caller = get.last.but.one.element(stacktrace)
+            caller = get.second.last.element(stacktrace)
 
             ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
             ## case that it is called manually, i.e. the stack is too short.
@@ -453,7 +453,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
-            caller = get.last.but.one.element(stacktrace)
+            caller = get.second.last.element(stacktrace)
 
             ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
             ## that it is called manually, i.e. the stack is too short.
@@ -489,7 +489,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
-            caller = get.last.but.one.element(stacktrace)
+            caller = get.second.last.element(stacktrace)
 
             ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
             ## that it is called manually, i.e. the stack is too short.
