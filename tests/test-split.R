@@ -95,9 +95,11 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
@@ -196,9 +198,11 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
@@ -302,9 +306,11 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
@@ -401,9 +407,11 @@ test_that("Split a data object time-based (bins = ... ).", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
@@ -603,9 +611,11 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (activity.amount).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -680,9 +690,11 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (too-large activity amount).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -746,9 +758,11 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (number.windows).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -854,9 +868,11 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -951,9 +967,11 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (too-large activity amount).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -1017,9 +1035,11 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (number.windows).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -1123,9 +1143,11 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -1213,9 +1235,11 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (too-large activity amount).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
@@ -1279,9 +1303,11 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected,
                      info = "Time ranges (number.windows).")
     })
+
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must mot modify the original ProjectConf.")
+
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "activity-based",
