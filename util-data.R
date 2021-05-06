@@ -267,8 +267,16 @@ ProjectData = R6::R6Class("ProjectData",
                 private$commits = private$commits[col.names]
             }
 
-            logging::logwarn("There might be commit message data that does not appear in the commit data.
-                              To clean this up you can call the function 'cleanup.commit.message.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = get.second.last.element(stacktrace)
+
+            ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
+            ## case that it is called manually, i.e. the stack is too short.
+            if (is.na(caller) || caller != "cleanup.commit.message.data()") {
+                logging::logwarn("There might be commit message data that does not appear in the commit data.
+                                  To clean this up you can call the function 'cleanup.commit.message.data()'.")
+            }
         },
 
         ## * * PaStA data --------------------------------------------------
@@ -443,8 +451,16 @@ ProjectData = R6::R6Class("ProjectData",
                 private$update.pasta.commit.data()
             }
 
-            logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
-                              To clean this up you can call the function 'cleanup.pasta.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = get.second.last.element(stacktrace)
+
+            ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
+            ## that it is called manually, i.e. the stack is too short.
+            if (is.na(caller) || caller != "cleanup.pasta.data()") {
+                logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
+                                  To clean this up you can call the function 'cleanup.pasta.data()'.")
+            }
             logging::logdebug("update.pasta.data: finished.")
         },
 
@@ -471,8 +487,16 @@ ProjectData = R6::R6Class("ProjectData",
 
             }
 
-            logging::logwarn("There might be synchronicity data that does not appear in the commit data.
-                              To clean this up you can call the function 'cleanup.synchronicity.data()'.")
+            ## get the caller function as a string
+            stacktrace = get.stacktrace(sys.calls())
+            caller = get.second.last.element(stacktrace)
+
+            ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
+            ## that it is called manually, i.e. the stack is too short.
+            if (is.na(caller) || caller != "cleanup.synchronicity.data()") {
+                logging::logwarn("There might be synchronicity data that does not appear in the commit data.
+                                  To clean this up you can call the function 'cleanup.synchronicity.data()'.")
+            }
             logging::logdebug("update.synchronicity.data: finished.")
         },
 
@@ -561,18 +585,19 @@ ProjectData = R6::R6Class("ProjectData",
         #' Has to be called whenever the project configuration or data gets
         #' changed.
         reset.environment = function() {
-            private$commits.filtered = NULL
-            private$commits = NULL
-            private$commit.messages = NULL
-            private$mails = NULL
-            private$issues = NULL
-            private$issues.filtered = NULL
             private$authors = NULL
-            private$synchronicity = NULL
+            private$commits = NULL
+            private$commits.filtered = NULL
+            private$commit.messages = NULL
+            private$data.timestamps = NULL
+            private$issues.filtered = NULL
+            private$issues = NULL
+            private$mails = NULL
+            private$mails.patchstacks = NULL
             private$pasta = NULL
             private$pasta.mails = NULL
             private$pasta.commits = NULL
-            private$data.timestamps = NULL
+            private$synchronicity = NULL
         },
 
         ## * * configuration -----------------------------------------------
@@ -938,7 +963,7 @@ ProjectData = R6::R6Class("ProjectData",
                     ## read mail data if filtering patchstack mails
                     if (is.null(private$mails)
                         && private$project.conf$get.value("mails.filter.patchstack.mails")) {
-                        ## just triggering read-in, no storage
+                        ## just triggering read-in, no assignment; the mails are stored within 'get.mails'
                         self$get.mails()
                     } else {
                         ## update all PaStA-related data
@@ -1597,7 +1622,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
 
     private = list(
         range = NULL, # character
-        revision.callgraph = NA # character
+        revision.callgraph = NA, # character
+        built.from.range.data.read = FALSE # logical
     ),
 
     ## * public ------------------------------------------------------------
@@ -1613,7 +1639,11 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #' @param range the range for the new instance
         #' @param revision.callgraph the revision callgraph for the new instance
         #'                           [default: ""]
-        initialize = function(project.conf, range, revision.callgraph = "") {
+        #' @param built.from.range.data.read logical indicating whether this \code{RangeData} object was obtained using
+        #'                              the splitting routines (\code{FALSE}) or by reading Codeface range data
+        #'                              (\code{TRUE})
+        #'                              [default: FALSE]
+        initialize = function(project.conf, range, revision.callgraph = "", built.from.range.data.read = FALSE) {
             ## call super constructor
             super$initialize(project.conf)
 
@@ -1625,6 +1655,8 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
             if (revision.callgraph == "") {
                 private$revision.callgraph = NA
             }
+
+            private$built.from.range.data.read = built.from.range.data.read
 
             logging::loginfo("Initialized data object %s", self$get.class.name())
         },
@@ -1650,7 +1682,14 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
             range = private$project.conf$get.value("ranges.paths")[[private$range]]
-            return(file.path(data.path, range))
+            ## only return the path to the Codeface range data if the object was created from such
+            if (private$built.from.range.data.read) {
+                return(file.path(data.path, range))
+            }
+            ## else return the normal data path
+            else {
+                return(file.path(data.path))
+            }
         },
 
         #' Construct and return the absolute path to the range's result folder for callgraphs
@@ -1745,7 +1784,7 @@ get.key.to.value.from.df = function(base.data, key, value, ...) {
     column.key = "data.coupling"
     column.value = "data.vertices"
 
-    ## if there is not data to subset, return am enpty list directly
+    ## if there is not data to subset, return an empty list directly
     if (nrow(base.data) == 0) {
         logging::logwarn("Trying to get subset of non-existent data.")
         logging::logwarn(sprintf("Stacktrace:  %s", get.stacktrace(sys.calls())))

@@ -22,14 +22,16 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
-- Update documentation in `util-network-metrics.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a)
+- Update documentation in `util-network-metrics.R` and `util.conf.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a, PR #199, 059b286a3cebc586e88ce6446d98133ddd619260)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
 - Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
 - Rename `get.issues` to `get.issues.filtered`, and write a new `get.issues` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits(b9dd94c8575b8cab40d0d1185368854f84299d87)
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
-
+- Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, de091a5e6c70fea5161276d6585bea916178e4de)
+- Adjust the functions `update.commit.message.data()`, `update.pasta.data()`, and `update.synchronicity.data()`: no warning is being printed anymore when being called by the corresponding cleanup function (PR #199, e5c60a50f8fa0f5bf9d362fdf49845d58652dd75)
+- Fix issue where the data path on `RangeData` objects was wrong in special cases. Introduce the (private) flag `built.from.range.data.read` that is set according to how the object has been created (splitting manually or reading codeface ranges) and calculating the data path accordingly (PR #199, cce95279692b8d29ae464e12cfe48e923f417ac7, 917bf64e7a439c6a33b922e04929030479722bd1, 169c034c2364fc56507573e6f2316cc432631ba6). Also add tests for this new behaviour (PR #199, ef5bac63580d171dd7f68da6c4ec7279dcd400b5, 3aa8e7de4b847924afa350a1fc4a53a7f8fa86e1, d454e5a3468d765247ed4827e708b8576e54f87c, 66ad1272148e3d98f9508ff0e83180d967b6abaa)
 
 ## 3.7
 

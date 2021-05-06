@@ -267,3 +267,47 @@ test_that("Merge commit message titles to commit data", {
 
     expect_identical(commits, commit.data.expected, info = "Add only commit title")
 })
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Data paths of RangeData -------------------------------------------------
+
+##
+## Tests that check RangeData objects for the right data path
+##
+
+test_that("Cut data and check for right data path", {
+    ## Build the ProjectData object and cut its data to same dates
+    project.configuration = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    project.data = ProjectData$new(project.configuration)
+    project.data = project.data$get.data.cut.to.same.date(data.sources = c("mails", "commits"))
+
+    expected = "./codeface-data/results/testing/test_feature/feature"
+    result = project.data$get.data.path()
+    expect_identical(result, expected, info = "RangeData data path.")
+
+    commit.data = project.data$get.commits()
+
+    ## Update project configuration, for example, add pasta data, and retrieve mail data afterwards
+    project.data$update.project.conf(updated.values = list("pasta" = TRUE))
+    pasta = project.data$get.pasta()
+    mails = project.data$get.mails()
+
+    ## reset environment
+    project.data$reset.environment()
+
+    ## check whether mail data is still the same after resetting the environment
+    expect_identical(mails, project.data$get.mails())
+})
+
+test_that("Create RangeData objects from Codeface ranges and check data path", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    data = construct.data(proj.conf, callgraphs = TRUE)
+
+    range.paths = run.lapply(data, "get.data.path")
+    range.paths = unlist(range.paths, use.names = FALSE)
+
+    expected.paths = c("./codeface-data/results/testing/test_feature/feature/001--v1-v2",
+                       "./codeface-data/results/testing/test_feature/feature/002--v2-v3")
+
+    expect_identical(range.paths, expected.paths, "RangeData data paths")
+})

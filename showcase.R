@@ -139,7 +139,7 @@ edcptd.scores = calculate.EDCPTD.centrality(fourth.order.tensor)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range-level data --------------------------------------------------------
 
-y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
+y.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]], built.from.range.data.read = TRUE)
 y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 ## * Data retrieval --------------------------------------------------------
@@ -354,9 +354,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Core/peripheral classification ------------------------------------------
 
-# range.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]])
-# range.data2 = RangeData$new(project.conf = proj.conf, range = ranges[[23]])
-# empty.range.data = RangeData$new(project.conf = proj.conf, range = ranges[[1]])
+# range.data = RangeData$new(project.conf = proj.conf, range = ranges[[22]], built.from.range.data.read = TRUE)
+# range.data2 = RangeData$new(project.conf = proj.conf, range = ranges[[23]], built.from.range.data.read = TRUE)
+# empty.range.data = RangeData$new(project.conf = proj.conf, range = ranges[[1]], built.from.range.data.read = TRUE)
 
 # range.net = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
 # range.net2 = NetworkBuilder$new(project.data = range.data2, network.conf = net.conf)

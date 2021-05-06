@@ -94,11 +94,14 @@ Conf = R6::R6Class("Conf",
         #' @param value the new value for the attribute
         #' @param name the name of the attribute
         #'
-        #' @return a named list of logical values, named:
+        #' @return a named vector of logical values, named:
         #'         - existing,
         #'         - type,
-        #'         - allowed, and
-        #'         - allowed.number.
+        #'         - allowed,
+        #'         - allowed.number, and
+        #'         - updatable.
+        #'         Does not need to contain all of the above; e.g. if \code{existing} is \code{FALSE} the result
+        #'         consists of only this value.
         check.value = function(value, name) {
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
@@ -125,7 +128,6 @@ Conf = R6::R6Class("Conf",
             }
             return(result)
         }
-
     ),
 
     ## * public ------------------------------------------------------------

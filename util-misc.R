@@ -18,6 +18,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -202,6 +203,21 @@ create.empty.data.frame = function(columns, data.types = NULL) {
     return(data.frame)
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vector misc--------------------------------------------------------------
+
+#' Get the second last element of a vector, if it has, at least, two elements.
+#'
+#' @param v the vector of which to retrieve the last element but one
+#'
+#' @return the second last element of \code{v}. If the vector has less than two elements, return \code{NA}.
+get.second.last.element = function(v) {
+    if (length(v) >= 2) {
+        return(tail(v, n = 2)[[1]])
+    } else {
+        return(NA)
+    }
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
@@ -214,7 +230,6 @@ create.empty.data.frame = function(columns, data.types = NULL) {
 get.stacktrace = function(calls) {
     lapply(calls, deparse)
 }
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Intermediate data -------------------------------------------------------
