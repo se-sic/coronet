@@ -734,8 +734,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.commits = function() {
             logging::loginfo("Getting commit data.")
 
-            ## if commits are not read already, do this
-            if (is.null(private$commits)) {
+            ## if commits are not read already or are empty, do this
+            if (is.null(private$commits) || nrow(private$commits) == 0) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -819,8 +819,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
-                ## if commit messages are not read already, do this
-                if (is.null(private$commit.messages)) {
+                ## if commit messages are not read already or are empty, do this
+                if (is.null(private$commit.messages) || nrow(private$commit.messages) == 0) {
                     commit.message.data = read.commit.messages(self$get.data.path())
 
                     ## cache the result
@@ -883,8 +883,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if synchronicity data are to be read, do this
             if (private$project.conf$get.value("synchronicity")) {
-                ##  if data are not read already, read them
-                if (is.null(private$synchronicity)) {
+                ##  if data are not read already or are empty, read them
+                if (is.null(private$synchronicity) || nrow(private$synchronicity) == 0) {
                     private$synchronicity = read.synchronicity(
                         self$get.data.path.synchronicity(),
                         private$project.conf$get.value("artifact"),
@@ -955,8 +955,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if PaStA data are to be read, do this
             if (private$project.conf$get.value("pasta")) {
-                ## if data are not read already, read them
-                if (is.null(private$pasta)) {
+                ## if data are not read already or is empty, read them
+                if (is.null(private$pasta) || nrow(private$pasta) == 0) {
                     ## read PaStA data from disk
                     private$pasta = read.pasta(self$get.data.path.pasta())
 
@@ -1045,8 +1045,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
-            ## if mails are not read already, do this
-            if (is.null(private$mails)) {
+            ## if mails are not read already or are empty, do this
+            if (is.null(private$mails)  || nrow(private$mails) == 0) {
                 mails.read = read.mails(self$get.data.path())
 
                 self$set.mails(mails.read)
@@ -1097,8 +1097,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.authors = function() {
             logging::loginfo("Getting author data.")
 
-            ## if authors are not read already, do this
-            if (is.null(private$authors)) {
+            ## if authors are not read already or are empty, do this
+            if (is.null(private$authors) || nrow(private$authors) == 0) {
                 private$authors = read.authors(self$get.data.path())
             }
 
@@ -1157,8 +1157,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.issues = function() {
             logging::loginfo("Getting issue data")
 
-            ## if issues have not been read yet do this
-            if (is.null(private$issues)) {
+            ## if issues have not been read yet or are empty, do this
+            if (is.null(private$issues) || nrow(private$issues) == 0) {
                 private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
             }
             private$extract.timestamps(source = "issues")
@@ -1206,8 +1206,8 @@ ProjectData = R6::R6Class("ProjectData",
             ## make it a vector
             artifacts = unlist(artifacts)
 
-            ## empty vector if no data exist
-            if (is.null(artifacts)) {
+            ## empty vector if no data exist or is empty
+            if (is.null(artifacts) || nrow(private$artifacts) == 0) {
                 artifacts = character(0)
             }
 
