@@ -744,9 +744,19 @@ ProjectData = R6::R6Class("ProjectData",
                                          c(private$project.conf$get.value("artifact.codeface"),
                                            UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE))
 
+                ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
+                if (is(self, "RangeData")) {
+                    ## get the one bin from the given range and split the data frame with that bin
+                    bins = get.range.bounds(private$range)
+                    bins.date = get.date.from.string(bins)
+                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
+                    commit.data = split.data.by.bins(commit.data, df.bins)[[1]]
+                }
+
                 ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
                 ## the field 'commits' afterwards
                 self$set.commits(commit.data)
+
             }
             private$extract.timestamps(source = "commits")
 
@@ -1049,6 +1059,15 @@ ProjectData = R6::R6Class("ProjectData",
             if (is.null(private$mails)  || nrow(private$mails) == 0) {
                 mails.read = read.mails(self$get.data.path())
 
+                ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
+                if (is(self, "RangeData")) {
+                    ## get the one bin from the given range and split the data frame with that bin
+                    bins = get.range.bounds(private$range)
+                    bins.date = get.date.from.string(bins)
+                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
+                    mails.read = split.data.by.bins(mails.read, df.bins)[[1]]
+                }
+
                 self$set.mails(mails.read)
             }
             private$extract.timestamps(source = "mails")
@@ -1159,7 +1178,17 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if issues have not been read yet or are empty, do this
             if (is.null(private$issues) || nrow(private$issues) == 0) {
-                private$issues = read.issues(self$get.data.path.issues(), private$project.conf$get.value("issues.from.source"))
+                private$issues = read.issues(self$get.data.path.issues(),
+                                             private$project.conf$get.value("issues.from.source"))
+
+                ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
+                if (is(self, "RangeData")) {
+                    ## get the one bin from the given range and split the data frame with that bin
+                    bins = get.range.bounds(private$range)
+                    bins.date = get.date.from.string(bins)
+                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
+                    private$issues = split.data.by.bins(private$issues, df.bins)[[1]]
+                }
             }
             private$extract.timestamps(source = "issues")
             return(private$issues)
