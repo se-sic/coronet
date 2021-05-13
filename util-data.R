@@ -70,6 +70,12 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 ## the maximum time difference between subsequent mails of a patchstack
 PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
 
+## configuration parameters that do not reset the environment when changed
+CONF.KEYS.NO.RESET.ENVIRONMENT = c("commit.messages",
+                                   "pasta",
+                                   "synchronicity",
+                                   "synchronicity.time.window")
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## ProjectData -------------------------------------------------------------
@@ -637,19 +643,40 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$project.conf$get.value(entry))
         },
 
-        #' Set  a value of the project configuration and reset the environment
+        #' Set  a value of the project configuration and, in some, cases, resets the environment.
+        #'
+        #' @param key the configuration option to set. The environment will not be reset, if and only if the entry to
+        #'            change affects a parameter controlling whether or not to read additional data sources, that is, if
+        #'            the parameter is one of the elements of the vector \code{CONF.KEYS.NO.RESET.ENVIRONMENT}.
+        #' @param value the new value that is assigned to the configuration parameter
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
-            self$reset.environment()
+
+            ## only reset the environment when the 'entry' parameter is not one of the keys where it should not be
+            ## reset
+            if (!(entry %in% CONF.KEYS.NO.RESET.ENVIRONMENT)) {
+                self$reset.environment()
+            }
         },
 
         #' Update the project configuration based on the given list
-        #' of values and reset the environment afterwards
+        #' of values and, in some cases, reset the environment afterwards
         #'
-        #' @param updated.values the new values for the project configuration
+        #' @param updated.values the new values for the project configuration.
+        #'                       If at least one of the configuration parameters is not an element of the vector
+        #'                       \code{CONF.KEYS.NO.RESET.ENVIRONMENT}, the environment will be reset.
+        #'                       [default = list()]
         update.project.conf = function(updated.values = list()) {
             private$project.conf$update.values(updated.values = updated.values)
-            self$reset.environment()
+            ## get the names of the parameters that are updated and then a logical vector indicating whether the
+            ## parameters cause a reset or not
+            keys = names(updated.values)
+            params.keep.environment = keys %in% CONF.KEYS.NO.RESET.ENVIRONMENT
+
+            ## only reset if at least one of them should cause a reset
+            if(!all(params.keep.environment)) {
+                self$reset.environment()
+            }
         },
 
         ## * * backups -----------------------------------------------------
@@ -703,7 +730,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'         \code{commits}, \code{issues} and \code{mails}
         get.read.data.sources = function() {
             return(private$read.data.sources)
-        }
+        },
 
         #' Determine which additional data sources have already been read.
         #'
@@ -711,7 +738,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'         \code{authors}, \code{commit.messages}, \code{pasta} and \code{synchronicity}
         get.read.additional.data.sources = function() {
             return(private$read.additional.data.sources)
-        }
+        },
 
         ## * * raw data ----------------------------------------------------
 
