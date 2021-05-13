@@ -101,6 +101,13 @@ ProjectData = R6::R6Class("ProjectData",
 
         project.conf = NULL, # list
 
+        ## * * data management ---------------------------------------------
+
+        ## a vector that holds all main data sources that have been read
+        read.data.sources = c(),
+        ## a vector that holds all additional data sources that have been read
+        read.additional.data.sources = c(),
+
         ## * * raw data ----------------------------------------------------
 
         ## commits and commit data
@@ -688,6 +695,24 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
+        ## * * data source management --------------------------------------
+
+        #' Determine which main data sources have already been read.
+        #'
+        #' @return a vector containing the names of all data sources that have already been read. Possible elements:
+        #'         \code{commits}, \code{issues} and \code{mails}
+        get.read.data.sources = function() {
+            return(private$read.data.sources)
+        }
+
+        #' Determine which additional data sources have already been read.
+        #'
+        #' @return a vector containing the names of all data sources that have already been read. Possible elements:
+        #'         \code{authors}, \code{commit.messages}, \code{pasta} and \code{synchronicity}
+        get.read.additional.data.sources = function() {
+            return(private$read.additional.data.sources)
+        }
+
         ## * * raw data ----------------------------------------------------
 
         #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
@@ -734,8 +759,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.commits = function() {
             logging::loginfo("Getting commit data.")
 
-            ## if commits are not read already or are empty, do this
-            if (is.null(private$commits) || nrow(private$commits) == 0) {
+            ## if commits are not read already, do this
+            if (!("commits" %in% private$read.data.sources)) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -753,10 +778,12 @@ ProjectData = R6::R6Class("ProjectData",
                     commit.data = split.data.by.bins(commit.data, df.bins)[[1]]
                 }
 
-                ## Add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
+                ## add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
                 ## the field 'commits' afterwards
                 self$set.commits(commit.data)
 
+                ## add commits to the 'read.data.source' vector so we know that we have read it
+                private$read.data.sources = c(private$read.data.sources, "commits")
             }
             private$extract.timestamps(source = "commits")
 
@@ -829,14 +856,17 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
-                ## if commit messages are not read already or are empty, do this
-                if (is.null(private$commit.messages) || nrow(private$commit.messages) == 0) {
+                ## if commit messages are not read already, do this
+                if (!("commit.messages" %in% private$read.additional.data.sources)) {
                     commit.message.data = read.commit.messages(self$get.data.path())
 
                     ## cache the result
                     private$commit.messages = commit.message.data
 
                     private$update.commit.message.data()
+
+                    ## add commit messages to the 'read.additional.data.source' vector so we know that we have read it
+                    private$read.additional.data.sources = c(private$read.additional.data.sources, "commit.messages")
                 }
             } else {
                 logging::logwarn("You have set the ProjectConf parameter 'commit.messages' to 'none'! Ignoring...")
@@ -893,8 +923,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if synchronicity data are to be read, do this
             if (private$project.conf$get.value("synchronicity")) {
-                ##  if data are not read already or are empty, read them
-                if (is.null(private$synchronicity) || nrow(private$synchronicity) == 0) {
+                ## if data are not read already, read them
+                if (!("synchronicity" %in% private$read.additional.data.sources)) {
                     private$synchronicity = read.synchronicity(
                         self$get.data.path.synchronicity(),
                         private$project.conf$get.value("artifact"),
@@ -905,6 +935,9 @@ ProjectData = R6::R6Class("ProjectData",
 
                     ## update all synchronicity-related data
                     private$update.synchronicity.data()
+
+                    ## add synchronicity to the 'read.additional.data.source' vector so we know that we have read it
+                    private$read.additional.data.sources = c(private$read.additional.data.sources, "synchronicity")
                 }
             } else {
                 logging::logwarn("You have not set the ProjectConf parameter 'synchronicity' to 'TRUE'! Ignoring...")
@@ -966,7 +999,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## if PaStA data are to be read, do this
             if (private$project.conf$get.value("pasta")) {
                 ## if data are not read already or is empty, read them
-                if (is.null(private$pasta) || nrow(private$pasta) == 0) {
+                if (!("pasta" %in% private$read.additional.data.sources)) {
                     ## read PaStA data from disk
                     private$pasta = read.pasta(self$get.data.path.pasta())
 
@@ -979,6 +1012,9 @@ ProjectData = R6::R6Class("ProjectData",
                         ## update all PaStA-related data
                         private$update.pasta.data()
                     }
+
+                    ## add paste to the 'read.additional.data.source' vector so we know that we have read it
+                    private$read.additional.data.sources = c(private$read.additional.data.sources, "pasta")
                 }
             } else {
                 logging::logwarn("You have not set the ProjectConf parameter 'pasta' to 'TRUE'! Ignoring...")
@@ -1055,8 +1091,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
-            ## if mails are not read already or are empty, do this
-            if (is.null(private$mails)  || nrow(private$mails) == 0) {
+            ## if mails are not read already, do this
+            if (!("mails" %in% private$read.data.sources)) {
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1069,6 +1105,9 @@ ProjectData = R6::R6Class("ProjectData",
                 }
 
                 self$set.mails(mails.read)
+
+                ## add mails to the 'read.data.source' vector so we know that we have read it
+                private$read.data.sources = c(private$read.data.sources, "mails")
             }
             private$extract.timestamps(source = "mails")
 
@@ -1116,9 +1155,12 @@ ProjectData = R6::R6Class("ProjectData",
         get.authors = function() {
             logging::loginfo("Getting author data.")
 
-            ## if authors are not read already or are empty, do this
-            if (is.null(private$authors) || nrow(private$authors) == 0) {
+            ## if authors are not read already, do this
+            if (!("authors" %in% private$read.additional.data.sources)) {
                 private$authors = read.authors(self$get.data.path())
+
+                ## add authors to the 'read.additional.data.source' vector so we know that we have read it
+                private$read.additional.data.sources = c(private$read.additional.data.sources, "authors")
             }
 
             return(private$authors)
@@ -1176,8 +1218,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.issues = function() {
             logging::loginfo("Getting issue data")
 
-            ## if issues have not been read yet or are empty, do this
-            if (is.null(private$issues) || nrow(private$issues) == 0) {
+            ## if issues have not been read yet, do this
+            if (!("issues" %in% private$read.data.sources)) {
                 private$issues = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
 
@@ -1189,6 +1231,9 @@ ProjectData = R6::R6Class("ProjectData",
                     df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
                     private$issues = split.data.by.bins(private$issues, df.bins)[[1]]
                 }
+
+                ## add issues to the 'read.data.source' vector so we know that we have read it
+                private$read.data.sources = c(private$read.data.sources, "issues")
             }
             private$extract.timestamps(source = "issues")
             return(private$issues)
