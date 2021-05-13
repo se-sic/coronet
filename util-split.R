@@ -34,6 +34,60 @@ requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Data acquisition --------------------------------------------------------
+
+#' Get only the main data sources that have been read out of a ProjectData object
+#'
+#' @param project.data the ProjectData object to get the data from
+#'
+#' @return a named list with all data sources that have been read
+#'
+#' @seealso \code{ProjectData$get.read.data.sources}
+get.named.data.source.list = function(project.data) {
+    ## first, get the vector with the read data sources
+    data.sources = project.data$get.read.data.sources()
+    ## then, check for each of the three possible ones and, if they are present, add them to the resulting list
+    data = list()
+    if ("commits" %in% data.sources) {
+        data[commits] = project.data$get.commits()
+    }
+    if ("issues" %in% data.sources) {
+        data[issues] = project.data$get.issues()
+    }
+    if ("mails" %in% data.sources) {
+        data[mails] = project.data$get.mails()
+    }
+    return(data)
+}
+
+#' Get only the additional data sources that have been read out of a ProjectData object
+#'
+#' @param project.data the ProjectData object to get the data from
+#'
+#' @return a named list with all additional data sources that have been read
+#'
+#' @seealso \code{ProjectData$get.read.additional.data.sources}
+get.named.additional.data.source.list = function(project.data) {
+    ## first, get the vector with the read data sources
+    data.sources = project.data$get.read.additional.data.sources()
+    ## then, check for each of the three possible ones and, if they are present, add them to the resulting list
+    data = list()
+    if ("authors" %in% data.sources) {
+        data[authors] = project.data$get.authors()
+    }
+    if ("commit.messages" %in% data.sources) {
+        data[commits] = project.data$get.commit.messages()
+    }
+    if ("issues" %in% data.sources) {
+        data[pasta] = project.data$get.pasta()
+    }
+    if ("mails" %in% data.sources) {
+        data[synchronicity] = project.data$get.synchronicity()
+    }
+    return(data)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
 
 #' Split project data in time-based ranges as specified
@@ -64,21 +118,13 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
     ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
+    data = get.named.data.source.list(project.data)
+
     split.data = names(data)
     names(split.data) = split.data
 
     ## initialize additional data sources to avoid multiple redundant initalizations later
-    additional.data = list(
-        authors = project.data$get.authors(),
-        commit.messages = project.data$get.commit.messages(),
-        pasta = project.data$get.pasta(),
-        synchronicity = project.data$get.synchronicity()
-    )
+    additional.data = get.named.additional.data.source.list(project.data)
     additional.data.sources = names(additional.data)
 
     ## get basis for splitting process
@@ -247,11 +293,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
+    data = get.named.data.source.list(project.data)
 
     ## define ID columns for mails and commits
     id.column = list(
