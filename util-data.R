@@ -107,13 +107,6 @@ ProjectData = R6::R6Class("ProjectData",
 
         project.conf = NULL, # list
 
-        ## * * data management ---------------------------------------------
-
-        ## a vector that holds all main data sources that have been read
-        read.data.sources = c(),
-        ## a vector that holds all additional data sources that have been read
-        read.additional.data.sources = c(),
-
         ## * * raw data ----------------------------------------------------
 
         ## commits and commit data
@@ -722,24 +715,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.path)
         },
 
-        ## * * data source management --------------------------------------
-
-        #' Determine which main data sources have already been read.
-        #'
-        #' @return a vector containing the names of all data sources that have already been read. Possible elements:
-        #'         \code{commits}, \code{issues} and \code{mails}
-        get.read.data.sources = function() {
-            return(private$read.data.sources)
-        },
-
-        #' Determine which additional data sources have already been read.
-        #'
-        #' @return a vector containing the names of all data sources that have already been read. Possible elements:
-        #'         \code{authors}, \code{commit.messages}, \code{pasta} and \code{synchronicity}
-        get.read.additional.data.sources = function() {
-            return(private$read.additional.data.sources)
-        },
-
         ## * * raw data ----------------------------------------------------
 
         #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
@@ -787,7 +762,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
-            if (!("commits" %in% private$read.data.sources)) {
+            if (!("commits" %in% self$get.cached.data.sources())) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -884,7 +859,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
                 ## if commit messages are not read already, do this
-                if (!("commit.messages" %in% private$read.additional.data.sources)) {
+                if (!("commit.messages" %in% self$get.cached.data.sources())) {
                     commit.message.data = read.commit.messages(self$get.data.path())
 
                     ## cache the result
@@ -951,7 +926,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## if synchronicity data are to be read, do this
             if (private$project.conf$get.value("synchronicity")) {
                 ## if data are not read already, read them
-                if (!("synchronicity" %in% private$read.additional.data.sources)) {
+                if (!("synchronicity" %in% self$get.cached.data.sources())) {
                     private$synchronicity = read.synchronicity(
                         self$get.data.path.synchronicity(),
                         private$project.conf$get.value("artifact"),
@@ -1026,7 +1001,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## if PaStA data are to be read, do this
             if (private$project.conf$get.value("pasta")) {
                 ## if data are not read already or is empty, read them
-                if (!("pasta" %in% private$read.additional.data.sources)) {
+                if (!("pasta" %in% self$get.cached.data.sources())) {
                     ## read PaStA data from disk
                     private$pasta = read.pasta(self$get.data.path.pasta())
 
@@ -1119,7 +1094,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already, do this
-            if (!("mails" %in% private$read.data.sources)) {
+            if (!("mails" %in% self$get.cached.data.sources())) {
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1183,7 +1158,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting author data.")
 
             ## if authors are not read already, do this
-            if (!("authors" %in% private$read.additional.data.sources)) {
+            if (!("authors" %in% self$get.cached.data.sources())) {
                 private$authors = read.authors(self$get.data.path())
 
                 ## add authors to the 'read.additional.data.source' vector so we know that we have read it
@@ -1246,7 +1221,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet, do this
-            if (!("issues" %in% private$read.data.sources)) {
+            if (!("issues" %in% self$get.cached.data.sources())) {
                 private$issues = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
 
@@ -1351,26 +1326,38 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'commits', 'mails', 'issues', 'authors', synchronicity', and 'pasta'.
+        #' 'commit.messages', commits', 'mails', 'issues', 'authors', synchronicity', and 'pasta'.
         #' 'data.timestamps' are tested implicitly every time as they only contain
         #' the earliest and latest date of one data source.
         #'
+        #' @param source.type character vector indicating which data sources should be checked for.
+        #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
+        #'                    - 'only.additional' filters only additional data sources and authors.
+        #'                    - 'all' or anything else filters all data sources.
+        #'                    [default: 'all']
+        #'
         #' @return a vector containing all the names
-        get.cached.data.sources = function() {
-            data.sources = c(
-                ## main data sources
-                "commits",
-                "mails",
-                "issues",
-                ## author data
-                "authors",
-                ## additional data sources
-                "synchronicity",
-                "pasta"
-            )
+        get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional")) {
+            source.type = match.arg(arg = source.type)
 
+            ## define the data sources
+            main.data.sources = c("commits", "mails", "issues")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
+
+            ## set the right data sources to look for according to the argument
+            if (source.type == "only.main") {
+                data.sources = main.data.sources
+            }
+            else if (source.type == "only.additional") {
+                data.sources = additional.data.sources
+            } else {
+                data.sources = c(main.data.sources, additional.data.sources)
+            }
+
+            ## only take the data sources that are not null and have more than one row
+            ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
             result = Filter(function (ds) {
-                return(!is.null(private[[ds]]))
+                return(!is.null(private[[ds]]) && nrow(private[[ds]] > 0))
             }, data.sources)
 
             return(result)
