@@ -459,7 +459,7 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
         split.type = "time-based",
         split.length = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
         split.basis = NULL,
-        split.sliding.window = FALSE, ## TODO is this the supposed value
+        split.sliding.window = FALSE,
         split.revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
         split.revision.dates = NULL
     )
@@ -710,7 +710,7 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
         split.type = "activity-based",
         split.length = 4,
         split.basis = "commits",
-        split.sliding.window = FALSE, ## TODO is this the supposed value
+        split.sliding.window = FALSE,
         split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
         split.revision.dates = NULL
     )
@@ -1139,7 +1139,7 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
         split.type = "activity-based",
         split.length = 8,
         split.basis = "mails",
-        split.sliding.window = FALSE, ## TODO is this the supposed value
+        split.sliding.window = FALSE,
         split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
         split.revision.dates = NULL
     )
@@ -1438,7 +1438,7 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
         split.type = "activity-based",
         split.length = 21,
         split.basis = "issues",
-        split.sliding.window = FALSE, ## TODO is this the supposed value
+        split.sliding.window = FALSE,
         split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:02:02", "2017-05-23 12:32:40"),
         split.revision.dates = NULL
     )
