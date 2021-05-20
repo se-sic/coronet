@@ -23,6 +23,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -389,6 +390,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ),
             issues.only.comments = list(
                 default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            filter.bots = list(
+                default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1

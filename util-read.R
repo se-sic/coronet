@@ -385,6 +385,54 @@ create.empty.issues.list = function() {
 
 ## * Author data -----------------------------------------------------------
 
+
+
+## column names of a data frame containing bot information (see file
+## 'TODO-bots.list' and function \code{read.bot.list})
+## TODO figure out what the actual columns will be
+BOT.LIST.COLUMNS = c(
+    "author.name", "author.email", ## author
+    "comment.count", "comment.empty.count", "comment.pattern.count", "comment.dispersion", ## intermediate results
+    "is.bot" ## whether this is a bot
+)
+
+#' Read the bot classification from the 'TODO-bots.list' file.
+#'
+#' @param data.path the path to the commit-messages list
+#'
+#' @return a data frame with author.name, author.email, and a (potentially NA) boolean whether this is a bot,
+#'         or \code{NULL} if the above file is not present.
+read.bot.info = function(data.path) {
+    logging::logdebug("read.bot.info: starting.")
+
+    ## read the file with the commit messages
+    file = file.path(data.path, "TODO-bots.list")
+
+    bot.data = try(read.table(file, header = FALSE, sep = ",", strip.white = TRUE,
+                                         encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the list of commits is empty
+    if (inherits(bot.data, "try-error")) {
+        logging::logwarn("There is no bot clarification available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return a data frame with the correct columns but zero rows
+        return(NULL)
+    }
+
+    ## set column names for new data frame
+    colnames(bot.data) = BOT.LIST.COLUMNS
+
+    bot.data = bot.data[, c("author.name", "author.email", "is.bot")]
+    bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+
+
+    logging::logdebug("read.bot.info: finished.")
+
+    return(bot.data)
+}
+
+
 ## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
     "author.id", "author.name", "author.email"
@@ -410,6 +458,7 @@ read.authors = function(data.path) {
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 
+
     ## break if the list of authors is empty
     if (inherits(authors.df, "try-error")) {
         logging::logerror("There are no authors available for the current environment.")
@@ -422,6 +471,13 @@ read.authors = function(data.path) {
         authors.df[3] = NA
     }
     colnames(authors.df) = AUTHORS.LIST.COLUMNS
+
+    bot.data = read.bot.info(data.path)
+    if (!is.null(bot.data)) {
+        authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
+    } else {
+        authors.df["is.bot"] = rep(c(NA), nrow(authors.df))
+    }
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
