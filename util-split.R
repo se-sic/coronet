@@ -63,7 +63,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
     ## get actual raw data
-    split.data = get.cached.data.sources("only.main")
+    split.data = project.data$get.cached.data.sources("only.main")
     data = lapply(split.data, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)
@@ -73,7 +73,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     names(split.data) = split.data
 
     ## load available additional data sources
-    additional.data.sources = get.cached.data.sources("only.additional")
+    additional.data.sources = project.data$get.cached.data.sources("only.additional")
     data = lapply(additional.data.sources, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)
@@ -246,7 +246,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
-    data.sources = get.cached.data.sources("only.main")
+    data.sources = project.data$get.cached.data.sources("only.main")
     data = lapply(data.sources, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)

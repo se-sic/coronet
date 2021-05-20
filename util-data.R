@@ -783,9 +783,6 @@ ProjectData = R6::R6Class("ProjectData",
                 ## add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
                 ## the field 'commits' afterwards
                 self$set.commits(commit.data)
-
-                ## add commits to the 'read.data.source' vector so we know that we have read it
-                private$read.data.sources = c(private$read.data.sources, "commits")
             }
             private$extract.timestamps(source = "commits")
 
@@ -937,9 +934,6 @@ ProjectData = R6::R6Class("ProjectData",
 
                     ## update all synchronicity-related data
                     private$update.synchronicity.data()
-
-                    ## add synchronicity to the 'read.additional.data.source' vector so we know that we have read it
-                    private$read.additional.data.sources = c(private$read.additional.data.sources, "synchronicity")
                 }
             } else {
                 logging::logwarn("You have not set the ProjectConf parameter 'synchronicity' to 'TRUE'! Ignoring...")
@@ -1014,9 +1008,6 @@ ProjectData = R6::R6Class("ProjectData",
                         ## update all PaStA-related data
                         private$update.pasta.data()
                     }
-
-                    ## add paste to the 'read.additional.data.source' vector so we know that we have read it
-                    private$read.additional.data.sources = c(private$read.additional.data.sources, "pasta")
                 }
             } else {
                 logging::logwarn("You have not set the ProjectConf parameter 'pasta' to 'TRUE'! Ignoring...")
@@ -1107,9 +1098,6 @@ ProjectData = R6::R6Class("ProjectData",
                 }
 
                 self$set.mails(mails.read)
-
-                ## add mails to the 'read.data.source' vector so we know that we have read it
-                private$read.data.sources = c(private$read.data.sources, "mails")
             }
             private$extract.timestamps(source = "mails")
 
@@ -1160,9 +1148,6 @@ ProjectData = R6::R6Class("ProjectData",
             ## if authors are not read already, do this
             if (!("authors" %in% self$get.cached.data.sources())) {
                 private$authors = read.authors(self$get.data.path())
-
-                ## add authors to the 'read.additional.data.source' vector so we know that we have read it
-                private$read.additional.data.sources = c(private$read.additional.data.sources, "authors")
             }
 
             return(private$authors)
@@ -1233,9 +1218,6 @@ ProjectData = R6::R6Class("ProjectData",
                     df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
                     private$issues = split.data.by.bins(private$issues, df.bins)[[1]]
                 }
-
-                ## add issues to the 'read.data.source' vector so we know that we have read it
-                private$read.data.sources = c(private$read.data.sources, "issues")
             }
             private$extract.timestamps(source = "issues")
             return(private$issues)
@@ -1344,6 +1326,7 @@ ProjectData = R6::R6Class("ProjectData",
             main.data.sources = c("commits", "mails", "issues")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
 
+            data.sources = c()
             ## set the right data sources to look for according to the argument
             if (source.type == "only.main") {
                 data.sources = main.data.sources
@@ -1357,7 +1340,8 @@ ProjectData = R6::R6Class("ProjectData",
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
             result = Filter(function (ds) {
-                return(!is.null(private[[ds]]) && nrow(private[[ds]] > 0))
+                print(ds)
+                return(!is.null(private[[ds]]) && nrow(private[[ds]]) > 0)
             }, data.sources)
 
             return(result)
