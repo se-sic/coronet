@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -27,7 +27,6 @@ source("util-init.R")
 library("methods") # to prevent weird error during logger initialization (see #153)
 library("logging")
 logging::basicConfig(level = "DEBUG")
-assign("last.warning", NULL, envir = baseenv())
 options(mc.cores = 1L)
 
 
