@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
@@ -171,7 +171,7 @@ create.empty.data.frame = function(columns, data.types = NULL) {
         ## replace column with column of correct type
         switch(tolower(data.types[i]),
                "posixct" = {
-                   column = as.POSIXct(column)
+                   column = lubridate::with_tz(as.POSIXct(column), tzone = TIMEZONE)
                },
                "integer" = {
                    column = as.integer(column)
