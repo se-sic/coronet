@@ -774,10 +774,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
-                    bins = get.range.bounds(private$range)
-                    bins.date = get.date.from.string(bins)
-                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
-                    commit.data = split.data.by.bins(commit.data, df.bins)[[1]]
+                    commit.data = split.data.by.bins(commit.data, get.bin.from.range(private$range, commit.data))[[1]]
                 }
 
                 ## add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
@@ -863,9 +860,6 @@ ProjectData = R6::R6Class("ProjectData",
                     private$commit.messages = commit.message.data
 
                     private$update.commit.message.data()
-
-                    ## add commit messages to the 'read.additional.data.source' vector so we know that we have read it
-                    private$read.additional.data.sources = c(private$read.additional.data.sources, "commit.messages")
                 }
             } else {
                 logging::logwarn("You have set the ProjectConf parameter 'commit.messages' to 'none'! Ignoring...")
@@ -1091,10 +1085,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
-                    bins = get.range.bounds(private$range)
-                    bins.date = get.date.from.string(bins)
-                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
-                    mails.read = split.data.by.bins(mails.read, df.bins)[[1]]
+                    mails.read = split.data.by.bins(mails.read, get.bin.from.range(private$range, mails.read))[[1]]
                 }
 
                 self$set.mails(mails.read)
@@ -1213,10 +1204,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
-                    bins = get.range.bounds(private$range)
-                    bins.date = get.date.from.string(bins)
-                    df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
-                    private$issues = split.data.by.bins(private$issues, df.bins)[[1]]
+
+                    private$issues = split.data.by.bins(private$issues,
+                                                        get.bin.from.range(private$range, private$issues))[[1]]
                 }
             }
             private$extract.timestamps(source = "issues")
@@ -1340,7 +1330,6 @@ ProjectData = R6::R6Class("ProjectData",
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
             result = Filter(function (ds) {
-                print(ds)
                 return(!is.null(private[[ds]]) && nrow(private[[ds]]) > 0)
             }, data.sources)
 

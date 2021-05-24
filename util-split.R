@@ -64,21 +64,22 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  sliding.window = FALSE, project.conf.new = NULL) {
     ## get actual raw data
     split.data = project.data$get.cached.data.sources("only.main")
+
     data = lapply(split.data, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)
         return(project.data[[function.name]]())
     })
-
-    names(split.data) = split.data
+    names(data) = split.data
 
     ## load available additional data sources
     additional.data.sources = project.data$get.cached.data.sources("only.additional")
-    data = lapply(additional.data.sources, function(ds) {
+    additional.data = lapply(additional.data.sources, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)
         return(project.data[[function.name]]())
     })
+    names(additional.data) = additional.data.sources
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
@@ -93,6 +94,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
         ## get bins based on split.basis
+        print(split.basis)
         bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period, number.windows)$bins
         bins.labels = head(bins, -1)
         split.by.bins = FALSE
@@ -252,6 +254,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         function.name = paste0("get.", ds)
         return(project.data[[function.name]]())
     })
+    names(data) = data.sources
 
     ## define ID columns for mails and commits
     id.column = list(
