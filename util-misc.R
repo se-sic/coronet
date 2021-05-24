@@ -873,3 +873,16 @@ get.range.bounds = function(range) {
 
     return (range)
 }
+
+
+#' Get a single bin from a range
+#'
+#' @param range The range object to convert
+#' @param data The data frame the bin should be cut to. It must have a 'date' column
+#' @return A data frame holding the bin corresponding to the given range
+get.bin.from.range = function(range, data) {
+    bins = get.range.bounds(range)
+    bins.date = get.date.from.string(bins)
+    df.bins = findInterval(data[["date"]], bins.date, all.inside = FALSE)
+    return(df.bins)
+}
