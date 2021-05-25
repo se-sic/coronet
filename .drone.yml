@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 # Drone CI Setup
@@ -38,9 +38,15 @@ steps:
   - Rscript tests.R
   depends_on: [clone]
 
+- name: R-4.1
+  pull: if-not-exists
+  image: r-base:4.1.0
+  commands: *runTests
+  depends_on: [clone]
+
 - name: R-4.0
   pull: if-not-exists
-  image: r-base:4.0.3
+  image: r-base:4.0.5
   commands: *runTests
   depends_on: [clone]
 

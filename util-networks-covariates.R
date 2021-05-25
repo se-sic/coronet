@@ -14,6 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -624,6 +625,9 @@ add.vertex.attribute.first.activity = function(list.of.networks, project.data,
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
+    ## make sure that the default value contains a tzone attribute (even if the default value is NA)
+    default.value = get.date.from.string(default.value)
+
     ## the given default.value is interpreted as default per author and type.
     type.default = default.value
 
@@ -949,6 +953,9 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
                                                           default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
+    ## make sure that the default value contains a tzone attribute (even if the default value is NA)
+    default.value = get.date.from.string(default.value)
+
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
@@ -974,6 +981,9 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #' @return A list containing per author a list of first activity values named with the corresponding activity type.
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    default.value = NA) {
+
+    ## make sure that the default value contains a tzone attribute (even if the default value is NA)
+    default.value = get.date.from.string(default.value)
 
     ## get data for each activity type and extract minimal date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
