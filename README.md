@@ -6,7 +6,7 @@
 
 Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
 
-The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
+The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [[https://github.com/siemens/codeface](https://github.com/siemens/codeface)] and its companion tool `codeface-extraction` [[https://github.com/se-passau/codeface-extraction](https://github.com/se-passau/codeface-extraction)]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
 
@@ -71,7 +71,7 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosaar-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
+The data folder – which can result from consecutive runs of `Codeface` [[https://github.com/se-passau/codeface](https://github.com/se-passau/codeface)] (branch `infosaar-updates`) and `codeface-extraction` [[https://github.com/se-passau/codeface-extraction](https://github.com/se-passau/codeface-extraction)] – needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
