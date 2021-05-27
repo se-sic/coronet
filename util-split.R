@@ -62,6 +62,16 @@ requireNamespace("lubridate") # for date conversion
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
+
+    ## get basis for splitting process
+    split.basis = match.arg(split.basis)
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(split.basis %in% project.data$get.cached.data.sources())) {
+        function.name = paste0("get.", split.basis)
+        project.data[[function.name]]()
+    }
+
     ## get actual raw data
     split.data = project.data$get.cached.data.sources("only.main")
 
@@ -81,8 +91,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     })
     names(additional.data) = additional.data.sources
 
-    ## get basis for splitting process
-    split.basis = match.arg(split.basis)
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
