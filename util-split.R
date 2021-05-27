@@ -102,7 +102,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
         ## get bins based on split.basis
-        print(split.basis)
         bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period, number.windows)$bins
         bins.labels = head(bins, -1)
         split.by.bins = FALSE
@@ -142,7 +141,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     }
 
     if (!sliding.window) {
-
         ## split data
         data.split = parallel::mclapply(split.data, function(df.name) {
             logging::logdebug("Splitting %s.", df.name)
@@ -166,6 +164,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct RangeData objects
         logging::logdebug("Constructing RangeData objects.")
+
         cf.data = parallel::mclapply(bins.ranges, function(range) {
             logging::logdebug("Constructing data for range %s.", range)
             ## construct object for current range

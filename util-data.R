@@ -774,7 +774,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
-                    commit.data = split.data.by.bins(commit.data, get.bin.from.range(private$range, commit.data))[[1]]
+                    commit.data = get.data.from.range(private$range, commit.data)
                 }
 
                 ## add PaStA and synchronicity data (if configured in the 'project.conf') and save the commit data to
@@ -1085,7 +1085,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
-                    mails.read = split.data.by.bins(mails.read, get.bin.from.range(private$range, mails.read))[[1]]
+                    mails.read = get.data.from.range(private$range, mails.read)
                 }
 
                 self$set.mails(mails.read)
@@ -1205,8 +1205,7 @@ ProjectData = R6::R6Class("ProjectData",
                 if (is(self, "RangeData")) {
                     ## get the one bin from the given range and split the data frame with that bin
 
-                    private$issues = split.data.by.bins(private$issues,
-                                                        get.bin.from.range(private$range, private$issues))[[1]]
+                    private$issues = get.data.from.range(private$range, private$issues)
                 }
             }
             private$extract.timestamps(source = "issues")

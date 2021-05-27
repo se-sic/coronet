@@ -880,9 +880,26 @@ get.range.bounds = function(range) {
 #' @param range The range object to convert
 #' @param data The data frame the bin should be cut to. It must have a 'date' column
 #' @return A data frame holding the bin corresponding to the given range
-get.bin.from.range = function(range, data) {
+get.data.from.range = function(range, data) {
     bins = get.range.bounds(range)
     bins.date = get.date.from.string(bins)
     df.bins = findInterval(data[["date"]], bins.date, all.inside = FALSE)
-    return(df.bins)
+
+    ## split data by this bin; this gives a list of three dataframes, "0" contains the data before the range, "1" the
+    ## data within the range and "2" the holds the data after the range
+    split.data = split.data.by.bins(data, df.bins)
+
+    ## look for the element with name "1", as we are interested in the data within the range
+    ## if there is no data, return an empty commit list´
+    data.between = split.data["1"][[1]]
+    if (is.null(data.between)) {
+        ## in order to get an empty commit list, get the data with all rows removed
+        empty.data = data[0,]
+        return(empty.data)
+    } else {
+        return(data.between)
+    }
+
+    browser()
+    return(data.between)
 }
