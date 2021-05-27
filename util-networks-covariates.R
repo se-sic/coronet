@@ -141,6 +141,52 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Author network functions ------------------------------------------------
 
+
+#' Add count-based attribute based on \code{count.method}
+#'
+#' Note: This is a helper function for all other functions adding a count-based
+#' vertex attribute.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param commit.count.method The method reference for counting the data
+#' @param name.column The name of the column which contains the author information
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.count.helper = function(list.of.networks, project.data, name,
+                                             aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                   "project.cumulative", "project.all.ranges",
+                                                                   "complete"),
+                                             default.value = 0L, count.method, name.column) {
+    aggregation.level = match.arg.or.default(aggregation.level, default = "range")
+
+    nets.with.attr = split.and.add.vertex.attribute(
+        list.of.networks, project.data, name, aggregation.level, default.value,
+        function(range, range.data, net) {
+            count.df = count.method(range.data)[c(name.column, "freq")]
+
+            if (!is.data.frame(count.df)) {
+                return(list())
+            }
+
+            count.list = structure(count.df[["freq"]], names = count.df[[name.column]])
+
+            return(count.list)
+        }
+    )
+
+    return(nets.with.attr)
+}
+
+
+
 ## * Commit count ----------------------------------------------------------
 
 #' Add commit-count attribute based on author name
@@ -161,7 +207,7 @@ add.vertex.attribute.commit.count.author = function(list.of.networks, project.da
                                                                           "project.cumulative", "project.all.ranges",
                                                                           "complete"),
                                                     default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.author.commit.count, "author.name"
     )
@@ -188,7 +234,7 @@ add.vertex.attribute.commit.count.author.not.committer = function(list.of.networ
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
                                                                   default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.not.author.commit.count, "author.name"
     )
@@ -214,7 +260,7 @@ add.vertex.attribute.commit.count.committer = function(list.of.networks, project
                                                                              "project.cumulative", "project.all.ranges",
                                                                              "complete"),
                                                        default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.commit.count, "committer.name"
     )
@@ -241,7 +287,7 @@ add.vertex.attribute.commit.count.committer.not.author = function(list.of.networ
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
                                                                   default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.not.author.commit.count, "committer.name"
     )
@@ -268,7 +314,7 @@ add.vertex.attribute.commit.count.committer.and.author = function(list.of.networ
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
                                                                   default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.and.author.commit.count, "committer.name"
     )
@@ -296,7 +342,7 @@ add.vertex.attribute.commit.count.committer.or.author = function(list.of.network
                                                                                         "project.cumulative", "project.all.ranges",
                                                                                         "complete"),
                                                                   default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
+    nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.or.author.commit.count, "name"
     )
@@ -304,260 +350,6 @@ add.vertex.attribute.commit.count.committer.or.author = function(list.of.network
     return(nets.with.attr)
 }
 
-#' Add commit-count attribute based using \code{commit.count.method}
-#'
-#' Note: This is a helper function for all other functions adding a commit-count-related
-#' vertex attribute.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "commit.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#' @param commit.count.method The method reference for counting the commits
-#' @param name.column The name of the author or committer column
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.commit.count.helper = function(list.of.networks, project.data, name = "commit.count",
-                                             aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                   "project.cumulative", "project.all.ranges",
-                                                                   "complete"),
-                                             default.value = 0L, commit.count.method, name.column) {
-    aggregation.level = match.arg.or.default(aggregation.level, default = "range")
-
-    nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, aggregation.level, default.value,
-        function(range, range.data, net) {
-            commit.count.df = commit.count.method(range.data)[c(name.column, "freq")]
-
-            if (!is.data.frame(commit.count.df)) {
-                return(list())
-            }
-
-            commit.count.list = structure(commit.count.df[["freq"]], names = commit.count.df[[name.column]])
-
-            return(commit.count.list)
-        }
-    )
-
-    return(nets.with.attr)
-}
-
-
-## * Mail count ----------------------------------------------------------
-
-#' Add mail-count attribute based on the total number of mails sent,
-#' where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "mail.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.mail.count = function(list.of.networks, project.data,
-                                           name = "mail.count",
-                                           aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                 "project.cumulative", "project.all.ranges",
-                                                                 "complete"),
-                                           default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, get.author.mail.count, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-#' Add mail-thread-count attribute based on the number of mail threads participated in,
-#' where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "mail.thread.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data,
-                                           name = "mail.thread.count",
-                                           aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                 "project.cumulative", "project.all.ranges",
-                                                                 "complete"),
-                                           default.value = 0L) {
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, get.author.mail.thread.count, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-
-## * Issue / PR count --------------------------------------------------------------
-
-#' Add issue-count attribute based on the number of issues participated in,
-#' where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add. You might want to change this [default: "issue.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.issue.count = function(list.of.networks, project.data,
-                                            name = "issue.count",
-                                            aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                  "project.cumulative", "project.all.ranges",
-                                                                  "complete"),
-                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
-    if (name == "issue.count" && identical(issue.type, "pull.requests")) {
-        name = "pull.request.count"
-    }
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issue.count(data, type = issue.type))}, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-
-#' Add issue-count attribute based on the number of issues participated in by commenting,
-#' where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "issues.commented.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.issues.commented.count = function(list.of.networks, project.data,
-                                                          name = "issues.commented.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative", "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
-    if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
-        name = "pull.requests.commented.count"
-    }
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issues.commented.in.count(data, type = issue.type))}, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-
-#' Add issue-count attribute based on the number of issues created,
-#' where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "issue.creation.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.issue.creation.count = function(list.of.networks, project.data,
-                                                          name = "issue.creation.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative", "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
-    if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
-        name = "pull.request.creation.count"
-    }
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issues.created.count(data, type = issue.type))}, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-
-#' Add issue-comments-count attribute based on the number of comments in issues, where the person represented by the vertex is the author.
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "issue.comment.count"]
-#' @param aggregation.level Determines the data to use for the attribute calculation.
-#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
-#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
-#'                          \code{"complete"}. See \code{split.data.by.networks} for
-#'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
-#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.issue.comment.count = function(list.of.networks, project.data,
-                                                          name = "issue.comment.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative", "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
-    if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
-        name = "pull.request.comment.count"
-    }
-    nets.with.attr = add.vertex.attribute.commit.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issue.comment.count(data, type = issue.type))}, "author.name"
-    )
-
-    return(nets.with.attr)
-}
-
-## * Meta-data -------------------------------------------------------------
-
-#' Add author email attribute
-#'
-#' @param list.of.networks The network list
-#' @param project.data The project data
-#' @param name The attribute name to add [default: "author.email"]
-#' @param default.value The default value to add if a vertex has no matching value [default: NA]
-#'
-#' @return A list of networks with the added attribute
-add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", default.value = NA) {
-    nets.with.attr = split.and.add.vertex.attribute(
-        list.of.networks, project.data, name, "complete", default.value,
-        function(range, range.data, net) {
-            authors = range.data$get.authors()
-            author.to.mail = structure(names = authors[["author.name"]],
-                                       authors[["author.email"]])
-
-            return(author.to.mail)
-        }
-    )
-
-    return(nets.with.attr)
-}
 
 #' Add unique artifact count attribute
 #'
@@ -592,6 +384,219 @@ add.vertex.attribute.artifact.count = function(list.of.networks, project.data, n
 
     return(nets.with.attr)
 }
+
+
+## * Mail count ----------------------------------------------------------
+
+#' Add mail-count attribute based on the total number of mails sent,
+#' where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "mail.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.mail.count = function(list.of.networks, project.data,
+                                           name = "mail.count",
+                                           aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                 "project.cumulative", "project.all.ranges",
+                                                                 "complete"),
+                                           default.value = 0L) {
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, get.author.mail.count, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+#' Add mail-thread-count attribute based on the number of mail threads participated in,
+#' where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "mail.thread.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data,
+                                           name = "mail.thread.count",
+                                           aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                 "project.cumulative", "project.all.ranges",
+                                                                 "complete"),
+                                           default.value = 0L) {
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, get.author.mail.thread.count, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+
+## * Issue / PR count --------------------------------------------------------------
+
+#' Add issue-count attribute based on the number of issues participated in,
+#' where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add. You might want to change this [default: "issue.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.issue.count = function(list.of.networks, project.data,
+                                            name = "issue.count",
+                                            aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                  "project.cumulative", "project.all.ranges",
+                                                                  "complete"),
+                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.count"
+    }
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, function(data) {return(get.author.issue.count(data, type = issue.type))}, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+
+#' Add issue-count attribute based on the number of issues participated in by commenting,
+#' where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "issues.commented.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.issues.commented.count = function(list.of.networks, project.data,
+                                                          name = "issues.commented.count",
+                                                          aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                "project.cumulative", "project.all.ranges",
+                                                                                "complete"),
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.requests.commented.count"
+    }
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, function(data) {return(get.author.issues.commented.in.count(data, type = issue.type))}, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+
+#' Add issue-count attribute based on the number of issues created,
+#' where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "issue.creation.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.issue.creation.count = function(list.of.networks, project.data,
+                                                          name = "issue.creation.count",
+                                                          aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                "project.cumulative", "project.all.ranges",
+                                                                                "complete"),
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.creation.count"
+    }
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, function(data) {return(get.author.issues.created.count(data, type = issue.type))}, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+
+#' Add issue-comments-count attribute based on the number of comments in issues, where the person represented by the vertex is the author.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "issue.comment.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "range"]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.issue.comment.count = function(list.of.networks, project.data,
+                                                          name = "issue.comment.count",
+                                                          aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                "project.cumulative", "project.all.ranges",
+                                                                                "complete"),
+                                                          default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
+        name = "pull.request.comment.count"
+    }
+    nets.with.attr = add.vertex.attribute.count.helper(
+        list.of.networks, project.data, name, aggregation.level,
+        default.value, function(data) {return(get.author.issue.comment.count(data, type = issue.type))}, "author.name"
+    )
+
+    return(nets.with.attr)
+}
+
+## * Meta-data -------------------------------------------------------------
+
+#' Add author email attribute
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "author.email"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.author.email = function(list.of.networks, project.data, name = "author.email", default.value = NA) {
+    nets.with.attr = split.and.add.vertex.attribute(
+        list.of.networks, project.data, name, "complete", default.value,
+        function(range, range.data, net) {
+            authors = range.data$get.authors()
+            author.to.mail = structure(names = authors[["author.name"]],
+                                       authors[["author.email"]])
+
+            return(author.to.mail)
+        }
+    )
+
+    return(nets.with.attr)
+}
+
 
 ## * Activity --------------------------------------------------------------
 
