@@ -278,8 +278,13 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## compute the number of time windows according to the activity amount
         number.windows = ceiling(activity / activity.amount)
         if (activity < activity.amount) {
-            logging::logwarn("Can not form bins of %s %s for splitting data %s, as there are only %s data rows.",
-                             activity.amount, activity.type, project.data$get.class.name(), activity)
+            activity.type.pretty = list(
+                commits = "commits",
+                mails = "mails",
+                issues = "issue events"
+            )[[activity.type]]
+            logging::logwarn("Can not form bins of %s %s for splitting data %s, as there are only %s %s.",
+                             activity.amount, activity.type.pretty, project.data$get.class.name(), activity, activity.type.pretty)
         }
     }
     ## number of windows given (ignoring amount of activity)
