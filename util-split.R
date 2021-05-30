@@ -20,6 +20,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -54,11 +55,14 @@ requireNamespace("lubridate") # for date conversion
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                 sliding.window = FALSE) {
+                                 sliding.window = FALSE, project.conf.new = NULL) {
     ## get actual raw data
     data = list(
         commits = project.data$get.commits(),
@@ -122,6 +126,12 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         sliding.window = FALSE
     }
 
+    if (is.null(project.conf.new)) {
+        ## Clone the project configuration, so that splitting repeatedly does not interfere
+        ## with the same configuration.
+        project.conf.new = project.data$get.project.conf()$clone()
+    }
+
     if (!sliding.window) {
 
         ## split data
@@ -143,14 +153,14 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         names(data.split) = bins.ranges
 
         ## adapt project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date)
+        project.conf.new$set.revisions(bins, bins.date)
 
         ## construct RangeData objects
         logging::logdebug("Constructing RangeData objects.")
         cf.data = parallel::mclapply(bins.ranges, function(range) {
             logging::logdebug("Constructing data for range %s.", range)
             ## construct object for current range
-            cf.range.data = RangeData$new(project.data$get.project.conf(), range)
+            cf.range.data = RangeData$new(project.conf.new, range)
             ## get data for current range
             df.list = data.split[[range]]
 
@@ -185,15 +195,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.data = split.data.time.based.by.ranges(project.data, ranges)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
+        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
-            cf.conf = cf$set.project.conf(project.data$get.project.conf())
+            cf.conf = cf$set.project.conf(project.conf.new)
         }
     }
 
     ## add splitting information to project configuration
-    project.data$get.project.conf()$set.splitting.info(
+    project.conf.new$set.splitting.info(
         type = "time-based",
         length = if (split.by.bins) bins else time.period,
         basis = split.basis,
@@ -224,11 +234,14 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'                       'sliding.window = FALSE') [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails", "issues"),
                                      activity.amount = 5000, number.windows = NULL,
-                                     sliding.window = FALSE) {
+                                     sliding.window = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     activity.type = match.arg(activity.type)
@@ -250,6 +263,12 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## get amount of available activity
     activity = length(unique(data[[activity.type]][[ id.column[[activity.type]] ]]))
 
+    if (is.null(project.conf.new)) {
+        ## Clone the project configuration, so that splitting repeatedly does not interfere
+        ## with the same configuration.
+        project.conf.new = project.data$get.project.conf()$clone()
+    }
+
     ## activity amount given (number of windows NOT given)
     if (is.null(number.windows)) {
         if (activity < 1) {
@@ -258,6 +277,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         }
         ## compute the number of time windows according to the activity amount
         number.windows = ceiling(activity / activity.amount)
+        if (activity < activity.amount) {
+            activity.type.pretty = list(
+                commits = "commits",
+                mails = "mails",
+                issues = "issue events"
+            )[[activity.type]]
+            logging::logwarn("Can not form bins of %s %s for splitting data %s, as there are only %s %s.",
+                             activity.amount, activity.type.pretty, project.data$get.class.name(), activity, activity.type.pretty)
+        }
     }
     ## number of windows given (ignoring amount of activity)
     else {
@@ -285,7 +313,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
-    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type)
+    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type,
+                                    project.conf.new = project.conf.new)
 
     ## perform additional steps for sliding-window approach:
     ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
@@ -329,7 +358,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## split data for sliding windows
         cf.data.sliding = split.data.activity.based(project.data.clone, activity.type = activity.type,
-                                                    activity.amount = activity.amount, sliding.window = FALSE)
+                                                    activity.amount = activity.amount, sliding.window = FALSE,
+                                                    project.conf.new = project.conf.new)
 
         ## append data to normally-split data
         cf.data = append(cf.data, cf.data.sliding)
@@ -377,15 +407,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         }
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
+        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
-            cf.conf = cf$set.project.conf(project.data$get.project.conf(), reset.environment = FALSE)
+            cf.conf = cf$set.project.conf(project.conf.new, reset.environment = FALSE)
         }
     }
 
     ## add splitting information to project configuration
-    project.data$get.project.conf()$set.splitting.info(
+    project.conf.new$set.splitting.info(
         type = "activity-based",
         length = activity.amount,
         basis = activity.type,
