@@ -87,9 +87,11 @@ The data folder – which can result from consecutive runs of `Codeface` [[https
       │           └──{tagging}
       │                ├── authors.list
       │                ├── commits.list
+      │                ├── commitMessages.list
       │                ├── emails.list
-      │                ├── revisions.list
-      │                └── issues.list
+      │                ├── issues-github.list
+      │                ├── issues-jira.list
+      │                └── revisions.list
       ├── releases
       │     └──{project-name}_{tagging}
       │           └──{tagging}
