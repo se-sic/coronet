@@ -25,7 +25,7 @@
 
 ## Note:
 ## The definition of column names for each individual data source used in this file corresponds to the individual
-## extraction process of the tool 'codeface-extraction' (https://github.com/se-passau/codeface-extraction; use
+## extraction process of the tool 'codeface-extraction' (https://github.com/se-sic/codeface-extraction; use
 ## commit 0700f94 or a compatible later commit).
 
 
