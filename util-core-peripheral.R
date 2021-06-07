@@ -26,7 +26,7 @@
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
 
-## TODO see https://github.com/se-passau/coronet/issues/70
+## TODO see https://github.com/se-sic/coronet/issues/70
 ## TODO adjust coding style regarding bracket notation
 
 
