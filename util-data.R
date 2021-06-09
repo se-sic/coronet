@@ -574,6 +574,9 @@ ProjectData = R6::R6Class("ProjectData",
             if (class(self)[1] == "ProjectData") {
                 logging::loginfo("Initialized data object %s", self$get.class.name())
             }
+
+            ## initialize the data fields with empty data frames
+            self$reset.environment()
         },
 
         ## * * printing ----------------------------------------------------
@@ -591,19 +594,19 @@ ProjectData = R6::R6Class("ProjectData",
         #' Has to be called whenever the project configuration or data gets
         #' changed.
         reset.environment = function() {
-            private$authors = NULL
-            private$commits = NULL
-            private$commits.filtered = NULL
-            private$commit.messages = NULL
+            private$authors = create.empty.authors.list()
+            private$commits = create.empty.commits.list()
+            private$commits.filtered = create.empty.commits.list()
+            private$commit.messages = create.empty.commit.message.list()
             private$data.timestamps = NULL
-            private$issues.filtered = NULL
-            private$issues = NULL
-            private$mails = NULL
+            private$issues.filtered = create.empty.issues.list()
+            private$issues = create.empty.issues.list()
+            private$mails = create.empty.mails.list()
             private$mails.patchstacks = NULL
-            private$pasta = NULL
+            private$pasta = create.empty.pasta.list()
             private$pasta.mails = NULL
             private$pasta.commits = NULL
-            private$synchronicity = NULL
+            private$synchronicity = create.empty.synchronicity.list()
         },
 
         ## * * configuration -----------------------------------------------
