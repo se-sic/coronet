@@ -1251,8 +1251,8 @@ ProjectData = R6::R6Class("ProjectData",
             ## make it a vector
             artifacts = unlist(artifacts)
 
-            ## empty vector if no data exist or is empty
-            if (is.null(artifacts) || nrow(private$artifacts) == 0) {
+            ## empty vector if already character(0) or data is empty
+            if (length(artifacts) == 0 || is.null(artifacts) || nrow(artifacts) == 0) {
                 artifacts = character(0)
             }
 
