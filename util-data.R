@@ -192,7 +192,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.patchstack.mails: starting.")
 
             ## return immediately if no mails are available
-            if (nrow(private$mails) == 0) {
+            if (!self$is.data.source.cached("mails")) {
                 private$mails.patchstacks = NULL
                 return(private$mails)
             }
@@ -254,7 +254,7 @@ ProjectData = R6::R6Class("ProjectData",
         update.commit.message.data = function() {
             logging::loginfo("Merging commit messages into commit data.")
 
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
                 ## get commit messages
                 commit.messages = private$commit.messages
 
@@ -346,7 +346,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("aggregate.pasta.data: starting.")
 
             ## check for data first
-            if (nrow(private$pasta) == 0) {
+            if (!self$is.data.source.cached("pasta")) {
                 ## take (empty) input data and no rows from it
                 private$pasta.mails = create.empty.pasta.list()
                 private$pasta.commits = create.empty.pasta.list()
@@ -381,7 +381,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.commit.data: starting.")
 
             ## return immediately if no commits available
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
 
                 ## remove previous PaStA data
                 private$commits["pasta"] = NULL
@@ -409,7 +409,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.mail.data: starting.")
 
             ## return immediately if no mails available
-            if (!is.null(private$mails)) {
+            if (self$is.data.source.cached("mails")) {
 
                 ## remove previous PaStA data
                 private$mails["pasta"] = NULL
@@ -448,12 +448,12 @@ ProjectData = R6::R6Class("ProjectData",
             private$aggregate.pasta.data()
 
             ## update mail data by attaching PaStA data
-            if (!is.null(private$mails)) {
+            if (self$is.data.source.cached("mails")) {
                 private$update.pasta.mail.data()
             }
 
             ## update commit data by attaching PaStA data
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
                 private$update.pasta.commit.data()
             }
 
@@ -480,7 +480,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.synchronicity.data: starting.")
 
             ## update commit data by attaching synchronicity data
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("synchronicity")) {
                 ## remove previous synchronicity data
                 private$commits["synchronicity"] = NULL
 
@@ -730,7 +730,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.commits.filtered.uncached
         get.commits.filtered = function() {
-            if (is.null(private$commits.filtered)) {
+            if (!self$is.data.source.cached("commits.filtered")) {
                 private$commits.filtered = private$filter.commits(
                     self$get.commits(),
                     private$project.conf$get.value("commits.filter.untracked.files"),
@@ -765,7 +765,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting commit data.")
 
             ## if commits are not read already, do this
-            if (!("commits" %in% self$get.cached.data.sources())) {
+            if (!self$is.data.source.cached("commits")) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -806,7 +806,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add commit message data if wanted
             if (private$project.conf$get.value("commit.messages") != "none") {
-                if (is.null(private$commit.messages)) {
+                if (!self$is.data.source.cached("commit.messages")) {
                     ## get data that has been cached before
                     self$get.commit.messages()
                 } else {
@@ -818,7 +818,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add synchronicity data if wanted
             if (private$project.conf$get.value("synchronicity")) {
-                if (is.null(private$synchronicity)) {
+                if (!self$is.data.source.cached("synchronicity")) {
                     ## get data (no assignment because we just want to trigger anything synchronicity-related)
                     self$get.synchronicity()
                 } else {
@@ -829,7 +829,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                if (is.null(private$pasta)) {
+                if (!self$is.data.source.cached("pasta")) {
                     ## get data (no assignment because we just want to trigger anything PaStA-related)
                     self$get.pasta()
                 } else {
@@ -856,7 +856,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
                 ## if commit messages are not read already, do this
-                if (!("commit.messages" %in% self$get.cached.data.sources())) {
+                if (!self$is.data.source.cached("commit.messages")) {
                     commit.message.data = read.commit.messages(self$get.data.path())
 
                     ## cache the result
@@ -900,7 +900,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up commit message data")
 
             ## remove commit hashes that don't appear in the commit data
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
                 commit.message.hashes = private$commit.messages[["hash"]]
                 commit.message.hashes.contained = private$commit.messages[["hash"]] %in% private$commits[["hash"]]
                 commit.hashes.to.eliminate = commit.message.hashes[!commit.message.hashes.contained]
@@ -920,7 +920,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## if synchronicity data are to be read, do this
             if (private$project.conf$get.value("synchronicity")) {
                 ## if data are not read already, read them
-                if (!("synchronicity" %in% self$get.cached.data.sources())) {
+                if (!self$is.data.source.cached("synchronicity")) {
                     private$synchronicity = read.synchronicity(
                         self$get.data.path.synchronicity(),
                         private$project.conf$get.value("artifact"),
@@ -958,7 +958,6 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add synchronicity data to the commit data if configured
             if (private$project.conf$get.value("synchronicity")) {
-
                 ## no read of commit data needed here!
 
                 ## update all synchronicity-related data
@@ -972,7 +971,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up synchronicity data")
 
             ## remove commit hashes that don't appear in the commit data
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
                 synchronicity.hashes = private$synchronicity[["hash"]]
                 synchronicity.hashes.contained = private$synchronicity[["hash"]] %in% private$commits[["hash"]]
                 commit.hashes.to.eliminate = synchronicity.hashes[!synchronicity.hashes.contained]
@@ -992,12 +991,12 @@ ProjectData = R6::R6Class("ProjectData",
             ## if PaStA data are to be read, do this
             if (private$project.conf$get.value("pasta")) {
                 ## if data are not read already or is empty, read them
-                if (!("pasta" %in% self$get.cached.data.sources())) {
+                if (!self$is.data.source.cached("pasta")) {
                     ## read PaStA data from disk
                     private$pasta = read.pasta(self$get.data.path.pasta())
 
                     ## read mail data if filtering patchstack mails
-                    if (is.null(private$mails)
+                    if (!self$is.data.source.cached("mails"))
                         && private$project.conf$get.value("mails.filter.patchstack.mails")) {
                         ## just triggering read-in, no assignment; the mails are stored within 'get.mails'
                         self$get.mails()
@@ -1034,15 +1033,13 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("pasta")) {
 
                 ## read mail data if filtering patchstack mails
-                if (is.null(private$mails) &&
+                if (!self$is.data.source.cached("mails") &&
                     private$project.conf$get.value("mails.filter.patchstack.mails")) {
                     ## just triggering read-in, no storage
                     self$get.mails()
-
                 } else {
                     ## update all PaStA-related data
                     private$update.pasta.data()
-
                 }
             }
         },
@@ -1053,13 +1050,13 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up PaStA data")
 
             ## remove message ids that don't appear in the mail data
-            if (!is.null(private$mails)) {
+            if (self$is.data.source.cached("mails")) {
                 rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails[["revision.set.id"]]
                 private$pasta = private$pasta[rev.id.contained, ]
             }
 
             ## remove commit hashes that don't appear in the commit data
-            if (!is.null(private$commits)) {
+            if (self$is.data.source.cached("commits")) {
                 pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
                 commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits[["hash"]]
                 commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
@@ -1082,7 +1079,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already, do this
-            if (!("mails" %in% self$get.cached.data.sources())) {
+            if (!self$is.data.source.cached("mails")) {
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1119,7 +1116,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                if (!("pasta" %in% self$get.cached.data.sources())) {
+                if (!self$is.data.source.cached("pasta")) {
                     ## get data (no assignment because we just want to trigger anything PaStA-related)
                     self$get.pasta()
                 } else {
@@ -1140,7 +1137,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting author data.")
 
             ## if authors are not read already, do this
-            if (!("authors" %in% self$get.cached.data.sources())) {
+            if (!self$is.data.source.cached("authors")) {
                 private$authors = read.authors(self$get.data.path())
             }
 
@@ -1166,7 +1163,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
-            if (is.null(private$issues.filtered)) {
+            if (!self$is.data.source.cached("issues.filtered")) {
                 private$issues.filtered = private$filter.issues(
                     self$get.issues(),
                     private$project.conf$get.value("issues.only.comments"))
@@ -1200,7 +1197,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet, do this
-            if (!("issues" %in% self$get.cached.data.sources())) {
+            if (!self$is.data.source.cached("issues")) {
                 private$issues = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
 
@@ -1315,7 +1312,7 @@ ProjectData = R6::R6Class("ProjectData",
             source.type = match.arg(arg = source.type)
 
             ## define the data sources
-            main.data.sources = c("commits", "mails", "issues")
+            main.data.sources = c("commits", "mails", "issues", "issues.filtered", "commits.filtered")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
 
             data.sources = c()
