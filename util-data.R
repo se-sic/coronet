@@ -1119,7 +1119,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
-                if (is.null(private$pasta)) {
+                if (!("pasta" %in% self$get.cached.data.sources())) {
                     ## get data (no assignment because we just want to trigger anything PaStA-related)
                     self$get.pasta()
                 } else {
@@ -1337,6 +1337,15 @@ ProjectData = R6::R6Class("ProjectData",
 
             return(result)
         },
+
+        #' Check whether a given data source has been previously cached.
+        #'
+        #' @param data.source the data source to check
+        #'
+        #' @return \code{TRUE} if the data source is cached, else \code{FALSE}
+        is.data.source.cached = function(data.source) {
+            return(data.source %in% self$get.cached.data.sources())
+        }
 
         #' Extract the data classes (i.e., data columns and their classes) available in
         #' the given data source.
