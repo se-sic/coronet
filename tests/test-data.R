@@ -28,29 +28,29 @@ context("Tests for ProjectData functionalities.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
+CASESTUDY_EMPTY = "test_empty"
 ARTIFACT = "feature"
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
-test_that("Compare two ProjectData objects", {
+test_that("Compare two ProjectData objects on empty data", {
 
     ## initialize a ProjectData object with the ProjectConf and clone it into another one
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("pasta", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone()
 
     expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects.")
 
-    ## Always change one data source in the one object, test for inequality, change it in the
-    ## second object, as well, and test for equality.
-
-    ## change the second data object
+    ## Always change one data source in the one object, test for equality, change it in the
+    ## second object, as well, and test for equality. It is always equal because when no data has been read, it is an
+    ## empty table, the same as the data that is read. The only exception is the author data as this must not be empty
 
     proj.data.two$get.pasta()
 
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.one$get.pasta()
 
@@ -58,7 +58,7 @@ test_that("Compare two ProjectData objects", {
 
     proj.data.one$get.commits()
 
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.two$get.commits()
 
@@ -66,7 +66,7 @@ test_that("Compare two ProjectData objects", {
 
     proj.data.two$get.mails()
 
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.one$get.mails()
 
@@ -74,7 +74,7 @@ test_that("Compare two ProjectData objects", {
 
     proj.data.one$get.issues.filtered()
 
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.two$get.issues.filtered()
 
@@ -90,9 +90,17 @@ test_that("Compare two ProjectData objects", {
 
     proj.data.one$get.synchronicity()
 
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 
     proj.data.two$get.synchronicity()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.one$get.commit.messages()
+
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+
+    proj.data.two$get.commit.messages()
 
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
 })
