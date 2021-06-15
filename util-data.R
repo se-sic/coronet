@@ -110,24 +110,24 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         ## commits and commit data
-        commits.filtered = NULL, # data.frame
-        commits = NULL, # data.frame
-        commit.messages = NULL, # data.frame
+        commits.filtered = create.empty.commits.list(), # data.frame
+        commits = create.empty.commits.list(), # data.frame
+        commit.messages = create.empty.commit.message.list(), # data.frame
         ## mails
-        mails = NULL, # data.frame
-        mails.patchstacks = NULL, # list
+        mails = create.empty.mails.list(), # data.frame
+        mails.patchstacks = list(), # list
         ## issues
-        issues = NULL, #data.frame
-        issues.filtered = NULL, #data.frame
+        issues = create.empty.issues.list(), #data.frame
+        issues.filtered = create.empty.issues.list(), #data.frame
         ## authors
-        authors = NULL, # data.frame
+        authors = create.empty.authors.list(), # data.frame
         ## additional data sources
-        synchronicity = NULL, # data.frame
-        pasta = NULL, # data.frame
-        pasta.mails = NULL, # data.frame
-        pasta.commits = NULL, # data.frame
+        synchronicity = create.empty.synchronicity.list(), # data.frame
+        pasta = create.empty.pasta.list(), # data.frame
+        pasta.mails = create.empty.pasta.list(), # data.frame
+        pasta.commits = create.empty.pasta.list(), # data.frame
         ## timestamps of mail, issue and commit data
-        data.timestamps = NULL, #data.frame
+        data.timestamps = data.frame(start = numeric(0), end = numeric(0)), #data.frame
 
         ## * * commit filtering --------------------------------------------
 
@@ -525,6 +525,7 @@ ProjectData = R6::R6Class("ProjectData",
         extract.timestamps = function(source) {
             ## initialize data structure for timestamp
             if (is.null(private$data.timestamps)) {
+                ## let this stay as a sanity-check; this is actually initialized this way when creating the object
                 private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
             }
 
@@ -574,9 +575,6 @@ ProjectData = R6::R6Class("ProjectData",
             if (class(self)[1] == "ProjectData") {
                 logging::loginfo("Initialized data object %s", self$get.class.name())
             }
-
-            ## initialize the data fields with empty data frames
-            self$reset.environment()
         },
 
         ## * * printing ----------------------------------------------------
@@ -598,14 +596,14 @@ ProjectData = R6::R6Class("ProjectData",
             private$commits = create.empty.commits.list()
             private$commits.filtered = create.empty.commits.list()
             private$commit.messages = create.empty.commit.message.list()
-            private$data.timestamps = NULL
+            private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
             private$issues.filtered = create.empty.issues.list()
             private$issues = create.empty.issues.list()
             private$mails = create.empty.mails.list()
-            private$mails.patchstacks = NULL
+            private$mails.patchstacks = list()
             private$pasta = create.empty.pasta.list()
-            private$pasta.mails = NULL
-            private$pasta.commits = NULL
+            private$pasta.mails = create.empty.pasta.list()
+            private$pasta.commits = create.empty.pasta.list()
             private$synchronicity = create.empty.synchronicity.list()
         },
 
@@ -1329,6 +1327,8 @@ ProjectData = R6::R6Class("ProjectData",
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
             result = Filter(function (ds) {
+                ## the first condition actually cannot be false anymore since the data is initialized with an empty
+                ## data frame and never set to 'NULL' ever again; however, leave this in as a sanity check
                 return(!is.null(private[[ds]]) && nrow(private[[ds]]) > 0)
             }, data.sources)
 
