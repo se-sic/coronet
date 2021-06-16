@@ -773,7 +773,9 @@ ProjectData = R6::R6Class("ProjectData",
                                            UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE))
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
-                if (is(self, "RangeData")) {
+                ## however, don't do it if the range has been read from data as in this case there are no dates in the
+                ## range and thus, we cannot split
+                if (is(self, "RangeData") && !private$built.from.range.data.read) {
                     ## get the one bin from the given range and split the data frame with that bin
                     commit.data = get.data.from.range(private$range, commit.data)
                 }
@@ -1081,7 +1083,9 @@ ProjectData = R6::R6Class("ProjectData",
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
-                if (is(self, "RangeData")) {
+                ## however, don't do it if the range has been read from data as in this case there are no dates in the
+                ## range and thus, we cannot split
+                if (is(self, "RangeData") && !private$built.from.range.data.read) {
                     ## get the one bin from the given range and split the data frame with that bin
                     mails.read = get.data.from.range(private$range, mails.read)
                 }
@@ -1200,7 +1204,9 @@ ProjectData = R6::R6Class("ProjectData",
                                              private$project.conf$get.value("issues.from.source"))
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
-                if (is(self, "RangeData")) {
+                ## however, don't do it if the range has been read from data as in this case there are no dates in the
+                ## range and thus, we cannot split
+                if (is(self, "RangeData") && !private$built.from.range.data.read) {
                     ## get the one bin from the given range and split the data frame with that bin
 
                     private$issues = get.data.from.range(private$range, private$issues)
@@ -1302,16 +1308,18 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param source.type character vector indicating which data sources should be checked for.
         #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
         #'                    - 'only.additional' filters only additional data sources and authors.
+        #'                    - 'only.filtered' filters only filtered data sources (i.e. commits and mails)
         #'                    - 'all' or anything else filters all data sources.
         #'                    [default: 'all']
         #'
         #' @return a vector containing all the names
-        get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional")) {
+        get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional", "only.filtered")) {
             source.type = match.arg(arg = source.type)
 
             ## define the data sources
-            main.data.sources = c("commits", "mails", "issues", "issues.filtered", "commits.filtered")
+            main.data.sources = c("commits", "mails", "issues")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
+            filtered.data.sources = c("issues.filtered", "commits.filtered")
 
             data.sources = c()
             ## set the right data sources to look for according to the argument
@@ -1320,8 +1328,11 @@ ProjectData = R6::R6Class("ProjectData",
             }
             else if (source.type == "only.additional") {
                 data.sources = additional.data.sources
+            }
+            else if (source.type == "only.filtered") {
+                data.sources = filtered.data.sources
             } else {
-                data.sources = c(main.data.sources, additional.data.sources)
+                data.sources = c(main.data.sources, additional.data.sources, filtered.data.sources)
             }
 
             ## only take the data sources that are not null and have more than one row
