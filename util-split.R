@@ -153,6 +153,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
             return(df.split)
         })
+        ## set the names to the data sources obtained earlier
+        names(data.split) = split.data
 
         ## re-arrange data to get the proper list of data per range
         logging::logdebug("Re-arranging data.")
@@ -262,6 +264,12 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         return(project.data[[function.name]]())
     })
     names(data) = data.sources
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(activity.type %in% project.data$get.cached.data.sources())) {
+        function.name = paste0("get.", activity.type)
+        project.data[[function.name]]()
+    }
 
     ## define ID columns for mails and commits
     id.column = list(
@@ -391,6 +399,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         last.regular.range = cf.data[[length(cf.data)]]
         last.sliding.range = cf.data[[length(cf.data) - 1]]
         get.activity.data = paste0("get.", activity.type)
+
         last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         last.sliding.range.ids = (last.sliding.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
