@@ -1614,7 +1614,7 @@ get.sample.network = function() {
     ## RangeData object
     range = proj.conf$get.value("ranges")[1]
     range.callgraph = proj.conf$get.callgraph.revision.from.range(range)
-    proj.data = RangeData$new(proj.conf, range, range.callgraph)
+    proj.data = RangeData$new(proj.conf, range, range.callgraph, built.from.range.data.read = TRUE)
 
     ## network configuration
     net.conf = NetworkConf$new()
