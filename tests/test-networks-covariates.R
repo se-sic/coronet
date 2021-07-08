@@ -896,6 +896,9 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
 
     networks.and.data = get.network.covariates.test.networks()
 
+    ## lock issues in order to prevent them from being read because that alters the first activity dates
+    networks.and.data$project.data$set.project.conf.entry("issues.locked", TRUE)
+
     expected.attributes = list(
         range = network.covariates.test.build.expected(
             list(list(all.activities = "2016-07-12 15:58:40 UTC")),
@@ -959,7 +962,6 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
     })
 
     ## Test
-
     lapply(AGGREGATION.LEVELS, function(level) {
 
         networks.with.attributes = add.vertex.attribute.first.activity(
@@ -968,6 +970,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
             default.value = NA, combine.activity.types = TRUE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
+
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -980,6 +983,9 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
 
     networks.and.data = get.network.covariates.test.networks()
     expected.attributes = get.expected.first.activity()
+
+    ## lock issues in order to prevent them from being read because that alters the first activity dates
+    networks.and.data$project.data$set.project.conf.entry("issues.locked", TRUE)
 
     ## Test
 
@@ -1002,6 +1008,7 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
     ## Test setup
 
     networks.and.data = get.network.covariates.test.networks()
+
     expected.attributes = get.expected.first.activity()
     expected.attributes = lapply(expected.attributes, function(level) {
         lapply(level, function(network) {
@@ -1033,6 +1040,9 @@ test_that("Test add.vertex.attribute.active.ranges with computation over all typ
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
 
+    ## lock issues in order to prevent them from being read because that alters the first activity dates
+    networks.and.data$project.data$set.project.conf.entry("issues.locked", TRUE)
+
     ## Test
     networks.with.attr = add.vertex.attribute.active.ranges(
         networks.and.data[["networks"]], networks.and.data[["project.data"]],
@@ -1056,6 +1066,9 @@ test_that("Test default values of add.vertex.attribute.active.ranges", {
 
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
+
+    ## lock issues in order to prevent them from being read because that alters the first activity dates
+    networks.and.data$project.data$set.project.conf.entry("issues.locked", TRUE)
 
     ## Test
     test.networks = networks.and.data[["networks"]]

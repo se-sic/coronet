@@ -74,7 +74,10 @@ PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
 CONF.KEYS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                    "pasta",
                                    "synchronicity",
-                                   "synchronicity.time.window")
+                                   "synchronicity.time.window",
+                                   "mails.locked",
+                                   "commits.locked",
+                                   "issues.locked")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -811,8 +814,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.commits = function() {
             logging::loginfo("Getting commit data.")
 
-            ## if commits are not read already, do this
-            if (!self$is.data.source.cached("commits")) {
+            ## if commits are not read already and are not locked in the configuration, do this
+            if (!self$is.data.source.cached("commits") && !private$project.conf$get.value("commits.locked")) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -1127,8 +1130,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.mails = function() {
             logging::loginfo("Getting e-mail data.")
 
-            ## if mails are not read already, do this
-            if (!self$is.data.source.cached("mails")) {
+            ## if mails are not read already and are not locked in the configuration, do this
+            if (!self$is.data.source.cached("mails") && !private$project.conf$get.value("mails.locked")) {
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1247,9 +1250,8 @@ ProjectData = R6::R6Class("ProjectData",
         get.issues = function() {
             logging::loginfo("Getting issue data")
 
-            ## if issues have not been read yet, do this
-            ## TODO hier check nach neuen Conf-Dingern hinzufügen. Ebenso in allen anderen Gettern der Hauptdatensourcen
-            if (!self$is.data.source.cached("issues")) {
+            ## if issues have not been read yet and are not locked in the configuration, do this
+            if (!self$is.data.source.cached("issues") && !private$project.conf$get.value("issues.locked")) {
                 private$issues = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
 
