@@ -408,7 +408,7 @@ read.bot.info = function(data.path) {
     ## read the file with the commit messages
     file = file.path(data.path, "TODO-bots.list")
 
-    bot.data = try(read.table(file, header = FALSE, sep = ",", strip.white = TRUE,
+    bot.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                          encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
@@ -474,10 +474,14 @@ read.authors = function(data.path) {
 
     bot.data = read.bot.info(data.path)
     if (!is.null(bot.data)) {
+        ## TODO keep row names consistent
         authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
+        authors.df = authors.df[order(authors.df[["author.id"]]),] # re-order after read
+        row.names(authors.df) = 1:nrow(authors.df)
     } else {
-        authors.df["is.bot"] = rep(c(NA), nrow(authors.df))
+        authors.df[["is.bot"]] = NA
     }
+    authors.df = authors.df[,c("author.id", "author.name", "author.email", "is.bot")]
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")

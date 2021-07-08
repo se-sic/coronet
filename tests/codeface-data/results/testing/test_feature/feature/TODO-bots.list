@@ -1,4 +1,4 @@
-"Thomas","thomas@example.org",4321,0.0,2,0.1337,Bot
-"Björn","bjoern@example.org",5,,,,Human
-"udo","udo@example.org",1234,0.0,2,0.42,Unknown
-CLAassistant,nomail,268,0.0,2,0.4138676044435877,Bot
+"Thomas";"thomas@example.org";4321;0.0;2;0.1337;Bot
+"Björn";"bjoern@example.org";5;;;;Human
+"udo";"udo@example.org";1234;0.0;2;0.42;Unknown
+"CLAassistant";"nomail";268;0.0;2;0.4138676044435877;Bot

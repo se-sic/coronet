@@ -332,7 +332,7 @@ get.author.mail.count = group.data.by.key("get.author.mail.count", "mails",
 get.author.mail.thread.count = function(proj.data) {
     logging::logdebug("get.author.mail.thread.count: starting.")
 
-    mails.df = proj.data$get.mails()
+    mails.df = proj.data$get.mails.filtered()
     ## Remove unnecessary rows and columns
     mails.df = mails.df[!duplicated(mails.df[["message.id"]]), ]
     mails.df = mails.df[c("author.name", "message.id", "thread")]

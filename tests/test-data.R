@@ -228,14 +228,14 @@ test_that("Filter patchstack mails", {
     proj.data = ProjectData$new(proj.conf)
 
     ## retrieve the mails while filtering patchstack mails
-    mails.filtered = proj.data$get.mails()
+    mails.filtered = proj.data$get.mails.filtered()
 
     ## create new project with filtering disabled
     proj.conf$update.value("mails.filter.patchstack.mails", FALSE)
     proj.data = ProjectData$new(proj.conf)
 
     ## retrieve the mails without filtering patchstack mails
-    mails.unfiltered = proj.data$get.mails()
+    mails.unfiltered = proj.data$get.mails.filtered()
 
     ## get message ids
     mails.filtered.mids = mails.filtered[["message.id"]]
@@ -356,6 +356,50 @@ test_that("Merge commit message titles to commit data", {
                                       title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", "", ""))
 
     expect_identical(commits, commit.data.expected, info = "Add only commit title")
+})
+
+
+test_that("Filter bots from commit data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.commits = proj.data$get.commits.filtered()
+
+    expect_true(all(filtered.commits[["author.name"]] != "Thomas"))
+    expect_equal(nrow(filtered.commits), 5)
+})
+
+test_that("Filter bots from issue data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("issues.only.comments", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.issues = proj.data$get.issues.filtered()
+
+    expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
+    expect_equal(nrow(filtered.issues), 41)
+})
+
+test_that("Filter bots from mail data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("mails.filter.patchstack.mails", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.mails = proj.data$get.mails.filtered()
+
+    expect_true(all(filtered.mails[["author.name"]] != "Thomas"))
+    expect_equal(nrow(filtered.mails), 15)
 })
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

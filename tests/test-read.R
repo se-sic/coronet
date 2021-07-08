@@ -243,7 +243,8 @@ test_that("Read the author data.", {
         author.id = as.integer(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
         author.name = c("Thomas", "Olaf", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max"),
         author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
-                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
+                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org"),
+        is.bot = c(TRUE, NA, FALSE, NA, NA, NA, NA, NA, NA)
     )
 
     ## check the results
