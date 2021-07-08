@@ -546,19 +546,28 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commits.filter.untracked.files`
     * Remove all information concerning untracked files from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commits that solely changed untracked files. Networks built on top of this `ProjectData` do also not contain any information about untracked files.
     * [*`TRUE`*, `FALSE`]
+- `commits.locked`
+    * Lock commits to prevent them from being read if not yet present when calling the getter.
+    * [*`TRUE`*, `FALSE`]
 - `commmit.messages`
-  * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
-  * [*`none`*, `title`, `messages`]
+    * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
+    * [*`none`*, `title`, `messages`]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
     * [*`github`, `jira`*]
+- `issues.locked`
+    * Lock issues to prevent them from being read if not yet present when calling the getter.
+    * [*`TRUE`*, `FALSE`]
 - `mails.filter.patchstack.mails`
     * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
 'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
     * [`TRUE`, *`FALSE`*]
+- `mails.locked`
+    * Lock mails to prevent them from being read if not yet present when calling the getter.
+    * [*`TRUE`*, `FALSE`]
 - `pasta`
     * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
     * [`TRUE`, *`FALSE`*]
