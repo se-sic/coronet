@@ -272,6 +272,24 @@ ProjectData = R6::R6Class("ProjectData",
                 ## adjust the column order
                 private$commits = private$commits[col.names]
             }
+            if (self$is.data.source.cached("commits.filtered")) {
+                ## get commit messages
+                commit.messages = private$commit.messages
+
+                ## now there are only three columns left: commit.id, title, message
+                ## check whether to include only title or also the messages
+                if (private$project.conf$get.value("commit.messages") == "title") {
+                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                }
+
+                ## get a vector with the column names in the right order
+                col.names = unique(c(colnames(private$commits.filtered), colnames(commit.messages)))
+                ## merge them into the commit data
+                private$commits.filtered = merge(private$commits.filtered, commit.messages,
+                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                ## adjust the column order
+                private$commits.filtered = private$commits.filtered[col.names]
+            }
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
@@ -399,6 +417,25 @@ ProjectData = R6::R6Class("ProjectData",
                     return(unique(rev.id))
                 })
             }
+            if (self$is.data.source.cached("commits.filtered")) {
+
+                ## remove previous PaStA data
+                private$commits.filtered["pasta"] = NULL
+                private$commits.filtered["revision.set.id"] = NULL
+
+                ## merge PaStA data
+                private$commits.filtered = merge(private$commits.filtered, private$commits.filtered,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]], decreasing = FALSE), ]
+
+                ## remove duplicated revision set ids
+                private$commits.filtered[["revision.set.id"]] = sapply(private$commits.filtered[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
+            }
+
 
             logging::logdebug("update.pasta.commit.data: finished.")
         },
@@ -453,7 +490,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## update commit data by attaching PaStA data
-            if (self$is.data.source.cached("commits")) {
+            if (self$is.data.source.cached("commits") ) {
                 private$update.pasta.commit.data()
             }
 
@@ -480,7 +517,8 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.synchronicity.data: starting.")
 
             ## update commit data by attaching synchronicity data
-            if (self$is.data.source.cached("synchronicity")) {
+            ## do not check whether synchronicity is available in order to remove the columns if it is not
+            if (self$is.data.source.cached("commits")) {
                 ## remove previous synchronicity data
                 private$commits["synchronicity"] = NULL
 
@@ -490,7 +528,18 @@ ProjectData = R6::R6Class("ProjectData",
 
                 ## sort by date again because 'merge' disturbs the order
                 private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+            }
+            if (self$is.data.source.cached("commits.filtered")) {
+                ## remove previous synchronicity data
+                private$commits.filtered["synchronicity"] = NULL
 
+                ## merge synchronicity data
+                private$commits.filtered = merge(private$commits.filtered, private$synchronicity,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]],
+                                                                          decreasing = FALSE), ]
             }
 
             ## get the caller function as a string
@@ -1199,6 +1248,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet, do this
+            ## TODO hier check nach neuen Conf-Dingern hinzufügen. Ebenso in allen anderen Gettern der Hauptdatensourcen
             if (!self$is.data.source.cached("issues")) {
                 private$issues = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
@@ -1212,6 +1262,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$issues = get.data.from.range(private$range, private$issues)
                 }
             }
+
             private$extract.timestamps(source = "issues")
             return(private$issues)
         },
@@ -1334,6 +1385,7 @@ ProjectData = R6::R6Class("ProjectData",
             } else {
                 data.sources = c(main.data.sources, additional.data.sources, filtered.data.sources)
             }
+
 
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
