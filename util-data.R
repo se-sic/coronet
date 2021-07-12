@@ -427,7 +427,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$commits.filtered["revision.set.id"] = NULL
 
                 ## merge PaStA data
-                private$commits.filtered = merge(private$commits.filtered, private$commits.filtered,
+                private$commits.filtered = merge(private$commits.filtered, private$pasta.commits,
                                         by = "hash", all.x = TRUE, sort = FALSE)
 
                 ## sort by date again because 'merge' disturbs the order
@@ -1376,20 +1376,12 @@ ProjectData = R6::R6Class("ProjectData",
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
             filtered.data.sources = c("issues.filtered", "commits.filtered")
 
-            data.sources = c()
             ## set the right data sources to look for according to the argument
-            if (source.type == "only.main") {
-                data.sources = main.data.sources
-            }
-            else if (source.type == "only.additional") {
-                data.sources = additional.data.sources
-            }
-            else if (source.type == "only.filtered") {
-                data.sources = filtered.data.sources
-            } else {
-                data.sources = c(main.data.sources, additional.data.sources, filtered.data.sources)
-            }
-
+            data.sources = switch(source.type,
+                                  "only.main" = main.data.sources,
+                                  "only.additional" = additional.data.sources,
+                                  "only.filtered" = filtered.data.sources,
+                                  "all" = c(main.data.sources, additional.data.sources, filtered.data.sources))
 
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
