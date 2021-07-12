@@ -318,8 +318,8 @@ test_that("Construction of networks without data", {
 })
 
 
-# / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-# Construction of networks with empty edge list ---------------------------
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Construction of networks with empty edge list ---------------------------
 
 test_that("Construction of networks from empty edge list (with vertices)", {
 

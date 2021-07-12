@@ -18,6 +18,7 @@
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -962,6 +963,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
     })
 
     ## Test
+
     lapply(AGGREGATION.LEVELS, function(level) {
 
         networks.with.attributes = add.vertex.attribute.first.activity(
@@ -970,7 +972,6 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
             default.value = NA, combine.activity.types = TRUE
         )
         actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
-
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
