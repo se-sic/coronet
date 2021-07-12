@@ -875,7 +875,7 @@ get.range.bounds = function(range) {
 }
 
 
-#' Get a single bin from a range
+#' Get a single bin from a range.
 #'
 #' @param range The range object to convert
 #' @param data The data frame the bin should be cut to. It must have a 'date' column
@@ -894,7 +894,7 @@ get.data.from.range = function(range, data) {
     data.between = split.data["1"][[1]]
     if (is.null(data.between)) {
         ## in order to get an empty commit list, get the data with all rows removed
-        empty.data = data[0,]
+        empty.data = data[0, ]
         return(empty.data)
     } else {
         return(data.between)

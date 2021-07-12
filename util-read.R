@@ -349,7 +349,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
 
     if (nrow(issue.data) > 0) {
-        ## fix all dates to be after the creation date.
+        ## fix all dates to be after the creation date
         ## violations can happen for "commit_added" events if the commit was made before the PR was opened
         ## the original date for "commit_added" events is stored in "event.info.2" in any case
         commit.added.events = issue.data[["event.name"]] == "commit_added"

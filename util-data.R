@@ -689,7 +689,8 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$project.conf$get.value(entry))
         },
 
-        #' Set  a value of the project configuration and, in some, cases, resets the environment.
+        #' Set a value of the project configuration and, in some cases (i.e. when the parameters allow it)
+        #' resets the environment.
         #'
         #' @param key the configuration option to set. The environment will not be reset, if and only if the entry to
         #'            change affects a parameter controlling whether or not to read additional data sources, that is, if
@@ -706,7 +707,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Update the project configuration based on the given list
-        #' of values and, in some cases, reset the environment afterwards
+        #' of values and, in some cases (i.e. when the parameters allow it), reset the environment afterwards
         #'
         #' @param updated.values the new values for the project configuration.
         #'                       If at least one of the configuration parameters is not an element of the vector
@@ -1354,7 +1355,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'commit.messages', commits', 'mails', 'issues', 'authors', synchronicity', and 'pasta'.
+        #' 'commits', 'mails', 'issues', 'commit.messages', 'authors', synchronicity', and 'pasta'.
         #' 'data.timestamps' are tested implicitly every time as they only contain
         #' the earliest and latest date of one data source.
         #'
