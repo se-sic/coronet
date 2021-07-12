@@ -73,14 +73,14 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     }
 
     ## get actual raw data
-    split.data = project.data$get.cached.data.sources("only.main")
+    data.to.split = project.data$get.cached.data.sources("only.main")
 
-    data = lapply(split.data, function(ds) {
+    data = lapply(data.to.split, function(ds) {
         ## build the name of the respective getter and call it
         function.name = paste0("get.", ds)
         return(project.data[[function.name]]())
     })
-    names(data) = split.data
+    names(data) = data.to.split
 
     ## load available additional data sources
     additional.data.sources = project.data$get.cached.data.sources("only.additional")
@@ -142,7 +142,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     if (!sliding.window) {
         ## split data
-        data.split = parallel::mclapply(split.data, function(df.name) {
+        data.split = parallel::mclapply(data.to.split, function(df.name) {
             logging::logdebug("Splitting %s.", df.name)
             ## identify bins for data
             df = data[[df.name]]
@@ -154,7 +154,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             return(df.split)
         })
         ## set the names to the data sources obtained earlier
-        names(data.split) = split.data
+        names(data.split) = data.to.split
 
         ## re-arrange data to get the proper list of data per range
         logging::logdebug("Re-arranging data.")
@@ -175,7 +175,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             df.list = data.split[[range]]
 
             ## set main data sources: commits, mails, issues
-            for (data.source in split.data) {
+            for (data.source in data.to.split) {
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](df.list[[data.source]])
             }
