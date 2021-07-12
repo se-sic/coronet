@@ -875,31 +875,29 @@ get.range.bounds = function(range) {
 }
 
 
-#' Get a single bin from a range.
+#' Get the data from a data frame in a specific range.
 #'
-#' @param range The range object to convert
-#' @param data The data frame the bin should be cut to. It must have a 'date' column
-#' @return A data frame holding the bin corresponding to the given range
+#' @param range The range object that specifies the range
+#' @param data The data frame that the data shall be extracted from. It must have a 'date' column.
+#'
+#' @return A data frame holding the data corresponding to the given range
 get.data.from.range = function(range, data) {
-    bins = get.range.bounds(range)
-    bins.date = get.date.from.string(bins)
-    df.bins = findInterval(data[["date"]], bins.date, all.inside = FALSE)
+    range.bounds = get.range.bounds(range)
+    range.bounds.date = get.date.from.string(range.bounds)
+    df.bins = findInterval(data[["date"]], range.bounds.date, all.inside = FALSE)
 
-    ## split data by this bin; this gives a list of three dataframes, "0" contains the data before the range, "1" the
+    ## split data by this bin; this gives a list of three data frames, "0" contains the data before the range, "1" the
     ## data within the range and "2" the holds the data after the range
     split.data = split.data.by.bins(data, df.bins)
 
     ## look for the element with name "1", as we are interested in the data within the range
-    ## if there is no data, return an empty commit list´
+    ## if there is no data, return an empty data frame corresponding to the data we want to cut
     data.between = split.data["1"][[1]]
     if (is.null(data.between)) {
-        ## in order to get an empty commit list, get the data with all rows removed
+        ## in order to get an empty data frame, get the data with all rows removed
         empty.data = data[0, ]
         return(empty.data)
     } else {
         return(data.between)
     }
-
-    browser()
-    return(data.between)
 }

@@ -71,13 +71,13 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
 
 ## configuration parameters that do not reset the environment when changed
-CONF.KEYS.NO.RESET.ENVIRONMENT = c("commit.messages",
-                                   "pasta",
-                                   "synchronicity",
-                                   "synchronicity.time.window",
-                                   "mails.locked",
-                                   "commits.locked",
-                                   "issues.locked")
+CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
+                                         "pasta",
+                                         "synchronicity",
+                                         "synchronicity.time.window",
+                                         "commits.locked",
+                                         "issues.locked",
+                                         "mails.locked")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -130,7 +130,7 @@ ProjectData = R6::R6Class("ProjectData",
         pasta.mails = create.empty.pasta.list(), # data.frame
         pasta.commits = create.empty.pasta.list(), # data.frame
         ## timestamps of mail, issue and commit data
-        data.timestamps = data.frame(start = numeric(0), end = numeric(0)), #data.frame
+        data.timestamps = data.frame(start = numeric(0), end = numeric(0)), # data.frame
 
         ## * * commit filtering --------------------------------------------
 
@@ -692,16 +692,15 @@ ProjectData = R6::R6Class("ProjectData",
         #' Set a value of the project configuration and, in some cases (i.e. when the parameters allow it)
         #' resets the environment.
         #'
-        #' @param key the configuration option to set. The environment will not be reset, if and only if the entry to
-        #'            change affects a parameter controlling whether or not to read additional data sources, that is, if
-        #'            the parameter is one of the elements of the vector \code{CONF.KEYS.NO.RESET.ENVIRONMENT}.
+        #' @param entry the configuration option to set. The environment will not be reset, if and only if the entry to
+        #'              change affects a parameter controlling whether or not to read additional data sources, that is,
+        #'              if the parameter is one of the elements of the vector \code{CONF.PARAMETERS.NO.RESET.ENVIRONMENT}.
         #' @param value the new value that is assigned to the configuration parameter
         set.project.conf.entry = function(entry, value) {
             private$project.conf$update.value(entry, value)
 
-            ## only reset the environment when the 'entry' parameter is not one of the keys where it should not be
-            ## reset
-            if (!(entry %in% CONF.KEYS.NO.RESET.ENVIRONMENT)) {
+            ## only reset the environment when the 'entry' parameter is not one of the keys where it should not be reset
+            if (!(entry %in% CONF.PARAMETERS.NO.RESET.ENVIRONMENT)) {
                 self$reset.environment()
             }
         },
@@ -711,14 +710,14 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param updated.values the new values for the project configuration.
         #'                       If at least one of the configuration parameters is not an element of the vector
-        #'                       \code{CONF.KEYS.NO.RESET.ENVIRONMENT}, the environment will be reset.
-        #'                       [default = list()]
+        #'                       \code{CONF.PARAMETERS.NO.RESET.ENVIRONMENT}, the environment will be reset.
+        #'                       [default: list()]
         update.project.conf = function(updated.values = list()) {
             private$project.conf$update.values(updated.values = updated.values)
-            ## get the names of the parameters that are updated and then a logical vector indicating whether the
+            ## get the names of the parameters that are updated and a logical vector indicating whether the
             ## parameters cause a reset or not
-            keys = names(updated.values)
-            params.keep.environment = keys %in% CONF.KEYS.NO.RESET.ENVIRONMENT
+            params = names(updated.values)
+            params.keep.environment = params %in% CONF.PARAMETERS.NO.RESET.ENVIRONMENT
 
             ## only reset if at least one of them should cause a reset
             if(!all(params.keep.environment)) {
@@ -829,7 +828,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## however, don't do it if the range has been read from data as in this case there are no dates in the
                 ## range and thus, we cannot split
                 if (is(self, "RangeData") && !private$built.from.range.data.read) {
-                    ## get the one bin from the given range and split the data frame with that bin
+                    ## get the one bin from the given range and split the data.frame with that bin
                     commit.data = get.data.from.range(private$range, commit.data)
                 }
 
@@ -1139,7 +1138,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## however, don't do it if the range has been read from data as in this case there are no dates in the
                 ## range and thus, we cannot split
                 if (is(self, "RangeData") && !private$built.from.range.data.read) {
-                    ## get the one bin from the given range and split the data frame with that bin
+                    ## get the one bin from the given range and split the data.frame with that bin
                     mails.read = get.data.from.range(private$range, mails.read)
                 }
 
@@ -1260,7 +1259,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## however, don't do it if the range has been read from data as in this case there are no dates in the
                 ## range and thus, we cannot split
                 if (is(self, "RangeData") && !private$built.from.range.data.read) {
-                    ## get the one bin from the given range and split the data frame with that bin
+                    ## get the one bin from the given range and split the data.frame with that bin
 
                     private$issues = get.data.from.range(private$range, private$issues)
                 }
@@ -1311,7 +1310,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## make it a vector
             artifacts = unlist(artifacts)
 
-            ## empty vector if already character(0) or data is empty
+            ## empty vector if already 'character(0)' or data is empty
             if (is.null(artifacts) || length(artifacts) == 0) {
                 artifacts = character(0)
             }
@@ -1355,16 +1354,18 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'commits', 'mails', 'issues', 'commit.messages', 'authors', synchronicity', and 'pasta'.
+        #' 'commits', 'mails', 'issues', 'commits.filtered', 'issues.filtered', commit.messages', 'authors',
+        #' 'synchronicity', and 'pasta'.
         #' 'data.timestamps' are tested implicitly every time as they only contain
         #' the earliest and latest date of one data source.
         #'
         #' @param source.type character vector indicating which data sources should be checked for.
         #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
         #'                    - 'only.additional' filters only additional data sources and authors.
-        #'                    - 'only.filtered' filters only filtered data sources (i.e. commits and mails)
+        #'                    - 'only.filtered' filters only filtered data sources (i.e. filtered commits and filtered
+        #'                      mails).
         #'                    - 'all' or anything else filters all data sources.
-        #'                    [default: 'all']
+        #'                    [default: "all"]
         #'
         #' @return a vector containing all the names
         get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional", "only.filtered")) {
@@ -1394,7 +1395,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
             result = Filter(function (ds) {
                 ## the first condition actually cannot be false anymore since the data is initialized with an empty
-                ## data frame and never set to 'NULL' ever again; however, leave this in as a sanity check
+                ## data.frame and never set to 'NULL' ever again; however, leave this in as a sanity check
                 return(!is.null(private[[ds]]) && nrow(private[[ds]]) > 0)
             }, data.sources)
 
