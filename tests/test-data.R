@@ -174,17 +174,16 @@ test_that("Compare two ProjectData objects on non-empty data", {
     ## test 'equals' on commits with commit message titles
     ## At this point commit message data is already present and the getter (the setter respectively) merges the
     ## titles to the commits
+    proj.data.one$get.commits()
     proj.data.two$get.commits()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits with title).")
 
     ## test 'equals' on commits with commit messages and titles
     ## reset the commits of the first data object and this time load commit messages and compare this to the titles
-    proj.data.one$set.project.conf.entry("commit.messages", "title")
-    proj.data.one$set.commits(NULL)
+    proj.data.one$set.project.conf.entry("commit.messages", "message")
     proj.data.one$get.commits()
     expect_false(proj.data.one$equals(proj.data.two),
                  "Two non-identical ProjectData objects (commits with messages / titles).")
-
 })
 
 test_that("Compare two RangeData objects", {

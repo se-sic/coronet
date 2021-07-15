@@ -267,11 +267,18 @@ ProjectData = R6::R6Class("ProjectData",
                     commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
                 }
 
+                ## remove the columns that are present in case that the parameter was changed to from "messages" to
+                ## "none" or "title"
+                private$commits = private$commits[ , colnames(private$commits) != "message"]
+                private$commits = private$commits[ , colnames(private$commits) != "title"]
+
                 ## get a vector with the column names in the right order
                 col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+
                 ## merge them into the commit data
                 private$commits = merge(private$commits, commit.messages,
                                         by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+
                 ## adjust the column order
                 private$commits = private$commits[col.names]
             }
@@ -284,6 +291,11 @@ ProjectData = R6::R6Class("ProjectData",
                 if (private$project.conf$get.value("commit.messages") == "title") {
                     commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
                 }
+
+                ## remove the columns that are present in case that the parameter was changed to from "messages" to
+                ## "none" or "title"
+                private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "message"]
+                private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "title"]
 
                 ## get a vector with the column names in the right order
                 col.names = unique(c(colnames(private$commits.filtered), colnames(commit.messages)))
@@ -703,6 +715,11 @@ ProjectData = R6::R6Class("ProjectData",
             if (!(entry %in% CONF.PARAMETERS.NO.RESET.ENVIRONMENT)) {
                 self$reset.environment()
             }
+            ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
+            ## merge the data again if the parameter e.g. changed from "title" to "messages" or vice versa
+            if (entry == "commit.messages") {
+                private$update.commit.message.data()
+            }
         },
 
         #' Update the project configuration based on the given list
@@ -722,6 +739,12 @@ ProjectData = R6::R6Class("ProjectData",
             ## only reset if at least one of them should cause a reset
             if(!all(params.keep.environment)) {
                 self$reset.environment()
+            } else {
+                ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
+                ## merge the data again if the parameter e.g. changed from "title" to "messages" or vice versa
+                if(c("commit.messages") %in% params) {
+                    private$update.commit.message.data()
+                }
             }
         },
 
@@ -836,6 +859,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## the field 'commits' afterwards
                 self$set.commits(commit.data)
             }
+
             private$extract.timestamps(source = "commits")
 
             return(private$commits)
@@ -861,11 +885,11 @@ ProjectData = R6::R6Class("ProjectData",
                 if (!self$is.data.source.cached("commit.messages")) {
                     ## get data that has been cached before
                     self$get.commit.messages()
-                } else {
-                    ## update the commit message data
-                    private$update.commit.message.data()
                 }
 
+                ## update the commit message data in any case, since we want to merge the data again if the parameter
+                ## e.g. changed from "title" to "messages" or vice versa
+                private$update.commit.message.data()
             }
 
             ## add synchronicity data if wanted
