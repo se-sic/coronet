@@ -42,67 +42,52 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone()
 
-    expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects (clone).")
 
     ## Always change one data source in the one object, test for equality, change it in the
     ## second object, as well, and test for equality. It is always equal because when no data has been read, it is an
     ## empty table, the same as the data that is read. The only exception is the author data as this must not be empty
 
     proj.data.two$get.pasta()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (pasta).")
     proj.data.one$get.pasta()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (pasta).")
 
     proj.data.one$get.commits()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
     proj.data.two$get.commits()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
 
     proj.data.two$get.mails()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
     proj.data.one$get.mails()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
 
     proj.data.one$get.issues.filtered()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
     proj.data.two$get.issues.filtered()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
 
     proj.data.two$get.authors()
-
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
-
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (authors).")
     proj.data.one$get.authors()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (authors).")
 
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    proj.data.one$set.project.conf.entry("synchronicity", TRUE)
+    proj.data.one$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.one$get.synchronicity()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
+    proj.data.two$set.project.conf.entry("synchronicity", TRUE)
+    proj.data.two$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.two$get.synchronicity()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
 
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    proj.data.one$set.project.conf.entry("commit.messages", "message")
     proj.data.one$get.commit.messages()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
-
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+    proj.data.two$set.project.conf.entry("commit.messages", "message")
     proj.data.two$get.commit.messages()
-
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
 })
 
 test_that("Compare two ProjectData objects on non-empty data", {
@@ -114,71 +99,92 @@ test_that("Compare two ProjectData objects on non-empty data", {
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone()
 
-    expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects (clone).")
 
     ## always change one data source in the one object, test for equality, change it in the
     ## second object, as well, and test for equality.
 
     ## test 'equals' on pasta
     proj.data.two$get.pasta()
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (pasta).")
 
     proj.data.one$get.pasta()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (pasta).")
 
     ## test 'equals' on commits
     proj.data.one$get.commits()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.conf$update.value("commits.locked", TRUE)
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commits).")
     proj.conf$update.value("commits.locked", FALSE)
 
     proj.data.two$get.commits()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
 
     ## test 'equals' on mails
     proj.data.two$get.mails()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.conf$update.value("mails.locked", TRUE)
-    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (mails).")
     proj.conf$update.value("mails.locked", FALSE)
 
     proj.data.one$get.mails()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
 
     ## test 'equals' on (filtered) issues
     proj.data.one$get.issues.filtered()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.conf$update.value("issues.locked", TRUE)
-    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (issues.filtered).")
     proj.conf$update.value("issues.locked", FALSE)
 
     proj.data.two$get.issues.filtered()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
 
     ## test 'equals' on authors
     proj.data.two$get.authors()
-    expect_false(proj.data.one$equals(proj.data.two), "Two not non-identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (authors).")
 
     proj.data.one$get.authors()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (authors).")
 
     ## test 'equals' on synchronicity
+    proj.data.one$set.project.conf.entry("synchronicity", TRUE)
+    proj.data.one$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.one$get.synchronicity()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (synchronicity).")
 
+    proj.data.two$set.project.conf.entry("synchronicity", TRUE)
+    proj.data.two$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.two$get.synchronicity()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
 
     ## test 'equals' on commit messages
+    proj.data.one$set.project.conf.entry("commit.messages", "title")
     proj.data.one$get.commit.messages()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commit.messages).")
 
+    proj.data.two$set.project.conf.entry("commit.messages", "title")
     proj.data.two$get.commit.messages()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+
+    ## test 'equals' on commits with commit message titles
+    ## At this point commit message data is already present and the getter (the setter respectively) merges the
+    ## titles to the commits
+    proj.data.two$get.commits()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits with title).")
+
+    ## test 'equals' on commits with commit messages and titles
+    ## reset the commits of the first data object and this time load commit messages and compare this to the titles
+    proj.data.one$set.project.conf.entry("commit.messages", "title")
+    proj.data.one$set.commits(NULL)
+    proj.data.one$get.commits()
+    expect_false(proj.data.one$equals(proj.data.two),
+                 "Two non-identical ProjectData objects (commits with messages / titles).")
+
 })
 
 test_that("Compare two RangeData objects", {

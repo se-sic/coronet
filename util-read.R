@@ -659,7 +659,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     file = file.path(data.path, file.name)
 
     ## handle the case that the synchronicity data is empty
-    if (!file.exists(file)) {
+    if (!file.exists(file) || file.info(file)$size == 0) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.synchronicity.list())
