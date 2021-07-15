@@ -357,6 +357,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
+        issue.data = issue.data[issue.data["author.name"] != "deleted user" & issue.data["author.name"] != "", ] # filter deleted user
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 

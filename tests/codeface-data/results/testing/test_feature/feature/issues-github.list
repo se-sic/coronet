@@ -28,3 +28,5 @@
 "4";"Example pull request 4";"[""pull request"", ""enhancement""]";"open";"[]";"2016-07-12 16:02:02";"";"[]";"commit_added";"Björn";"bjoern@example.org";"2016-07-12 15:58:59";"72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0";""""""
 "4";"Example pull request 4";"[""pull request"", ""enhancement""]";"open";"[]";"2016-07-12 16:02:02";"";"[]";"created";"Olaf";"olaf@example.org";"2016-07-12 16:02:02";"open";"[]"
 "4";"Example pull request 4";"[""pull request"", ""enhancement""]";"open";"[]";"2016-07-12 16:02:02";"";"[]";"commented";"Olaf";"olaf@example.org";"2016-07-12 16:02:02";"open";"[]"
+"99";"Deleted issue";"[""pull request"", ""enhancement""]";"open";"[]";"2016-09-12 16:02:02";"";"[]";"created";"deleted user";"ghost@github.com";"2016-09-12 16:02:02";"open";"[]"
+"99";"Deleted issue";"[""pull request"", ""enhancement""]";"open";"[]";"2016-09-12 16:02:02";"";"[]";"commented";"deleted user";"ghost@github.com";"2016-09-12 16:02:02";"open";"[]"
