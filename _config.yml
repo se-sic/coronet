@@ -29,4 +29,5 @@ include:
   - README.md
   - NEWS.md
   - logo/README.md
+  - tests/README.md
   - .github

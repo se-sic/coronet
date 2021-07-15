@@ -122,7 +122,7 @@ The current build status is as follows:
 * Do not include issue numbers in the PR title, but rather in the PR message body.
 * Base your changes on the current `dev` branch and open your PR against the `dev` branch.
 * Follow the [style conventions](#style-conventions).
-* Document new code and provide proper tests.
+* Document new code and provide proper tests (for a detailed description of the test projects see the [test-README](tests/README.md)).
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
 * Add yourself to the copyright headers in the files you changed/added.
 * End all files with a newline.
