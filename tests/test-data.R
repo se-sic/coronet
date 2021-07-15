@@ -117,8 +117,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
     expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects.")
 
     ## always change one data source in the one object, test for equality, change it in the
-    ## second object, as well, and test for equality. It is always equal because when no data has been read, it is an
-    ## empty table, the same as the data that is read. The only exception is the author data as this must not be empty
+    ## second object, as well, and test for equality.
 
     ## test 'equals' on pasta
     proj.data.two$get.pasta()
@@ -143,7 +142,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.conf$update.value("mails.locked", TRUE)
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects.")
     proj.conf$update.value("mails.locked", FALSE)
 
     proj.data.one$get.mails()
@@ -154,7 +153,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.conf$update.value("issues.locked", TRUE)
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects.")
     proj.conf$update.value("issues.locked", FALSE)
 
     proj.data.two$get.issues.filtered()
@@ -162,7 +161,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
 
     ## test 'equals' on authors
     proj.data.two$get.authors()
-    expect_false(proj.data.one$equals(proj.data.two), "Two not identical ProjectData objects.")
+    expect_false(proj.data.one$equals(proj.data.two), "Two not non-identical ProjectData objects.")
 
     proj.data.one$get.authors()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects.")
