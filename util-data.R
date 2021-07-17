@@ -714,11 +714,22 @@ ProjectData = R6::R6Class("ProjectData",
             ## only reset the environment when the 'entry' parameter is not one of the keys where it should not be reset
             if (!(entry %in% CONF.PARAMETERS.NO.RESET.ENVIRONMENT)) {
                 self$reset.environment()
-            }
-            ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
-            ## merge the data again if the parameter e.g. changed from "title" to "messages" or vice versa
-            if (entry == "commit.messages") {
-                private$update.commit.message.data()
+            } else {
+                ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
+                ## merge the data again if the parameter e.g. changed from "title" to "messages" or vice versa
+                if (entry == "commit.messages") {
+                    private$update.commit.message.data()
+                }
+                ## if the 'pasta' parameter has been changed, update the pasta data, since we want to
+                ## merge the data again if the parameter changed
+                if (entry == "pasta") {
+                    private$update.pasta.data()
+                }
+                ## if the 'synchronicity' or 'synchronicity.time.window' parameter has been changed, update the
+                ## synchronicity data, since we want to merge the data again if the parameter changed
+                if (entry == "synchronicity" || entry == "synchronicity.time.window") {
+                    private$update.synchronicity.data()
+                }
             }
         },
 
@@ -742,8 +753,18 @@ ProjectData = R6::R6Class("ProjectData",
             } else {
                 ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
                 ## merge the data again if the parameter e.g. changed from "title" to "messages" or vice versa
-                if(c("commit.messages") %in% params) {
+                if (c("commit.messages") %in% params) {
                     private$update.commit.message.data()
+                }
+                ## if the 'pasta' parameter has been changed, update the pasta data, since we want to
+                ## merge the data again if the parameter changed
+                if (c("pasta") %in% params) {
+                    private$update.pasta.data()
+                }
+                ## if the 'synchronicity' or 'synchronicity.time.window' parameter has been changed, update the
+                ## synchronicity data, since we want to merge the data again if the parameter changed
+                if (c("synchronicity") %in% params || c("synchronicity.time.window") %in% params) {
+                    private$update.synchronicity.data()
                 }
             }
         },
@@ -885,11 +906,9 @@ ProjectData = R6::R6Class("ProjectData",
                 if (!self$is.data.source.cached("commit.messages")) {
                     ## get data that has been cached before
                     self$get.commit.messages()
+                } else {
+                    private$update.commit.message.data()
                 }
-
-                ## update the commit message data in any case, since we want to merge the data again if the parameter
-                ## e.g. changed from "title" to "messages" or vice versa
-                private$update.commit.message.data()
             }
 
             ## add synchronicity data if wanted
