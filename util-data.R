@@ -754,6 +754,12 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if the 'synchronicity' or 'synchronicity.time.window' parameter has been changed, update the
                 ## synchronicity data, since we want to merge the data again if the parameter changed
                 if (entry == "synchronicity" || entry == "synchronicity.time.window") {
+                    ## re-read synchronicity data if the time window is changed and the data is cached because the
+                    ## change invalidates the cache
+                    if (entry == "synchronicity.time.window" && self$is.data.source.cached("synchronicity")) {
+                        private$set.synchronicity(NULL)
+                        private$get.synchronicity()
+                    }
                     private$update.synchronicity.data()
                 }
             }
@@ -790,6 +796,12 @@ ProjectData = R6::R6Class("ProjectData",
                 ## if the 'synchronicity' or 'synchronicity.time.window' parameter has been changed, update the
                 ## synchronicity data, since we want to merge the data again if the parameter changed
                 if (c("synchronicity") %in% params || c("synchronicity.time.window") %in% params) {
+                    ## re-read synchronicity data if the time window is changed and the data is cached because the
+                    ## change invalidates the cache
+                    if (c("synchronicity.time.window") %in% params && self$is.data.source.cached("synchronicity")) {
+                        private$set.synchronicity(NULL)
+                        private$get.synchronicity()
+                    }
                     private$update.synchronicity.data()
                 }
             }
