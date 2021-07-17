@@ -258,52 +258,58 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Merging commit messages into commit data.")
 
             if (self$is.data.source.cached("commits")) {
-                ## get commit messages
-                commit.messages = private$commit.messages
-
-                ## now there are only three columns left: commit.id, title, message
-                ## check whether to include only title or also the messages
-                if (private$project.conf$get.value("commit.messages") == "title") {
-                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
-                }
-
                 ## remove the columns that are present in case that the parameter was changed to from "messages" to
                 ## "none" or "title"
                 private$commits = private$commits[ , colnames(private$commits) != "message"]
                 private$commits = private$commits[ , colnames(private$commits) != "title"]
 
-                ## get a vector with the column names in the right order
-                col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+                ## when 'none' is selected, we are ready here, else merge the possibly new data to the cleaned commits
+                if (private$project.conf$get.value("commit.messages") != "none") {
+                    ## get commit messages
+                    commit.messages = private$commit.messages
 
-                ## merge them into the commit data
-                private$commits = merge(private$commits, commit.messages,
-                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                    ## now there are only three columns left: commit.id, title, message
+                    ## check whether to include only title or also the messages
+                    if (private$project.conf$get.value("commit.messages") == "title") {
+                        commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                    }
 
-                ## adjust the column order
-                private$commits = private$commits[col.names]
+                    ## get a vector with the column names in the right order
+                    col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+
+                    ## merge them into the commit data
+                    private$commits = merge(private$commits, commit.messages,
+                                            by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+
+                    ## adjust the column order
+                    private$commits = private$commits[col.names]
+                }
             }
             if (self$is.data.source.cached("commits.filtered")) {
-                ## get commit messages
-                commit.messages = private$commit.messages
-
-                ## now there are only three columns left: commit.id, title, message
-                ## check whether to include only title or also the messages
-                if (private$project.conf$get.value("commit.messages") == "title") {
-                    commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
-                }
-
                 ## remove the columns that are present in case that the parameter was changed to from "messages" to
                 ## "none" or "title"
                 private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "message"]
                 private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "title"]
 
-                ## get a vector with the column names in the right order
-                col.names = unique(c(colnames(private$commits.filtered), colnames(commit.messages)))
-                ## merge them into the commit data
-                private$commits.filtered = merge(private$commits.filtered, commit.messages,
-                                        by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
-                ## adjust the column order
-                private$commits.filtered = private$commits.filtered[col.names]
+                ## when 'none' is selected, we are ready here, else merge the possibly new data to the cleaned commits
+                if (private$project.conf$get.value("commit.messages") != "none") {
+                    ## get commit messages
+                    commit.messages = private$commit.messages
+
+                    ## now there are only three columns left: commit.id, title, message
+                    ## check whether to include only title or also the messages
+                    if (private$project.conf$get.value("commit.messages") == "title") {
+                        commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                    }
+
+                    ## get a vector with the column names in the right order
+                    col.names = unique(c(colnames(private$commits.filtered), colnames(commit.messages)))
+                    ## merge them into the commit data
+                    private$commits.filtered = merge(private$commits.filtered, commit.messages,
+                                            by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                    ## adjust the column order
+                    private$commits.filtered = private$commits.filtered[col.names]
+                }
             }
 
             ## get the caller function as a string
@@ -420,37 +426,45 @@ ProjectData = R6::R6Class("ProjectData",
                 private$commits["pasta"] = NULL
                 private$commits["revision.set.id"] = NULL
 
-                ## merge PaStA data
-                private$commits = merge(private$commits, private$pasta.commits,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$commits = merge(private$commits, private$pasta.commits,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
-                ## remove duplicated revision set ids
-                private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                    ## remove duplicated revision set ids
+                    private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
             }
+
             if (self$is.data.source.cached("commits.filtered")) {
 
                 ## remove previous PaStA data
                 private$commits.filtered["pasta"] = NULL
                 private$commits.filtered["revision.set.id"] = NULL
 
-                ## merge PaStA data
-                private$commits.filtered = merge(private$commits.filtered, private$pasta.commits,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$commits.filtered = merge(private$commits.filtered, private$pasta.commits,
+                                            by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]], decreasing = FALSE), ]
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]], decreasing = FALSE), ]
 
-                ## remove duplicated revision set ids
-                private$commits.filtered[["revision.set.id"]] = sapply(private$commits.filtered[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                    ## remove duplicated revision set ids
+                    private$commits.filtered[["revision.set.id"]] = sapply(private$commits.filtered[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
             }
-
 
             logging::logdebug("update.pasta.commit.data: finished.")
         },
@@ -467,17 +481,21 @@ ProjectData = R6::R6Class("ProjectData",
                 private$mails["pasta"] = NULL
                 private$mails["revision.set.id"] = NULL
 
-                ## merge PaStA data
-                private$mails = merge(private$mails, private$pasta.mails,
-                                      by = "message.id", all.x = TRUE, sort = FALSE)
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$mails = merge(private$mails, private$pasta.mails,
+                                          by = "message.id", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
+                    ## sort by date again because 'merge' disturbs the order
+                    private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
 
-                ## remove duplicated revision set ids
-                private$mails[["revision.set.id"]] = sapply(private$mails[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                    ## remove duplicated revision set ids
+                    private$mails[["revision.set.id"]] = sapply(private$mails[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
             }
 
             logging::logdebug("update.pasta.mail.data: finished.")
@@ -537,24 +555,32 @@ ProjectData = R6::R6Class("ProjectData",
                 ## remove previous synchronicity data
                 private$commits["synchronicity"] = NULL
 
-                ## merge synchronicity data
-                private$commits = merge(private$commits, private$synchronicity,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
+                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
+                ## which case we want to just remove the columns above)
+                if (private$project.conf$get.value("synchronicity")) {
+                    ## merge synchronicity data
+                    private$commits = merge(private$commits, private$synchronicity,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+                }
             }
             if (self$is.data.source.cached("commits.filtered")) {
                 ## remove previous synchronicity data
                 private$commits.filtered["synchronicity"] = NULL
 
-                ## merge synchronicity data
-                private$commits.filtered = merge(private$commits.filtered, private$synchronicity,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
+                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
+                ## which case we want to just remove the columns above)
+                if (private$project.conf$get.value("synchronicity")) {
+                    ## merge synchronicity data
+                    private$commits.filtered = merge(private$commits.filtered, private$synchronicity,
+                                            by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]],
-                                                                          decreasing = FALSE), ]
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]],
+                                                                              decreasing = FALSE), ]
+                }
             }
 
             ## get the caller function as a string
