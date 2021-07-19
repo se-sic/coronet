@@ -466,6 +466,8 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                                                   "project.cumulative", "project.all.ranges",
                                                                   "complete"),
                                             default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.count"
     }
@@ -498,6 +500,8 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
         name = "pull.requests.commented.count"
     }
@@ -530,6 +534,8 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.creation.count"
     }
@@ -561,6 +567,8 @@ add.vertex.attribute.issue.comment.count = function(list.of.networks, project.da
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.comment.count"
     }
