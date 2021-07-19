@@ -15,6 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -603,6 +604,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' @param value the new value that is assigned to the configuration parameter
         set.network.conf.entry = function(entry, value) {
             private$network.conf$update.value(entry, value)
+            self$reset.environment()
         },
 
         #' Update the network configuration based on the given list
