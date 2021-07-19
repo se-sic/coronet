@@ -759,8 +759,9 @@ ProjectData = R6::R6Class("ProjectData",
                     if (entry == "synchronicity.time.window" && self$is.data.source.cached("synchronicity")) {
                         self$set.synchronicity(NULL)
                         self$get.synchronicity()
+                    } else {
+                        private$update.synchronicity.data()
                     }
-                    private$update.synchronicity.data()
                 }
             }
         },
@@ -801,8 +802,9 @@ ProjectData = R6::R6Class("ProjectData",
                     if (c("synchronicity.time.window") %in% params && self$is.data.source.cached("synchronicity")) {
                         self$set.synchronicity(NULL)
                         self$get.synchronicity()
+                    } else {
+                        private$update.synchronicity.data()
                     }
-                    private$update.synchronicity.data()
                 }
             }
         },
