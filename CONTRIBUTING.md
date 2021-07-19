@@ -125,6 +125,7 @@ The current build status is as follows:
 * Document new code and provide proper tests (for a detailed description of the test projects see the [test-README](tests/README.md)).
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
 * Add yourself to the copyright headers in the files you changed/added.
+* Check whether the showcase file `showcase.R` needs to be adjusted to your changes. If so, update the showcase file accordingly.
 * End all files with a newline.
 * Merge policy:
   * Tests must run successfully.
