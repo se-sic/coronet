@@ -298,14 +298,20 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Motif identification ----------------------------------------------------
 
+# ## as the used motifs (MOTIFS.LINE, MOTIFS.TRIANGLE.NEGATIVE, MOTIFS.TRIANGLE.POSITIVE,
+# ## MOTIFS.SQUARE.NEGATIVE, MOTIFS.SQUARE.POSITIVE) are defined as undirected networks,
+# ## these motifs can only be identified on undirected networks
+# y$update.network.conf(updated.values = list(author.directed = FALSE))
+#
 # g = save.and.load("g", "y.multi.dat", skip = FALSE, if.not.found = function() {
 #     g = y$get.multi.network()
 #     return(g)
 # })
-# g.motifs = motifs.count(network = g, remove.duplicates = TRUE,
-#                         motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
-#                         motif.communicating = MOTIFS.LINE,
-#                         motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE)
+# g.motifs = motifs.count(network = g,
+#                         motifs = list(motif.collaborating = MOTIFS.TRIANGLE.NEGATIVE,
+#                                       motif.communicating = MOTIFS.LINE,
+#                                       motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE),
+#                         remove.duplicates = TRUE, raw.data = FALSE)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
