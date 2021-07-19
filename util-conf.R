@@ -962,7 +962,7 @@ generate.range.directory.names = function(ranges) {
     directory.names = mapply(range.numbers, ranges, SIMPLIFY = FALSE, FUN = function(range.number, range) {
         revisions = strsplit(range, "-")[[1]]
 
-        if (length(revisions[1]) == 40) {
+        if (nchar(revisions[1]) == 40) {
             revisions[1] = substr(revisions[1], 0, 6)
             revisions[2] = substr(revisions[2], 0, 6)
         }
