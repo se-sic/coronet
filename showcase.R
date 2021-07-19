@@ -122,7 +122,8 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 # ## save binary objects
 # net = x$get.author.network()
-# save(net, file = sprintf("busybox_%s.network", x$get.network.conf.variable(var.name = "author.relation")))
+# save(net, file = sprintf("busybox_%s.network", x$get.network.conf.entry("author.relation")))
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Calculate EDCPTD centrality ---------------------------------------------
@@ -157,9 +158,9 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 
 ## * Network construction --------------------------------------------------
 
-# y$update.network.conf(updated.values = list(edge.attributes = list("date")))
+# y$update.network.conf(updated.values = list(edge.attributes = c("date")))
 # y$get.author.network()
-# y$update.network.conf(updated.values = list(edge.attributes = list("hash")))
+# y$update.network.conf(updated.values = list(edge.attributes = c("hash")))
 # y$get.artifact.network()
 # y$get.networks()
 # y$update.network.conf(updated.values = list(author.only.committers = FALSE, author.directed = TRUE))
@@ -372,14 +373,14 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # ## test functions for single range
 # author.class = get.author.class.by.type(network = network, type = "network.degree")
 # get.author.class.by.type(network = network, type = "network.eigen")
-# get.author.class.by.type(data = range.data, type = "commit.count")
-# get.author.class.by.type(data = range.data, type = "loc.count")
+# get.author.class.by.type(proj.data = range.data, type = "commit.count")
+# get.author.class.by.type(proj.data = range.data, type = "loc.count")
 
 # ## test functions for single range with "empty" range data (network without edges)
 # author.class.empty.range = get.author.class.by.type(network = empty.network, type = "network.degree")
 # get.author.class.by.type(network = empty.network, type = "network.eigen")
-# get.author.class.by.type(data = empty.range.data, type = "commit.count")
-# get.author.class.by.type(data = empty.range.data, type = "loc.count")
+# get.author.class.by.type(proj.data = empty.range.data, type = "commit.count")
+# get.author.class.by.type(proj.data = empty.range.data, type = "loc.count")
 
 # ## test function for mutliple ranges (evolution)
 # author.class.overview = get.author.class.overview(network.list = network.list, type = "network.degree")
@@ -391,18 +392,6 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 # longterm.core = get.recurring.authors(author.class.overview = author.class.overview, class = "core")
 #
 # role.stability = get.role.stability(author.class.overview = author.class.overview)
-#
-# author.class.activity = get.author.class.activity(range.data = range.data, author.class = author.class,
-#                                                   activity.measure = "commit.count")
-# author.class.activity.empty = get.author.class.activity(range.data = empty.range.data,
-#                                                        author.class = author.class.empty.range, activity.measure = "loc.count")
-#
-# author.class.activity.overview = get.author.class.activity.overview(range.data.list = range.list,
-#                                                                     author.class.overview = author.class.overview,
-#                                                                     activity.measure = "commit.count")
-# get.author.class.activity.overview(range.data.list = range.list,
-#                                       author.class.overview = author.class.overview,
-#                                       activity.measure = "commit.count", longterm.cores = "Erik Andersen")
 #
 # calculate.cohens.kappa(author.classification.list = author.class.overview,
 #                        other.author.classification.list = author.class.overview.loc)
