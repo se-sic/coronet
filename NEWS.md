@@ -34,10 +34,14 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
-- Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, de091a5e6c70fea5161276d6585bea916178e4de)
+- Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, de091a5e6c70fea5161276d6585bea916178e4de, fc4c086bf2691b5bb37614d21c7690f53e52f29e)
 - Adjust the functions `update.commit.message.data()`, `update.pasta.data()`, and `update.synchronicity.data()`: no warning is being printed anymore when being called by the corresponding cleanup function (PR #199, e5c60a50f8fa0f5bf9d362fdf49845d58652dd75)
 - Fix issue where the data path on `RangeData` objects was wrong in special cases. Introduce the (private) flag `built.from.range.data.read` that is set according to how the object has been created (splitting manually or reading codeface ranges) and calculating the data path accordingly (PR #199, cce95279692b8d29ae464e12cfe48e923f417ac7, 917bf64e7a439c6a33b922e04929030479722bd1, 169c034c2364fc56507573e6f2316cc432631ba6). Also add tests for this new behaviour (PR #199, ef5bac63580d171dd7f68da6c4ec7279dcd400b5, 3aa8e7de4b847924afa350a1fc4a53a7f8fa86e1, d454e5a3468d765247ed4827e708b8576e54f87c, 66ad1272148e3d98f9508ff0e83180d967b6abaa)
 - Make splitting no longer modify the original `ProjectConf`, instead create a copy (e82d056b7a67288addb5989ded1e8c921d5ed0a4)
+- Fix and update outdated examples in the showcase file (473c09458741c8d24e7025646e70f8e052b0a9c, 287fbfa2f892e586c4955a408d914590573f5e83, 0a5cce4c6cb2813981e6cb05b65fbaf0e51ef3af, PR #207)
+- Fix generation of Codeface range directory names from commit hashes (5c90d1cbb6f8ca9b217b99b7a7ecc687d6c0d0e1)
+- Fix plotting an empty network via `plot.network` (03f986d760da8f8fec0e7aa530672736ea3068c7)
+
 
 ## 3.7
 
