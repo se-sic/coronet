@@ -348,15 +348,17 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
 
-    ## fix all dates to be after the creation date.
-    ## violations can happen for "commit_added" events if the commit was made before the PR was opened
-    ## the original date for "commit_added" events is stored in "event.info.2" in any case
-    commit.added.events = issue.data[["event.name"]] == "commit_added"
-    issue.data[commit.added.events, "event.info.2"] = get.date.string(issue.data[commit.added.events, "date"])
-    commit.added.events.before.creation = commit.added.events &
-        !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
-    issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
-    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+    if (nrow(issue.data) > 0) {
+        ## fix all dates to be after the creation date
+        ## violations can happen for "commit_added" events if the commit was made before the PR was opened
+        ## the original date for "commit_added" events is stored in "event.info.2" in any case
+        commit.added.events = issue.data[["event.name"]] == "commit_added"
+        issue.data[commit.added.events, "event.info.2"] = get.date.string(issue.data[commit.added.events, "date"])
+        commit.added.events.before.creation = commit.added.events &
+            !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
+        issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
+        issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+    }
 
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
@@ -657,7 +659,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     file = file.path(data.path, file.name)
 
     ## handle the case that the synchronicity data is empty
-    if (!file.exists(file)) {
+    if (!file.exists(file) || file.info(file)$size == 0) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.synchronicity.list())

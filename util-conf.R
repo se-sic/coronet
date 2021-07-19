@@ -359,6 +359,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            commits.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             commit.messages = list(
                 default = "none",
                 type = "character",
@@ -377,7 +383,19 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c("jira", "github"),
                 allowed.number = Inf
             ),
+            issues.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             mails.filter.patchstack.mails = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            mails.locked = list(
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),

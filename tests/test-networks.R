@@ -25,6 +25,7 @@ context("Basic network-building functionality.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
+CASESTUDY_EMPTY = "test_empty"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 ## use only when debugging this file independently
@@ -180,7 +181,7 @@ test_that("Extraction of sub-networks", {
 test_that("Construction of networks without data", {
 
     ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", TRUE)
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
     net.conf = NetworkConf$new()
@@ -414,7 +415,7 @@ test_that("Construction of networks from empty edge list (without vertices)", {
 test_that("Addition of edge attributes regardless of empty data", {
 
     ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$clear.edge.attributes() # remove all but the mandatory edge attributes

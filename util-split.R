@@ -32,7 +32,6 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("lubridate") # for date conversion
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
 
@@ -63,26 +62,35 @@ requireNamespace("lubridate") # for date conversion
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
-    ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
-    split.data = names(data)
-    names(split.data) = split.data
-
-    ## initialize additional data sources to avoid multiple redundant initalizations later
-    additional.data = list(
-        authors = project.data$get.authors(),
-        commit.messages = project.data$get.commit.messages(),
-        pasta = project.data$get.pasta(),
-        synchronicity = project.data$get.synchronicity()
-    )
-    additional.data.sources = names(additional.data)
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(split.basis %in% project.data$get.cached.data.sources())) {
+        function.name = paste0("get.", split.basis)
+        project.data[[function.name]]()
+    }
+
+    ## get actual raw data
+    data.to.split = project.data$get.cached.data.sources("only.main")
+
+    data = lapply(data.to.split, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = paste0("get.", ds)
+        return(project.data[[function.name]]())
+    })
+    names(data) = data.to.split
+
+    ## load available additional data sources
+    additional.data.sources = project.data$get.cached.data.sources("only.additional")
+    additional.data = lapply(additional.data.sources, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = paste0("get.", ds)
+        return(project.data[[function.name]]())
+    })
+    names(additional.data) = additional.data.sources
+
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -133,9 +141,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     }
 
     if (!sliding.window) {
-
         ## split data
-        data.split = parallel::mclapply(split.data, function(df.name) {
+        data.split = parallel::mclapply(data.to.split, function(df.name) {
             logging::logdebug("Splitting %s.", df.name)
             ## identify bins for data
             df = data[[df.name]]
@@ -146,6 +153,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
             return(df.split)
         })
+        ## set the names to the data sources obtained earlier
+        names(data.split) = data.to.split
 
         ## re-arrange data to get the proper list of data per range
         logging::logdebug("Re-arranging data.")
@@ -157,6 +166,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
         ## construct RangeData objects
         logging::logdebug("Constructing RangeData objects.")
+
         cf.data = parallel::mclapply(bins.ranges, function(range) {
             logging::logdebug("Constructing data for range %s.", range)
             ## construct object for current range
@@ -165,7 +175,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             df.list = data.split[[range]]
 
             ## set main data sources: commits, mails, issues
-            for (data.source in split.data) {
+            for (data.source in data.to.split) {
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](df.list[[data.source]])
             }
@@ -247,11 +257,19 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
+    data.sources = project.data$get.cached.data.sources("only.main")
+    data = lapply(data.sources, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = paste0("get.", ds)
+        return(project.data[[function.name]]())
+    })
+    names(data) = data.sources
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(activity.type %in% project.data$get.cached.data.sources())) {
+        function.name = paste0("get.", activity.type)
+        project.data[[function.name]]()
+    }
 
     ## define ID columns for mails and commits
     id.column = list(
@@ -381,6 +399,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         last.regular.range = cf.data[[length(cf.data)]]
         last.sliding.range = cf.data[[length(cf.data) - 1]]
         get.activity.data = paste0("get.", activity.type)
+
         last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         last.sliding.range.ids = (last.sliding.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
