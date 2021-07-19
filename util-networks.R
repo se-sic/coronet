@@ -1370,7 +1370,7 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
         default.value = 0
         ## set the right class for the default value
         class(default.value) = attributes[[attr.name]]
-        ## add the edge attribute to the network with the proper class
+        ## add the new attribute to the network with the proper class
         network = attribute.function(network, attr.name, value = default.value)
         ## fill the new attribute with NA values
         network = attribute.function(network, attr.name, value = NA)
