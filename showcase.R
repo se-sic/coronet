@@ -135,14 +135,15 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Calculate EDCPTD centrality ---------------------------------------------
 
-## get author networks for each relation
-author.networks = get.author.networks.for.multiple.relations(x, c("cochange", "mail", "issue"))
+# ## get author networks for each relation
+# author.networks = get.author.networks.for.multiple.relations(x, c("cochange", "mail", "issue"))
+#
+# ## create fourth-order tensor
+# fourth.order.tensor = FourthOrderTensor$new(author.networks)
+#
+# ## calculate EDCPTD scores
+# edcptd.scores = calculate.EDCPTD.centrality(fourth.order.tensor)
 
-## create fourth-order tensor
-fourth.order.tensor = FourthOrderTensor$new(author.networks)
-
-## calculate EDCPTD scores
-edcptd.scores = calculate.EDCPTD.centrality(fourth.order.tensor)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Range-level data --------------------------------------------------------

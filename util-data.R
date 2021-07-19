@@ -710,7 +710,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param project.conf the new project configuration.
         #' @param reset.environment parameter to determine whether the environment
-        #'                          has to be reset or not
+        #'                          has to be reset or not [default: FALSE]
         set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf",
                                                                  "ProjectData$set.project.conf")
@@ -720,7 +720,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        #' Get  a value of the project configuration
+        #' Get a value of the project configuration.
         #'
         #' @return the value of the given entry name
         get.project.conf.entry = function(entry) {
@@ -766,7 +766,7 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Update the project configuration based on the given list
-        #' of values and, in some cases (i.e. when the parameters allow it), reset the environment afterwards
+        #' of values and, in some cases (i.e. when the parameters allow it), reset the environment afterwards.
         #'
         #' @param updated.values the new values for the project configuration.
         #'                       If at least one of the configuration parameters is not an element of the vector
