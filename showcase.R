@@ -16,10 +16,12 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -93,11 +95,16 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 ## * Data retrieval --------------------------------------------------------
 
 # x.data$get.commits()
+# x.data$update.project.conf(updated.values = list(commit.messages = "title"))
+# x.data$get.commit.messages()
+# x.data$get.commits()
+# x.data$update.project.conf(updated.values = list(synchronicity = TRUE, synchronicity.time.window = 1))
 # x.data$get.synchronicity()
 # x.data$group.artifacts.by.data.column("commits", "author.name")
 # x.data$get.commits.filtered()
 # x.data$get.commits.filtered.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
 # x.data$get.mails()
+# x.data$get.issues()
 # x.data$get.authors()
 # x.data$get.data.path()
 # x.data$group.artifacts.by.data.column("mails", "author.name")
@@ -146,11 +153,16 @@ y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
 ## * Data retrieval --------------------------------------------------------
 
 # y.data$get.commits()
+# y.data$update.project.conf(updated.values = list(commit.messages = "message"))
+# y.data$get.commit.messages()
+# y.data$get.commits()
+# y.data$update.project.conf(updated.values = list(synchronicity = TRUE, synchronicity.time.window = 10))
 # y.data$get.synchronicity()
 # y.data$group.artifacts.by.data.column("commits", "author.name")
 # y.data$get.commits.filtered()
 # y.data$get.commits.filtered.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
 # y.data$get.mails()
+# y.data$get.issues()
 # y.data$get.authors()
 # y.data$get.data.path()
 # y.data$group.artifacts.by.data.column("mails", "author.name")
