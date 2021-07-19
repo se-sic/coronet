@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs-uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -757,8 +757,8 @@ ProjectData = R6::R6Class("ProjectData",
                     ## re-read synchronicity data if the time window is changed and the data is cached because the
                     ## change invalidates the cache
                     if (entry == "synchronicity.time.window" && self$is.data.source.cached("synchronicity")) {
-                        private$set.synchronicity(NULL)
-                        private$get.synchronicity()
+                        self$set.synchronicity(NULL)
+                        self$get.synchronicity()
                     }
                     private$update.synchronicity.data()
                 }
@@ -799,8 +799,8 @@ ProjectData = R6::R6Class("ProjectData",
                     ## re-read synchronicity data if the time window is changed and the data is cached because the
                     ## change invalidates the cache
                     if (c("synchronicity.time.window") %in% params && self$is.data.source.cached("synchronicity")) {
-                        private$set.synchronicity(NULL)
-                        private$get.synchronicity()
+                        self$set.synchronicity(NULL)
+                        self$get.synchronicity()
                     }
                     private$update.synchronicity.data()
                 }
