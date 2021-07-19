@@ -18,6 +18,7 @@
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
@@ -168,7 +169,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param allowed Indicator whether to print information on allowed values [default: FALSE]
         print = function(allowed = FALSE) {
-            logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
+            logging::loginfo("Configuration:\n%s", self$get.conf.as.string(allowed))
         },
 
         ## * * updating ----------------------------------------------------
