@@ -1581,8 +1581,9 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 #' Calculate the data sources of a network based on its edge relations.
 #'
 #' @param network the network with the relations to be extracted
+#'
 #' @return a vector with all data.sources from the network; an element is set to \code{NA} if the network contains an
-#' empty relation, i.e. \code{character(0)}
+#'         empty relation, i.e. \code{character(0)}
 get.data.sources.from.relations = function(network) {
     ## get all relations in the network
     data.sources = unique(igraph::E(network)$relation)

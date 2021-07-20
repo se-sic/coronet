@@ -231,7 +231,7 @@ There will be another checklist for you when you open an actual pull request pro
           }
           ```
     * For all other stuff, look at the source code and get inspired.
-* Also **add tests** to the test suite for each new functionality you add!
+* Also **add tests** to the test suite for each new functionality you add! Also update the showcase file to exemplarily demonstrate how the new functionality can be used.
 * Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 
 

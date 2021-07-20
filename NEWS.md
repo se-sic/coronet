@@ -11,9 +11,8 @@
 - Add functionality to read and process commit messages in order to merge them to the commit data (see issue #180). Three values are available for the new attribute `commit.messages` in `ProjectConf`: `none`, `title` and `messages` (PR #193, 85b1d0572c0fb9f4c062bceb1363b0398f98b85f, fdc414ade1a640f533e809a25cfe012e42b3cffa, 43e1894998e18faff3a65114fa65ee54e1d2f66e)
 - Add functions `cleanup.commit.message.data` and `cleanup.synchronicity.data` to remove commit hashes that are not any more present in the commit data from the commit message data or synchronicity data (PR #193, 98e83b037ecc88d9a29e8e4ca93598a9978e85a2)
 - Add function `metrics.is.smallworld` to the metrics module in order to unify checks for smallworldness (similar to scalefreeness) (PR #195, ce1f8124298d73830f3fd96aa84e82ba89181aa6)
-- Add `metrics.vertex.centralities` function to metrics module in order to simplify getting a data frame containing author names
-and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7)
-- Add `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
+- Add function `metrics.vertex.centralities` to metrics module in order to simplify getting a data frame containing author names and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7, e7182e7185d4f3acd90da5c05987a082bc40d607)
+- Add function `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
 - Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
 - Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
 - Add function `preprocess.issue.data`, which implements common issue data filtering operations. (fcf5cee64c809d62a33275cbd3272b8087869eea, a566caec6d7e649cc495d292a19eca8a7ffccde8, 5ba6feb988c44e2ba398bccce6c88e69d3bb552e)
@@ -24,6 +23,7 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
+- Not only run test suite in our CI pipeline, but also run the showcase file in our CI pipeline using test data (719a4f0e067c4a68587bcdede0bbf72f6a6a666e, 3eb31d81156a1a9ab74598b48d585b7477358dd3)
 - Update documentation in `util-network-metrics.R` and `util.conf.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a, PR #199, 059b286a3cebc586e88ce6446d98133ddd619260)
 - Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
 - Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
@@ -41,6 +41,8 @@ and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7
 - Fix and update outdated examples in the showcase file (473c09458741c8d24e7025646e70f8e052b0a9c, 287fbfa2f892e586c4955a408d914590573f5e83, 0a5cce4c6cb2813981e6cb05b65fbaf0e51ef3af, PR #207)
 - Fix generation of Codeface range directory names from commit hashes (5c90d1cbb6f8ca9b217b99b7a7ecc687d6c0d0e1)
 - Fix plotting an empty network via `plot.network` (03f986d760da8f8fec0e7aa530672736ea3068c7)
+- Fix behavior of `construct.ranges` when only one range has to bee constructed and `sliding.window = TRUE` (000314b961247c55051f03da3b2034fbc668847e)
+- Add package `reshape2` to the install script as this package is used in module `util-plot-evolution.R` for quite a while but never has been added to the list of packages to install (7bb4e7bc15b77c1faf8ddf8655c820822be25f80)
 
 
 ## 3.7
