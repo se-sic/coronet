@@ -1025,7 +1025,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## add commit message data to the commit data if configured
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
-                update.commit.message.data()
+                private$update.commit.message.data()
             }
         },
 
