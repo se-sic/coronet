@@ -75,7 +75,7 @@ test_that("Cut commit and mail data to same date range.", {
     commit.data = x$get.project.data()$get.commits()
     rownames(commit.data) = 1:nrow(commit.data)
 
-    mail.data = x$get.project.data()$get.mails()
+    mail.data = x$get.project.data()$get.mails.filtered()
     rownames(mail.data) = 1:nrow(mail.data)
 
     expect_identical(commit.data, commit.data.expected, info = "Cut Raw commit data.")

@@ -208,8 +208,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.patchstack.mails: starting.")
 
             ## return immediately if no mails are available
-            if (!self$is.data.source.cached("mails.filtered")) {
-                private$mails.patchstack = NULL
+            if (!self$is.data.source.cached("mails")) {
                 return(private$mails.filtered)
             }
 
@@ -507,7 +506,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.mail.data: starting.")
 
             ## return immediately if no mails available
-            if (self$is.data.source.cached("mails.filtered")) {
+            if (self$is.data.source.cached("mails")) {
 
                 ## remove previous PaStA data
                 private$mails.filtered["pasta"] = NULL
@@ -550,7 +549,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$aggregate.pasta.data()
 
             ## update mail data by attaching PaStA data
-            if (self$is.data.source.cached("mails.filtered")) {
+            if (self$is.data.source.cached("mails")) {
                 private$update.pasta.mail.data()
             }
 
@@ -1203,7 +1202,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("pasta")) {
 
                 ## read mail data if filtering patchstack mails
-                if (!self$is.data.source.cached("mails.filtered") &&
+                if (!self$is.data.source.cached("mails") &&
                     private$project.conf$get.value("mails.filter.patchstack.mails")) {
                     ## just triggering read-in, no storage
                     self$get.mails.filtered()
@@ -1276,14 +1275,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the mail data
         get.mails.filtered = function() {
             logging::loginfo("Getting e-mail data.")
-
-            ## if mails are not read already, do this
-            if (is.null(private$mails)) {
-                mails.read = read.mails(self$get.data.path())
-                self$set.mails(mails.read)
-            }
-            private$extract.timestamps(source = "mails")
-
+            self$get.mails()
             return(private$mails.filtered)
         },
 

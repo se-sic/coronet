@@ -77,7 +77,7 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -152,7 +152,7 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -179,7 +179,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -262,7 +262,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -288,7 +288,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -363,7 +363,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -391,7 +391,7 @@ test_that("Split a data object time-based (bins = ... ).", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -453,7 +453,7 @@ test_that("Split a data object time-based (bins = ... ).", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -558,7 +558,7 @@ test_that("Test splitting data by ranges", {
         commits = lapply(expected.results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(expected.results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(expected.results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(expected.results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(expected.results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(expected.results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(expected.results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -566,7 +566,7 @@ test_that("Test splitting data by ranges", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -592,7 +592,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -668,7 +668,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -735,7 +735,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -809,7 +809,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -847,7 +847,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -945,7 +945,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -1012,7 +1012,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -1086,7 +1086,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -1095,7 +1095,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
     ## too large number of windows
 
     expect_error(
-        split.data.activity.based(project.data, activity.type = "mails", number.windows = nrow(project.data$get.mails()) + 10),
+        split.data.activity.based(project.data, activity.type = "mails", number.windows = nrow(project.data$get.mails.filtered()) + 10),
         info = "Error expected (number.windows) (1)."
     )
 
@@ -1123,7 +1123,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         commits = project.data$get.commits(),
         commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues.filtered(),
-        mails = project.data$get.mails(),
+        mails = project.data$get.mails.filtered(),
         pasta = project.data$get.pasta(),
         synchronicity = project.data$get.synchronicity()
     )
@@ -1213,7 +1213,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -1280,7 +1280,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
@@ -1354,7 +1354,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         commits = lapply(results, function(cf.data) cf.data$get.commits()),
         commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues.filtered()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails.filtered()),
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
