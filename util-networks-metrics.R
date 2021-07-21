@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -310,42 +311,41 @@ VERTEX.CENTRALITIES.COLUMN.NAMES = c("vertex.name", "centrality")
 #'                                            calculated from the data based on the network's edge relations if and only
 #'                                            if both network and data are present. In any other case \code{NULL} will
 #'                                            not introduce any further restriction. [default: NULL]
+#'
 #' @return a data.frame with the columns \code{"vertex.name"} and \code{"centrality"} containing the centrality values
 #'         for each respective vertex
 metrics.vertex.centralities = function(network,
-                              proj.data,
-                              type = c("network.degree",
-                                       "network.eigen",
-                                       "network.hierarchy"),
-                              restrict.classification.to.vertices = NULL) {
+                                       proj.data,
+                                       type = c("network.degree",
+                                                "network.eigen",
+                                                "network.hierarchy"),
+                                       restrict.classification.to.vertices = NULL) {
     type = match.arg(type)
 
     ## check whether the restrict parameter is set to default 'NULL'
     if (is.null(restrict.classification.to.vertices)) {
         ## now check whether both data and network are present
-        if (!is.null(network) && !is.null(proj.data)) {
+        if (!is.null(network) && !is.null(proj.data) && igraph::vcount(network) > 0 && igraph::ecount(network) > 0) {
             ## in this case calculate the restrict parameter based on the edge relation along with the vertices from
             ## these data.sources
+            sources = get.data.sources.from.relations(network)
 
             ## first check whether the network only consists of author vertices
             ## therefore get a vector with all vertex types
             vertex.types = unique(igraph::V(network)$type)
-            if (vertex.types == c("author")) {
+            if (vertex.types == TYPE.AUTHOR) {
                 ## in this case, use the 'get.authors.by.data.source' function to get the author list
-                restrict.classification.to.vertices = get.authors.by.data.source(
-                    get.data.sources.from.relations(network),
-                    proj.Data)
+                restrict.classification.to.vertices = proj.data$get.authors.by.data.source(sources)[["author.name"]]
             }
-            else if (vertex.types == c("artifact")) {
+            else if (vertex.types == TYPE.ARTIFACT) {
                 ## in this case, always use artifact relation, as both unipartite edges connecting to artifact vertices
                 ## as well as bipartite have an artifact relation
-                restrict.classification.to.vertices = get.artifacts(get.data.sources.from.relations(network))
+                restrict.classification.to.vertices = proj.data$get.artifacts(sources)
             }
             else {
                 ## when both vertex types are present, compute both authors and artifacts into one vector
-                restrict.authors = get.authors.by.data.source(get.data.sources.from.relations(network),
-                                                              proj.Data)
-                restrict.artifacts = get.artifacts(get.data.sources.from.relations(network))
+                restrict.authors = proj.data$get.authors.by.data.source(sources)[["author.name"]]
+                restrict.artifacts = proj.data$get.artifacts(sources)
                 restrict.classification.to.vertices = append(restrict.authors, restrict.artifacts)
             }
         }
@@ -366,7 +366,8 @@ metrics.vertex.centralities = function(network,
     colnames(centrality) = VERTEX.CENTRALITIES.COLUMN.NAMES
 
     ## order by centrality (descending) (with NA being at the bottom) and then by name (ascending)
-    centrality = centrality[order(-centrality[["centrality"]], centrality[["name"]]), ]
+    centrality = centrality[order(-centrality[[ VERTEX.CENTRALITIES.COLUMN.NAMES[[2]] ]],
+                                  centrality[[ VERTEX.CENTRALITIES.COLUMN.NAMES[[1]] ]]), ]
 
     return(centrality)
 }
