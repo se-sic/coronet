@@ -16,6 +16,7 @@
 
 # Drone CI Setup
 
+# Pipeline "run tests"
 kind: pipeline
 type: docker
 name: run tests
@@ -73,6 +74,67 @@ steps:
   image: r-base:3.3.2
   commands: *runTests
   depends_on: [clone]
+
+---
+# Pipeline "run showcase file"
+kind: pipeline
+type: docker
+name: run showcase file
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: R-latest
+  image: r-base:latest
+  commands: &runShowcase
+  # stop treating warnings as errors
+  - unset CI
+  # package dependencies
+  - apt install update -y && libudunits2-dev
+  # package installation
+  - Rscript install.R
+  # execute showcase file
+  - Rscript showcase.R
+  depends_on: [clone]
+
+- name: R-4.1
+  pull: if-not-exists
+  image: r-base:4.1.0
+  commands: *runShowcase
+  depends_on: [clone]
+
+- name: R-4.0
+  pull: if-not-exists
+  image: r-base:4.0.5
+  commands: *runShowcase
+  depends_on: [clone]
+
+- name: R-3.6
+  pull: if-not-exists
+  image: r-base:3.6.3
+  commands: *runShowcase
+  depends_on: [clone]
+
+- name: R-3.5
+  pull: if-not-exists
+  image: r-base:3.5.3
+  commands: *runShowcase
+  depends_on: [clone]
+
+- name: R-3.4
+  pull: if-not-exists
+  image: r-base:3.4.4
+  commands: *runShowcase
+  depends_on: [clone]
+
+- name: R-3.3
+  pull: if-not-exists
+  image: r-base:3.3.2
+  commands: *runShowcase
+  depends_on: [clone]
+
 
 #trigger:
 #  branch:
