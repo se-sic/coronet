@@ -43,7 +43,6 @@ logging::addHandler(logging::writeToFile, file = "showcase.log", level = "DEBUG"
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## System variables and R settings -----------------------------------------
 
-assign("last.warning", NULL, envir = baseenv()) # reset warnings
 options(mc.cores = 6L) # configure parallelism
 
 
