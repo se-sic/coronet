@@ -16,7 +16,7 @@
 ## Copyright 2015 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2015-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## All Rights Reserved.
 ##
@@ -33,6 +33,7 @@ packages = c(
     "logging",
     "sqldf",
     "data.table",
+    "reshape2",
     "testthat",
     "patrick",
     "ggplot2",

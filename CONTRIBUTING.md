@@ -125,6 +125,7 @@ The current build status is as follows:
 * Document new code and provide proper tests (for a detailed description of the test projects see the [test-README](tests/README.md)).
 * Add your enhancements and fixes to the [changelog file](NEWS.md).
 * Add yourself to the copyright headers in the files you changed/added.
+* Check whether the showcase file `showcase.R` needs to be adjusted to your changes. If so, update the showcase file accordingly.
 * End all files with a newline.
 * Merge policy:
   * Tests must run successfully.
@@ -230,7 +231,7 @@ There will be another checklist for you when you open an actual pull request pro
           }
           ```
     * For all other stuff, look at the source code and get inspired.
-* Also **add tests** to the test suite for each new functionality you add!
+* Also **add tests** to the test suite for each new functionality you add! Also update the showcase file to exemplarily demonstrate how the new functionality can be used.
 * Keep the code as simple as possible. So, for example, no complex computation inside the `return` statement.
 
 

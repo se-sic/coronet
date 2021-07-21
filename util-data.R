@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs-uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -710,7 +710,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param project.conf the new project configuration.
         #' @param reset.environment parameter to determine whether the environment
-        #'                          has to be reset or not
+        #'                          has to be reset or not [default: FALSE]
         set.project.conf = function(project.conf, reset.environment = FALSE) {
             private$project.conf = verify.argument.for.parameter(project.conf, "ProjectConf",
                                                                  "ProjectData$set.project.conf")
@@ -720,7 +720,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
-        #' Get  a value of the project configuration
+        #' Get a value of the project configuration.
         #'
         #' @return the value of the given entry name
         get.project.conf.entry = function(entry) {
@@ -757,16 +757,17 @@ ProjectData = R6::R6Class("ProjectData",
                     ## re-read synchronicity data if the time window is changed and the data is cached because the
                     ## change invalidates the cache
                     if (entry == "synchronicity.time.window" && self$is.data.source.cached("synchronicity")) {
-                        private$set.synchronicity(NULL)
-                        private$get.synchronicity()
+                        self$set.synchronicity(NULL)
+                        self$get.synchronicity()
+                    } else {
+                        private$update.synchronicity.data()
                     }
-                    private$update.synchronicity.data()
                 }
             }
         },
 
         #' Update the project configuration based on the given list
-        #' of values and, in some cases (i.e. when the parameters allow it), reset the environment afterwards
+        #' of values and, in some cases (i.e. when the parameters allow it), reset the environment afterwards.
         #'
         #' @param updated.values the new values for the project configuration.
         #'                       If at least one of the configuration parameters is not an element of the vector
@@ -799,10 +800,11 @@ ProjectData = R6::R6Class("ProjectData",
                     ## re-read synchronicity data if the time window is changed and the data is cached because the
                     ## change invalidates the cache
                     if (c("synchronicity.time.window") %in% params && self$is.data.source.cached("synchronicity")) {
-                        private$set.synchronicity(NULL)
-                        private$get.synchronicity()
+                        self$set.synchronicity(NULL)
+                        self$get.synchronicity()
+                    } else {
+                        private$update.synchronicity.data()
                     }
-                    private$update.synchronicity.data()
                 }
             }
         },
@@ -1023,7 +1025,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## add commit message data to the commit data if configured
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
-                update.commit.message.data()
+                private$update.commit.message.data()
             }
         },
 

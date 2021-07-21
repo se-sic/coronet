@@ -430,6 +430,14 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
 construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
+
+    ## make sure that, at least, two revisions are provided
+    if (length(revs) < 2) {
+        error.message = "Cannot construct ranges from less than 2 revisions."
+        logging::logerror(error.message)
+        stop(error.message)
+    }
+
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
     offset = 1
@@ -440,7 +448,11 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 
     ## extract sequences of revisions
     seq1 = revs[ 1:(length(revs) - offset) ]
-    seq2 = revs[ (offset + 1):length(revs) ]
+    if ((offset + 1) <= length(revs)) {
+        seq2 = revs[ (offset + 1):length(revs) ]
+    } else {
+        seq2 = revs[ length(revs) ]
+    }
 
     ## construct ranges
     ranges = mapply(seq1, seq2, SIMPLIFY = FALSE, FUN = function(start, end) {

@@ -361,14 +361,14 @@ add.vertex.attribute.commit.count.committer.or.author = function(list.of.network
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.count = function(list.of.networks, project.data, name = "artifact.count",
                                                aggregation.level = c("range", "cumulative", "all.ranges",
                                                                      "project.cumulative", "project.all.ranges",
                                                                      "complete"),
-                                               default.value = 0) {
+                                               default.value = 0L) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     nets.with.attr = split.and.add.vertex.attribute(
@@ -466,6 +466,8 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                                                   "project.cumulative", "project.all.ranges",
                                                                   "complete"),
                                             default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.count"
     }
@@ -498,6 +500,8 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
         name = "pull.requests.commented.count"
     }
@@ -530,6 +534,8 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.creation.count"
     }
@@ -561,6 +567,8 @@ add.vertex.attribute.issue.comment.count = function(list.of.networks, project.da
                                                                                 "project.cumulative", "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+    issue.type = match.arg(issue.type)
+
     if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
         name = "pull.request.comment.count"
     }
@@ -865,7 +873,7 @@ add.vertex.attribute.author.role = function(list.of.networks, classification.res
 #'                          more details. [default: "range"]
 #' @param editor.definition Determines, who is counted as editor of an artifact (one ore more of
 #'                          \code{c("author", "committer")}). [default: "author"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.data, name = "editor.count",
@@ -873,7 +881,7 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
                                                                             "project.cumulative", "project.all.ranges",
                                                                             "complete"),
                                                       editor.definition = c("author", "committer"),
-                                                      default.value = 0) {
+                                                      default.value = 0L) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     ## match editor definitions to column name in commit dataframe
@@ -910,14 +918,14 @@ add.vertex.attribute.artifact.editor.count = function(list.of.networks, project.
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "range"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0]
+#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.change.count = function(list.of.networks, project.data, name = "change.count",
                                                       aggregation.level = c("range", "cumulative", "all.ranges",
                                                                             "project.cumulative", "project.all.ranges",
                                                                             "complete"),
-                                                      default.value = 0) {
+                                                      default.value = 0L) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     nets.with.attr = split.and.add.vertex.attribute(

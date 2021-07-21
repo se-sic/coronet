@@ -12,12 +12,14 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2019 by Klara Schlüter <schluete@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("ggplot2") ## plotting
+requireNamespace("reshape2") ## melting data
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
