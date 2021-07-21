@@ -130,6 +130,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
 - `data.table`: For faster data processing
+- `reshape2`: For reshaping of data
 - `testthat`: For the test suite
 - `patrick`: For the test suite
 - `ggplot2`: For plotting of data
