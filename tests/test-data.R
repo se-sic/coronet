@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
@@ -40,7 +41,7 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("pasta", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
-    proj.data.two = proj.data.one$clone()
+    proj.data.two = proj.data.one$clone(deep = TRUE)
 
     expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects (clone).")
 
@@ -76,7 +77,7 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.one$set.project.conf.entry("synchronicity", TRUE)
     proj.data.one$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.one$get.synchronicity()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
+    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
     proj.data.two$set.project.conf.entry("synchronicity", TRUE)
     proj.data.two$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.two$get.synchronicity()
@@ -84,7 +85,7 @@ test_that("Compare two ProjectData objects on empty data", {
 
     proj.data.one$set.project.conf.entry("commit.messages", "message")
     proj.data.one$get.commit.messages()
-    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
     proj.data.two$set.project.conf.entry("commit.messages", "message")
     proj.data.two$get.commit.messages()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
@@ -97,7 +98,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
     proj.conf$update.value("pasta", TRUE)
 
     proj.data.one = ProjectData$new(project.conf = proj.conf)
-    proj.data.two = proj.data.one$clone()
+    proj.data.two = proj.data.one$clone(deep = TRUE)
 
     expect_true(proj.data.one$equals(proj.data.two), info = "Two identical ProjectData objects (clone).")
 
@@ -115,9 +116,9 @@ test_that("Compare two ProjectData objects on non-empty data", {
     proj.data.one$get.commits()
 
     ## prevent 'equals' from triggering a read when calling the getter
-    proj.conf$update.value("commits.locked", TRUE)
+    proj.data.two$update.project.conf(list("commits.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commits).")
-    proj.conf$update.value("commits.locked", FALSE)
+    proj.data.two$update.project.conf(list("commits.locked" = FALSE))
 
     proj.data.two$get.commits()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
@@ -126,9 +127,9 @@ test_that("Compare two ProjectData objects on non-empty data", {
     proj.data.two$get.mails()
 
     ## prevent 'equals' from triggering a read when calling the getter
-    proj.conf$update.value("mails.locked", TRUE)
+    proj.data.one$update.project.conf(list("mails.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (mails).")
-    proj.conf$update.value("mails.locked", FALSE)
+    proj.data.one$update.project.conf(list("mails.locked" = FALSE))
 
     proj.data.one$get.mails()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
@@ -137,9 +138,9 @@ test_that("Compare two ProjectData objects on non-empty data", {
     proj.data.one$get.issues.filtered()
 
     ## prevent 'equals' from triggering a read when calling the getter
-    proj.conf$update.value("issues.locked", TRUE)
+    proj.data.two$update.project.conf(list("issues.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (issues.filtered).")
-    proj.conf$update.value("issues.locked", FALSE)
+    proj.data.two$update.project.conf(list("issues.locked" = FALSE))
 
     proj.data.two$get.issues.filtered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
@@ -193,7 +194,7 @@ test_that("Compare two RangeData objects", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("commits")
-    range.data.two = range.data.one$clone()
+    range.data.two = range.data.one$clone(deep = TRUE)
 
     ## compare the two equal RangeData objects
     expect_true(range.data.one$equals(range.data.two))

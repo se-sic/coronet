@@ -15,7 +15,7 @@
 ## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
@@ -259,7 +259,22 @@ Conf = R6::R6Class("Conf",
                     paste(names.to.update, collapse = ", ")
                 )
                 for (name in names.to.update) {
-                    private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                    if (is.na(private[["attributes"]][[name]][["default"]]) && !is.na(updated.values[[name]]) ||
+                        !is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
+                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                    } else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
+                        if ("value" %in% names(private[["attributes"]][[name]])) {
+                            private[["attributes"]][[name]][["value"]] = NULL
+                        }
+                    } else {
+                        if (all(updated.values[[name]] == private[["attributes"]][[name]][["default"]])) {
+                            if ("value" %in% names(private[["attributes"]][[name]])) {
+                                private[["attributes"]][[name]][["value"]] = NULL
+                            }
+                        } else {
+                            private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                        }
+                    }
                 }
             } else {
                 logging::logwarn(
