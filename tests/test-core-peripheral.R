@@ -15,6 +15,7 @@
 ## Copyright 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -48,8 +49,8 @@ test_that("Vertex-degree classification using 'restrict.classification.to.author
                                              restrict.classification.to.authors = c("Olaf", "Björn", "Darth Sidious"))
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf", "Björn"), vertex.degree = c(4, 2))
-    expected.peripheral = data.frame(author.name = c("Darth Sidious"), vertex.degree = c(NA))
+    expected.core = data.frame(author.name = c("Olaf"), vertex.degree = c(4))
+    expected.peripheral = data.frame(author.name = c("Björn", "Darth Sidious"), vertex.degree = c(2, NA))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL
@@ -64,9 +65,10 @@ test_that("Eigenvector classification", {
     result = get.author.class.network.eigen(network)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf", "Thomas", "Björn", "udo", "Fritz fritz@example.org"),
-                               eigen.centrality = c(1.0, 0.7116, 0.7116, 0.25, 0.25))
-    expected.peripheral = data.frame(author.name = c("georg", "Hans"), eigen.centrality = c(0.25, 0.25))
+    expected.core = data.frame(author.name = c("Olaf"),
+                               eigen.centrality = c(1.0))
+    expected.peripheral = data.frame(author.name = c("Thomas", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans"),
+                                     eigen.centrality = c(0.7116, 0.7116, 0.25, 0.25, 0.25, 0.25))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL
@@ -110,7 +112,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC", "DDD", "EEE"), centrality = c(1, 1, 1, 1, 1))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality")
+    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
     ## 3) Assert
     expected = list(core = prepared.authors[1:4, ], peripheral = prepared.authors[5, ])
     expect_identical(result, expected)
@@ -119,7 +121,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0.5, 0.29, 0.21))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality")
+    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
     ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors[0, ])
     expect_identical(result, expected)
@@ -128,7 +130,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0, 0, 0))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality")
+    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
     ## 3) Assert
     expected = list(core = prepared.authors[0, ], peripheral = prepared.authors)
     expect_identical(result, expected)
@@ -137,17 +139,17 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = character(0), centrality = numeric(0))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality")
+    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
     ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors)
     expect_identical(result, expected)
 
     ## Check empty input data (no columns):
-    expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo"), NA) # expect that no error occurs
+    expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo", classification.metric.type = "count"), NA) # expect that no error occurs
     ## Check empty input data (not enough columns) (1):
-    expect_error(get.author.class(data.frame(), "foo"), NA) # expect that no error occurs
+    expect_error(get.author.class(data.frame(), "foo", classification.metric.type = "count"), NA) # expect that no error occurs
     ## Check empty input data (not enough columns) (2):
-    expect_error(get.author.class(data.frame(author.name = character(0)), "foo"), NA) # expect that no error occurs
+    expect_error(get.author.class(data.frame(author.name = character(0)), "foo", classification.metric.type = "count"), NA) # expect that no error occurs
 
 })
 

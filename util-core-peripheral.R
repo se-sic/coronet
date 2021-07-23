@@ -17,6 +17,7 @@
 ## Copyright 2017-2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -50,6 +51,16 @@ CORE.THRESHOLD = 0.8
 ## a author has to be classified as core to be stated as a
 ## longterm core author
 LONGTERM.CORE.THRESHOLD = 0.5
+
+## Mapping of the classification metric to its type which can either
+## be 'network' of 'count' based types
+CLASSIFICATION.METRIC.TO.TYPE = list(
+    "network.degree" = "network",
+    "network.eigen"   = "network",
+    "network.hierarchy"  = "network",
+    "commit.count" = "count",
+    "loc.count" = "count"
+)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -212,7 +223,8 @@ get.author.class.by.type = function(network = NULL,
     centrality.dataframe = centrality.dataframe[centrality.dataframe[["author.name"]] %in% restrict.classification.to.authors, ]
 
     ## Retrieve classification results
-    classification = get.author.class(centrality.dataframe, metric.name, result.limit = result.limit)
+    classification = get.author.class(centrality.dataframe, metric.name, result.limit = result.limit,
+                                      classification.metric.type = CLASSIFICATION.METRIC.TO.TYPE[[type]])
 
     ## Authors who are specified in the parameter 'restrict.classification.to.authors' but were not considered in the
     ## classification will be appended with a value of 'NA' to the classification as peripheral authors:
@@ -922,12 +934,14 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
 #'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param classification.metric.type the type of classification metric used for the classification of authors
 #'
 #' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each of
 #'         which containing the authors classified as core or peripheral, respectively. Both entries in this list
 #'         ("core" and "peripheral") are dataframes containing the author's names in the first column and their
 #'         centrality values in the second column.
-get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
+get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL,
+                            classification.metric.type = NULL) {
     logging::logdebug("get.author.class: starting.")
 
     ## Make sure that we have enough data for a classification
@@ -948,7 +962,7 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     }
 
     ## Get the threshold depending on all calculation base values
-    author.class.threshold = get.threshold(author.data[[calc.base.name]])
+    author.class.threshold = get.threshold(author.data[[calc.base.name]], classification.metric.type)
 
     ## Check if the result shall be limited
     if (!is.null(result.limit)) {
@@ -995,24 +1009,37 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
 }
 
 #' Retrieve the classification threshold of a list containing centrality values. The threshold is determined by taking
-#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD}.
+#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD} when using count-based
+#' metrics to calculate the centrality. When using network-based metrics, the threshold is determined by the
+#' \code{CORE.THRESHOLD} quantile of the centrality values.
 #'
-#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the sum
-#' and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
+#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the
+#' sum and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
 #' threshold of (1 + 2 + 2) * 0.8 = 4. The smallest group of authors that together has a centrality sum of 4 or more
-#' could now be considered core (here, B and C with 2 commits each).
+#' could now be considered core (here, B and C with 2 commits each). Accordingly, when using a network-based approach,
+#' the threshold would now be 2 as this is the 80% quantile
 #'
 #' @param centrality.list a list containing centrality values
+#' @param classification.metric.type the type of centrality metric used as there are two ways to determine
+#'             the threshold based on the type of centrality function. The two types are network-based and
+#'             count-based functions.[default: network]
 #'
 #' @return the threshold used within classifications
-get.threshold = function(centrality.list) {
+get.threshold = function(centrality.list, classification.metric.type = c("network", "count")) {
     logging::logdebug("get.threshold: starting.")
 
-    ## Calculate the sum of the provided data as base for the threshold calculation
-    data.threshold.base = sum(centrality.list)
+    type = match.arg(classification.metric.type)
 
-    ## Check which authors can be treated as core based on the data
-    data.threshold = CORE.THRESHOLD * data.threshold.base
+    if (type == "network") {
+        ## Calculate the quantile specified by CORE.THRESHOLD
+        data.threshold = quantile(centrality.list, CORE.THRESHOLD)
+    } else {
+        ## Calculate the sum of the provided data as base for the threshold calculation
+        data.threshold.base = sum(centrality.list)
+
+        ## Check which authors can be treated as core based on the data
+        data.threshold = CORE.THRESHOLD * data.threshold.base
+    }
 
     logging::logdebug("get.threshold: finished.")
     return(data.threshold)
