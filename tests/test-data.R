@@ -77,7 +77,7 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.one$set.project.conf.entry("synchronicity", TRUE)
     proj.data.one$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.one$get.synchronicity()
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (synchronicity).")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (synchronicity).")
     proj.data.two$set.project.conf.entry("synchronicity", TRUE)
     proj.data.two$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.two$get.synchronicity()
@@ -85,7 +85,7 @@ test_that("Compare two ProjectData objects on empty data", {
 
     proj.data.one$set.project.conf.entry("commit.messages", "message")
     proj.data.one$get.commit.messages()
-    expect_false(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commit.messages).")
     proj.data.two$set.project.conf.entry("commit.messages", "message")
     proj.data.two$get.commit.messages()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")

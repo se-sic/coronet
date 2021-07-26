@@ -55,11 +55,11 @@ LONGTERM.CORE.THRESHOLD = 0.5
 ## Mapping of the classification metric to its type which can either
 ## be 'network' of 'count' based types
 CLASSIFICATION.METRIC.TO.TYPE = list(
-    "network.degree" = "network",
-    "network.eigen"   = "network",
-    "network.hierarchy"  = "network",
-    "commit.count" = "count",
-    "loc.count" = "count"
+    "network.degree"    = "network",
+    "network.eigen"     = "network",
+    "network.hierarchy" = "network",
+    "commit.count"      = "count",
+    "loc.count"         = "count"
 )
 
 
@@ -934,7 +934,8 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
 #'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
-#' @param classification.metric.type the type of classification metric used for the classification of authors
+#' @param classification.metric.type the type of classification metric used for the classification of authors.
+#'                                   These metrics can either be count- or network-based metrics. [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each of
 #'         which containing the authors classified as core or peripheral, respectively. Both entries in this list
@@ -943,6 +944,11 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL,
                             classification.metric.type = NULL) {
     logging::logdebug("get.author.class: starting.")
+
+    if (is.null(classification.metric.type)) {
+        logging::logerror("A classification metric type has to be specified! Stopping...")
+        stop("Stopped due to missing classification metric type.")
+    }
 
     ## Make sure that we have enough data for a classification
     if (ncol(author.data.frame) < 2) {
@@ -1017,12 +1023,12 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
 #' sum and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
 #' threshold of (1 + 2 + 2) * 0.8 = 4. The smallest group of authors that together has a centrality sum of 4 or more
 #' could now be considered core (here, B and C with 2 commits each). Accordingly, when using a network-based approach,
-#' the threshold would now be 2 as this is the 80% quantile
+#' the threshold would now be 2 as this is the 80% quantile.
 #'
 #' @param centrality.list a list containing centrality values
 #' @param classification.metric.type the type of centrality metric used as there are two ways to determine
-#'             the threshold based on the type of centrality function. The two types are network-based and
-#'             count-based functions.[default: network]
+#'                                   the threshold based on the type of centrality function. The two types
+#'                                   are network-based and count-based functions.[default: network]
 #'
 #' @return the threshold used within classifications
 get.threshold = function(centrality.list, classification.metric.type = c("network", "count")) {
@@ -1033,7 +1039,7 @@ get.threshold = function(centrality.list, classification.metric.type = c("networ
     if (type == "network") {
         ## Calculate the quantile specified by CORE.THRESHOLD
         data.threshold = quantile(centrality.list, CORE.THRESHOLD)
-    } else {
+    } else { # type == 'count'
         ## Calculate the sum of the provided data as base for the threshold calculation
         data.threshold.base = sum(centrality.list)
 

@@ -259,21 +259,21 @@ Conf = R6::R6Class("Conf",
                     paste(names.to.update, collapse = ", ")
                 )
                 for (name in names.to.update) {
+                    ## check if the default value or the given new value are NA
+                    ## if only one of both is NA that means that the value has to be changed
                     if (is.na(private[["attributes"]][[name]][["default"]]) && !is.na(updated.values[[name]]) ||
                         !is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
                         private[["attributes"]][[name]][["value"]] = updated.values[[name]]
-                    } else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
+                    } ## if the default value and the given value are the same and if the 'value' field is present
+                      ## then reset the 'value' field
+                    else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]]) ||
+                               all(updated.values[[name]] == private[["attributes"]][[name]][["default"]])) {
                         if ("value" %in% names(private[["attributes"]][[name]])) {
                             private[["attributes"]][[name]][["value"]] = NULL
                         }
-                    } else {
-                        if (all(updated.values[[name]] == private[["attributes"]][[name]][["default"]])) {
-                            if ("value" %in% names(private[["attributes"]][[name]])) {
-                                private[["attributes"]][[name]][["value"]] = NULL
-                            }
-                        } else {
-                            private[["attributes"]][[name]][["value"]] = updated.values[[name]]
-                        }
+                    } ## otherwise proceed with updating the value
+                    else {
+                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
                     }
                 }
             } else {
