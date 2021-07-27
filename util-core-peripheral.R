@@ -902,8 +902,15 @@ get.author.class.issue.created.count = function(proj.data, result.limit = NULL,
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Role stability ----------------------------------------------
 
-## Get a data frame with the authors and their occurence count in the specified class for
-## the specified author classification list.
+#' Get a data frame with the authors and their occurence count in the specified class for
+#' the specified author classification list.
+#'
+#' @param author.class.overview the list of classifications in which to find the number
+#'                              of occurences
+#' @param class the type of class to look for. Can either be \code{"both"}, \code{"core},
+#'              or \code{"peripheral}. [default: "both"]
+#'
+#' @return a data frame with the authors and their occurence count in the specified class
 get.recurring.authors = function(author.class.overview, class = c("both", "core", "peripheral")) {
     logging::logdebug("get.recurring.authors: starting.")
 
@@ -971,9 +978,15 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     return(data)
 }
 
-## Retrieves all authors which will be classified as core by the specified
-## classification in more than a certain number of version ranges
-## -> see: "LONGTERM.CORE.THRESHOLD".
+#' Retrieves all authors which will be classified as core by the specified
+#' classification in more than a certain number of version ranges.
+#'
+#' @param author.class the author classification to use for finding the
+#'                     longterm core-authors [default: NULL]
+#'
+#' @return the names of the longterm core-authors
+#'
+#' @seealso LONGTERM.CORE.THRESHOLD
 get.longterm.core.authors = function(author.class = NULL) {
     logging::logdebug("get.longterm.core.authors: starting.")
 
@@ -995,8 +1008,13 @@ get.longterm.core.authors = function(author.class = NULL) {
     return(longterm.core)
 }
 
-## Get a markov chain object representing the role stability of the
-## specified classification overview.
+#' Get a markov chain object representing the role stability of the
+#' specified classification overview.
+#'
+#' @param author.class.overview the list of author classifications to
+#'                              use for the role stability calculation
+#'
+#' @return a markov chain object representing the role stability
 get.role.stability = function(author.class.overview) {
     logging::logdebug("get.role.stability: starting.")
 
@@ -1078,7 +1096,13 @@ get.role.stability = function(author.class.overview) {
     return(roles.stability)
 }
 
-## Calculates the cohen's kappa to measure the agreement of the specified author classifications.
+#' Calculates the cohen's kappa to measure the agreement of the specified author classifications.
+#'
+#' @param author.classification.list the first author classification list to compare
+#' @param other.author.classification.list the second author classification list to compare
+#'
+#' @return the cohens kappa coefficient describing the agreement of the two classification
+#'         lists
 calculate.cohens.kappa = function(author.classification.list, other.author.classification.list) {
     logging::logdebug("calculate.cohens.kappa: starting.")
 
