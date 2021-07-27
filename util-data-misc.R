@@ -18,6 +18,7 @@
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -280,6 +281,33 @@ get.committer.or.author.commit.count = function(range.data) {
     return(res)
 }
 
+#' Get the number of changed lines of code (LOC) for each author based on the commit data contained in the specified
+#' \code{ProjectData}. The number is calculated by taking the sum of added and deleted lines of code for each commit.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit data
+#'
+#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
+#'         their respective LOC counts
+get.author.loc.count = function(proj.data) {
+  logging::logdebug("get.author.loc.count: starting.")
+
+  ## Get commit data
+  commits.df = proj.data$get.commits.filtered()
+
+  ## For each commit hash, make sure there is only one row
+  commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
+
+  ## Restrict commits to relevant columns
+  commits.df = commits.df[c("author.name", "added.lines", "deleted.lines")]
+
+  ## Execute a query to get the changed lines per author
+  res = sqldf::sqldf("SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
+                        FROM `commits.df`
+                        GROUP BY `author.name` ORDER BY `loc` DESC, `author.name` ASC")
+
+  logging::logdebug("get.author.loc.count: finished.")
+  return(res)
+}
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

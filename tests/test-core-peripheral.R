@@ -156,20 +156,20 @@ test_that("get.author.class", {
 
     ## Check empty input data for network-based classification (no columns):
     expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo",
-                                  classification.metric.type = "network")) # expect that no error occurs
+                                  classification.metric.type = "network")) # expect that an error occurs
     ## Check empty input data for network-based classification (not enough columns) (1):
     expect_error(get.author.class(data.frame(), "foo",
-                                  classification.metric.type = "network")) # expect that no error occurs
+                                  classification.metric.type = "network")) # expect that an error occurs
     ## Check empty input data for network-based classification (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.metric.type = "network")) # expect that no error occurs
+                                  classification.metric.type = "network")) # expect that an error occurs
 
     ## Check empty input data without a specified classification metric type (not enough columns) (2):
-    expect_error(get.author.class(data.frame(author.name = character(0)), "foo")) # expect that no error occurs
+    expect_error(get.author.class(data.frame(author.name = character(0)), "foo")) # expect that an error occurs
 
     ## Check empty input data with wrong classification metric type (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.metric.type = "Busted")) # expect that no error occurs
+                                  classification.metric.type = "Busted")) # expect that an error occurs
 
 })
 
