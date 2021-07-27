@@ -35,6 +35,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 ## Prepare global setting
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+proj.conf$update.value("issues.only.comments", FALSE)
 proj.data = ProjectData$new(proj.conf)
 
 net.conf = NetworkConf$new()
@@ -99,6 +100,86 @@ test_that("LOC-count classification" , {
 
     ## Assert
     expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), loc.count = c(2, 1, 1))
+    expected = list(core = expected.core, peripheral = expected.core[0, ])
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Mail-count classification" , {
+
+    ## Act
+    result = get.author.class.mail.count(proj.data)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Hans", "Björn", "Olaf", "Fritz fritz@example.org"),
+                               mail.count = c(7, 3, 2, 1))
+    expected.peripheral = data.frame(author.name = c("Thomas", "georg", "udo"), mail.count = c(1, 1, 1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Issue-count classification" , {
+
+    ## Act
+    result = get.author.class.issue.count(proj.data, issue.type = "all")
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), issue.count = c(6, 6, 4))
+    expected.peripheral = data.frame(author.name = c("Karl", "Max", "udo"), issue.count = c(1, 1, 1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Issue-comment-count classification" , {
+
+    ## Act
+    result = get.author.class.issue.comment.count(proj.data, issue.type = "issues")
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Max"),
+                               issue.comment.count = c(9, 4, 3))
+    expected.peripheral = data.frame(author.name = c("Thomas", "Karl"),
+                               issue.comment.count = c(2, 1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Issue-commented-in-count classification" , {
+
+    ## Act
+    result = get.author.class.issue.commented.in.count(proj.data)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"),
+                               issue.commented.in.count = c(5, 3, 3))
+    expected.peripheral = data.frame(author.name = c("Karl", "Max"),
+                                     issue.commented.in.count = c(1, 1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Issue-created-count classification" , {
+
+    ## Act
+    result = get.author.class.issue.created.count(proj.data, issue.type = "pull.requests")
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"),
+                               issue.created.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
     row.names(result$core) = NULL
