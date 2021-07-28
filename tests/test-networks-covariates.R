@@ -1371,7 +1371,7 @@ test_that("Test addition of attributes despite of empty data", {
 
     ## add author-role attribute:
     ## 1) construct empty classification
-    classification = list(get.author.class(data.frame(), "foo", classification.metric.type = "count"))
+    classification = list(get.author.class(data.frame(), "foo", classification.category = "count"))
     names(classification) = range
     ## 2) add attribute
     net.author.role = add.vertex.attribute.author.role(networks, classification, default = "unclassified")[[1]]

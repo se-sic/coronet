@@ -123,6 +123,22 @@ test_that("Mail-count classification" , {
     expect_equal(expected, result)
 })
 
+test_that("Mail-thread-count classification" , {
+
+    ## Act
+    result = get.author.class.mail.thread.count(proj.data)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Björn", "Hans", "Olaf", "Fritz fritz@example.org", "Thomas"),
+                               mail.thread.count = c(3, 2, 2, 1, 1))
+    expected.peripheral = data.frame(author.name = c("georg", "udo"), mail.thread.count = c(1, 1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+
+    row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+    expect_equal(expected, result)
+})
+
 test_that("Issue-count classification" , {
 
     ## Act
@@ -193,7 +209,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC", "DDD", "EEE"), centrality = c(1, 1, 1, 1, 1))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
+    result = get.author.class(prepared.authors, "centrality", classification.category = "count")
     ## 3) Assert
     expected = list(core = prepared.authors[1:4, ], peripheral = prepared.authors[5, ])
     expect_identical(result, expected)
@@ -202,7 +218,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0.5, 0.29, 0.21))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
+    result = get.author.class(prepared.authors, "centrality", classification.category = "count")
     ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors[0, ])
     expect_identical(result, expected)
@@ -211,7 +227,7 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = c("AAA", "BBB", "CCC"), centrality = c(0, 0, 0))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
+    result = get.author.class(prepared.authors, "centrality", classification.category = "count")
     ## 3) Assert
     expected = list(core = prepared.authors[0, ], peripheral = prepared.authors)
     expect_identical(result, expected)
@@ -220,37 +236,37 @@ test_that("get.author.class", {
     ## 1) Arrange
     prepared.authors = data.frame(author.name = character(0), centrality = numeric(0))
     ## 2) Act
-    result = get.author.class(prepared.authors, "centrality", classification.metric.type = "count")
+    result = get.author.class(prepared.authors, "centrality", classification.category = "count")
     ## 3) Assert
     expected = list(core = prepared.authors, peripheral = prepared.authors)
     expect_identical(result, expected)
 
     ## Check empty input data for count-based classification (no columns):
     expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo",
-                                  classification.metric.type = "count"), NA) # expect that no error occurs
+                                  classification.category = "count"), NA) # expect that no error occurs
     ## Check empty input data for count-based classification (not enough columns) (1):
     expect_error(get.author.class(data.frame(), "foo",
-                                  classification.metric.type = "count"), NA) # expect that no error occurs
+                                  classification.category = "count"), NA) # expect that no error occurs
     ## Check empty input data for count-based classification (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.metric.type = "count"), NA) # expect that no error occurs
+                                  classification.category = "count"), NA) # expect that no error occurs
 
     ## Check empty input data for network-based classification (no columns):
     expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo",
-                                  classification.metric.type = "network")) # expect that an error occurs
+                                  classification.category = "network")) # expect that an error occurs
     ## Check empty input data for network-based classification (not enough columns) (1):
     expect_error(get.author.class(data.frame(), "foo",
-                                  classification.metric.type = "network")) # expect that an error occurs
+                                  classification.category = "network")) # expect that an error occurs
     ## Check empty input data for network-based classification (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.metric.type = "network")) # expect that an error occurs
+                                  classification.category = "network")) # expect that an error occurs
 
     ## Check empty input data without a specified classification metric type (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo")) # expect that an error occurs
 
     ## Check empty input data with wrong classification metric type (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.metric.type = "Busted")) # expect that an error occurs
+                                  classification.category = "Busted")) # expect that an error occurs
 
 })
 
