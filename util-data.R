@@ -67,10 +67,10 @@ DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
 )
 
 DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
-    "authors" = "get.authors",
+    "authors"         = "get.authors",
     "commit.messages" = "get.commit.messages",
-    "synchronicity" = "get.synchronicity",
-    "pasta" = "get.pasta"
+    "synchronicity"   = "get.synchronicity",
+    "pasta"           = "get.pasta"
 )
 
 rename.list.keys = function(l, f) {
@@ -1284,7 +1284,6 @@ ProjectData = R6::R6Class("ProjectData",
                     mails.read = get.data.from.range(private$range, mails.read)
                 }
 
-                ## TODO filter mail data
                 self$set.mails(mails.read)
             }
             private$extract.timestamps(source = "mails")

@@ -86,7 +86,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     additional.data.sources = project.data$get.cached.data.sources("only.additional")
     additional.data = lapply(additional.data.sources, function(ds) {
         ## build the name of the respective getter and call it
-        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
+        function.name = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[ds]]
         return(project.data[[function.name]]())
     })
     names(additional.data) = additional.data.sources
