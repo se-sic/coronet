@@ -931,7 +931,7 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            artifact.to.commit = get.key.to.value.from.df(range.data$get.commits.filtered(), "artifact", "hash")
+            artifact.to.commit = get.key.to.value.from.df(range.data$get.commits(), "artifact", "hash")
             artifact.change.count = lapply(artifact.to.commit, function(x) {
                 length(unique(x[["hash"]]))
             })
@@ -971,7 +971,7 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            artifact.to.dates = get.key.to.value.from.df(range.data$get.commits.filtered(), "artifact", "date")
+            artifact.to.dates = get.key.to.value.from.df(range.data$get.commits(), "artifact", "date")
             artifact.to.first = lapply(artifact.to.dates, function(a) {
                 min(a[["date"]])
             })
@@ -1074,7 +1074,7 @@ get.active.ranges.data = function(activity.types = c("mails", "commits", "issues
     ## representing the ranges the data was split by, each containing a list of authors who were active
     ## for the corresponding activity type and range.
     range.to.authors.per.activity.type = lapply(activity.types, function(type) {
-        type.function = paste0("get.", type)
+        type.function = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[type]]
         lapply(net.to.range.list, function(net.to.range) {
 
             ## get author information per activity.type

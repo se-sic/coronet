@@ -62,7 +62,9 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
                                                 bins = mybins) {
 
     author.relation = match.arg(author.relation)
-    network.type.function = paste("get", match.arg(network.type), "network", sep = ".")
+    network.type.function = switch(match.arg(network.type),
+                                   "author" = "get.author.network",
+                                   "artifact" = "get.artifact.network")
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)

@@ -72,10 +72,10 @@ test_that("Cut commit and mail data to same date range.", {
                                     thread = sprintf("<thread-%s>", c(9, 9)),
                                     artifact.type = c("Mail", "Mail"))
 
-    commit.data = x$get.project.data()$get.commits()
+    commit.data = x$get.project.data()$get.commits.unfiltered()
     rownames(commit.data) = 1:nrow(commit.data)
 
-    mail.data = x$get.project.data()$get.mails.filtered()
+    mail.data = x$get.project.data()$get.mails()
     rownames(mail.data) = 1:nrow(mail.data)
 
     expect_identical(commit.data, commit.data.expected, info = "Cut Raw commit data.")

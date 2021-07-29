@@ -29,34 +29,34 @@ requireNamespace("logging") # for logging
 
 #' Helper function to mask all issues in the issue data frame.
 #'
-#' \code{ProjectData$get.issues()} returns a dataframe that mixes issue and PR data.
+#' \code{ProjectData$get.issues.unfiltered()} returns a dataframe that mixes issue and PR data.
 #' This helper function creates a vector of length \code{nrow(issue.data)} which has
 #' entry \code{TRUE} iff the corresponding row in \code{issue.data} is an issue.
 #'
-#' @param issue.data the issue data, returned from calling \code{get.issues()}
-#'                   or \code{get.issues.filtered()} on a project data object
+#' @param issue.data the issue data, returned from calling \code{get.issues.unfiltered()}
+#'                   or \code{get.issues()} on a project data object
 #'
 #' @return a vector containing \code{TRUE} or \code{FALSE}
 #'
-#' @seealso ProjectData$get.issues.filtered()
 #' @seealso ProjectData$get.issues()
+#' @seealso ProjectData$get.issues.unfiltered()
 mask.issues = function(issue.data) {
     return(sapply(issue.data[["issue.type"]], function(tags) {return("issue" %in% tags)}))
 }
 
 #' Helper function to mask all pull requests in the issue data frame.
 #'
-#' \code{ProjectData$get.issues()} returns a dataframe that mixes issue and PR data.
+#' \code{ProjectData$get.issues.unfiltered()} returns a dataframe that mixes issue and PR data.
 #' This helper function creates a vector of length \code{nrow(issue.data)} which has
 #' entry \code{TRUE} iff the corresponding row in \code{issue.data} is a pull request.
 #'
-#' @param issue.data the pull request data, returned from calling \code{get.issues()}
-#'                   or \code{get.issues.filtered()} on a project data object
+#' @param issue.data the pull request data, returned from calling \code{get.issues.unfiltered()}
+#'                   or \code{get.issues()} on a project data object
 #'
 #' @return a vector containing \code{TRUE} or \code{FALSE}
 #'
-#' @seealso ProjectData$get.issues.filtered()
 #' @seealso ProjectData$get.issues()
+#' @seealso ProjectData$get.issues.unfiltered()
 mask.pull.requests = function(issue.data) {
     return(sapply(issue.data[["issue.type"]], function(tags) {return("pull request" %in% tags)}))
 }
@@ -82,7 +82,7 @@ mask.pull.requests = function(issue.data) {
 preprocess.issue.data = function(proj.data, retained.cols = c("author.name", "issue.id", "event.name"),
                                  type = c("all", "pull.requests", "issues")) {
   type = match.arg(type)
-  df = proj.data$get.issues()
+  df = proj.data$get.issues.unfiltered()
 
   ## forall vectors k, if nrow(df) == 0, then df[k, ..] fails
   ## so we abort beforehand
@@ -197,7 +197,7 @@ get.committer.not.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.not.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = range.data$get.commits.filtered()
+    commits.df = range.data$get.commits()
 
     ## For each commit hash, make sure there is only one row
     commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
@@ -226,7 +226,7 @@ get.committer.and.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.and.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = range.data$get.commits.filtered()
+    commits.df = range.data$get.commits()
 
     ## For each commit hash, make sure there is only one row
     commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
@@ -255,7 +255,7 @@ get.committer.or.author.commit.count = function(range.data) {
     logging::logdebug("get.committer.or.author.commit.count: starting.")
 
     ## Get commit data
-    commits.df = range.data$get.commits.filtered()
+    commits.df = range.data$get.commits()
 
     ## For each commit hash, make sure there is only one row
     commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
@@ -292,7 +292,7 @@ get.author.loc.count = function(proj.data) {
   logging::logdebug("get.author.loc.count: starting.")
 
   ## Get commit data
-  commits.df = proj.data$get.commits.filtered()
+  commits.df = proj.data$get.commits()
 
   ## For each commit hash, make sure there is only one row
   commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
@@ -332,7 +332,7 @@ get.author.mail.count = group.data.by.key("get.author.mail.count", "mails",
 get.author.mail.thread.count = function(proj.data) {
     logging::logdebug("get.author.mail.thread.count: starting.")
 
-    mails.df = proj.data$get.mails.filtered()
+    mails.df = proj.data$get.mails()
     ## Remove unnecessary rows and columns
     mails.df = mails.df[!duplicated(mails.df[["message.id"]]), ]
     mails.df = mails.df[c("author.name", "message.id", "thread")]

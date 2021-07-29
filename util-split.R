@@ -68,7 +68,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     ## if the data used by the split basis is not present, load it automatically
     if (!(split.basis %in% project.data$get.cached.data.sources())) {
-        function.name = paste0("get.", split.basis)
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
         project.data[[function.name]]()
     }
 
@@ -77,7 +77,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     data = lapply(data.to.split, function(ds) {
         ## build the name of the respective getter and call it
-        function.name = paste0("get.", ds)
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
         return(project.data[[function.name]]())
     })
     names(data) = data.to.split
@@ -86,7 +86,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     additional.data.sources = project.data$get.cached.data.sources("only.additional")
     additional.data = lapply(additional.data.sources, function(ds) {
         ## build the name of the respective getter and call it
-        function.name = paste0("get.", ds)
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
         return(project.data[[function.name]]())
     })
     names(additional.data) = additional.data.sources
@@ -260,14 +260,14 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     data.sources = project.data$get.cached.data.sources("only.main")
     data = lapply(data.sources, function(ds) {
         ## build the name of the respective getter and call it
-        function.name = paste0("get.", ds)
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
         return(project.data[[function.name]]())
     })
     names(data) = data.sources
 
     ## if the data used by the split basis is not present, load it automatically
     if (!(activity.type %in% project.data$get.cached.data.sources())) {
-        function.name = paste0("get.", activity.type)
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
         project.data[[function.name]]()
     }
 
@@ -398,7 +398,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## remove the last regular range as it is not complete and we don't loose data when removing it
         last.regular.range = cf.data[[length(cf.data)]]
         last.sliding.range = cf.data[[length(cf.data) - 1]]
-        get.activity.data = paste0("get.", activity.type)
+        get.activity.data = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
 
         last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         last.sliding.range.ids = (last.sliding.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]

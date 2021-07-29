@@ -55,9 +55,33 @@ BASE.ARTIFACTS = c(
 ## mapping of data source to artifact column (for commits: filter artifacts based on the configuration options
 ## 'commits.filter.base.artifact' and 'commits.filter.untracked.files' of the corresponding 'ProjectConf' object)
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
-    "commits" = "get.commits.filtered",
-    "mails"   = "get.mails.filtered",
-    "issues"  = "get.issues.filtered"
+    "commits" = "get.commits",
+    "mails"   = "get.mails",
+    "issues"  = "get.issues"
+)
+
+DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
+    "commits" = "get.commits.unfiltered",
+    "mails"   = "get.mails.unfiltered",
+    "issues"  = "get.issues.unfiltered"
+)
+
+DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
+    "authors" = "get.authors",
+    "commit.messages" = "get.commit.messages",
+    "synchronicity" = "get.synchronicity",
+    "pasta" = "get.pasta"
+)
+
+rename.list.keys = function(l, f) {
+    names(l) = lapply(names(l), f)
+    return (l)
+}
+
+DATASOURCE.TO.GLOBAL.ARTIFACT.FUNCTION = c(
+    DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION,
+    DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION,
+    rename.list.keys(DATASOURCE.TO.ARTIFACT.FUNCTION, function(x) paste0(x, ".filtered"))
 )
 
 ## mapping of data source to artifact column
@@ -66,6 +90,7 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
     "mails"   = "thread",
     "issues"  = "issue.id"
 )
+
 
 ## the maximum time difference between subsequent mails of a patchstack
 PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
@@ -635,7 +660,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data.sources the data sources to be prepared
         prepare.timestamps = function(data.sources) {
             for (source in data.sources) {
-                self[[ paste0("get.", source) ]]()
+                self[[ DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[source]] ]]()
             }
         },
 
@@ -886,19 +911,19 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' Return the commits retrieved by the method \code{get.commits.unfiltered} by removing untracked files and removing the
         #' base artifact (if configured in the \code{project.conf}, see parameters \code{commits.filter.untracked.files}
         #' and \code{commits.filter.base.artifact}).
         #'
         #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
-        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
-        #' @seealso get.commits.filtered.uncached
-        get.commits.filtered = function() {
+        #' @seealso get.commits.uncached
+        get.commits = function() {
             if (!self$is.data.source.cached("commits.filtered")) {
                 private$commits.filtered = private$filter.commits(
-                    self$get.commits(),
+                    self$get.commits.unfiltered(),
                     private$project.conf$get.value("commits.filter.untracked.files"),
                     private$project.conf$get.value("commits.filter.base.artifact"),
                     private$project.conf$get.value("filter.bots")
@@ -907,21 +932,21 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$commits.filtered)
         },
 
-        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' Return the commits retrieved by the method \code{get.commits.unfiltered} by removing untracked files and removing the
         #' base artifact (see parameters).
         #'
         #' This method does not use caching. If you want to use caching, please use the method
-        #' \code{get.commits.filtered} instead.
+        #' \code{get.commits} instead.
         #'
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
         #' @param filter.bots flag commits by bots should be removed
         #'
-        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
-        #' @seealso get.commits.filtered
-        get.commits.filtered.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
-            return (private$filter.commits(self$get.commits(), remove.untracked.files, remove.base.artifact, filter.bots))
+        #' @seealso get.commits
+        get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
+            return (private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -929,7 +954,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' If configured in the \code{project.conf}, add PaStA and synchronicity data.
         #'
         #' @return the list of commits
-        get.commits = function() {
+        get.commits.unfiltered = function() {
             logging::loginfo("Getting commit data.")
 
             ## if commits are not read already and are not locked in the configuration, do this
@@ -1167,8 +1192,8 @@ ProjectData = R6::R6Class("ProjectData",
                     ## read mail data if filtering patchstack mails
                     if (!self$is.data.source.cached("mails")
                         && private$project.conf$get.value("mails.filter.patchstack.mails")) {
-                        ## just triggering read-in, no assignment; the mails are stored within 'get.mails.filtered'
-                        self$get.mails.filtered()
+                        ## just triggering read-in, no assignment; the mails are stored within 'get.mails'
+                        self$get.mails()
                     } else {
                         ## update all PaStA-related data
                         private$update.pasta.data()
@@ -1205,7 +1230,7 @@ ProjectData = R6::R6Class("ProjectData",
                 if (!self$is.data.source.cached("mails") &&
                     private$project.conf$get.value("mails.filter.patchstack.mails")) {
                     ## just triggering read-in, no storage
-                    self$get.mails.filtered()
+                    self$get.mails()
                 } else {
                     ## update all PaStA-related data
                     private$update.pasta.data()
@@ -1244,7 +1269,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' data if configured in the field \code{project.conf}.
         #'
         #' @return the mail data
-        get.mails = function() {
+        get.mails.unfiltered = function() {
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already and are not locked in the configuration, do this
@@ -1273,9 +1298,9 @@ ProjectData = R6::R6Class("ProjectData",
         #' data if configured in the field \code{project.conf}.
         #'
         #' @return the mail data
-        get.mails.filtered = function() {
+        get.mails = function() {
             logging::loginfo("Getting e-mail data.")
-            self$get.mails()
+            self$get.mails.unfiltered()
             return(private$mails.filtered)
         },
 
@@ -1363,13 +1388,13 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it does not already exist, call the read method.
         #'
         #' @return the issue data
-        get.issues.filtered = function() {
+        get.issues = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
             if (!self$is.data.source.cached("issues.filtered")) {
                 private$issues.filtered = private$filter.issues(
-                    self$get.issues(),
+                    self$get.issues.unfiltered(),
                     private$project.conf$get.value("issues.only.comments"),
                     private$project.conf$get.value("filter.bots"))
             }
@@ -1378,7 +1403,7 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the issue data, filtered according the parameters.
         #'
-        #' Unlike \code{get.issues.filtered}, this method does not use caching. If you want caching, please use
+        #' Unlike \code{get.issues}, this method does not use caching. If you want caching, please use
         #' that method instead.
         #'
         #' @param issues.only.comments flag whether issue events that are not comments are retained
@@ -1386,10 +1411,10 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the issue data
         #'
-        #' @seealso get.issues.filtered
-        get.issues.filtered.uncached = function(issues.only.comments, remove.bots = FALSE) {
+        #' @seealso get.issues
+        get.issues.uncached = function(issues.only.comments, remove.bots = FALSE) {
             logging::loginfo("Getting issue data")
-            return(private$filter.issues(self$get.issues(), issues.only.comments, remove.bots))
+            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, remove.bots))
         },
 
         #' Get the issue data, unfiltered.
@@ -1397,8 +1422,8 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the issue data
         #'
-        #' @seealso get.issues.filtered for a detailed description of filtering options
-        get.issues = function() {
+        #' @seealso get.issues for a detailed description of filtering options
+        get.issues.unfiltered = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet and are not locked in the configuration, do this
@@ -1525,7 +1550,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## define the data sources
             main.data.sources = c("commits", "mails", "issues")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
-            filtered.data.sources = c("issues.filtered", "commits.filtered")
+            filtered.data.sources = c("issues.filtered", "commits.filtered", "mails.filtered")
 
             ## set the right data sources to look for according to the argument
             data.sources = switch(source.type,
@@ -1611,9 +1636,28 @@ ProjectData = R6::R6Class("ProjectData",
                 return(FALSE)
             }
 
+            getter.list = DATASOURCE.TO.ARTIFACT.FUNCTION = list(
+                "commits" = "get.commits",
+                "mails"   = "get.mails",
+                "issues"  = "get.issues"
+            )
+
+            DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
+                "commits" = "get.commits.unfiltered",
+                "mails"   = "get.mails.unfiltered",
+                "issues"  = "get.issues.unfiltered"
+            )
+
+            DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
+                "authors" = "get.authors",
+                "commit.messages" = "get.commit.messages",
+                "synchronicity" = "get.synchronicity",
+                "pasta" = "get.pasta"
+            )
+
             ## compare the cached data sources
             for (source in self.data.sources) {
-                function.call = paste0("get.", source)
+                function.call = DATASOURCE.TO.GLOBAL.ARTIFACT.FUNCTION[[source]]
                 if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
                     return(FALSE)
                 }

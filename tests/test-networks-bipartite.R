@@ -536,7 +536,7 @@ test_that("Network construction with only untracked files (no edges and artifact
 
     ## construct objects and keep just commits on untracked files
     proj.data = ProjectData$new(project.conf = proj.conf)
-    commit.data = subset(proj.data$get.commits(), artifact == UNTRACKED.FILE.EMPTY.ARTIFACT)
+    commit.data = subset(proj.data$get.commits.unfiltered(), artifact == UNTRACKED.FILE.EMPTY.ARTIFACT)
     proj.data$set.commits(commit.data)
 
     ## build network
