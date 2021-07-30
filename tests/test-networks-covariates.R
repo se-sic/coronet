@@ -13,6 +13,7 @@
 ##
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
@@ -1370,7 +1371,7 @@ test_that("Test addition of attributes despite of empty data", {
 
     ## add author-role attribute:
     ## 1) construct empty classification
-    classification = list(get.author.class(data.frame(), "foo"))
+    classification = list(get.author.class(data.frame(), "foo", classification.category = "count"))
     names(classification) = range
     ## 2) add attribute
     net.author.role = add.vertex.attribute.author.role(networks, classification, default = "unclassified")[[1]]

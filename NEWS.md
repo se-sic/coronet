@@ -20,6 +20,7 @@
 - Add per-author vertex attributes regarding counting of issues, issue-creations, issue-comments, mails, mail-threads, ... (like mail thread count, issue creation count) (PR #194, issue #188, 9f9150a97ffbb64607df0ddcbce299e16c2580da, 7260d62cf6f1470584753f76970d19664638eeed, 139f70b67903909bcd4c57e26afa458681a869f2, eb4f649c04155e22195627072e0f08bb8fe65dc4, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 1e1406f4a0898cac3e61a7bc9a5aa665dceef79f, 98e11abc651b5fe0ec994eddea078635b0d6f0b2, a566caec6d7e649cc495d292a19eca8a7ffccde8)
 - Add functionality that allows to read any data source at any point in time, even after splitting. In this case, the read data is automatically cut to the corresponding range on the `RangeData` object (PR #201, 7f9394f528068f52957be67ab7e2efb733011c6b). Additionally, changing the configuration parameters concerning additional data sources, the environment of a `ProjectData` object is no longer reset (PR #201, eed45ac1f97b4915ec42fb869f34359da1df4c60)
 - Add new configuration parameters `commits.locked`, `mails.locked` and `issues.locked` to `ProjectConf` which, when set to `TRUE`, prevent the respective getters from triggering the read of the data if it is not present yet (PR #201, 382167790e7d096b539eeed6464efeb9bb501d43)
+- Add support for classifying developers on the basis of more count-based classification metrics, including mail-count, mail-thread count, issue-count, issue-comment count, issue-commented-in count, and issue-created count (issue #70, PR #209, d7b2455ece9840caba7c3a46704d2a62a11bee57, 6f737c8859519867928acc4e545c89bfd91b1e2e)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
@@ -31,6 +32,9 @@
 - Add R version 4.1 to test suite and adjust missing time-zone attributes on `NA` vectors or empty POSIXct vectors which are correctly added as of R version 4.1 (PR #203, 6b7fb36478325185f80f95e03dd0a0135bf44346, 98c56715502cf5140d98796dc2d6cb18f71760b2, 09d11ab631de8051ca317f36652ab0fee9cc0cce)
 - Splitting no longer loads all (additional) data sources, but only the ones that have already been cached in the `ProjectData` (PR #201, 52a3014b3c4a1d6dda1347adcffed4e90fae1d2b, aec898e105ff5478fb75ba488b56c9c258a17a80, de1bbfe644c52200e80a769e7c0e447c3a087278)
 - Change the internal representation of empty data from `NULL` to empty data frames and adapt function `get.cached.data.sources()` of `ProjectData` which returns a vector of all data sources that are cached (including additional and filtered data sources) (PR #201 aec898e105ff5478fb75ba488b56c9c258a17a80, e55d088f926ae7a069761864855c179c04ed07dc); additionally, introduce new function `is.data.source.cached()` in `util-data.R` that returns a logical vector indicating which of the given data sources are cached (PR #201, b49cc5df4da04af9df2ae9bcdc7847fafb6befc9, 491e70c44dd71e4d51b40ee83bc8eb598d413bc0)
+- Change the threshold calculation for the classification of developers to use a quantile approach when classifying on the basis of network centrality metrics (issue #205, PR #209, 5128252572ab6471a9dd5437360232622c33e958)
+- Improve the documentation in `util-core-peripheral.R` by adding roxygen skeleton documentation to undocumented functions (issue #70, PR #209, a3d5ca7a5f8c021e0bed588219321798388790ac, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Change the `$` notation to the bracket notation in `util-core-peripehral.R` (issue #70, PR #209, 6f737c8859519867928acc4e545c89bfd91b1e2e)
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
@@ -43,6 +47,8 @@
 - Fix plotting an empty network via `plot.network` (03f986d760da8f8fec0e7aa530672736ea3068c7)
 - Fix behavior of `construct.ranges` when only one range has to bee constructed and `sliding.window = TRUE` (000314b961247c55051f03da3b2034fbc668847e)
 - Add package `reshape2` to the install script as this package is used in module `util-plot-evolution.R` for quite a while but never has been added to the list of packages to install (7bb4e7bc15b77c1faf8ddf8655c820822be25f80)
+- Fix data tests in `test-data.R` to use deep clones of `ProjectData` objects (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
+- Fix the `update.values()` function in `util-conf.R` to delete the `value` field if the new value is equal to the default value as the comparison of two otherwise equal `Conf` objects fails without this (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
 
 
 ## 3.7
