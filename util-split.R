@@ -67,13 +67,13 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     split.basis = match.arg(split.basis)
 
     ## if the data used by the split basis is not present, load it automatically
-    if (!(split.basis %in% project.data$get.cached.data.sources())) {
+    if (!(split.basis %in% project.data$get.unfiltered.main.cached.data.sources())) {
         function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
         project.data[[function.name]]()
     }
 
     ## get actual raw data
-    data.to.split = project.data$get.cached.data.sources("only.main")
+    data.to.split = project.data$get.unfiltered.main.cached.data.sources()
 
     data = lapply(data.to.split, function(ds) {
         ## build the name of the respective getter and call it
@@ -83,7 +83,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     names(data) = data.to.split
 
     ## load available additional data sources
-    additional.data.sources = project.data$get.cached.data.sources("only.additional")
+    additional.data.sources = project.data$get.additional.cached.data.sources()
     additional.data = lapply(additional.data.sources, function(ds) {
         ## build the name of the respective getter and call it
         function.name = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[ds]]
@@ -257,7 +257,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
-    data.sources = project.data$get.cached.data.sources("only.main")
+    data.sources = project.data$get.unfiltered.main.cached.data.sources()
     data = lapply(data.sources, function(ds) {
         ## build the name of the respective getter and call it
         function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
@@ -266,7 +266,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     names(data) = data.sources
 
     ## if the data used by the split basis is not present, load it automatically
-    if (!(activity.type %in% project.data$get.cached.data.sources())) {
+    if (!(activity.type %in% project.data$get.unfiltered.main.cached.data.sources())) {
         function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
         project.data[[function.name]]()
     }
