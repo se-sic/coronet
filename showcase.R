@@ -103,10 +103,10 @@ x = NetworkBuilder$new(project.data = x.data, network.conf = net.conf)
 
 ## * Evaluation plots ------------------------------------------------------
 
-edit.types = plot.commit.edit.types.in.project(x.data)
-edit.types.scaled = plot.commit.edit.types.in.project(x.data, TRUE)
-editor.types = plot.commit.editor.types.by.author(x.data)
-editor.types.scaled = plot.commit.editor.types.by.author(x.data, TRUE)
+#edit.types = plot.commit.edit.types.in.project(x.data)
+#edit.types.scaled = plot.commit.edit.types.in.project(x.data, TRUE)
+#editor.types = plot.commit.editor.types.by.author(x.data)
+#editor.types.scaled = plot.commit.editor.types.by.author(x.data, TRUE)
 
 ## * Data retrieval --------------------------------------------------------
 

@@ -21,6 +21,8 @@
 - Add functionality that allows to read any data source at any point in time, even after splitting. In this case, the read data is automatically cut to the corresponding range on the `RangeData` object (PR #201, 7f9394f528068f52957be67ab7e2efb733011c6b). Additionally, changing the configuration parameters concerning additional data sources, the environment of a `ProjectData` object is no longer reset (PR #201, eed45ac1f97b4915ec42fb869f34359da1df4c60)
 - Add new configuration parameters `commits.locked`, `mails.locked` and `issues.locked` to `ProjectConf` which, when set to `TRUE`, prevent the respective getters from triggering the read of the data if it is not present yet (PR #201, 382167790e7d096b539eeed6464efeb9bb501d43)
 - Add support for classifying developers on the basis of more count-based classification metrics, including mail-count, mail-thread count, issue-count, issue-comment count, issue-commented-in count, and issue-created count (issue #70, PR #209, d7b2455ece9840caba7c3a46704d2a62a11bee57, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Added bot filtering mechanism, which allows removing issues/mails/commits made by bots (838855ffbe6d404bcb447d470a97870b238754ae, dcce82de58e25c6a0f3c27c9a7c46fb35a47fced)
+- Ignore issues made by the "deleted user" (1a08140884f30366995352af315218cfd315b958)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
@@ -35,6 +37,7 @@
 - Change the threshold calculation for the classification of developers to use a quantile approach when classifying on the basis of network centrality metrics (issue #205, PR #209, 5128252572ab6471a9dd5437360232622c33e958)
 - Improve the documentation in `util-core-peripheral.R` by adding roxygen skeleton documentation to undocumented functions (issue #70, PR #209, a3d5ca7a5f8c021e0bed588219321798388790ac, 6f737c8859519867928acc4e545c89bfd91b1e2e)
 - Change the `$` notation to the bracket notation in `util-core-peripehral.R` (issue #70, PR #209, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Rename getters for main data sources: Unfiltered date is now acquired using `get.<datasource>.unfiltered`, filtered data is acquired using `get.<datasource>` (edf19cfee9c2855a1d968f37158b0fd2c196766a, e05f3448e1e2e8faaac219ed4ac818f82f3d8ff7)
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
@@ -49,7 +52,7 @@
 - Add package `reshape2` to the install script as this package is used in module `util-plot-evolution.R` for quite a while but never has been added to the list of packages to install (7bb4e7bc15b77c1faf8ddf8655c820822be25f80)
 - Fix data tests in `test-data.R` to use deep clones of `ProjectData` objects (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
 - Fix the `update.values()` function in `util-conf.R` to delete the `value` field if the new value is equal to the default value as the comparison of two otherwise equal `Conf` objects fails without this (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
-
+- Fix bug where splitting would not properly collect additional artifacts (345433eab005e6e70b837afd66f7374392dc5f3f)
 
 ## 3.7
 

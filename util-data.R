@@ -78,16 +78,11 @@ rename.list.keys = function(lst, map.function) {
     return (lst)
 }
 
+# List mapping the getters to their corresponding fields
 DATASOURCE.TO.GLOBAL.ARTIFACT.FUNCTION = c(
     DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION,
-    "commits.unfiltered" = "get.commits.unfiltered",
-    "mails.unfiltered"   = "get.mails.unfiltered",
-    "issues.unfiltered"  = "get.issues.unfiltered",
-    "commits" = "get.commits",
-    "mails"   = "get.mails",
-    "issues"  = "get.issues",
-    DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION,
-    rename.list.keys(DATASOURCE.TO.ARTIFACT.FUNCTION, function(x) paste0(x, ".filtered"))
+    DATASOURCE.TO.ARTIFACT.FUNCTION,
+    rename.list.keys(DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION, function(x) paste0(x, ".unfiltered"))
 )
 
 ## mapping of data source to artifact column
@@ -150,7 +145,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## mails
         mails.unfiltered = create.empty.mails.list(), # data.frame
         mails = create.empty.mails.list(), # data.frame
-        foo00.mails.patchstacks = list(), # list
+        mails.patchstacks = list(), # list
         ## issues
         issues.unfiltered = create.empty.issues.list(), #data.frame
         issues = create.empty.issues.list(), #data.frame
@@ -171,7 +166,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param commits the data.frame of commits on which filtering will be applied
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
-        #' @param filter.bots flag commits by bots should be removed
+        #' @param filter.bots flag whether commits by bots should be removed
         #'
         #' @return the commits after all filters have been applied
         filter.commits = function(commits, remove.untracked.files, remove.base.artifact, filter.bots) {
@@ -240,6 +235,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## return immediately if no mails are available
             if (!self$is.data.source.cached("mails.unfiltered")) {
+                private$mails.patchstacks = NULL
                 return(private$mails)
             }
 
@@ -287,13 +283,13 @@ ProjectData = R6::R6Class("ProjectData",
             patchstacks = patchstacks[lapply(patchstacks, nrow) > 1]
 
             ## store patchstack information
-            private$foo00.mails.patchstacks = patchstacks
+            private$mails.patchstacks = patchstacks
 
             logging::logdebug("filter.patchstack.mails: finished.")
             return(mails)
         },
 
-        #' Filter mail data by for example removing all mails by bots
+        #' Filter mail data by for example removing all mails by bots.
         #'
         #' @param mails the data.frame of mails on which filtering will be applied
         #' @param filter.bots flag whether bot mails are to be removed
@@ -399,7 +395,7 @@ ProjectData = R6::R6Class("ProjectData",
         filter.pasta.data = function() {
             logging::logdebug("filter.pasta.data: starting.")
 
-            new.pasta = parallel::mclapply(private$foo00.mails.patchstacks, function(patchstack) {
+            new.pasta = parallel::mclapply(private$mails.patchstacks, function(patchstack) {
 
                 ## get all PaStA data that relates to the current patchstack (do not drop data.frame structure!)
                 pasta.tmp = private$pasta[private$pasta[["message.id"]] %in% patchstack[["message.id"]], , drop = FALSE]
@@ -420,7 +416,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## remove old items from PaStA data
             ## 1) flatten the list of mail-dataframes (i.e. patchstacks) to a single mail-dataframe
-            patchstack.mails = plyr::rbind.fill(private$foo00.mails.patchstacks)
+            patchstack.mails = plyr::rbind.fill(private$mails.patchstacks)
             ## 2) delete any PaStA information that relate to message IDs of mails that will be discarded
             pasta = private$pasta[!(private$pasta[["message.id"]] %in% patchstack.mails[["message.id"]]), ]
 
@@ -753,7 +749,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$issues.unfiltered = create.empty.issues.list()
             private$mails.unfiltered = create.empty.mails.list()
             private$mails = create.empty.mails.list()
-            private$foo00.mails.patchstacks = list()
+            private$mails.patchstacks = list()
             private$pasta = create.empty.pasta.list()
             private$pasta.mails = create.empty.pasta.list()
             private$pasta.commits = create.empty.pasta.list()
@@ -946,7 +942,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
-        #' @param filter.bots flag commits by bots should be removed
+        #' @param filter.bots flag whether commits by bots should be removed [default: FALSE]
         #'
         #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
@@ -1373,15 +1369,18 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Filters bots from given data
+        #' Filters bots from given data.
         #'
         #' @param data.to.filter A data frame, with the standard author columns,
         #'                       from which all rows with bot authors are removed
+        #'
+        #' @return the filtered data
         filter.bots = function(data.to.filter) {
             authors = self$get.authors()
+            ## authors are uniquely identified by their email, so checking this here is sufficient
             bot.indices = authors[match(data.to.filter[["author.email"]],
                                         authors[["author.email"]]), "is.bot"]
-            # retain if entry is TRUE or NA
+            ## retain if entry is TRUE or NA
             bot.indices = !bot.indices | is.na(bot.indices)
             return (data.to.filter[bot.indices,])
         },
@@ -1413,6 +1412,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param issues.only.comments flag whether issue events that are not comments are retained
         #'                             (i.e. opening, closing, ...).
+        #' @param remove.bots flag whether issues by bots should be removed. [default: FALSE]
         #'
         #' @return the issue data
         #'

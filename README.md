@@ -541,6 +541,8 @@ There is no way to update the entries, except for the revision-based parameters.
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
+- `filter.bots`
+    * Remove all commits, issues and mails made by bots. Bots are identified using the `bots.list` file.
 - `commits.filter.base.artifact`
     * Remove all information concerning the base artifact from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commit information about changes to the base artifact. Networks built on top of this `ProjectData` do also not contain any base artifact information anymore.
     * [*`TRUE`*, `FALSE`]
