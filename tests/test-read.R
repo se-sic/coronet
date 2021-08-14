@@ -251,6 +251,25 @@ test_that("Read the author data.", {
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
 })
 
+test_that("Read the raw bot data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    bot.data.read = read.bot.info(proj.conf$get.value("datapath"))
+
+    ## build the expected data.frame
+    bot.data.expected = data.frame(
+        author.name = c("Thomas", "Björn", "udo", "CLAassistant"),
+        author.email = c("thomas@example.org", "bjoern@example.org", "udo@example.org", "nomail"),
+        is.bot = c(TRUE, FALSE, NA, TRUE)
+    )
+
+    ## check the results
+    expect_identical(bot.data.read, bot.data.expected, info = "Bot data.")
+})
+
 test_that("Read and parse the pasta data.", {
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
