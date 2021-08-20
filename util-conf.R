@@ -268,13 +268,14 @@ Conf = R6::R6Class("Conf",
                     } ## if the default value and the given value are the same and if the 'value' field is present
                       ## then reset the 'value' field
                     else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]]) ||
-                               all(updated.values[[name]] == private[["attributes"]][[name]][["default"]])) {
+                               identical(sort(updated.values[[name]]),
+                                         sort(private[["attributes"]][[name]][["default"]]))) {
                         if ("value" %in% names(private[["attributes"]][[name]])) {
                             private[["attributes"]][[name]][["value"]] = NULL
                         }
                     } ## otherwise proceed with updating the value
                     else {
-                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                        private[["attributes"]][[name]][["value"]] = sort(updated.values[[name]])
                     }
                 }
             } else {
