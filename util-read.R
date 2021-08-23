@@ -491,6 +491,8 @@ read.authors = function(data.path) {
         ## if the file was empty
         authors.df[["is.bot"]] = NA
     }
+    ## re-order the columns
+    authors.df = authors.df[,c("author.id", "author.name", "author.email", "is.bot")]
     authors.df = remove.deleted.and.empty.user(authors.df)
 
     ## store the ID--author mapping
