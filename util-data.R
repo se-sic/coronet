@@ -59,13 +59,14 @@ DATASOURCE.TO.ARTIFACT.FUNCTION = list(
     "mails"   = "get.mails",
     "issues"  = "get.issues"
 )
-
+## mapping of data source to the appropiate getter for unfiltered date
+## compared to \code{DATASOURCE.TO.ARTIFACT.FUNCTION}, which yields the getter for filtered data.
 DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
     "commits" = "get.commits.unfiltered",
     "mails"   = "get.mails.unfiltered",
     "issues"  = "get.issues.unfiltered"
 )
-
+## Yields the getters associated with additional data sources, e.g. author data.
 DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
     "authors"         = "get.authors",
     "commit.messages" = "get.commit.messages",
@@ -73,13 +74,23 @@ DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
     "pasta"           = "get.pasta"
 )
 
+#' Applies a function to list keys
+#' Given a list, this function returns a modified list where the list keys have been
+#' changed by \code{map.function}, while the values are left unchanged.
+#'
+#' @param lst the list to rename
+#' @param map.function the function applied to \code{lst}'s keys
+#'
+#' @return \code{lst}, with the keys changed
 rename.list.keys = function(lst, map.function) {
     names(lst) = lapply(names(lst), map.function)
     return (lst)
 }
 
-# List mapping the getters to their corresponding fields
-DATASOURCE.TO.GLOBAL.ARTIFACT.FUNCTION = c(
+## Combine \code{DATASOURCE.TO.ARTIFACT.FUNCTION}, \code{DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION}
+## and \code{DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION} to build a list giving the getter associated with every
+## possible data source stored in ProjectData.
+DATASOURCE.FIELDS.TO.ARTIFACT.GLOBAL.FUNCTION = c(
     DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION,
     DATASOURCE.TO.ARTIFACT.FUNCTION,
     rename.list.keys(DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION, function(x) paste0(x, ".unfiltered"))
@@ -147,8 +158,8 @@ ProjectData = R6::R6Class("ProjectData",
         mails = create.empty.mails.list(), # data.frame
         mails.patchstacks = list(), # list
         ## issues
-        issues.unfiltered = create.empty.issues.list(), #data.frame
         issues = create.empty.issues.list(), #data.frame
+        issues.unfiltered = create.empty.issues.list(), #data.frame
         ## authors
         authors = create.empty.authors.list(), # data.frame
         ## additional data sources
@@ -289,7 +300,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(mails)
         },
 
-        #' Filter mail data by for example removing all mails by bots.
+        #' Filter mail data by for example removing all mails that have been sent by bots.
         #'
         #' @param mails the data.frame of mails on which filtering will be applied
         #' @param filter.bots flag whether bot mails are to be removed
@@ -536,6 +547,30 @@ ProjectData = R6::R6Class("ProjectData",
             if (self$is.data.source.cached("mails.unfiltered")) {
 
                 ## remove previous PaStA data
+                private$mails.unfiltered["pasta"] = NULL
+                private$mails.unfiltered["revision.set.id"] = NULL
+
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
+                                          by = "message.id", all.x = TRUE, sort = FALSE)
+
+                    ## sort by date again because 'merge' disturbs the order
+                    private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
+
+                    ## remove duplicated revision set ids
+                    private$mails.unfiltered[["revision.set.id"]] = sapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
+            }
+
+            ## the same block as above, but now for filtered mails
+            if (self$is.data.source.cached("mails")) {
+
+                ## remove previous PaStA data
                 private$mails["pasta"] = NULL
                 private$mails["revision.set.id"] = NULL
 
@@ -544,7 +579,7 @@ ProjectData = R6::R6Class("ProjectData",
                 if (private$project.conf$get.value("pasta")) {
                     ## merge PaStA data
                     private$mails = merge(private$mails, private$pasta.mails,
-                                                   by = "message.id", all.x = TRUE, sort = FALSE)
+                                          by = "message.id", all.x = TRUE, sort = FALSE)
 
                     ## sort by date again because 'merge' disturbs the order
                     private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
@@ -669,6 +704,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' Extract the earliest and the latest date from the specified data source
         #' and store it to the timestamps data.frame.
         #'
+        #' @param name the name the timestamps are registered as
         #' @param source the specified data source
         extract.timestamps = function(name, source) {
             ## initialize data structure for timestamp
@@ -1265,7 +1301,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$update.pasta.data()
         },
 
-        #' Get the mail data.
+        #' Get the mail data, unfiltered.
         #' If it does not already exist call the read method.
         #' Call the setter function to set the data and add PaStA
         #' data if configured in the field \code{project.conf}.
@@ -1293,10 +1329,11 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$mails.unfiltered)
         },
 
-        #' Get the mail data.
-        #' If it does not already exist call the read method.
-        #' Call the setter function to set the data and add PaStA
-        #' data if configured in the field \code{project.conf}.
+        #' Get the mail data, filtered.
+        #' Calls the getter for unfiltered mail data, which already does filtering
+        #' as part of the initial mail processing.
+        #'
+        #' @see get.mails
         #'
         #' @return the mail data
         get.mails = function() {
@@ -1369,7 +1406,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
-        #' Filters bots from given data.
+        #' Filter bots from given data.
         #'
         #' @param data.to.filter A data frame, with the standard author columns,
         #'                       from which all rows with bot authors are removed
@@ -1380,7 +1417,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## authors are uniquely identified by their email, so checking this here is sufficient
             bot.indices = authors[match(data.to.filter[["author.email"]],
                                         authors[["author.email"]]), "is.bot"]
-            ## retain if entry is TRUE or NA
+            ## retain if entry is FALSE or NA
             bot.indices = !bot.indices | is.na(bot.indices)
             return (data.to.filter[bot.indices,])
         },
@@ -1412,14 +1449,14 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param issues.only.comments flag whether issue events that are not comments are retained
         #'                             (i.e. opening, closing, ...).
-        #' @param remove.bots flag whether issues by bots should be removed. [default: FALSE]
+        #' @param filter.bots flag whether issues by bots should be removed. [default: FALSE]
         #'
         #' @return the issue data
         #'
         #' @seealso get.issues
-        get.issues.uncached = function(issues.only.comments, remove.bots = FALSE) {
+        get.issues.uncached = function(issues.only.comments, filter.bots = FALSE) {
             logging::loginfo("Getting issue data")
-            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, remove.bots))
+            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots))
         },
 
         #' Get the issue data, unfiltered.
@@ -1535,34 +1572,75 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'commits', 'mails', 'issues', 'commits.filtered', 'issues.filtered', commit.messages', 'authors',
-        #' 'synchronicity', and 'pasta'.
+        #' 'commits', 'mails', 'issues', for 'only.main' and 'only.unfiltered'
+        #' 'commit.messages', 'authors', 'synchronicity', and 'pasta', for 'only.additional'
         #' 'data.timestamps' are tested implicitly every time as they only contain
         #' the earliest and latest date of one data source.
         #'
         #' @param source.type character vector indicating which data sources should be checked for.
         #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
         #'                    - 'only.additional' filters only additional data sources and authors.
-        #'                    - 'only.filtered' filters only filtered data sources (i.e. filtered commits and filtered
-        #'                      mails).
+        #'                    - 'only.unfiltered' filters only unfiltered data sources (i.e. unfiltered commits, mails, issues).
+        #'                    [default: "all"]
+        #'
+        #' @return a vector containing all the names
+        get.cached.data.sources = function(source.type = c("only.main", "only.additional", "only.unfiltered")) {
+            source.type = match.arg(arg = source.type)
+            adapter.to.external.name = list(
+                "only.unfiltered" = list(
+                    "commits.unfiltered" = "commits",
+                    "issues.unfiltered" = "issues",
+                    "mails.unfiltered" = "mails"
+                ),
+                "only.main" = list(
+                    "commits" = "commits",
+                    "issues" = "issues",
+                    "mails" = "mails"
+                ),
+                "only.additional" = list(
+                    "authors" = "authors",
+                    "commit.messages" = "commit.messages",
+                    "synchronicity" = "synchronicity",
+                    "pasta" = "pasta"
+                )
+            )
+            sources = self$get.cached.data.sources.internal(source.type)
+            return(adapter.to.external.name[[source.type]][sources])
+
+        },
+
+        #' *DO NOT CALL*
+        #' This function is an internal helper used to implement comparsions and querying whether
+        #' a data source is cached. It returns the internal field names of all data sources (of given \code{type})
+        #' currently cached in this object.
+        #'
+        #' Do not use this method except when implementing classes within the ProjectData class.
+        #' Instead consider using \{get.cached.data.sources}
+        #'
+        #' @see get.cached.data.sources
+        #'
+        #' @param source.type character vector indicating which data sources should be checked for.
+        #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
+        #'                    - 'only.additional' filters only additional data sources and authors.
+        #'                    - 'only.unfiltered' filters only unfiltered data sources (i.e. unfiltered commits, mails, issues).
         #'                    - 'all' or anything else filters all data sources.
         #'                    [default: "all"]
         #'
         #' @return a vector containing all the names
-        get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional", "only.filtered")) {
+        get.cached.data.sources.internal = function(source.type = c("all", "only.main", "only.additional", "only.unfiltered")) {
             source.type = match.arg(arg = source.type)
 
             ## define the data sources
-            main.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
+            unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
-            filtered.data.sources = c("issues", "commits", "mails")
+            main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
             data.sources = switch(source.type,
                                   "only.main" = main.data.sources,
                                   "only.additional" = additional.data.sources,
-                                  "only.filtered" = filtered.data.sources,
-                                  "all" = c(main.data.sources, additional.data.sources, filtered.data.sources))
+                                  "only.unfiltered" = unfiltered.data.sources,
+                                  "all" = c(main.data.sources, additional.data.sources, unfiltered.data.sources))
 
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
@@ -1581,39 +1659,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return \code{TRUE} if the data source is cached, else \code{FALSE}
         is.data.source.cached = function(data.source) {
-            return(data.source %in% self$get.cached.data.sources())
-        },
-
-        #' Get the names of unfiltered main data sources that are currently cached in the
-        #' ProjectData object. The possible data sources are:
-        #' 'commits', 'mails', 'issues'.
-        #'
-        #' @see get.cached.data.sources
-        #' @return a vector containing all the names
-        get.unfiltered.main.cached.data.sources = function() {
-            sources = self$get.cached.data.sources(source.type = "only.main")
-            unfiltered.to.main = list(
-                "commits.unfiltered" = "commits",
-                "issues.unfiltered" = "issues",
-                "mails.unfiltered" = "mails"
-            )
-            return(unfiltered.to.main[sources])
-        },
-
-        #' Get the names of unfiltered main data sources that are currently cached in the
-        #' ProjectData object.
-        #'
-        #' @see get.cached.data.sources
-        #' @return a vector containing all the names
-        get.additional.cached.data.sources = function() {
-            sources = self$get.cached.data.sources(source.type = "only.additional")
-            additional.to.external.name = list(
-                "authors" = "authors",
-                "commit.messages" = "commit.messages",
-                "synchronicity" = "synchronicity",
-                "pasta" = "pasta"
-            )
-            return(additional.to.external.name[sources])
+            return(data.source %in% self$get.cached.data.sources.internal())
         },
 
         #' Extract the data classes (i.e., data columns and their classes) available in
@@ -1659,8 +1705,8 @@ ProjectData = R6::R6Class("ProjectData",
                 return(FALSE)
             }
 
-            self.data.sources = self$get.cached.data.sources()
-            other.data.sources = other.data.object$get.cached.data.sources()
+            self.data.sources = self$get.cached.data.sources.internal()
+            other.data.sources = other.data.object$get.cached.data.sources.internal()
 
             ## compare the list of cached data sources
             if (!identical(self.data.sources, other.data.sources)) {
@@ -1676,7 +1722,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## compare the cached data sources
             for (source in self.data.sources) {
-                function.call = DATASOURCE.TO.GLOBAL.ARTIFACT.FUNCTION[[source]]
+                function.call = DATASOURCE.FIELDS.TO.ARTIFACT.GLOBAL.FUNCTION[[source]]
                 if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
                     return(FALSE)
                 }

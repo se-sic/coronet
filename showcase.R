@@ -118,7 +118,7 @@ x.data$update.project.conf(updated.values = list(synchronicity = TRUE, synchroni
 x.data$get.synchronicity()
 x.data$group.artifacts.by.data.column("commits", "author.name")
 x.data$get.commits()
-x.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
+x.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE, filter.bots = FALSE)
 x.data$get.mails.unfiltered()
 x.data$get.mails()
 x.data$get.issues.unfiltered()
@@ -127,6 +127,7 @@ x.data$get.authors()
 x.data$get.data.path()
 x.data$group.artifacts.by.data.column("mails", "author.name")
 x.data$group.artifacts.by.data.column("commits", "hash")
+x.data$filter.bots(x.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE, filter.bots = FALSE))
 
 ## * Network construction --------------------------------------------------
 
@@ -179,7 +180,7 @@ y.data$update.project.conf(updated.values = list(synchronicity = TRUE, synchroni
 y.data$get.synchronicity()
 y.data$group.artifacts.by.data.column("commits", "author.name")
 y.data$get.commits()
-y.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE)
+y.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE, filter.bots = FALSE)
 y.data$get.mails.unfiltered()
 y.data$get.mails()
 y.data$get.issues.unfiltered()

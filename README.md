@@ -86,6 +86,7 @@ The data folder – which can result from consecutive runs of `Codeface` [[https
       │     └──{project-name}_{tagging}
       │           └──{tagging}
       │                ├── authors.list
+      │                ├── bots.list
       │                ├── commits.list
       │                ├── commitMessages.list
       │                ├── emails.list
@@ -543,6 +544,7 @@ There is no way to update the entries, except for the revision-based parameters.
 
 - `filter.bots`
     * Remove all commits, issues and mails made by bots. Bots are identified using the `bots.list` file.
+    * [`TRUE`, *`FALSE`*]
 - `commits.filter.base.artifact`
     * Remove all information concerning the base artifact from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commit information about changes to the base artifact. Networks built on top of this `ProjectData` do also not contain any base artifact information anymore.
     * [*`TRUE`*, `FALSE`]

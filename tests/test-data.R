@@ -371,7 +371,7 @@ test_that("Filter bots from commit data", {
     filtered.commits = proj.data$get.commits()
 
     expect_true(all(filtered.commits[["author.name"]] != "Thomas"))
-    ## there are now 5 commits remaining since 3 commits got filtered
+    ## there are now 5 rows in the filtered commit data, since 3 rows have been removed during filtering
     expect_equal(nrow(filtered.commits), 5)
 })
 
@@ -386,7 +386,7 @@ test_that("Filter bots from issue data", {
     filtered.issues = proj.data$get.issues()
 
     expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
-    ## there are now 41 issues remaining since 6 issues got filtered
+    ## there are now 41 issue events remaining, since 6 issue events have been removed during filtering
     expect_equal(nrow(filtered.issues), 41)
 })
 
@@ -401,7 +401,7 @@ test_that("Filter bots from mail data", {
     filtered.mails = proj.data$get.mails()
 
     expect_true(all(filtered.mails[["author.name"]] != "Thomas"))
-    ## there are now 15 mails remaining since 2 mails got filtered
+    ## there are now 15 mails remaining, since 2 mails have been removed during filtering
     expect_equal(nrow(filtered.mails), 15)
 })
 

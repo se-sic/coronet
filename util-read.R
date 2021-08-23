@@ -40,6 +40,18 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions ---------------------------------------------------------------
+
+#' Remove the "deleted user" or the author with empty name "" from a data frame.
+#'
+#' @param data the data from which to remove the "deleted user" and author with empty name
+#'
+#' @return the data frame without the rows in which the author name is "deleted user" or ""
+remove.deleted.and.empty.user = function(data) {
+    return(data[data["author.name"] != "deleted user" & data["author.name"] != "", ])
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Main data sources -------------------------------------------------------
 
 ## * Commit data -----------------------------------------------------------
@@ -156,6 +168,8 @@ read.commits = function(data.path, artifact) {
                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                           commit.data[["artifact.type"]])
 
+    commit.data = remove.deleted.and.empty.user(commit.data) # filter deleted user
+
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
@@ -246,6 +260,7 @@ read.mails = function(data.path) {
             sum(break.to.cut), break.date
         )
     }
+    mail.data = remove.deleted.and.empty.user(mail.data) # filter deleted user
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")
@@ -357,7 +372,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
-        issue.data = issue.data[issue.data["author.name"] != "deleted user" & issue.data["author.name"] != "", ] # filter deleted user
+        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 
@@ -469,12 +484,14 @@ read.authors = function(data.path) {
     bot.data = read.bot.info(data.path)
     if (!is.null(bot.data)) {
         authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
-        authors.df = authors.df[order(authors.df[["author.id"]]),] # re-order after read
+        authors.df = authors.df[order(authors.df[["author.id"]]), ] # re-order after read
         row.names(authors.df) = 1:nrow(authors.df)
     } else {
+        ## if bot data is not available, add NA data, which is what would have happened
+        ## if the file was empty
         authors.df[["is.bot"]] = NA
     }
-    authors.df = authors.df[,c("author.id", "author.name", "author.email", "is.bot")]
+    authors.df = remove.deleted.and.empty.user(authors.df)
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
