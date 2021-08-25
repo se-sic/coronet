@@ -444,12 +444,17 @@ read.bot.info = function(data.path) {
 
 ## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
+    "author.id", "author.name", "author.email", "is.bot"
+)
+
+## column names of a dataframe containing authors, before adding bot data.
+AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = c(
     "author.id", "author.name", "author.email"
 )
 
 ## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
 AUTHORS.LIST.DATA.TYPES = c(
-    "character", "character", "character"
+    "character", "character", "character", "logical"
 )
 
 #' Read the author data from the 'authors.list' file.
@@ -476,23 +481,23 @@ read.authors = function(data.path) {
     }
 
     ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
+    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS.WITHOUT.BOTS)) {
         authors.df[3] = NA
     }
-    colnames(authors.df) = AUTHORS.LIST.COLUMNS
+    colnames(authors.df) = AUTHORS.LIST.COLUMNS.WITHOUT.BOTS
 
     bot.data = read.bot.info(data.path)
     if (!is.null(bot.data)) {
         authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
         authors.df = authors.df[order(authors.df[["author.id"]]), ] # re-order after read
-        row.names(authors.df) = 1:nrow(authors.df)
+        row.names(authors.df) = seq_len(nrow(authors.df))
     } else {
         ## if bot data is not available, add NA data, which is what would have happened
         ## if the file was empty
         authors.df[["is.bot"]] = NA
     }
     ## re-order the columns
-    authors.df = authors.df[,c("author.id", "author.name", "author.email", "is.bot")]
+    authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
     authors.df = remove.deleted.and.empty.user(authors.df)
 
     ## store the ID--author mapping

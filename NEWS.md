@@ -22,7 +22,7 @@
 - Add new configuration parameters `commits.locked`, `mails.locked` and `issues.locked` to `ProjectConf` which, when set to `TRUE`, prevent the respective getters from triggering the read of the data if it is not present yet (PR #201, 382167790e7d096b539eeed6464efeb9bb501d43)
 - Add support for classifying developers on the basis of more count-based classification metrics, including mail-count, mail-thread count, issue-count, issue-comment count, issue-commented-in count, and issue-created count (issue #70, PR #209, d7b2455ece9840caba7c3a46704d2a62a11bee57, 6f737c8859519867928acc4e545c89bfd91b1e2e)
 - Add bot filtering mechanism, which allows removing issues/mails/commits made by bots (838855ffbe6d404bcb447d470a97870b238754ae, dcce82de58e25c6a0f3c27c9a7c46fb35a47fced)
-- Ignore the "deleted user" as wel as the author having an empty name "" (1a08140884f30366995352af315218cfd315b958, 24c222a21238cf0d21dfa750d8c951f39b4d0500)
+- Ignore the "deleted user", as well as the author having an empty name "" (1a08140884f30366995352af315218cfd315b958, 24c222a21238cf0d21dfa750d8c951f39b4d0500)
 
 ### Changed/Improved
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)

@@ -158,8 +158,8 @@ ProjectData = R6::R6Class("ProjectData",
         mails = create.empty.mails.list(), # data.frame
         mails.patchstacks = list(), # list
         ## issues
-        issues = create.empty.issues.list(), #data.frame
         issues.unfiltered = create.empty.issues.list(), #data.frame
+        issues = create.empty.issues.list(), #data.frame
         ## authors
         authors = create.empty.authors.list(), # data.frame
         ## additional data sources
@@ -1574,18 +1574,15 @@ ProjectData = R6::R6Class("ProjectData",
         #' ProjectData object. The possible data sources are:
         #' 'commits', 'mails', 'issues', for 'only.main' and 'only.unfiltered'
         #' 'commit.messages', 'authors', 'synchronicity', and 'pasta', for 'only.additional'
-        #' 'data.timestamps' are tested implicitly every time as they only contain
-        #' the earliest and latest date of one data source.
         #'
         #' @param source.type character vector indicating which data sources should be checked for.
         #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
         #'                    - 'only.additional' filters only additional data sources and authors.
         #'                    - 'only.unfiltered' filters only unfiltered data sources (i.e. unfiltered commits, mails, issues).
-        #'                    [default: "all"]
         #'
         #' @return a vector containing all the names
-        get.cached.data.sources = function(source.type = c("only.main", "only.additional", "only.unfiltered")) {
-            source.type = match.arg(arg = source.type)
+        get.cached.data.sources = function(source.type) {
+            source.type = match.arg(arg = source.type, choices = c("only.main", "only.additional", "only.unfiltered"))
             adapter.to.external.name = list(
                 "only.unfiltered" = list(
                     "commits.unfiltered" = "commits",
@@ -1687,6 +1684,9 @@ ProjectData = R6::R6Class("ProjectData",
         #' cached data sources of the two.
         #' Then, it compares the ProjectConf objects and, in the end, the cached data
         #' sources.
+        #'
+        #' 'data.timestamps' are tested implicitly every time as they only contain
+        #' the earliest and latest date of one data source.
         #'
         #' @param other.data.object the object with which to compare
         #'
