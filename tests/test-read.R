@@ -243,11 +243,31 @@ test_that("Read the author data.", {
         author.id = as.integer(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
         author.name = c("Thomas", "Olaf", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max"),
         author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
-                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
+                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org"),
+        is.bot = c(TRUE, NA, FALSE, NA, NA, NA, NA, NA, NA)
     )
 
     ## check the results
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
+})
+
+test_that("Read the raw bot data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    bot.data.read = read.bot.info(proj.conf$get.value("datapath"))
+
+    ## build the expected data.frame
+    bot.data.expected = data.frame(
+        author.name = c("Thomas", "Björn", "udo", "CLAassistant"),
+        author.email = c("thomas@example.org", "bjoern@example.org", "udo@example.org", "nomail"),
+        is.bot = c(TRUE, FALSE, NA, TRUE)
+    )
+
+    ## check the results
+    expect_identical(bot.data.read, bot.data.expected, info = "Bot data.")
 })
 
 test_that("Read and parse the pasta data.", {

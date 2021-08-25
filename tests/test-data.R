@@ -54,19 +54,19 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.one$get.pasta()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (pasta).")
 
-    proj.data.one$get.commits()
+    proj.data.one$get.commits.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
-    proj.data.two$get.commits()
+    proj.data.two$get.commits.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
 
-    proj.data.two$get.mails()
+    proj.data.two$get.mails.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
-    proj.data.one$get.mails()
+    proj.data.one$get.mails.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
 
-    proj.data.one$get.issues.filtered()
+    proj.data.one$get.issues()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
-    proj.data.two$get.issues.filtered()
+    proj.data.two$get.issues()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
 
     proj.data.two$get.authors()
@@ -113,36 +113,36 @@ test_that("Compare two ProjectData objects on non-empty data", {
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (pasta).")
 
     ## test 'equals' on commits
-    proj.data.one$get.commits()
+    proj.data.one$get.commits.unfiltered()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.data.two$update.project.conf(list("commits.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commits).")
     proj.data.two$update.project.conf(list("commits.locked" = FALSE))
 
-    proj.data.two$get.commits()
+    proj.data.two$get.commits.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits).")
 
     ## test 'equals' on mails
-    proj.data.two$get.mails()
+    proj.data.two$get.mails.unfiltered()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.data.one$update.project.conf(list("mails.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (mails).")
     proj.data.one$update.project.conf(list("mails.locked" = FALSE))
 
-    proj.data.one$get.mails()
+    proj.data.one$get.mails.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (mails).")
 
     ## test 'equals' on (filtered) issues
-    proj.data.one$get.issues.filtered()
+    proj.data.one$get.issues()
 
     ## prevent 'equals' from triggering a read when calling the getter
     proj.data.two$update.project.conf(list("issues.locked" = TRUE))
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (issues.filtered).")
     proj.data.two$update.project.conf(list("issues.locked" = FALSE))
 
-    proj.data.two$get.issues.filtered()
+    proj.data.two$get.issues()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
 
     ## test 'equals' on authors
@@ -175,14 +175,14 @@ test_that("Compare two ProjectData objects on non-empty data", {
     ## test 'equals' on commits with commit message titles
     ## At this point commit message data is already present and the getter (the setter respectively) merges the
     ## titles to the commits
-    proj.data.one$get.commits()
-    proj.data.two$get.commits()
+    proj.data.one$get.commits.unfiltered()
+    proj.data.two$get.commits.unfiltered()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commits with title).")
 
     ## test 'equals' on commits with commit messages and titles
     ## reset the commits of the first data object and this time load commit messages and compare this to the titles
     proj.data.one$set.project.conf.entry("commit.messages", "message")
-    proj.data.one$get.commits()
+    proj.data.one$get.commits.unfiltered()
     expect_false(proj.data.one$equals(proj.data.two),
                  "Two non-identical ProjectData objects (commits with messages / titles).")
 })
@@ -279,7 +279,7 @@ test_that("Merge commit messages to commit data", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(project.conf = proj.conf)
 
-    commits = proj.data$get.commits()
+    commits = proj.data$get.commits.unfiltered()
 
     commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
@@ -322,7 +322,7 @@ test_that("Merge commit message titles to commit data", {
     proj.conf$update.value("commit.messages", "title")
     proj.data = ProjectData$new(project.conf = proj.conf)
 
-    commits = proj.data$get.commits()
+    commits = proj.data$get.commits.unfiltered()
 
     commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
@@ -358,6 +358,53 @@ test_that("Merge commit message titles to commit data", {
     expect_identical(commits, commit.data.expected, info = "Add only commit title")
 })
 
+
+test_that("Filter bots from commit data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.commits = proj.data$get.commits()
+
+    expect_true(all(filtered.commits[["author.name"]] != "Thomas"))
+    ## there are now 5 rows in the filtered commit data, since 3 rows have been removed during filtering
+    expect_equal(nrow(filtered.commits), 5)
+})
+
+test_that("Filter bots from issue data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("issues.only.comments", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.issues = proj.data$get.issues()
+
+    expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
+    ## there are now 41 issue events remaining, since 6 issue events have been removed during filtering
+    expect_equal(nrow(filtered.issues), 41)
+})
+
+test_that("Filter bots from mail data", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("filter.bots", TRUE)
+    ## disable all other filterings
+    proj.conf$update.value("mails.filter.patchstack.mails", FALSE)
+
+    proj.data = ProjectData$new(proj.conf)
+
+    filtered.mails = proj.data$get.mails()
+
+    expect_true(all(filtered.mails[["author.name"]] != "Thomas"))
+    ## there are now 15 mails remaining, since 2 mails have been removed during filtering
+    expect_equal(nrow(filtered.mails), 15)
+})
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Data paths of RangeData -------------------------------------------------
 
@@ -375,18 +422,18 @@ test_that("Cut data and check for right data path", {
     result = project.data$get.data.path()
     expect_identical(result, expected, info = "RangeData data path.")
 
-    commit.data = project.data$get.commits()
+    commit.data = project.data$get.commits.unfiltered()
 
     ## Update project configuration, for example, add pasta data, and retrieve mail data afterwards
     project.data$update.project.conf(updated.values = list("pasta" = TRUE))
     pasta = project.data$get.pasta()
-    mails = project.data$get.mails()
+    mails = project.data$get.mails.unfiltered()
 
     ## reset environment
     project.data$reset.environment()
 
     ## check whether mail data is still the same after resetting the environment
-    expect_identical(mails, project.data$get.mails())
+    expect_identical(mails, project.data$get.mails.unfiltered())
 })
 
 test_that("Create RangeData objects from Codeface ranges and check data path", {

@@ -811,7 +811,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## remove vertices that are not committers if wanted
             if (private$network.conf$get.value("author.only.committers")) {
-                committers = unique(private$proj.data$get.commits()[["author.name"]])
+                committers = unique(private$proj.data$get.commits.unfiltered()[["author.name"]])
                 authors = igraph::get.vertex.attribute(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
                 network = igraph::delete.vertices(network, authors.to.remove)

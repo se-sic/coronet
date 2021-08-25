@@ -40,6 +40,18 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions ---------------------------------------------------------------
+
+#' Remove the "deleted user" or the author with empty name "" from a data frame.
+#'
+#' @param data the data from which to remove the "deleted user" and author with empty name
+#'
+#' @return the data frame without the rows in which the author name is "deleted user" or ""
+remove.deleted.and.empty.user = function(data) {
+    return(data[data["author.name"] != "deleted user" & data["author.name"] != "", ])
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Main data sources -------------------------------------------------------
 
 ## * Commit data -----------------------------------------------------------
@@ -156,6 +168,8 @@ read.commits = function(data.path, artifact) {
                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                           commit.data[["artifact.type"]])
 
+    commit.data = remove.deleted.and.empty.user(commit.data) # filter deleted user
+
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
@@ -246,6 +260,7 @@ read.mails = function(data.path) {
             sum(break.to.cut), break.date
         )
     }
+    mail.data = remove.deleted.and.empty.user(mail.data) # filter deleted user
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")
@@ -357,6 +372,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
+        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 
@@ -385,14 +401,58 @@ create.empty.issues.list = function() {
 
 ## * Author data -----------------------------------------------------------
 
+
+
+## column names of a data frame containing bot information (see file
+## 'bots.list' and function \code{read.bot.list})
+BOT.LIST.COLUMNS = c(
+    "author.name", "author.email", ## author
+    "is.bot" ## whether this is a bot
+)
+
+#' Read the bot classification from the 'bots.list' file.
+#'
+#' @param data.path the path to the commit-messages list
+#'
+#' @return a data frame with author.name, author.email, and a (potentially NA) boolean whether this is a bot,
+#'         or \code{NULL} if the above file is not present.
+read.bot.info = function(data.path) {
+    logging::logdebug("read.bot.info: starting.")
+
+    ## read the file with the bot info
+    file = file.path(data.path, "bots.list")
+
+    bot.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                         encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the bot info is empty
+    if (inherits(bot.data, "try-error")) {
+        logging::logwarn("There is no bot information available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return a data frame with the correct columns but zero rows
+        return(NULL)
+    }
+
+    ## set column names for new data frame
+    colnames(bot.data) = BOT.LIST.COLUMNS
+    bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+    logging::logdebug("read.bot.info: finished.")
+    return(bot.data)
+}
+
+
 ## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
-    "author.id", "author.name", "author.email"
+    "author.id", "author.name", "author.email", "is.bot"
 )
+
+## column names of a dataframe containing authors, before adding bot data.
+AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = AUTHORS.LIST.COLUMNS[1:3]
 
 ## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
 AUTHORS.LIST.DATA.TYPES = c(
-    "character", "character", "character"
+    "character", "character", "character", "logical"
 )
 
 #' Read the author data from the 'authors.list' file.
@@ -410,6 +470,7 @@ read.authors = function(data.path) {
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 
+
     ## break if the list of authors is empty
     if (inherits(authors.df, "try-error")) {
         logging::logerror("There are no authors available for the current environment.")
@@ -418,10 +479,24 @@ read.authors = function(data.path) {
     }
 
     ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
+    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS.WITHOUT.BOTS)) {
         authors.df[3] = NA
     }
-    colnames(authors.df) = AUTHORS.LIST.COLUMNS
+    colnames(authors.df) = AUTHORS.LIST.COLUMNS.WITHOUT.BOTS
+
+    bot.data = read.bot.info(data.path)
+    if (!is.null(bot.data)) {
+        authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
+        authors.df = authors.df[order(authors.df[["author.id"]]), ] # re-order after read
+        row.names(authors.df) = seq_len(nrow(authors.df))
+    } else {
+        ## if bot data is not available, add NA data, which is what would have happened
+        ## if the file was empty
+        authors.df[["is.bot"]] = NA
+    }
+    ## re-order the columns
+    authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
+    authors.df = remove.deleted.and.empty.user(authors.df)
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")

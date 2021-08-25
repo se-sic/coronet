@@ -55,9 +55,45 @@ BASE.ARTIFACTS = c(
 ## mapping of data source to artifact column (for commits: filter artifacts based on the configuration options
 ## 'commits.filter.base.artifact' and 'commits.filter.untracked.files' of the corresponding 'ProjectConf' object)
 DATASOURCE.TO.ARTIFACT.FUNCTION = list(
-    "commits" = "get.commits.filtered",
+    "commits" = "get.commits",
     "mails"   = "get.mails",
-    "issues"  = "get.issues.filtered"
+    "issues"  = "get.issues"
+)
+## mapping of data source to the appropiate getter for unfiltered date
+## compared to \code{DATASOURCE.TO.ARTIFACT.FUNCTION}, which yields the getter for filtered data.
+DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
+    "commits" = "get.commits.unfiltered",
+    "mails"   = "get.mails.unfiltered",
+    "issues"  = "get.issues.unfiltered"
+)
+## Yields the getters associated with additional data sources, e.g. author data.
+DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
+    "authors"         = "get.authors",
+    "commit.messages" = "get.commit.messages",
+    "synchronicity"   = "get.synchronicity",
+    "pasta"           = "get.pasta"
+)
+
+#' Applies a function to list keys
+#' Given a list, this function returns a modified list where the list keys have been
+#' changed by \code{map.function}, while the values are left unchanged.
+#'
+#' @param lst the list to rename
+#' @param map.function the function applied to \code{lst}'s keys
+#'
+#' @return \code{lst}, with the keys changed
+rename.list.keys = function(lst, map.function) {
+    names(lst) = lapply(names(lst), map.function)
+    return (lst)
+}
+
+## Combine \code{DATASOURCE.TO.ARTIFACT.FUNCTION}, \code{DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION}
+## and \code{DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION} to build a list giving the getter associated with every
+## possible data source stored in ProjectData.
+DATASOURCE.FIELDS.TO.ARTIFACT.GLOBAL.FUNCTION = c(
+    DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION,
+    DATASOURCE.TO.ARTIFACT.FUNCTION,
+    rename.list.keys(DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION, function(x) paste0(x, ".unfiltered"))
 )
 
 ## mapping of data source to artifact column
@@ -66,6 +102,7 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
     "mails"   = "thread",
     "issues"  = "issue.id"
 )
+
 
 ## the maximum time difference between subsequent mails of a patchstack
 PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
@@ -113,15 +150,16 @@ ProjectData = R6::R6Class("ProjectData",
         ## * * raw data ----------------------------------------------------
 
         ## commits and commit data
-        commits.filtered = create.empty.commits.list(), # data.frame
         commits = create.empty.commits.list(), # data.frame
+        commits.unfiltered = create.empty.commits.list(), # data.frame
         commit.messages = create.empty.commit.message.list(), # data.frame
         ## mails
+        mails.unfiltered = create.empty.mails.list(), # data.frame
         mails = create.empty.mails.list(), # data.frame
         mails.patchstacks = list(), # list
         ## issues
+        issues.unfiltered = create.empty.issues.list(), #data.frame
         issues = create.empty.issues.list(), #data.frame
-        issues.filtered = create.empty.issues.list(), #data.frame
         ## authors
         authors = create.empty.authors.list(), # data.frame
         ## additional data sources
@@ -139,9 +177,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param commits the data.frame of commits on which filtering will be applied
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #' @param filter.bots flag whether commits by bots should be removed
         #'
         #' @return the commits after all filters have been applied
-        filter.commits = function(commits, remove.untracked.files, remove.base.artifact) {
+        filter.commits = function(commits, remove.untracked.files, remove.base.artifact, filter.bots) {
             logging::logdebug("filter.commits: starting.")
 
             ## filter out the untracked files
@@ -154,6 +193,11 @@ ProjectData = R6::R6Class("ProjectData",
                 commits = subset(commits, !(artifact %in% BASE.ARTIFACTS))
             }
 
+            ## filter out all commits made by bots
+            if (filter.bots) {
+                commits = self$filter.bots(commits)
+            }
+
             logging::logdebug("filter.commits: finished.")
             return(commits)
         },
@@ -164,13 +208,19 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param issues the data.frame of issues on which filtering will be applied
         #' @param issues.only.comments flag whether non-comment issue events are removed
+        #' @param filter.bots flag whether bot issues are to be removed
         #'
         #' @return the issues after all filters have been applied
-        filter.issues = function(issues, issues.only.comments) {
+        filter.issues = function(issues, issues.only.comments, filter.bots) {
             logging::logdebug("filter.issues: starting.")
 
             if (issues.only.comments) {
                 issues = issues[issues[["event.name"]] == "commented", ]
+            }
+
+            ## filter out all issues made by bots
+            if (filter.bots) {
+                issues = self$filter.bots(issues)
             }
 
             logging::logdebug("filter.issues: finished.")
@@ -195,7 +245,7 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("filter.patchstack.mails: starting.")
 
             ## return immediately if no mails are available
-            if (!self$is.data.source.cached("mails")) {
+            if (!self$is.data.source.cached("mails.unfiltered")) {
                 private$mails.patchstacks = NULL
                 return(private$mails)
             }
@@ -250,6 +300,25 @@ ProjectData = R6::R6Class("ProjectData",
             return(mails)
         },
 
+        #' Filter mail data by for example removing all mails that have been sent by bots.
+        #'
+        #' @param mails the data.frame of mails on which filtering will be applied
+        #' @param filter.bots flag whether bot mails are to be removed
+        #'
+        #' @return the mails after all filters have been applied
+        filter.mails = function(mails, filter.bots) {
+            logging::logdebug("filter.mails: starting.")
+
+            ## filter out all mails made by bots
+            if (filter.bots) {
+                mails = self$filter.bots(mails)
+            }
+
+            logging::logdebug("filter.mails: finished.")
+            return(mails)
+        },
+
+
         ## * * commit message data ------------------------------------------
 
         #' Add the columns \code{title} and \code{message} to commits using the selected
@@ -257,6 +326,34 @@ ProjectData = R6::R6Class("ProjectData",
         update.commit.message.data = function() {
             logging::loginfo("Merging commit messages into commit data.")
 
+            if (self$is.data.source.cached("commits.unfiltered")) {
+                ## remove the columns that are present in case that the parameter was changed to from "messages" to
+                ## "none" or "title"
+                private$commits.unfiltered = private$commits.unfiltered[ , colnames(private$commits.unfiltered) != "message"]
+                private$commits.unfiltered = private$commits.unfiltered[ , colnames(private$commits.unfiltered) != "title"]
+
+                ## when 'none' is selected, we are ready here, else merge the possibly new data to the cleaned commits
+                if (private$project.conf$get.value("commit.messages") != "none") {
+                    ## get commit messages
+                    commit.messages = private$commit.messages
+
+                    ## now there are only three columns left: commit.id, title, message
+                    ## check whether to include only title or also the messages
+                    if (private$project.conf$get.value("commit.messages") == "title") {
+                        commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
+                    }
+
+                    ## get a vector with the column names in the right order
+                    col.names = unique(c(colnames(private$commits.unfiltered), colnames(commit.messages)))
+
+                    ## merge them into the commit data
+                    private$commits.unfiltered = merge(private$commits.unfiltered, commit.messages,
+                                            by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+
+                    ## adjust the column order
+                    private$commits.unfiltered = private$commits.unfiltered[col.names]
+                }
+            }
             if (self$is.data.source.cached("commits")) {
                 ## remove the columns that are present in case that the parameter was changed to from "messages" to
                 ## "none" or "title"
@@ -276,39 +373,11 @@ ProjectData = R6::R6Class("ProjectData",
 
                     ## get a vector with the column names in the right order
                     col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
-
                     ## merge them into the commit data
                     private$commits = merge(private$commits, commit.messages,
                                             by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
-
                     ## adjust the column order
                     private$commits = private$commits[col.names]
-                }
-            }
-            if (self$is.data.source.cached("commits.filtered")) {
-                ## remove the columns that are present in case that the parameter was changed to from "messages" to
-                ## "none" or "title"
-                private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "message"]
-                private$commits.filtered = private$commits.filtered[ , colnames(private$commits.filtered) != "title"]
-
-                ## when 'none' is selected, we are ready here, else merge the possibly new data to the cleaned commits
-                if (private$project.conf$get.value("commit.messages") != "none") {
-                    ## get commit messages
-                    commit.messages = private$commit.messages
-
-                    ## now there are only three columns left: commit.id, title, message
-                    ## check whether to include only title or also the messages
-                    if (private$project.conf$get.value("commit.messages") == "title") {
-                        commit.messages = commit.messages[ , colnames(commit.messages) != "message"]
-                    }
-
-                    ## get a vector with the column names in the right order
-                    col.names = unique(c(colnames(private$commits.filtered), colnames(commit.messages)))
-                    ## merge them into the commit data
-                    private$commits.filtered = merge(private$commits.filtered, commit.messages,
-                                            by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
-                    ## adjust the column order
-                    private$commits.filtered = private$commits.filtered[col.names]
                 }
             }
 
@@ -420,6 +489,29 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.commit.data: starting.")
 
             ## return immediately if no commits available
+            if (self$is.data.source.cached("commits.unfiltered")) {
+
+                ## remove previous PaStA data
+                private$commits.unfiltered["pasta"] = NULL
+                private$commits.unfiltered["revision.set.id"] = NULL
+
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$commits.unfiltered = merge(private$commits.unfiltered, private$pasta.commits,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
+
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
+
+                    ## remove duplicated revision set ids
+                    private$commits.unfiltered[["revision.set.id"]] = sapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
+            }
+
             if (self$is.data.source.cached("commits")) {
 
                 ## remove previous PaStA data
@@ -431,36 +523,13 @@ ProjectData = R6::R6Class("ProjectData",
                 if (private$project.conf$get.value("pasta")) {
                     ## merge PaStA data
                     private$commits = merge(private$commits, private$pasta.commits,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
+                                            by = "hash", all.x = TRUE, sort = FALSE)
 
                     ## sort by date again because 'merge' disturbs the order
                     private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
                     ## remove duplicated revision set ids
                     private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
-                        return(unique(rev.id))
-                    })
-                }
-            }
-
-            if (self$is.data.source.cached("commits.filtered")) {
-
-                ## remove previous PaStA data
-                private$commits.filtered["pasta"] = NULL
-                private$commits.filtered["revision.set.id"] = NULL
-
-                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
-                ## we want to just remove the columns above)
-                if (private$project.conf$get.value("pasta")) {
-                    ## merge PaStA data
-                    private$commits.filtered = merge(private$commits.filtered, private$pasta.commits,
-                                            by = "hash", all.x = TRUE, sort = FALSE)
-
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]], decreasing = FALSE), ]
-
-                    ## remove duplicated revision set ids
-                    private$commits.filtered[["revision.set.id"]] = sapply(private$commits.filtered[["revision.set.id"]], function(rev.id) {
                         return(unique(rev.id))
                     })
                 }
@@ -475,6 +544,30 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.mail.data: starting.")
 
             ## return immediately if no mails available
+            if (self$is.data.source.cached("mails.unfiltered")) {
+
+                ## remove previous PaStA data
+                private$mails.unfiltered["pasta"] = NULL
+                private$mails.unfiltered["revision.set.id"] = NULL
+
+                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+                ## we want to just remove the columns above)
+                if (private$project.conf$get.value("pasta")) {
+                    ## merge PaStA data
+                    private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
+                                          by = "message.id", all.x = TRUE, sort = FALSE)
+
+                    ## sort by date again because 'merge' disturbs the order
+                    private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
+
+                    ## remove duplicated revision set ids
+                    private$mails.unfiltered[["revision.set.id"]] = sapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
+                        return(unique(rev.id))
+                    })
+                }
+            }
+
+            ## the same block as above, but now for filtered mails
             if (self$is.data.source.cached("mails")) {
 
                 ## remove previous PaStA data
@@ -518,12 +611,12 @@ ProjectData = R6::R6Class("ProjectData",
             private$aggregate.pasta.data()
 
             ## update mail data by attaching PaStA data
-            if (self$is.data.source.cached("mails")) {
+            if (self$is.data.source.cached("mails.unfiltered")) {
                 private$update.pasta.mail.data()
             }
 
             ## update commit data by attaching PaStA data
-            if (self$is.data.source.cached("commits") ) {
+            if (self$is.data.source.cached("commits.unfiltered") ) {
                 private$update.pasta.commit.data()
             }
 
@@ -551,6 +644,21 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## update commit data by attaching synchronicity data
             ## do not check whether synchronicity is available in order to remove the columns if it is not
+            if (self$is.data.source.cached("commits.unfiltered")) {
+                ## remove previous synchronicity data
+                private$commits.unfiltered["synchronicity"] = NULL
+
+                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
+                ## which case we want to just remove the columns above)
+                if (private$project.conf$get.value("synchronicity")) {
+                    ## merge synchronicity data
+                    private$commits.unfiltered = merge(private$commits.unfiltered, private$synchronicity,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
+
+                    ## sort by date again because 'merge' disturbs the order
+                    private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
+                }
+            }
             if (self$is.data.source.cached("commits")) {
                 ## remove previous synchronicity data
                 private$commits["synchronicity"] = NULL
@@ -560,25 +668,10 @@ ProjectData = R6::R6Class("ProjectData",
                 if (private$project.conf$get.value("synchronicity")) {
                     ## merge synchronicity data
                     private$commits = merge(private$commits, private$synchronicity,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
-
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
-                }
-            }
-            if (self$is.data.source.cached("commits.filtered")) {
-                ## remove previous synchronicity data
-                private$commits.filtered["synchronicity"] = NULL
-
-                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
-                ## which case we want to just remove the columns above)
-                if (private$project.conf$get.value("synchronicity")) {
-                    ## merge synchronicity data
-                    private$commits.filtered = merge(private$commits.filtered, private$synchronicity,
                                             by = "hash", all.x = TRUE, sort = FALSE)
 
                     ## sort by date again because 'merge' disturbs the order
-                    private$commits.filtered = private$commits.filtered[order(private$commits.filtered[["date"]],
+                    private$commits = private$commits[order(private$commits[["date"]],
                                                                               decreasing = FALSE), ]
                 }
             }
@@ -604,15 +697,16 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param data.sources the data sources to be prepared
         prepare.timestamps = function(data.sources) {
             for (source in data.sources) {
-                self[[ paste0("get.", source) ]]()
+                self[[ DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[source]] ]]()
             }
         },
 
         #' Extract the earliest and the latest date from the specified data source
         #' and store it to the timestamps data.frame.
         #'
+        #' @param name the name the timestamps are registered as
         #' @param source the specified data source
-        extract.timestamps = function(source) {
+        extract.timestamps = function(name, source) {
             ## initialize data structure for timestamp
             if (is.null(private$data.timestamps)) {
                 ## let this stay as a sanity-check; this is actually initialized this way when creating the object
@@ -634,7 +728,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## remove old line if existing
             private$data.timestamps = subset(
                 private$data.timestamps,
-                !(rownames(private$data.timestamps) == source)
+                !(rownames(private$data.timestamps) == name)
             )
 
             ## store the data in the timestamp data set
@@ -643,7 +737,7 @@ ProjectData = R6::R6Class("ProjectData",
                 data.frame(
                     start = source.date.min,
                     end = source.date.max,
-                    row.names = source
+                    row.names = name
                 )
             )
         }
@@ -683,12 +777,13 @@ ProjectData = R6::R6Class("ProjectData",
         #' changed.
         reset.environment = function() {
             private$authors = create.empty.authors.list()
+            private$commits.unfiltered = create.empty.commits.list()
             private$commits = create.empty.commits.list()
-            private$commits.filtered = create.empty.commits.list()
             private$commit.messages = create.empty.commit.message.list()
             private$data.timestamps = data.frame(start = numeric(0), end = numeric(0))
-            private$issues.filtered = create.empty.issues.list()
             private$issues = create.empty.issues.list()
+            private$issues.unfiltered = create.empty.issues.list()
+            private$mails.unfiltered = create.empty.mails.list()
             private$mails = create.empty.mails.list()
             private$mails.patchstacks = list()
             private$pasta = create.empty.pasta.list()
@@ -854,40 +949,42 @@ ProjectData = R6::R6Class("ProjectData",
 
         ## * * raw data ----------------------------------------------------
 
-        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' Return the commits retrieved by the method \code{get.commits.unfiltered} by removing untracked files and removing the
         #' base artifact (if configured in the \code{project.conf}, see parameters \code{commits.filter.untracked.files}
         #' and \code{commits.filter.base.artifact}).
         #'
         #' This method caches the filtered commits to the field \code{commits.filtered}.
         #'
-        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
-        #' @seealso get.commits.filtered.uncached
-        get.commits.filtered = function() {
-            if (!self$is.data.source.cached("commits.filtered")) {
-                private$commits.filtered = private$filter.commits(
-                    self$get.commits(),
+        #' @seealso get.commits.uncached
+        get.commits = function() {
+            if (!self$is.data.source.cached("commits")) {
+                private$commits = private$filter.commits(
+                    self$get.commits.unfiltered(),
                     private$project.conf$get.value("commits.filter.untracked.files"),
-                    private$project.conf$get.value("commits.filter.base.artifact")
+                    private$project.conf$get.value("commits.filter.base.artifact"),
+                    private$project.conf$get.value("filter.bots")
                 )
             }
-            return(private$commits.filtered)
+            return(private$commits)
         },
 
-        #' Return the commits retrieved by the method \code{get.commits} by removing untracked files and removing the
+        #' Return the commits retrieved by the method \code{get.commits.unfiltered} by removing untracked files and removing the
         #' base artifact (see parameters).
         #'
         #' This method does not use caching. If you want to use caching, please use the method
-        #' \code{get.commits.filtered} instead.
+        #' \code{get.commits} instead.
         #'
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
+        #' @param filter.bots flag whether commits by bots should be removed [default: FALSE]
         #'
-        #' @return the commits retrieved by the method \code{get.commits} after all filters have been applied
+        #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
-        #' @seealso get.commits.filtered
-        get.commits.filtered.uncached = function(remove.untracked.files, remove.base.artifact) {
-            return (private$filter.commits(self$get.commits(), remove.untracked.files, remove.base.artifact))
+        #' @seealso get.commits
+        get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
+            return (private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -895,11 +992,11 @@ ProjectData = R6::R6Class("ProjectData",
         #' If configured in the \code{project.conf}, add PaStA and synchronicity data.
         #'
         #' @return the list of commits
-        get.commits = function() {
+        get.commits.unfiltered = function() {
             logging::loginfo("Getting commit data.")
 
             ## if commits are not read already and are not locked in the configuration, do this
-            if (!self$is.data.source.cached("commits") && !private$project.conf$get.value("commits.locked")) {
+            if (!self$is.data.source.cached("commits.unfiltered") && !private$project.conf$get.value("commits.locked")) {
                 commit.data = read.commits(self$get.data.path(), private$project.conf$get.value("artifact"))
 
                 ## only consider commits that have the artifact type configured in the 'project.conf' or commits to
@@ -921,9 +1018,9 @@ ProjectData = R6::R6Class("ProjectData",
                 self$set.commits(commit.data)
             }
 
-            private$extract.timestamps(source = "commits")
+            private$extract.timestamps(name = "commits", source = "commits.unfiltered")
 
-            return(private$commits)
+            return(private$commits.unfiltered)
         },
 
         #' Set the commit list of the project to a new one.
@@ -939,7 +1036,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## store commit data
-            private$commits = commit.data
+            private$commits.unfiltered = commit.data
 
             ## add commit message data if wanted
             if (private$project.conf$get.value("commit.messages") != "none") {
@@ -974,11 +1071,11 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## sort by date
-            private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+            private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
 
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
-            private$commits.filtered = NULL
+            private$commits = NULL
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -1035,9 +1132,9 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up commit message data")
 
             ## remove commit hashes that don't appear in the commit data
-            if (self$is.data.source.cached("commits")) {
+            if (self$is.data.source.cached("commits.unfiltered")) {
                 commit.message.hashes = private$commit.messages[["hash"]]
-                commit.message.hashes.contained = private$commit.messages[["hash"]] %in% private$commits[["hash"]]
+                commit.message.hashes.contained = private$commit.messages[["hash"]] %in% private$commits.unfiltered[["hash"]]
                 commit.hashes.to.eliminate = commit.message.hashes[!commit.message.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
                 rows.to.remove = private$commit.messages[["hash"]] %in% commit.hashes.to.eliminate
@@ -1106,9 +1203,9 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up synchronicity data")
 
             ## remove commit hashes that don't appear in the commit data
-            if (self$is.data.source.cached("commits")) {
+            if (self$is.data.source.cached("commits.unfiltered")) {
                 synchronicity.hashes = private$synchronicity[["hash"]]
-                synchronicity.hashes.contained = private$synchronicity[["hash"]] %in% private$commits[["hash"]]
+                synchronicity.hashes.contained = private$synchronicity[["hash"]] %in% private$commits.unfiltered[["hash"]]
                 commit.hashes.to.eliminate = synchronicity.hashes[!synchronicity.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
                 rows.to.remove = private$synchronicity[["hash"]] %in% commit.hashes.to.eliminate
@@ -1131,7 +1228,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$pasta = read.pasta(self$get.data.path.pasta())
 
                     ## read mail data if filtering patchstack mails
-                    if (!self$is.data.source.cached("mails")
+                    if (!self$is.data.source.cached("mails.unfiltered")
                         && private$project.conf$get.value("mails.filter.patchstack.mails")) {
                         ## just triggering read-in, no assignment; the mails are stored within 'get.mails'
                         self$get.mails()
@@ -1168,7 +1265,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("pasta")) {
 
                 ## read mail data if filtering patchstack mails
-                if (!self$is.data.source.cached("mails") &&
+                if (!self$is.data.source.cached("mails.unfiltered") &&
                     private$project.conf$get.value("mails.filter.patchstack.mails")) {
                     ## just triggering read-in, no storage
                     self$get.mails()
@@ -1185,15 +1282,15 @@ ProjectData = R6::R6Class("ProjectData",
             logging::loginfo("Cleaning up PaStA data")
 
             ## remove message ids that don't appear in the mail data
-            if (self$is.data.source.cached("mails")) {
-                rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails[["revision.set.id"]]
+            if (self$is.data.source.cached("mails.unfiltered")) {
+                rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails.unfiltered[["revision.set.id"]]
                 private$pasta = private$pasta[rev.id.contained, ]
             }
 
             ## remove commit hashes that don't appear in the commit data
-            if (self$is.data.source.cached("commits")) {
+            if (self$is.data.source.cached("foo5.commits")) {
                 pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
-                commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits[["hash"]]
+                commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits.unfiltered[["hash"]]
                 commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
                 rows.to.remove = unlist(private$pasta[["commit.hash"]]) %in% commit.hashes.to.eliminate
@@ -1204,17 +1301,17 @@ ProjectData = R6::R6Class("ProjectData",
             private$update.pasta.data()
         },
 
-        #' Get the mail data.
+        #' Get the mail data, unfiltered.
         #' If it does not already exist call the read method.
         #' Call the setter function to set the data and add PaStA
         #' data if configured in the field \code{project.conf}.
         #'
         #' @return the mail data
-        get.mails = function() {
+        get.mails.unfiltered = function() {
             logging::loginfo("Getting e-mail data.")
 
             ## if mails are not read already and are not locked in the configuration, do this
-            if (!self$is.data.source.cached("mails") && !private$project.conf$get.value("mails.locked")) {
+            if (!self$is.data.source.cached("mails.unfiltered") && !private$project.conf$get.value("mails.locked")) {
                 mails.read = read.mails(self$get.data.path())
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1227,8 +1324,21 @@ ProjectData = R6::R6Class("ProjectData",
 
                 self$set.mails(mails.read)
             }
-            private$extract.timestamps(source = "mails")
+            private$extract.timestamps(name = "mails", source = "mails.unfiltered")
 
+            return(private$mails.unfiltered)
+        },
+
+        #' Get the mail data, filtered.
+        #' Calls the getter for unfiltered mail data, which already does filtering
+        #' as part of the initial mail processing.
+        #'
+        #' @see get.mails
+        #'
+        #' @return the mail data
+        get.mails = function() {
+            logging::loginfo("Getting e-mail data.")
+            self$get.mails.unfiltered()
             return(private$mails)
         },
 
@@ -1244,12 +1354,18 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## store mail data
+            private$mails.unfiltered = mail.data
             private$mails = mail.data
 
             ## filter patchstack mails and store again
             if (private$project.conf$get.value("mails.filter.patchstack.mails")) {
                 private$mails = private$filter.patchstack.mails()
             }
+
+            ## do further filterings
+            private$mails = private$filter.mails(
+                private$mails,
+                private$project.conf$get.value("filter.bots"))
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
@@ -1263,6 +1379,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## sort by date
+            private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
             private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
         },
 
@@ -1289,6 +1406,22 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
         },
 
+        #' Filter bots from given data.
+        #'
+        #' @param data.to.filter A data frame, with the standard author columns,
+        #'                       from which all rows with bot authors are removed
+        #'
+        #' @return the filtered data
+        filter.bots = function(data.to.filter) {
+            authors = self$get.authors()
+            ## authors are uniquely identified by their email, so checking this here is sufficient
+            bot.indices = authors[match(data.to.filter[["author.email"]],
+                                        authors[["author.email"]]), "is.bot"]
+            ## retain if entry is FALSE or NA
+            bot.indices = !bot.indices | is.na(bot.indices)
+            return (data.to.filter[bot.indices,])
+        },
+
         #' Get the issue data, filtered according to options in the project configuration:
         #' * The option \code{issues.only.comments} removes all events that are not comments
         #'   from the issue data.
@@ -1296,32 +1429,34 @@ ProjectData = R6::R6Class("ProjectData",
         #' If it does not already exist, call the read method.
         #'
         #' @return the issue data
-        get.issues.filtered = function() {
+        get.issues = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet do this
-            if (!self$is.data.source.cached("issues.filtered")) {
-                private$issues.filtered = private$filter.issues(
-                    self$get.issues(),
-                    private$project.conf$get.value("issues.only.comments"))
+            if (!self$is.data.source.cached("issues")) {
+                private$issues = private$filter.issues(
+                    self$get.issues.unfiltered(),
+                    private$project.conf$get.value("issues.only.comments"),
+                    private$project.conf$get.value("filter.bots"))
             }
-            return(private$issues.filtered)
+            return(private$issues)
         },
 
         #' Get the issue data, filtered according the parameters.
         #'
-        #' Unlike \code{get.issues.filtered}, this method does not use caching. If you want caching, please use
+        #' Unlike \code{get.issues}, this method does not use caching. If you want caching, please use
         #' that method instead.
         #'
         #' @param issues.only.comments flag whether issue events that are not comments are retained
         #'                             (i.e. opening, closing, ...).
+        #' @param filter.bots flag whether issues by bots should be removed. [default: FALSE]
         #'
         #' @return the issue data
         #'
-        #' @seealso get.issues.filtered
-        get.issues.filtered.uncached = function(issues.only.comments) {
+        #' @seealso get.issues
+        get.issues.uncached = function(issues.only.comments, filter.bots = FALSE) {
             logging::loginfo("Getting issue data")
-            return(private$filter.issues(self$get.issues(), issues.only.comments))
+            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots))
         },
 
         #' Get the issue data, unfiltered.
@@ -1329,13 +1464,13 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the issue data
         #'
-        #' @seealso get.issues.filtered for a detailed description of filtering options
-        get.issues = function() {
+        #' @seealso get.issues for a detailed description of filtering options
+        get.issues.unfiltered = function() {
             logging::loginfo("Getting issue data")
 
             ## if issues have not been read yet and are not locked in the configuration, do this
-            if (!self$is.data.source.cached("issues") && !private$project.conf$get.value("issues.locked")) {
-                private$issues = read.issues(self$get.data.path.issues(),
+            if (!self$is.data.source.cached("issues.unfiltered") && !private$project.conf$get.value("issues.locked")) {
+                private$issues.unfiltered = read.issues(self$get.data.path.issues(),
                                              private$project.conf$get.value("issues.from.source"))
 
                 ## if this happens on a RangeData object, cut the data to the range stored in its private 'range' field
@@ -1344,12 +1479,12 @@ ProjectData = R6::R6Class("ProjectData",
                 if (is(self, "RangeData") && !private$built.from.range.data.read) {
                     ## get the one bin from the given range and split the data.frame with that bin
 
-                    private$issues = get.data.from.range(private$range, private$issues)
+                    private$issues.unfiltered = get.data.from.range(private$range, private$issues.unfiltered)
                 }
             }
 
-            private$extract.timestamps(source = "issues")
-            return(private$issues)
+            private$extract.timestamps(name = "issues", source = "issues.unfiltered")
+            return(private$issues.unfiltered)
         },
 
         #' Set the issue data to the given new data.
@@ -1362,8 +1497,8 @@ ProjectData = R6::R6Class("ProjectData",
                 data = create.empty.issues.list()
             }
 
-            private$issues = data
-            private$issues.filtered = NULL
+            private$issues.unfiltered = data
+            private$issues = NULL
         },
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
@@ -1437,34 +1572,72 @@ ProjectData = R6::R6Class("ProjectData",
 
         #' Get the names of all data sources that are currently cached in the
         #' ProjectData object. The possible data sources are:
-        #' 'commits', 'mails', 'issues', 'commits.filtered', 'issues.filtered', commit.messages', 'authors',
-        #' 'synchronicity', and 'pasta'.
-        #' 'data.timestamps' are tested implicitly every time as they only contain
-        #' the earliest and latest date of one data source.
+        #' 'commits', 'mails', 'issues', for 'only.main' and 'only.unfiltered'
+        #' 'commit.messages', 'authors', 'synchronicity', and 'pasta', for 'only.additional'
         #'
         #' @param source.type character vector indicating which data sources should be checked for.
         #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
         #'                    - 'only.additional' filters only additional data sources and authors.
-        #'                    - 'only.filtered' filters only filtered data sources (i.e. filtered commits and filtered
-        #'                      mails).
+        #'                    - 'only.unfiltered' filters only unfiltered data sources (i.e. unfiltered commits, mails, issues).
+        #'
+        #' @return a vector containing all the names
+        get.cached.data.sources = function(source.type) {
+            source.type = match.arg(arg = source.type, choices = c("only.main", "only.additional", "only.unfiltered"))
+            adapter.to.external.name = list(
+                "only.unfiltered" = list(
+                    "commits.unfiltered" = "commits",
+                    "issues.unfiltered" = "issues",
+                    "mails.unfiltered" = "mails"
+                ),
+                "only.main" = list(
+                    "commits" = "commits",
+                    "issues" = "issues",
+                    "mails" = "mails"
+                ),
+                "only.additional" = list(
+                    "authors" = "authors",
+                    "commit.messages" = "commit.messages",
+                    "synchronicity" = "synchronicity",
+                    "pasta" = "pasta"
+                )
+            )
+            sources = self$get.cached.data.sources.internal(source.type)
+            return(adapter.to.external.name[[source.type]][sources])
+
+        },
+
+        #' *DO NOT CALL*
+        #' This function is an internal helper used to implement comparsions and querying whether
+        #' a data source is cached. It returns the internal field names of all data sources (of given \code{type})
+        #' currently cached in this object.
+        #'
+        #' Do not use this method except when implementing classes within the ProjectData class.
+        #' Instead consider using \{get.cached.data.sources}
+        #'
+        #' @see get.cached.data.sources
+        #'
+        #' @param source.type character vector indicating which data sources should be checked for.
+        #'                    - 'only.main' filters only main data sources, i.e. commits, mails and issues.
+        #'                    - 'only.additional' filters only additional data sources and authors.
+        #'                    - 'only.unfiltered' filters only unfiltered data sources (i.e. unfiltered commits, mails, issues).
         #'                    - 'all' or anything else filters all data sources.
         #'                    [default: "all"]
         #'
         #' @return a vector containing all the names
-        get.cached.data.sources = function(source.type = c("all", "only.main", "only.additional", "only.filtered")) {
+        get.cached.data.sources.internal = function(source.type = c("all", "only.main", "only.additional", "only.unfiltered")) {
             source.type = match.arg(arg = source.type)
 
             ## define the data sources
-            main.data.sources = c("commits", "mails", "issues")
+            unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
-            filtered.data.sources = c("issues.filtered", "commits.filtered")
+            main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
             data.sources = switch(source.type,
                                   "only.main" = main.data.sources,
                                   "only.additional" = additional.data.sources,
-                                  "only.filtered" = filtered.data.sources,
-                                  "all" = c(main.data.sources, additional.data.sources, filtered.data.sources))
+                                  "only.unfiltered" = unfiltered.data.sources,
+                                  "all" = c(main.data.sources, additional.data.sources, unfiltered.data.sources))
 
             ## only take the data sources that are not null and have more than one row
             ## 'Filter' only takes the ones out of the original vector, that fulfill the condition in the 'return()'
@@ -1483,7 +1656,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return \code{TRUE} if the data source is cached, else \code{FALSE}
         is.data.source.cached = function(data.source) {
-            return(data.source %in% self$get.cached.data.sources())
+            return(data.source %in% self$get.cached.data.sources.internal())
         },
 
         #' Extract the data classes (i.e., data columns and their classes) available in
@@ -1512,6 +1685,9 @@ ProjectData = R6::R6Class("ProjectData",
         #' Then, it compares the ProjectConf objects and, in the end, the cached data
         #' sources.
         #'
+        #' 'data.timestamps' are tested implicitly every time as they only contain
+        #' the earliest and latest date of one data source.
+        #'
         #' @param other.data.object the object with which to compare
         #'
         #' @return \code{TRUE} if the objects are equal and \code{FALSE} otherwise
@@ -1529,8 +1705,8 @@ ProjectData = R6::R6Class("ProjectData",
                 return(FALSE)
             }
 
-            self.data.sources = self$get.cached.data.sources()
-            other.data.sources = other.data.object$get.cached.data.sources()
+            self.data.sources = self$get.cached.data.sources.internal()
+            other.data.sources = other.data.object$get.cached.data.sources.internal()
 
             ## compare the list of cached data sources
             if (!identical(self.data.sources, other.data.sources)) {
@@ -1543,9 +1719,10 @@ ProjectData = R6::R6Class("ProjectData",
                 return(FALSE)
             }
 
+
             ## compare the cached data sources
             for (source in self.data.sources) {
-                function.call = paste0("get.", source)
+                function.call = DATASOURCE.FIELDS.TO.ARTIFACT.GLOBAL.FUNCTION[[source]]
                 if (!identical(self[[function.call]](), other.data.object[[function.call]]())) {
                     return(FALSE)
                 }

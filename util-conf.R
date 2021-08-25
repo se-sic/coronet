@@ -23,6 +23,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -267,13 +268,14 @@ Conf = R6::R6Class("Conf",
                     } ## if the default value and the given value are the same and if the 'value' field is present
                       ## then reset the 'value' field
                     else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]]) ||
-                               all(updated.values[[name]] == private[["attributes"]][[name]][["default"]])) {
+                               identical(sort(updated.values[[name]]),
+                                         sort(private[["attributes"]][[name]][["default"]]))) {
                         if ("value" %in% names(private[["attributes"]][[name]])) {
                             private[["attributes"]][[name]][["value"]] = NULL
                         }
                     } ## otherwise proceed with updating the value
                     else {
-                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                        private[["attributes"]][[name]][["value"]] = sort(updated.values[[name]])
                     }
                 }
             } else {
@@ -389,6 +391,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ),
             issues.only.comments = list(
                 default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            filter.bots = list(
+                default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
