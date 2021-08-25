@@ -448,9 +448,7 @@ AUTHORS.LIST.COLUMNS = c(
 )
 
 ## column names of a dataframe containing authors, before adding bot data.
-AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = c(
-    "author.id", "author.name", "author.email"
-)
+AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = AUTHORS.LIST.COLUMNS[1:3]
 
 ## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
 AUTHORS.LIST.DATA.TYPES = c(
