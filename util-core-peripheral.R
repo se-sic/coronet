@@ -378,7 +378,7 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
 
     result = mapply(data.list, restrict.classification.to.authors, SIMPLIFY = FALSE,
                     FUN = function(data, restrict.classification.to.authors) {
-        if (startsWith(type, "network")) {
+        if (CLASSIFICATION.TYPE.TO.CATEGORY[[type]] == "network") {
             return(get.author.class.by.type(network = data, type = type,
                                             restrict.classification.to.authors = restrict.classification.to.authors))
         } else {
@@ -1286,34 +1286,57 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
         author.data = head(author.data, result.limit)
     }
 
-    ## Check which authors can be treated as core based on the calculation base values:
-    ## (1) check which positions are over the threshold
-    ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
-    author.cumsum = cumsum(author.data[[calc.base.name]])
-    buffer.value = which(
-        author.cumsum > author.class.threshold |
-            as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
-    )
-
-    # Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following 'if' statement
-    min = suppressWarnings(min(buffer.value))
-    if (is.infinite(min)) {
-        author.class.threshold.idx = nrow(author.data)
+    ## Make a case differentiation for classifications using network-based and count-based categories.
+    ## When using network-based metrics, all developers that have a centrality value greater than the
+    ## threshold are considered core.
+    ## When using count-based metrics, the decision who is core and who not depends on the cumulated sum
+    ## of all centrality values and the first author where the cumulated sum is greater than the threshold
+    ## is where the cut between core and peripheral developers is made.
+    if (classification.category == "network") {
+        ## if only one author is present or all authors have the same centrality values,
+        ## always consider all authors as core
+        if (length(unique(author.data[[calc.base.name]])) == 1) {
+            core.classification = TRUE
+            if (unique(author.data[[calc.base.name]]) == 0) {
+                logging::logwarn(paste0("No collaboration/activity occured, thus,",
+                             " all authors' classification is set to peripheral."))
+                core.classification = FALSE
+            }
+        } else {
+            core.classification = author.data[[calc.base.name]] > author.class.threshold
+        }
     } else {
-        author.class.threshold.idx = min
-    }
+        ## Check which authors can be treated as core based on the calculation base values:
+        ## (1) check which positions are over the threshold
+        ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
+        author.cumsum = cumsum(author.data[[calc.base.name]])
+        buffer.value = which(
+            author.cumsum > author.class.threshold |
+                as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
+        )
 
-    ## classify authors according to threshold
-    core.classification = rep(FALSE, nrow(author.data))
-    core.classification[seq_len(author.class.threshold.idx)] = TRUE
+        ## Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following
+        ## 'if' statement
+        min = suppressWarnings(min(buffer.value))
+        if (is.infinite(min)) {
+            author.class.threshold.idx = nrow(author.data)
+        } else {
+            author.class.threshold.idx = min
+        }
 
-    ## With no activity/collaboration occurring, all authors are classified as peripheral.
-    if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
-        logging::logwarn("No collaboration/activity occured, thus, all authors' classification is set to peripheral.")
-        core.classification = rep(FALSE, length(core.classification))
-        # ## old code: if we found no core author (should not happen anymore)
-        # } else if (!any(core.classification)) {
-        #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
+        ## classify authors according to threshold
+        core.classification = rep(FALSE, nrow(author.data))
+        core.classification[seq_len(author.class.threshold.idx)] = TRUE
+
+        ## With no activity/collaboration occurring, all authors are classified as peripheral.
+        if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
+            logging::logwarn(paste0("No collaboration/activity occured, thus,",
+                                    " all authors' classification is set to peripheral."))
+            core.classification = rep(FALSE, length(core.classification))
+            # ## old code: if we found no core author (should not happen anymore)
+            # } else if (!any(core.classification)) {
+            #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
+        }
     }
 
     ## Cut core and peripheral authors from base data and construct return value
