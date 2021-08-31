@@ -11,7 +11,8 @@ We have two test projects you can use when writing your tests:
      * Mails
      * Issues
      * Authors
-     * Commit messages 
+     * Bots
+     * Commit messages
      * Pasta
      * Synchronicity
 2. - Casestudy: `test_empty`

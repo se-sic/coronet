@@ -353,7 +353,7 @@ Since we extract the data for each data source independently, the time ranges fo
 
 To compensate for this, the class `ProjectData` supplies a method `ProjectData$get.data.cut.to.same.date()`, which returns a clone of the underlying `ProjectData` instance for which the data sources are cut to their common latest first entry date and their common earliest last entry date.
 
-Analogously, the `NetworkConf` parameter `unify.data.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
+Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
 
 #### Handling data independently
 
@@ -542,9 +542,6 @@ There is no way to update the entries, except for the revision-based parameters.
 
 **Note**: These parameters can be configured using the method `ProjectConf$update.values()`.
 
-- `filter.bots`
-    * Remove all commits, issues and mails made by bots. Bots are identified using the `bots.list` file.
-    * [`TRUE`, *`FALSE`*]
 - `commits.filter.base.artifact`
     * Remove all information concerning the base artifact from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commit information about changes to the base artifact. Networks built on top of this `ProjectData` do also not contain any base artifact information anymore.
     * [*`TRUE`*, `FALSE`]
@@ -557,6 +554,9 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commmit.messages`
     * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
     * [*`none`*, `title`, `messages`]
+- `filter.bots`
+    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file.
+    * [`TRUE`, *`FALSE`*]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
