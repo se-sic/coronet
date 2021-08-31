@@ -1430,7 +1430,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the issue data
         get.issues = function() {
-            logging::loginfo("Getting issue data")
+            logging::loginfo("Getting issue data.")
 
             ## if issues have not been read yet do this
             if (!self$is.data.source.cached("issues")) {
@@ -1455,7 +1455,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.issues
         get.issues.uncached = function(issues.only.comments, filter.bots = FALSE) {
-            logging::loginfo("Getting issue data")
+            logging::loginfo("Getting issue data.")
             return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots))
         },
 
@@ -1466,7 +1466,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.issues for a detailed description of filtering options
         get.issues.unfiltered = function() {
-            logging::loginfo("Getting issue data")
+            logging::loginfo("Getting issue data.")
 
             ## if issues have not been read yet and are not locked in the configuration, do this
             if (!self$is.data.source.cached("issues.unfiltered") && !private$project.conf$get.value("issues.locked")) {
