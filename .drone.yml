@@ -41,7 +41,7 @@ steps:
 
 - name: R-4.1
   pull: if-not-exists
-  image: r-base:4.1.0
+  image: r-base:4.1.1
   commands: *runTests
   depends_on: [clone]
 
