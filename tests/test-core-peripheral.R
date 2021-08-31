@@ -66,10 +66,10 @@ test_that("Eigenvector classification", {
     result = get.author.class.network.eigen(network)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf"),
-                               eigen.centrality = c(1.0))
-    expected.peripheral = data.frame(author.name = c("Thomas", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans"),
-                                     eigen.centrality = c(0.7116, 0.7116, 0.25, 0.25, 0.25, 0.25))
+    expected.core = data.frame(author.name = c("Olaf", "Thomas"),
+                               eigen.centrality = c(1.0, 0.7116159)) # the threshold is 0.7116148
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Fritz fritz@example.org", "georg", "Hans"),
+                                     eigen.centrality = c(0.7116104, 0.2499983, 0.2499983, 0.2499983, 0.2499983))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL
@@ -253,13 +253,13 @@ test_that("get.author.class", {
 
     ## Check empty input data for network-based classification (no columns):
     expect_error(get.author.class(data.frame(author.name = character(0), foo = numeric(0)), "foo",
-                                  classification.category = "network")) # expect that an error occurs
+                                  classification.category = "network"), NA) # expect that no error occurs
     ## Check empty input data for network-based classification (not enough columns) (1):
     expect_error(get.author.class(data.frame(), "foo",
-                                  classification.category = "network")) # expect that an error occurs
+                                  classification.category = "network"), NA) # expect that no error occurs
     ## Check empty input data for network-based classification (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo",
-                                  classification.category = "network")) # expect that an error occurs
+                                  classification.category = "network"), NA) # expect that no error occurs
 
     ## Check empty input data without a specified classification metric type (not enough columns) (2):
     expect_error(get.author.class(data.frame(author.name = character(0)), "foo")) # expect that an error occurs
@@ -279,7 +279,7 @@ test_that("Core classification of cochange author networks with vertices but no 
     ## classify the authors into core/peripheral
     classification = get.author.class.by.type(network, type = "network.eigen")
 
-    expect_true(nrow(classification[["core"]]) == 1 && nrow(classification[["peripheral"]]) == 0)
+    expect_true(nrow(classification[["core"]]) == 0 && nrow(classification[["peripheral"]]) == 1)
 
     ## create network with several authors and no edges
     authors = data.frame(author.name = LETTERS[1:5], kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
