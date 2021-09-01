@@ -14,7 +14,7 @@
 ## Copyright 2017-2018, 2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -115,8 +115,7 @@ plot.print.network = function(network, labels = TRUE) {
 plot.get.plot.for.network = function(network, labels = TRUE) {
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
-        network = create.empty.network(directed = igraph::is.directed(network)) +
-            igraph::vertices(c("", ""), type = c(TYPE.AUTHOR, TYPE.ARTIFACT))
+        network = create.empty.network(directed = igraph::is.directed(network), add.attributes = TRUE)
         PLOT.VERTEX.SIZE = 0
     }
 
@@ -224,7 +223,11 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
 #' @return the old network with the new and changed vertex and edge attributes
 plot.fix.type.attributes = function(network) {
     ## copy type attribute to vertex.type and edge.type
-    network = igraph::set.vertex.attribute(network, "vertex.type", value = igraph::get.vertex.attribute(network, "type"))
+    if (igraph::vcount(network) == 0) {
+        network = igraph::set.vertex.attribute(network, "vertex.type", value = NA)
+    } else {
+        network = igraph::set.vertex.attribute(network, "vertex.type", value = igraph::get.vertex.attribute(network, "type"))
+    }
     network = igraph::set.edge.attribute(network, "edge.type", value = igraph::get.edge.attribute(network, "type"))
 
     ## adjust 'type' attribute for vertices for bipartite plotting (we need Booleans there)

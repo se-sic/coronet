@@ -1,50 +1,54 @@
-# coronet - The network library
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
+![coronet](./logo/5.coronet_with_font_radiused_rectangle.png)
+
+# coronet––The network library
 
 Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
 
-The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [https://github.com/siemens/codeface] and its companion tool `codeface-extraction` [https://github.com/se-passau/codeface-extraction]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
+The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [[https://github.com/siemens/codeface](https://github.com/siemens/codeface)] and its companion tool `codeface-extraction` [[https://github.com/se-sic/codeface-extraction](https://github.com/se-sic/codeface-extraction)]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
 
-![Exemplary plot of multi network](plot-multi.png)
-
+![Exemplary plot of multi network](./plot-multi.png)
 
 ## Table of contents
-
-- [Integration](#integration)
-    * [Requirements](#requirements)
-        * [R](#r)
-        * [packrat (recommended)](#packrat)
-        * [Folder structure of the input data](#folder-structure-of-the-input-data)
-        * [Needed R packages](#needed-r-packages)
-    * [Submodule](#submodule)
-    * [Selecting the correct version](#selecting-the-correct-version)
-- [Functionality](#functionality)
-    * [Configuration](#configuration)
-    * [Data sources](#data-sources)
-    * [Network construction](#network-construction)
-        * [Data sources for network construction](#data-sources-for-network-construction)
-        * [Types of networks](#types-of-networks)
-        * [Relations](#relations)
-        * [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
-        * [Vertex and edge attributes](#vertex-and-edge-attributes)
-    * [Further functionalities](#further-functionalities)
-        * [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
-        * [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
-        * [Handling data independently](#handling-data-independently)
-    * [How-to](#how-to)
-    * [File/Module overview](#filemodule-overview)
-- [Configuration classes](#configuration-classes)
-    * [ProjectConf](#projectconf)
-        * [Basic information](#basic-information)
-        * [Artifact-related information](#artifact-related-information)
-        * [Revision-related information](#revision-related-information)
-        * [Data paths](#data-paths)
-        * [Splitting information](#splitting-information)
-        * [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
-    * [NetworkConf](#networkconf)
-- [License](#license)
-- [Work in progress](#work-in-progress)
+  - [Integration](#integration)
+    - [Requirements](#requirements)
+      - [`R`](#r)
+      - [`packrat` (recommended)](#packrat-recommended)
+      - [Folder structure of the input data](#folder-structure-of-the-input-data)
+      - [Needed R packages](#needed-r-packages)
+    - [Submodule](#submodule)
+    - [Selecting the correct version](#selecting-the-correct-version)
+  - [Functionality](#functionality)
+    - [Configuration](#configuration)
+    - [Data sources](#data-sources)
+    - [Network construction](#network-construction)
+      - [Data sources for network construction](#data-sources-for-network-construction)
+      - [Types of networks](#types-of-networks)
+      - [Relations](#relations)
+      - [Edge-construction algorithms for author networks](#edge-construction-algorithms-for-author-networks)
+      - [Vertex and edge attributes](#vertex-and-edge-attributes)
+    - [Further functionalities](#further-functionalities)
+      - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
+      - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
+      - [Handling data independently](#handling-data-independently)
+    - [How-to](#how-to)
+    - [File/Module overview](#filemodule-overview)
+  - [Configuration classes](#configuration-classes)
+    - [ProjectConf](#projectconf)
+      - [Basic information](#basic-information)
+      - [Artifact-related information](#artifact-related-information)
+      - [Revision-related information](#revision-related-information)
+      - [Data paths](#data-paths)
+      - [Splitting information](#splitting-information)
+      - [(Configurable) Data-retrieval-related parameters](#configurable-data-retrieval-related-parameters)
+    - [NetworkConf](#networkconf)
+  - [Changelog](#changelog)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Work in progress](#work-in-progress)
 
 
 ## Integration
@@ -53,11 +57,11 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
 
 While using the package, we require the following infrastructure.
 
-#### [`R`](https://www.r-project.org/) 
+#### [`R`](https://www.r-project.org/)
 
 Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
 
-We currently recommend version `3.6.3` for reliability reasons and `packrat` compatibility, but also later versions (`>=4`) should work (and are tested using our TravisCI script).
+We currently recommend version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
@@ -67,7 +71,7 @@ All `R` tools and IDEs should provide a  more sophisticated interface for the in
 #### Folder structure of the input data
 
 To use this network library, the input data has to match a certain folder structure and agree on certain file names.
-The data folder – which can result from consecutive runs of `Codeface` [https://github.com/se-passau/codeface] (branch `infosun-updates`) and `codeface-extraction` [https://github.com/se-passau/codeface-extraction] – needs to have the following structure (roughly):
+The data folder – which can result from consecutive runs of `Codeface` [[https://github.com/se-sic/codeface](https://github.com/se-sic/codeface)] (branch `infosaar-updates`) and `codeface-extraction` [[https://github.com/se-sic/codeface-extraction](https://github.com/se-sic/codeface-extraction)] – needs to have the following structure (roughly):
   ```
   codeface-data
   ├── configurations
@@ -82,10 +86,13 @@ The data folder – which can result from consecutive runs of `Codeface` [https:
       │     └──{project-name}_{tagging}
       │           └──{tagging}
       │                ├── authors.list
+      │                ├── bots.list
       │                ├── commits.list
+      │                ├── commitMessages.list
       │                ├── emails.list
-      │                ├── revisions.list
-      │                └── issues.list
+      │                ├── issues-github.list
+      │                ├── issues-jira.list
+      │                └── revisions.list
       ├── releases
       │     └──{project-name}_{tagging}
       │           └──{tagging}
@@ -123,6 +130,8 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `parallel`: For parallelization
 - `logging`: Logging
 - `sqldf`: For advanced aggregation of `data.frame` objects
+- `data.table`: For faster data processing
+- `reshape2`: For reshaping of data
 - `testthat`: For the test suite
 - `patrick`: For the test suite
 - `ggplot2`: For plotting of data
@@ -179,10 +188,15 @@ There are two distinguishable types of data sources that are both handled by the
     * Issue data (called `"issues"` internally)
 
 - Additional (orthogonal) data sources (augmentable to main data sources, not splittable)
+    * Commit messages are available through the parameter `commit.messages` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class. Three values can be used:
+        1. `none` is the default value and does not impact the configuration at all.
+        2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
+        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
     * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
+
 
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
 
@@ -339,7 +353,7 @@ Since we extract the data for each data source independently, the time ranges fo
 
 To compensate for this, the class `ProjectData` supplies a method `ProjectData$get.data.cut.to.same.date()`, which returns a clone of the underlying `ProjectData` instance for which the data sources are cut to their common latest first entry date and their common earliest last entry date.
 
-Analogously, the `NetworkConf` parameter `unify.data.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
+Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very functionality latently when constructing networks with a `NetworkBuilder` instance. **Note**: Please see also Section [Data sources for network construction](#data-sources-for-network-construction) for further information on data handling inside the class `NetworkBuilder`!
 
 #### Handling data independently
 
@@ -414,6 +428,8 @@ Additionally, for more examples, the file `showcase.R` is worth a look.
     * Functionality to add vertex attributes to existing networks
 - `util-networks-metrics.R`
     * A set of network-metric functions
+- `util-data-misc.R`
+    * Helper functions for data handling and the calculation of associated metrics
 - `util-networks-misc.R`
     * Helper functions for network creation (e.g., create adjacency matrices)
 - `util-tensor.R`
@@ -532,9 +548,14 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commits.filter.untracked.files`
     * Remove all information concerning untracked files from the commit data. This effect becomes clear when retrieving commits using `get.commits.filtered`, because then the result of which does not contain any commits that solely changed untracked files. Networks built on top of this `ProjectData` do also not contain any information about untracked files.
     * [*`TRUE`*, `FALSE`]
-- `mails.filter.patchstack.mails`
-    * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
-'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
+- `commits.locked`
+    * Lock commits to prevent them from being read if not yet present when calling the getter.
+    * [`TRUE`, *`FALSE`*]
+- `commmit.messages`
+    * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
+    * [*`none`*, `title`, `messages`]
+- `filter.bots`
+    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file.
     * [`TRUE`, *`FALSE`*]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
@@ -542,6 +563,20 @@ There is no way to update the entries, except for the revision-based parameters.
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
     * [*`github`, `jira`*]
+- `issues.locked`
+    * Lock issues to prevent them from being read if not yet present when calling the getter.
+    * [`TRUE`, *`FALSE`*]
+- `mails.filter.patchstack.mails`
+    * Filter patchstack mails from the mail data. In a thread, a patchstack spans the first sequence of mails where each mail has been authored by the thread creator and has been sent within a short time window after the preceding mail. The mails spanned by a patchstack are called
+'patchstack mails' and for each patchstack, every patchstack mail but the first one are filtered when `mails.filter.patchstack.mails = TRUE`.
+    * [`TRUE`, *`FALSE`*]
+- `mails.locked`
+    * Lock mails to prevent them from being read if not yet present when calling the getter.
+    * [`TRUE`, *`FALSE`*]
+- `pasta`
+    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 - `synchronicity`
     * Read and add synchronicity data to commits (column `synchronicity`)
     * [`TRUE`, *`FALSE`*]
@@ -550,10 +585,6 @@ There is no way to update the entries, except for the revision-based parameters.
     * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
     * [1, *5*, 10, 15]
     * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
-- `pasta`
-    * Read and integrate [PaStA](https://github.com/lfd/PaStA/) data with commit and mail data (columns `pasta` and `revision.set.id`)
-    * [`TRUE`, *`FALSE`*]
-    * **Note**: To include PaStA-based edge attributes, you need to give the `"pasta"` edge attribute for `edge.attributes`.
 
 ### NetworkConf
 
@@ -626,6 +657,9 @@ You can also update the `NetworkConf` object at any time by calling `NetworkBuil
 
 For more examples, please have a look into the file `showcase.R`.
 
+## Changelog
+
+For the most recent changes and releases, please have a look at our [NEWS](NEWS.md).
 
 ## Contributing
 
@@ -634,7 +668,7 @@ If you want to contribute to this project, please have a look at the file [CONTR
 
 ## License
 
-This project is licensed under [GNU General Public License v2.0](LICENSE).
+This project is licensed under [GNU General Public License v2.0](https://github.com/se-sic/coronet/blob/master/LICENSE).
 
 
 ## Work in progress

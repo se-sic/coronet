@@ -17,16 +17,15 @@
 ## Copyright 2017-2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2018 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
 ## https://github.com/siemens/codeface/blob/master/codeface/R/developer_classification.r
-
-## TODO see https://github.com/se-passau/coronet/issues/70
-## TODO adjust coding style regarding bracket notation
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -46,9 +45,29 @@ requireNamespace("logging") # for logging
 CORE.THRESHOLD = 0.8
 
 ## Defines the percentage of version development ranges in which
-## a author has to be classified as core to be stated as a
+## an author has to be classified as core to be stated as a
 ## longterm core author
 LONGTERM.CORE.THRESHOLD = 0.5
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Classification Type Categories ----------------------------------------
+
+## Mapping of the classification type to its category which can either
+## be 'network' or 'count' based categories
+CLASSIFICATION.TYPE.TO.CATEGORY = list(
+    "network.degree"            = "network",
+    "network.eigen"             = "network",
+    "network.hierarchy"         = "network",
+    "commit.count"              = "count",
+    "loc.count"                 = "count",
+    "mail.count"                = "count",
+    "mail.thread.count"         = "count",
+    "issue.count"               = "count",
+    "issue.comment.count"       = "count",
+    "issue.commented.in.count"  = "count",
+    "issue.created.count"       = "count"
+)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -56,8 +75,8 @@ LONGTERM.CORE.THRESHOLD = 0.5
 
 #' Classify authors into the classes "core" and "peripheral".
 #'
-#' The classification algorithm works by considering a numerical value for each author that denotes their centrality and
-#' can be imagined to work in the following way:
+#' The classification algorithm works by considering a numerical value for each author that denotes their centrality
+#' and can be imagined to work in the following way:
 #'   1. Order the authors by their centrality value and put them into a stack in which the most central authors reside
 #'      on the top
 #'   2. Initialize an empty set of "core" authors
@@ -73,38 +92,52 @@ LONGTERM.CORE.THRESHOLD = 0.5
 #'                  \code{type} specifies a count-based classification metric) [default: NULL]
 #' @param type a character string declaring the classification metric. The classification metric determines which
 #'             numerical characteristic of authors is chosen as their centrality value.
-#'             The parameter currently supports the following five options:
+#'             The parameter currently supports the following eleven options:
 #'             Network-based options/metrics (parameter \code{network} has to be specified):
 #'              - "network.degree"
 #'              - "network.eigen"
 #'              - "network.hierarchy"
-#'             Commit-based options/metrics (parameter \code{proj.data} has to be specified):
+#'             Count-based options/metrics (parameter \code{proj.data} has to be specified):
 #'              - "commit.count"
 #'              - "loc.count"
+#'              - "mail.count"
+#'              - "mail.thread.count"
+#'              - "issue.count"
+#'              - "issue.comment.count"
+#'              - "issue.commented.in.count"
+#'              - "issue.created.count"
 #'             [default: "network.degree"]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}. This parameter is ignored for
+#'                   non-issue-related classification metrics. [default: "all"]
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
 #'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
-#'
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
-#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         entries in this list (\code{core} and \code{peripheral) are data frames containing the authors' names in the
 #'         first column and their centrality values in the second column.
 get.author.class.by.type = function(network = NULL,
                                     proj.data = NULL,
                                     type = c("network.degree", "network.eigen", "network.hierarchy",
-                                             "commit.count", "loc.count"),
+                                             "commit.count", "loc.count", "mail.count", "mail.thread.count",
+                                             "issue.count", "issue.comment.count", "issue.commented.in.count",
+                                             "issue.created.count"),
+                                    issue.type = c("all", "issues", "pull.requests"),
                                     result.limit = NULL,
                                     restrict.classification.to.authors = NULL) {
 
     logging::logdebug("get.author.class.by.type: starting.")
 
     type = match.arg(type)
+    issue.type = match.arg(issue.type)
 
     ## Get a reasonable metric name for each classification type
     metric.name = switch(type,
@@ -112,9 +145,15 @@ get.author.class.by.type = function(network = NULL,
                          "network.eigen" = "eigen.centrality",
                          "network.hierarchy" = "hierarchy",
                          "commit.count" = "commit.count",
-                         "loc.count" = "loc.count")
+                         "loc.count" = "loc.count",
+                         "mail.count" = "mail.count",
+                         "mail.thread.count" = "mail.thread.count",
+                         "issue.count" = "issue.count",
+                         "issue.comment.count" = "issue.comment.count",
+                         "issue.commented.in.count" = "issue.commented.in.count",
+                         "issue.created.count" = "issue.created.count")
 
-    if (startsWith(type, "network")) {
+    if (CLASSIFICATION.TYPE.TO.CATEGORY[[type]] == "network") {
         if (is.null(network)) {
             logging::logerror("For network-based classifications the parameter 'network' must not be null.")
             stop("For network-based classifications the parameter 'network' must not be null.")
@@ -126,12 +165,13 @@ get.author.class.by.type = function(network = NULL,
         if (igraph::vcount(network) == 0) {
             logging::logwarn("The specified network is empty. Returning an empty classification.")
             return(list("core" = create.empty.data.frame(c("author.name", metric.name), c("character", "numeric")),
-                        "peripheral" = create.empty.data.frame(c("author.name", metric.name), c("character", "numeric"))))
+                        "peripheral" = create.empty.data.frame(c("author.name", metric.name),
+                                                               c("character", "numeric"))))
         }
     } else {
         if (is.null(proj.data)) {
-            logging::logerror("For commit-based classifications the parameter 'proj.data' must not be null.")
-            stop("For commit-based classifications the parameter 'proj.data' must not be null.")
+            logging::logerror("For count-based classifications the parameter 'proj.data' must not be null.")
+            stop("For count-based classifications the parameter 'proj.data' must not be null.")
         }
 
         ## Ensure that the parameter 'proj.data' is of type 'ProjectData'
@@ -189,16 +229,35 @@ get.author.class.by.type = function(network = NULL,
         hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
 
         ## Construct centrality dataframe
-        centrality.dataframe = data.frame(author.name = row.names(hierarchy.base.df), centrality = hierarchy.calculated)
+        centrality.dataframe = data.frame(author.name = row.names(hierarchy.base.df),
+                                          centrality = hierarchy.calculated)
     } else if (type == "commit.count") {
         ## Construct centrality dataframe
         centrality.dataframe = get.author.commit.count(proj.data)
-    } else {
+    } else if (type == "loc.count") {
         ## Construct centrality dataframe
         centrality.dataframe = get.author.loc.count(proj.data)
+    } else if (type == "mail.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.mail.count(proj.data)
+    } else if (type == "mail.thread.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.mail.thread.count(proj.data)
+    }else if (type == "issue.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.issue.count(proj.data, issue.type)
+    } else if (type == "issue.comment.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.issue.comment.count(proj.data, issue.type)
+    } else if (type == "issue.commented.in.count") {
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.issues.commented.in.count(proj.data, issue.type)
+    } else { # type == 'issue.created.count'
+        ## Construct centrality dataframe
+        centrality.dataframe = get.author.issues.created.count(proj.data, issue.type)
     }
 
-    # rename the second column of the centrality dataframe to the correct name with respect to the classification type
+    # rename the second column of the centrality data frame to the correct name with respect to the classification type
     names(centrality.dataframe)[2] = metric.name
 
     ## If the parameter 'restrict.classification.to.authors' is 'NULL', no restriction is made.
@@ -208,15 +267,17 @@ get.author.class.by.type = function(network = NULL,
     }
 
     ## Restrict authors as given by the parameter 'restrict.classification.to.authors' before classification
-    centrality.dataframe = centrality.dataframe[centrality.dataframe[["author.name"]] %in% restrict.classification.to.authors, ]
+    centrality.dataframe = centrality.dataframe[centrality.dataframe[["author.name"]] %in%
+                                                    restrict.classification.to.authors, ]
 
     ## Retrieve classification results
-    classification = get.author.class(centrality.dataframe, metric.name, result.limit = result.limit)
+    classification = get.author.class(centrality.dataframe, metric.name, result.limit = result.limit,
+                                      classification.category = CLASSIFICATION.TYPE.TO.CATEGORY[[type]])
 
     ## Authors who are specified in the parameter 'restrict.classification.to.authors' but were not considered in the
     ## classification will be appended with a value of 'NA' to the classification as peripheral authors:
-    ## 1) Prepare a list of author names who are specified in the parameter 'restrict.classification.to.authors' but are
-    ##    not part of the classification
+    ## 1) Prepare a list of author names who are specified in the parameter 'restrict.classification.to.authors' but
+    ##    are not part of the classification
     remaining.authors = setdiff(restrict.classification.to.authors, centrality.dataframe[["author.name"]])
     ## 2) Create a dataframe for those authors, all of which getting 'NA' as centrality value
     remaining.authors.df = data.frame(author.name = remaining.authors, temp = rep(NA, length(remaining.authors)))
@@ -236,26 +297,36 @@ get.author.class.by.type = function(network = NULL,
 #' @param range.data.list a list of \code{ProjectData} and/or \code{RangeData} objects, each of which containing the
 #'                        authors to classify (parameter is required if the parameter \code{type} specifies a
 #'                        count-based classification metric) [default: NULL]
-#' @param type a character string declaring the classification metric. The classification metric determines which
+#'@param type a character string declaring the classification metric. The classification metric determines which
 #'             numerical characteristic of authors is chosen as their centrality value.
-#'             The parameter currently supports the following five options:
+#'             The parameter currently supports the following eleven options:
 #'             Network-based options/metrics (parameter \code{network} has to be specified):
 #'              - "network.degree"
 #'              - "network.eigen"
 #'              - "network.hierarchy"
-#'             Commit-based options/metrics (parameter \code{proj.data} has to be specified):
+#'             Count-based options/metrics (parameter \code{proj.data} has to be specified):
 #'              - "commit.count"
 #'              - "loc.count"
+#'              - "mail.count"
+#'              - "mail.thread.count"
+#'              - "issue.count"
+#'              - "issue.comment.count"
+#'              - "issue.commented.in.count"
+#'              - "issue.created.count"
 #'             [default: "network.degree"]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}. This parameter is ignored for
+#'                   non-issue-related classification metrics. [default: "all"]
 #' @param restrict.classification.to.authors a vector of author names or a list of vectors of author names.
 #'                                           When choosing the first option (i.e., when passing a vector of author
 #'                                           names), only authors that are contained within this vector are to be
 #'                                           classified. Authors that appear in the vector but are not part of the
 #'                                           classification result (i.e., they are not present in the underlying data)
 #'                                           will be added to it afterwards (with a centrality value of \code{NA}).
-#'                                           Alternatively, a list containing vectors of author names can be passed. The
-#'                                           list must have the same length as the list of networks specified in the
-#'                                           parameter \code{network.list} or the list of \code{RangeData} objects
+#'                                           Alternatively, a list containing vectors of author names can be passed.
+#'                                           The list must have the same length as the list of networks specified in
+#'                                           the parameter \code{network.list} or the list of \code{RangeData} objects
 #'                                           specified in the parameter \code{range.data.list}, respectively. For each
 #'                                           range, the corresponding author group in the list will then be used for
 #'                                           restriction instead of using the same group for all ranges. \code{NULL}
@@ -269,13 +340,17 @@ get.author.class.by.type = function(network = NULL,
 #' @seealso get.author.class.by.type
 get.author.class.overview = function(network.list = NULL, range.data.list = NULL,
                                      type = c("network.degree", "network.eigen", "network.hierarchy",
-                                              "commit.count", "loc.count"),
+                                              "commit.count", "loc.count", "mail.count", "mail.thread.count",
+                                              "issue.count", "issue.comment.count", "issue.commented.in.count",
+                                              "issue.created.count"),
+                                     issue.type = c("all", "issues", "pull.requests"),
                                      restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.overview: starting.")
 
     type = match.arg(type)
+    issue.type = match.arg(issue.type)
 
-    if (startsWith(type, "network")) {
+    if (CLASSIFICATION.TYPE.TO.CATEGORY[[type]] == "network") {
         if (is.null(network.list)) {
             logging::logerror("For network-based classifications the parameter 'network.list' must not be null.")
             stop("For network-based classifications the parameter 'network.list' must not be null.")
@@ -303,11 +378,11 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
 
     result = mapply(data.list, restrict.classification.to.authors, SIMPLIFY = FALSE,
                     FUN = function(data, restrict.classification.to.authors) {
-        if (startsWith(type, "network")) {
+        if (CLASSIFICATION.TYPE.TO.CATEGORY[[type]] == "network") {
             return(get.author.class.by.type(network = data, type = type,
                                             restrict.classification.to.authors = restrict.classification.to.authors))
         } else {
-            return(get.author.class.by.type(proj.data = data, type = type,
+            return(get.author.class.by.type(proj.data = data, type = type, issue.type = issue.type,
                                             restrict.classification.to.authors = restrict.classification.to.authors))
         }
     })
@@ -316,16 +391,21 @@ get.author.class.overview = function(network.list = NULL, range.data.list = NULL
     return(result)
 }
 
-## Get the author turnover values measured as the proportion of authors in the
-## specified version range classes which were not active, i.e. do not exist,
-## in the previous version range classes (saturation).
+#' Get the author turnover values measured as the proportion of authors in the
+#' specified range classes which were not active, i.e. do not exist,
+#' in the previous range classes (saturation).
+#'
+#' @param author.class.overview the list of author classifications
+#' @param saturation the number of ranges to look in the past [default: 1]
+#'
+#' @return a data.frame with information about developer turnover
 get.class.turnover.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.class.turnover.overview: starting.")
 
     if (!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     } else {
-        versions = 1:length(author.class.overview)
+        versions = seq_along(author.class.overview)
     }
 
     ## Set up the data.frame for the analysis results
@@ -340,25 +420,25 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1) {
         dev.count.peripheral = 0
     )
 
-    ## Get all active authors for each version range in the different classes (and both)
+    ## Get all active authors for each range in the different classes (and both)
     devs = sapply(author.class.overview, function(author.class) {
-        return(c(author.class$core$author.name, author.class$peripheral$author.name))
+        return(c(author.class[["core"]][["author.name"]], author.class[["peripheral"]][["author.name"]]))
     })
     devs.core = sapply(author.class.overview, function(author.class) {
-        return(author.class$core$author.name)
+        return(author.class[["core"]][["author.name"]])
     })
     devs.peripheral = sapply(author.class.overview, function(author.class) {
-        return(author.class$peripheral$author.name)
+        return(author.class[["peripheral"]][["author.name"]])
     })
 
     ## The author turnover measured as the proportion of devs in the current version
-    ## range which were not active in the previous version range
+    ## range which were not active in the previous range
     devs.new = devs[[1]]
     devs.core.new = devs.core[[1]]
     devs.peripheral.new = devs.peripheral[[1]]
-    turnover.overview$dev.count[1] = length(devs.new)
-    turnover.overview$dev.count.core[1] = length(devs.core.new)
-    turnover.overview$dev.count.peripheral[1] = length(devs.peripheral.new)
+    turnover.overview[["dev.count"]][1] = length(devs.new)
+    turnover.overview[["dev.count.core"]][1] = length(devs.core.new)
+    turnover.overview[["dev.count.peripheral"]][1] = length(devs.peripheral.new)
     for (i in 2:length(author.class.overview)) {
         devs.old = devs.new
         devs.core.old = devs.core.new
@@ -380,30 +460,36 @@ get.class.turnover.overview = function(author.class.overview, saturation = 1) {
         devs.peripheral.new = devs.peripheral[[i]]
 
         ## Calculate the turnover values
-        turnover.overview$turnover[i] = sum(!(devs.new %in% devs.old)) / length(devs.new)
-        turnover.overview$turnover.core[i] = sum(!(devs.core.new %in% devs.core.old)) / length(devs.core.new)
-        turnover.overview$turnover.peripheral[i] = sum(!(devs.peripheral.new %in% devs.peripheral.old)) / length(devs.peripheral.new)
+        turnover.overview[["turnover"]][i] = sum(!(devs.new %in% devs.old)) / length(devs.new)
+        turnover.overview[["turnover.core"]][i] = sum(!(devs.core.new %in% devs.core.old)) / length(devs.core.new)
+        turnover.overview[["turnover.peripheral"]][i] = sum(!(devs.peripheral.new %in% devs.peripheral.old)) /
+                                                              length(devs.peripheral.new)
 
-        turnover.overview$dev.count[i] = length(devs.new)
-        turnover.overview$dev.count.core[i] = length(devs.core.new)
-        turnover.overview$dev.count.peripheral[i] = length(devs.peripheral.new)
+        turnover.overview[["dev.count"]][i] = length(devs.new)
+        turnover.overview[["dev.count.core"]][i] = length(devs.core.new)
+        turnover.overview[["dev.count.peripheral"]][i] = length(devs.peripheral.new)
     }
 
     logging::logdebug("get.class.turnover.overview: finished.")
     return(turnover.overview)
 }
 
-## Gets a data frame to show the proportion of
-## the authors which are either only active in the current version range but not in the previous ones (new) or
-## which are only active in the previous ranges (as specified in saturation) but not in the current one (gone) in
-## relation to all authors of the current and the previous ranges.
+#' Gets a data frame to show the proportion of
+#' the authors which are either only active in the current range but not in the previous ones (new) or
+#' which are only active in the previous ranges (as specified in saturation) but not in the current one (gone) in
+#' relation to all authors of the current and the previous ranges.
+#'
+#' @param author.class.overview the list of author classifications
+#' @param saturation the number of ranges to look in the past [default: 1]
+#'
+#' @return a data.frame with information about author stability
 get.unstable.authors.overview = function(author.class.overview, saturation = 1) {
     logging::logdebug("get.unstable.authors.overview: starting.")
 
     if (!is.null(names(author.class.overview))) {
         versions = names(author.class.overview)
     } else {
-        versions = 1:length(author.class.overview)
+        versions = seq_along(author.class.overview)
     }
 
     ## Set up the data.frame for the analysis results
@@ -415,15 +501,15 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
         unstable.peripheral = 0
     )
 
-    ## Get all active authors for each version range in the different classes (and both)
+    ## Get all active authors for each range in the different classes (and both)
     devs = sapply(author.class.overview, function(author.class) {
-        return(c(author.class$core$author.name, author.class$peripheral$author.name))
+        return(c(author.class[["core"]][["author.name"]], author.class[["peripheral"]][["author.name"]]))
     })
     devs.core = sapply(author.class.overview, function(author.class) {
-        return(author.class$core$author.name)
+        return(author.class[["core"]][["author.name"]])
     })
     devs.peripheral = sapply(author.class.overview, function(author.class) {
-        return(author.class$peripheral$author.name)
+        return(author.class[["peripheral"]][["author.name"]])
     })
 
     devs.current = devs[[1]]
@@ -465,9 +551,10 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
         devs.peripheral.gone = sum(!(devs.peripheral.prev %in% devs.peripheral.current))
 
         ## Calculate the ratio values
-        turnover.overview$unstable[i] = (devs.new + devs.gone) / length(devs.union)
-        turnover.overview$unstable.core[i] = (devs.core.new + devs.core.gone) / length(devs.core.union)
-        turnover.overview$unstable.peripheral[i] = (devs.peripheral.new + devs.peripheral.gone) / length(devs.peripheral.union)
+        turnover.overview[["unstable"]][i] = (devs.new + devs.gone) / length(devs.union)
+        turnover.overview[["unstable.core"]][i] = (devs.core.new + devs.core.gone) / length(devs.core.union)
+        turnover.overview[["unstable.peripheral"]][i] =
+            (devs.peripheral.new + devs.peripheral.gone) / length(devs.peripheral.union)
 
     }
 
@@ -481,8 +568,8 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
 
 ## * Degree-based classification -------------------------------------------
 
-#' Classify authors into "core" and "peripheral" based on the vertex degree of author vertices in the network and return
-#' the classification result.
+#' Classify authors into "core" and "peripheral" based on the vertex degree of author vertices in the network and
+#' return the classification result.
 #'
 #' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
 #'
@@ -493,8 +580,9 @@ get.unstable.authors.overview = function(author.class.overview, saturation = 1) 
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
@@ -526,8 +614,9 @@ get.author.class.network.degree = function(network, result.limit = NULL, restric
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
@@ -559,8 +648,9 @@ get.author.class.network.eigen = function(network, result.limit = NULL, restrict
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
@@ -568,7 +658,8 @@ get.author.class.network.eigen = function(network, result.limit = NULL, restrict
 #'         first column and their centrality values in the second column.
 #'
 #' @seealso get.author.class.by.type
-get.author.class.network.hierarchy = function(network, result.limit = NULL, restrict.classification.to.authors = NULL) {
+get.author.class.network.hierarchy = function(network, result.limit = NULL,
+                                              restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.hierarchy: starting.")
 
     result = get.author.class.by.type(network = network, type = "network.hierarchy", result.limit = result.limit,
@@ -578,15 +669,15 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL, rest
     return(result)
 }
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Commit-based classification ---------------------------------------------
+## Count-based classification ---------------------------------------------
 
-## * Count-based classification --------------------------------------------
+## * Commit-based classification --------------------------------------------
+
 
 #' Classify authors into "core" and "peripheral" based on authors' commit-counts and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param proj.data the \code{ProjectData} containing the authors' commit data
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
@@ -595,8 +686,9 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL, rest
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
@@ -615,147 +707,6 @@ get.author.class.commit.count = function(proj.data, result.limit = NULL, restric
     return(result)
 }
 
-#' Get the commit count per comitter in the given range data, where the committer
-#' does not match the author of the respective commits
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.not.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.not.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       WHERE `committer.name` <> `author.name`
-                       GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.committer.not.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per person in the given range data for commits where the author equals the committer.
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.and.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.and.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute a query to get the commit count per person
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       WHERE `committer.name` = `author.name`
-                       GROUP BY `committer.name`, `author.name`
-                       ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.committer.and.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per person in the given range data where the person is committer or author or both.
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count
-get.committer.or.author.commit.count = function(range.data) {
-    logging::logdebug("get.committer.or.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "committer.name")]
-
-    ## Execute queries to get the commit count per person
-    ungrouped = sqldf::sqldf("SELECT `committer.name` AS `name` FROM `commits.df`
-                             WHERE `committer.name` = `author.name`
-                                UNION ALL
-                             SELECT `author.name` AS `name` FROM `commits.df`
-                             WHERE `author.name` <> `committer.name`
-                                UNION ALL
-                             SELECT `committer.name` AS `name` FROM `commits.df`
-                             WHERE `author.name` <> `committer.name`")
-
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `ungrouped`
-                       GROUP BY `name`
-                       ORDER BY `freq` DESC, `name` ASC")
-
-    logging::logdebug("get.committer.or.author.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count per committer in the given range data, where the committer
-#' may match the author of the respective commits
-#'
-#' @param range.data The data to count on
-#'
-#' @return A data frame in descending order by the commit count.
-get.committer.commit.count = function(range.data) {
-    logging::logdebug("get.committer.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = range.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("committer.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT *, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `committer.name` ORDER BY `freq` DESC, `committer.name` ASC")
-
-    logging::logdebug("get.committer.commit.count: finished.")
-    return(res)
-}
-
-#' Get the commit count for each author based on the commit data contained in the specified \code{ProjectData}.
-#'
-#' @param proj.data the \code{ProjectData} containing the commit data
-#'
-#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
-#'         their respective commit counts
-get.author.commit.count = function(proj.data) {
-    logging::logdebug("get.author.commit.count: starting.")
-
-    ## Get commit data
-    commits.df = proj.data$get.commits.filtered()
-
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name")]
-
-    ## Execute a query to get the commit count per author
-    res = sqldf::sqldf("SELECT `author.name`, COUNT(*) AS `freq` FROM `commits.df`
-                       GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC")
-
-    logging::logdebug("get.author.commit.count: finished.")
-    return(res)
-}
 
 ## * LOC-based classification ----------------------------------------------
 
@@ -772,8 +723,9 @@ get.author.commit.count = function(proj.data) {
 #' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
 #'                                           vector are to be classified. Authors that appear in the vector but are not
 #'                                           part of the classification result (i.e., they are not present in the
-#'                                           underlying data) will be added to it afterwards (with a centrality value of
-#'                                           \code{NA}). \code{NULL} means that no restriction is made. [default: NULL]
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
 #'
 #' @return the classification result, that is, a list containing two named list members \code{core} and
 #'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
@@ -791,40 +743,250 @@ get.author.class.loc.count = function(proj.data, result.limit = NULL, restrict.c
     return(result)
 }
 
-#' Get the number of changed lines of code (LOC) for each author based on the commit data contained in the specified
-#' \code{ProjectData}. The number is calculated by taking the sum of added and deleted lines of code for each commit.
+
+## * Mail-based classification --------------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on authors' mail-counts and return the classification result.
 #'
-#' @param proj.data the \code{ProjectData} containing the commit data
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
 #'
-#' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
-#'         their respective LOC counts
-get.author.loc.count = function(proj.data) {
-    logging::logdebug("get.author.loc.count: starting.")
+#' @param proj.data the \code{ProjectData} containing the authors' mail data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.mail.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.mail.count: starting.")
 
-    ## Get commit data
-    commits.df = proj.data$get.commits.filtered()
+    result = get.author.class.by.type(proj.data = proj.data, type = "mail.count", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
 
-    ## For each commit hash, make sure there is only one row
-    commits.df = commits.df[!duplicated(commits.df[["hash"]]), ]
-
-    ## Restrict commits to relevant columns
-    commits.df = commits.df[c("author.name", "added.lines", "deleted.lines")]
-
-    ## Execute a query to get the changed lines per author
-    res = sqldf::sqldf("SELECT `author.name`, SUM(`added.lines`) + SUM(`deleted.lines`) AS `loc`
-                        FROM `commits.df`
-                        GROUP BY `author.name` ORDER BY `loc` DESC, `author.name` ASC")
-
-    logging::logdebug("get.author.loc.count: finished.")
-    return(res)
+    logging::logdebug("get.author.class.mail.count: finished.")
+    return(result)
 }
 
+#' Classify authors into "core" and "peripheral" based on authors' mail-thread counts and return the
+#' classification result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' mail data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.mail.thread.count = function(proj.data, result.limit = NULL,
+                                              restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.mail.thread.count: starting.")
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "mail.thread.count", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.mail.thread.count: finished.")
+    return(result)
+}
+
+## * Issue-based classification --------------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on authors' issue-counts and return the classification result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' issue data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}.
+#'                   [default: "all"]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.issue.count = function(proj.data, result.limit = NULL, restrict.classification.to.authors = NULL,
+                                        issue.type = c("all", "issues", "pull.requests")) {
+    logging::logdebug("get.author.class.issue.count: starting.")
+
+    issue.type = match.arg(issue.type)
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "issue.count", issue.type = issue.type,
+                                      result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.issue.count: finished.")
+    return(result)
+}
+
+#' Classify authors into "core" and "peripheral" based on authors' issue-comment counts and return the classification
+#' result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' issue data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}.
+#'                   [default: "all"]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.issue.comment.count = function(proj.data, result.limit = NULL,
+                                                restrict.classification.to.authors = NULL,
+                                                issue.type = c("all", "issues", "pull.requests")) {
+    logging::logdebug("get.author.class.issue.comment.count: starting.")
+
+    issue.type = match.arg(issue.type)
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "issue.comment.count", issue.type = issue.type,
+                                      result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.issue.comment.count: finished.")
+    return(result)
+}
+
+#' Classify authors into "core" and "peripheral" based on authors' issue-commented-in counts and return the
+#' classification result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' issue data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}.
+#'                   [default: "all"]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.issue.commented.in.count = function(proj.data, result.limit = NULL,
+                                                restrict.classification.to.authors = NULL,
+                                                issue.type = c("all", "issues", "pull.requests")) {
+    logging::logdebug("get.author.class.issue.commented.in.count: starting.")
+
+    issue.type = match.arg(issue.type)
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "issue.commented.in.count",
+                                      issue.type = issue.type,
+                                      result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.issue.commented.in.count: finished.")
+    return(result)
+}
+
+#' Classify authors into "core" and "peripheral" based on authors' issue-created counts and return the classification
+#' result.
+#'
+#' The details of the classification algorithm are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param proj.data the \code{ProjectData} containing the authors' issue data
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#' @param issue.type which issue type to consider for count-based metrics using issues
+#'                   (see \code{preprocess.issue.data}). One of \code{"issues"},
+#'                   \code{"pull.requests"} or \code{"all"}.
+#'                   [default: "all"]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.issue.created.count = function(proj.data, result.limit = NULL,
+                                                restrict.classification.to.authors = NULL,
+                                                issue.type = c("all", "issues", "pull.requests")) {
+    logging::logdebug("get.author.class.issue.created.count: starting.")
+
+    issue.type = match.arg(issue.type)
+
+    result = get.author.class.by.type(proj.data = proj.data, type = "issue.created.count", issue.type = issue.type,
+                                      result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.issue.created.count: finished.")
+    return(result)
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Role stability ----------------------------------------------
 
-## Get a data frame with the authors and their occurence count in the specified class for
-## the specified author classification list.
+#' Get a data frame with the authors and their occurence count in the specified class for
+#' the specified author classification list.
+#'
+#' @param author.class.overview the list of classifications in which to find the number
+#'                              of occurences
+#' @param class the type of class to look for. Can either be \code{"both"}, \code{"core},
+#'              or \code{"peripheral}. [default: "both"]
+#'
+#' @return a data frame with the authors and their occurence count in the specified class
 get.recurring.authors = function(author.class.overview, class = c("both", "core", "peripheral")) {
     logging::logdebug("get.recurring.authors: starting.")
 
@@ -834,7 +996,7 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     freq = c()
 
     ## Iterate over each version development range
-    for (i in 1:length(author.class.overview)) {
+    for (i in seq_along(author.class.overview)) {
 
         ## skip range in case no classification is available
         if (all(is.na(author.class.overview[[i]]))) {
@@ -844,13 +1006,13 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
         if (class == "both") {
 
             ## skip range in case no classification is available
-            if (nrow(author.class.overview[[i]]$core) == 0
-               && nrow(author.class.overview[[i]]$peripheral) == 0) {
+            if (nrow(author.class.overview[[i]][["core"]]) == 0
+               && nrow(author.class.overview[[i]][["peripheral"]]) == 0) {
                 next
             }
 
-            author.class.authors = c(author.class.overview[[i]]$core$author.name,
-                                     author.class.overview[[i]]$peripheral$author.name)
+            author.class.authors = c(author.class.overview[[i]][["core"]][["author.name"]],
+                                     author.class.overview[[i]][["peripheral"]][["author.name"]])
         } else {
 
             ## skip range in case no classification for the given class is available
@@ -858,11 +1020,11 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
                 next
             }
 
-            author.class.authors = author.class.overview[[i]][[class]]$author.name
+            author.class.authors = author.class.overview[[i]][[class]][["author.name"]]
         }
 
         ## Iterate over each author in the specified class and increase his occurence count
-        for (j in 1:length(author.class.authors)) {
+        for (j in seq_along(author.class.overview)) {
             author.class.author.name = author.class.authors[j]
 
             ## Check if the author already exists in previous ranges
@@ -886,15 +1048,21 @@ get.recurring.authors = function(author.class.overview, class = c("both", "core"
     )
 
     ## Sort the authors by occurence count
-    data = data[order(data$freq, decreasing = TRUE), ]
+    data = data[order(data[["freq"]], decreasing = TRUE), ]
 
     logging::logdebug("get.recurring.authors: finished.")
     return(data)
 }
 
-## Retrieves all authors which will be classified as core by the specified
-## classification in more than a certain number of version ranges
-## -> see: "LONGTERM.CORE.THRESHOLD".
+#' Retrieves all authors which will be classified as core by the specified
+#' classification in more than a certain number of ranges.
+#'
+#' @param author.class the author classification to use for finding the
+#'                     longterm core-authors [default: NULL]
+#'
+#' @return the names of the longterm core-authors
+#'
+#' @seealso LONGTERM.CORE.THRESHOLD
 get.longterm.core.authors = function(author.class = NULL) {
     logging::logdebug("get.longterm.core.authors: starting.")
 
@@ -910,14 +1078,19 @@ get.longterm.core.authors = function(author.class = NULL) {
     longterm.threshold = length(author.class) * LONGTERM.CORE.THRESHOLD
 
     ## Get the longterm core authors
-    longterm.core = recurring.authors[recurring.authors$freq >= longterm.threshold, ]$author.name
+    longterm.core = recurring.authors[recurring.authors[["freq"]] >= longterm.threshold, ][["author.name"]]
 
     logging::logdebug("get.longterm.core.authors: finished.")
     return(longterm.core)
 }
 
-## Get a markov chain object representing the role stability of the
-## specified classification overview.
+#' Get a markov chain object representing the role stability of the
+#' specified classification overview.
+#'
+#' @param author.class.overview the list of author classifications to
+#'                              use for the role stability calculation
+#'
+#' @return a markov chain object representing the role stability
 get.role.stability = function(author.class.overview) {
     logging::logdebug("get.role.stability: starting.")
 
@@ -933,22 +1106,23 @@ get.role.stability = function(author.class.overview) {
 
     dev.current.absent = c()
 
-    ## Run through each version range author classification
+    ## Run through each range author classification
     for (i in 2:length(author.class.overview)) {
 
         ## Get core and peripheral devs from previous version
         class.prev = author.class.overview[[i-1]]
-        dev.prev.core = class.prev$core$author.name
-        dev.prev.peripheral = class.prev$peripheral$author.name
+        dev.prev.core = class.prev[["core"]][["author.name"]]
+        dev.prev.peripheral = class.prev[["peripheral"]][["author.name"]]
         dev.prev = c(dev.prev.core, dev.prev.peripheral)
         dev.prev.absent = dev.current.absent
 
         ## Get core and peripheral devs from current version
         class.current = author.class.overview[[i]]
-        dev.current.core = class.current$core$author.name
-        dev.current.peripheral = class.current$peripheral$author.name
+        dev.current.core = class.current[["core"]][["author.name"]]
+        dev.current.peripheral = class.current[["peripheral"]][["author.name"]]
         dev.current = c(dev.current.core, dev.current.peripheral)
-        dev.current.absent = unique(c(dev.prev.absent[!(dev.prev.absent %in% dev.current)], dev.prev[!(dev.prev %in% dev.current)]))
+        dev.current.absent = unique(c(dev.prev.absent[!(dev.prev.absent %in% dev.current)],
+                                      dev.prev[!(dev.prev %in% dev.current)]))
 
         ## Add the transition numbers of core authors
         core.core = core.core + sum(dev.prev.core %in% dev.current.core)
@@ -999,7 +1173,12 @@ get.role.stability = function(author.class.overview) {
     return(roles.stability)
 }
 
-## Calculates the cohen's kappa to measure the agreement of the specified author classifications.
+#' Calculates the cohen's kappa to measure the agreement of the specified author classifications.
+#'
+#' @param author.classification.list the first author classification list to compare
+#' @param other.author.classification.list the second author classification list to compare
+#'
+#' @return the cohens kappa coefficient describing the agreement of the two classification lists
 calculate.cohens.kappa = function(author.classification.list, other.author.classification.list) {
     logging::logdebug("calculate.cohens.kappa: starting.")
 
@@ -1014,28 +1193,32 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
         author.class.compare = other.author.classification.list[[i]]
 
         num.core.core = num.core.core +
-            sum(author.class$core$author.name %in% author.class.compare$core$author.name == TRUE)
+            sum(author.class[["core"]][["author.name"]] %in% author.class.compare[["core"]][["author.name"]])
 
         num.core.peripheral = num.core.peripheral +
-            sum(author.class$core$author.name %in% author.class.compare$peripheral$author.name == TRUE)
+            sum(author.class[["core"]][["author.name"]] %in%
+                    author.class.compare[["peripheral"]][["author.name"]])
 
         num.peripheral.core = num.peripheral.core +
-            sum(author.class$peripheral$author.name %in% author.class.compare$core$author.name == TRUE)
+            sum(author.class[["peripheral"]][["author.name"]] %in%
+                    author.class.compare[["core"]][["author.name"]])
 
         num.peripheral.peripheral = num.peripheral.peripheral +
-            sum(author.class$peripheral$author.name %in% author.class.compare$peripheral$author.name == TRUE)
+            sum(author.class[["peripheral"]][["author.name"]] %in%
+                    author.class.compare[["peripheral"]][["author.name"]])
     }
 
     num.sum = num.core.core + num.peripheral.peripheral + num.core.peripheral + num.peripheral.core
 
     po = (num.core.core + num.peripheral.peripheral) / num.sum
     pe.core = ((num.core.core + num.core.peripheral) / num.sum) * ((num.core.core + num.peripheral.core) / num.sum)
-    pe.peripheral = ((num.peripheral.peripheral + num.core.peripheral) / num.sum) * ((num.peripheral.peripheral + num.peripheral.core) / num.sum)
+    pe.peripheral = ((num.peripheral.peripheral + num.core.peripheral) / num.sum) *
+                    ((num.peripheral.peripheral + num.peripheral.core) / num.sum)
     pe = pe.core + pe.peripheral
 
     kappa = (po - pe) / (1 - pe)
 
-    logging::logdebug("calculate.choens.kappa: finished.")
+    logging::logdebug("calculate.cohens.kappa: finished.")
     return(kappa)
 }
 
@@ -1062,13 +1245,21 @@ calculate.cohens.kappa = function(author.classification.list, other.author.class
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
 #'                     \code{result.limit} authors of the classification stack will be contained within the returned
 #'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param classification.category the category of classification metric used for the classification of authors.
+#'                                These metrics can either be count- or network-based metrics. [default: NULL]
 #'
-#' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each of
-#'         which containing the authors classified as core or peripheral, respectively. Both entries in this list
+#' @return the classification result, that is, a list containing two named list members "core" and "peripheral", each
+#'         of which containing the authors classified as core or peripheral, respectively. Both entries in this list
 #'         ("core" and "peripheral") are dataframes containing the author's names in the first column and their
 #'         centrality values in the second column.
-get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL) {
+get.author.class = function(author.data.frame, calc.base.name, result.limit = NULL,
+                            classification.category = NULL) {
     logging::logdebug("get.author.class: starting.")
+
+    if (is.null(classification.category)) {
+        logging::logerror("A classification metric type ('count' or 'network') has to be specified! Stopping...")
+        stop("Stopped due to missing classification metric type.")
+    }
 
     ## Make sure that we have enough data for a classification
     if (ncol(author.data.frame) < 2) {
@@ -1088,41 +1279,64 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
     }
 
     ## Get the threshold depending on all calculation base values
-    author.class.threshold = get.threshold(author.data[[calc.base.name]])
+    author.class.threshold = get.threshold(author.data[[calc.base.name]], classification.category)
 
     ## Check if the result shall be limited
     if (!is.null(result.limit)) {
         author.data = head(author.data, result.limit)
     }
 
-    ## Check which authors can be treated as core based on the calculation base values:
-    ## (1) check which positions are over the threshold
-    ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
-    author.cumsum = cumsum(author.data[[calc.base.name]])
-    buffer.value = which(
-        author.cumsum > author.class.threshold |
-            as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
-    )
-
-    # Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following 'if' statement
-    min = suppressWarnings(min(buffer.value))
-    if (is.infinite(min)) {
-        author.class.threshold.idx = nrow(author.data)
+    ## Make a case differentiation for classifications using network-based and count-based categories.
+    ## When using network-based metrics, all developers that have a centrality value greater than the
+    ## threshold are considered core.
+    ## When using count-based metrics, the decision who is core and who not depends on the cumulated sum
+    ## of all centrality values and the first author where the cumulated sum is greater than the threshold
+    ## is where the cut between core and peripheral developers is made.
+    if (classification.category == "network") {
+        ## if only one author is present or all authors have the same centrality values,
+        ## always consider all authors as core
+        if (length(unique(author.data[[calc.base.name]])) == 1) {
+            core.classification = TRUE
+            if (unique(author.data[[calc.base.name]]) == 0) {
+                logging::logwarn(paste0("No collaboration/activity occured, thus,",
+                             " all authors' classification is set to peripheral."))
+                core.classification = FALSE
+            }
+        } else {
+            core.classification = author.data[[calc.base.name]] > author.class.threshold
+        }
     } else {
-        author.class.threshold.idx = min
-    }
+        ## Check which authors can be treated as core based on the calculation base values:
+        ## (1) check which positions are over the threshold
+        ## (2) check which positions are equal to the threshold (use all.equal due to rounding errors)
+        author.cumsum = cumsum(author.data[[calc.base.name]])
+        buffer.value = which(
+            author.cumsum > author.class.threshold |
+                as.logical(sapply(author.cumsum, function(x) isTRUE(all.equal(x, author.class.threshold))))
+        )
 
-    ## classify authors according to threshold
-    core.classification = rep(FALSE, nrow(author.data))
-    core.classification[seq_len(author.class.threshold.idx)] = TRUE
+        ## Suppress the warnings since the special case of 'min' returning 'Inf' is handled in the following
+        ## 'if' statement
+        min = suppressWarnings(min(buffer.value))
+        if (is.infinite(min)) {
+            author.class.threshold.idx = nrow(author.data)
+        } else {
+            author.class.threshold.idx = min
+        }
 
-    ## With no activity/collaboration occurring, all authors are classified as peripheral.
-    if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
-        logging::logwarn("No collaboration/activity occured, thus, all authors' classification is set to peripheral.")
-        core.classification = rep(FALSE, length(core.classification))
-        # ## old code: if we found no core author (should not happen anymore)
-        # } else if (!any(core.classification)) {
-        #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
+        ## classify authors according to threshold
+        core.classification = rep(FALSE, nrow(author.data))
+        core.classification[seq_len(author.class.threshold.idx)] = TRUE
+
+        ## With no activity/collaboration occurring, all authors are classified as peripheral.
+        if (author.class.threshold == 0 && length(author.data[["author.name"]]) != 1) {
+            logging::logwarn(paste0("No collaboration/activity occured, thus,",
+                                    " all authors' classification is set to peripheral."))
+            core.classification = rep(FALSE, length(core.classification))
+            # ## old code: if we found no core author (should not happen anymore)
+            # } else if (!any(core.classification)) {
+            #     core.classification = c(TRUE, rep(FALSE, length(core.classification) - 1))
+        }
     }
 
     ## Cut core and peripheral authors from base data and construct return value
@@ -1135,24 +1349,37 @@ get.author.class = function(author.data.frame, calc.base.name, result.limit = NU
 }
 
 #' Retrieve the classification threshold of a list containing centrality values. The threshold is determined by taking
-#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD}.
+#' the sum over all centrality values and multiplying this sum with \code{CORE.THRESHOLD} when using count-based
+#' metrics to calculate the centrality. When using network-based metrics, the threshold is determined by the
+#' \code{CORE.THRESHOLD} quantile of the centrality values.
 #'
-#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the sum
-#' and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
+#' Example: Consider three authors A, B and C that have centrality values of 1, 2 and 2, respectively. By taking the
+#' sum and multiplying with \code{CORE.THRESHOLD} which, for instance, could be 0.8, we end up with a classification
 #' threshold of (1 + 2 + 2) * 0.8 = 4. The smallest group of authors that together has a centrality sum of 4 or more
-#' could now be considered core (here, B and C with 2 commits each).
+#' could now be considered core (here, B and C with 2 commits each). Accordingly, when using a network-based approach,
+#' the threshold would now be 2 as this is the 80% quantile.
 #'
 #' @param centrality.list a list containing centrality values
+#' @param classification.category the category of centrality metric used as there are two ways to determine
+#'                                the threshold based on the type of centrality function. The two types
+#'                                are network-based and count-based functions. [default: "network"]
 #'
 #' @return the threshold used within classifications
-get.threshold = function(centrality.list) {
+get.threshold = function(centrality.list, classification.category = c("network", "count")) {
     logging::logdebug("get.threshold: starting.")
 
-    ## Calculate the sum of the provided data as base for the threshold calculation
-    data.threshold.base = sum(centrality.list)
+    category = match.arg(classification.category)
 
-    ## Check which authors can be treated as core based on the data
-    data.threshold = CORE.THRESHOLD * data.threshold.base
+    if (category == "network") {
+        ## Calculate the quantile specified by CORE.THRESHOLD
+        data.threshold = quantile(centrality.list, CORE.THRESHOLD)
+    } else { # category == 'count'
+        ## Calculate the sum of the provided data as base for the threshold calculation
+        data.threshold.base = sum(centrality.list)
+
+        ## Check which authors can be treated as core based on the data
+        data.threshold = CORE.THRESHOLD * data.threshold.base
+    }
 
     logging::logdebug("get.threshold: finished.")
     return(data.threshold)

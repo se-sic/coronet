@@ -15,9 +15,11 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -118,7 +120,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
-        #' Determine which vertex kind should be chose for the vertex depending on the relation
+        #' Determine which vertex kind should be chosen for the vertex depending on the relation
         #' between the vertices.
         #'
         #' @param relation the given relation
@@ -554,11 +556,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
-            private$authors.network.mail = NULL
             private$authors.network.cochange = NULL
             private$authors.network.issue = NULL
-            private$artifacts.network.cochange = NULL
+            private$authors.network.mail = NULL
             private$artifacts.network.callgraph = NULL
+            private$artifacts.network.cochange = NULL
+            private$artifacts.network.issue = NULL
+            private$artifacts.network.mail = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
@@ -587,33 +591,37 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
         },
 
-        #' Get  a value of the network configuration
+        #' Get a value of the network configuration.
         #'
         #' @return the value of the given entry name
         get.network.conf.entry = function(entry) {
             return(private$network.conf$get.value(entry))
         },
 
-        #' Set  a value of the network configuration and reset the environment
+        #' Set a value of the network configuration and reset the environment.
+        #'
+        #' @param entry the configuration option to set
+        #' @param value the new value that is assigned to the configuration parameter
         set.network.conf.entry = function(entry, value) {
             private$network.conf$update.value(entry, value)
+            self$reset.environment()
         },
 
-        #' Get the project data Object of the NetworkBuilder.
-        #' This Method is mainly used for testing purposes at the moment.
+        #' Update the network configuration based on the given list
+        #' of values and reset the environment afterwards.
+        #'
+        #' @param updated.values the new values for the network configuration [default: list()]
+        update.network.conf = function(updated.values = list()) {
+            private$network.conf$update.values(updated.values = updated.values)
+            self$reset.environment()
+        },
+
+        #' Get the ProjectData object of the NetworkBuilder.
+        #' This method is mainly used for testing purposes at the moment.
         #'
         #' @return the project data object of the NetworkBuilder
         get.project.data = function() {
             return(private$proj.data)
-        },
-
-        #' Update the network configuration based on the given list
-        #' of values and reset the environment afterwards
-        #'
-        #' @param updated.values the new values for the network configuration
-        update.network.conf = function(updated.values = list()) {
-            private$network.conf$update.values(updated.values = updated.values)
-            self$reset.environment()
         },
 
         ## * * networks ----------------------------------------------------
@@ -803,7 +811,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## remove vertices that are not committers if wanted
             if (private$network.conf$get.value("author.only.committers")) {
-                committers = unique(private$proj.data$get.commits()[["author.name"]])
+                committers = unique(private$proj.data$get.commits.unfiltered()[["author.name"]])
                 authors = igraph::get.vertex.attribute(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
                 network = igraph::delete.vertices(network, authors.to.remove)
@@ -1364,7 +1372,7 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
         default.value = 0
         ## set the right class for the default value
         class(default.value) = attributes[[attr.name]]
-        ## add the edge attribute to the network with the proper class
+        ## add the new attribute to the network with the proper class
         network = attribute.function(network, attr.name, value = default.value)
         ## fill the new attribute with NA values
         network = attribute.function(network, attr.name, value = NA)
@@ -1568,6 +1576,35 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions---------------------------------------------------------
+
+#' Calculate the data sources of a network based on its edge relations.
+#'
+#' @param network the network with the relations to be extracted
+#'
+#' @return a vector with all data.sources from the network; an element is set to \code{NA} if the network contains an
+#'         empty relation, i.e. \code{character(0)}
+get.data.sources.from.relations = function(network) {
+    ## get all relations in the network
+    data.sources = unique(igraph::E(network)$relation)
+
+    ## map them to data sources respectively using the defined translation constant
+    data.sources = sapply(data.sources, function(relation) {
+        ## check for a \code{character(0)} relation and abort if there is one
+        if (length(relation) == 0) {
+            logging::logwarn("There seems to be an empty relation in the network. Cannot proceed.")
+            return (NA)
+        }
+
+        ## use the translation constant to get the appropriate data source
+        return(RELATION.TO.DATASOURCE[[relation]])
+    }, USE.NAMES = FALSE) # avoid element names as we only want the data source's name
+
+    return(data.sources)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
 
 SAMPLE.DATA = normalizePath("./sample")
@@ -1576,7 +1613,6 @@ SAMPLE.DATA = normalizePath("./sample")
 #'
 #' @return the sample network
 get.sample.network = function() {
-
     ## project configuration
     proj.conf = ProjectConf$new(SAMPLE.DATA, "testing", "sample", "feature")
     proj.conf$update.values(list(commits.filter.base.artifact = FALSE))
@@ -1584,7 +1620,7 @@ get.sample.network = function() {
     ## RangeData object
     range = proj.conf$get.value("ranges")[1]
     range.callgraph = proj.conf$get.callgraph.revision.from.range(range)
-    proj.data = RangeData$new(proj.conf, range, range.callgraph)
+    proj.data = RangeData$new(proj.conf, range, range.callgraph, built.from.range.data.read = TRUE)
 
     ## network configuration
     net.conf = NetworkConf$new()

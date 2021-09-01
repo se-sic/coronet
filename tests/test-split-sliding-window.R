@@ -18,6 +18,8 @@
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -65,11 +67,12 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -84,9 +87,30 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
         "2016-07-12 16:03:29-2016-07-12 16:06:29",
         "2016-07-12 16:04:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.value("ranges")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
 
-    expect_equal(result, expected, info = "Time ranges.")
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "time-based",
+        split.length = "3 min",
+        split.basis = "commits",
+        split.sliding.window = TRUE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:29", "2016-07-12 16:01:59",
+                            "2016-07-12 16:03:29", "2016-07-12 16:04:59", "2016-07-12 16:06:29",
+                            "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -97,6 +121,20 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
             "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$commits[3:5, ],
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:8, ]
         ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commit.messages,
+            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$commit.messages,
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$commit.messages,
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$commit.messages,
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(14, 20:22, 37:40), ],
+            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$issues[rownames(data$issues) %in% c(14:15, 40, 47:49), ],
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(15, 29, 47:49), ],
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$issues[rownames(data$issues) %in% c(29,41,45,46), ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(23,41,45,46), ]
+        ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
             "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$mails[0, ],
@@ -104,12 +142,12 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
             "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$mails[rownames(data$mails) %in% c(16, 17), ],
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 17, ]
         ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(14, 20:22), ],
-            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$issues[rownames(data$issues) %in% c(14:15), ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(15, 29), ],
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$issues[rownames(data$issues) == 29, ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$pasta,
+            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$pasta,
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$pasta,
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$pasta,
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$synchronicity,
@@ -117,21 +155,15 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$synchronicity,
             "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$synchronicity,
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$pasta,
-            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$pasta,
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$pasta,
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$pasta,
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -152,11 +184,12 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -173,9 +206,32 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
         "2012-04-10 03:38:13-2015-04-10 21:38:13",
         "2013-10-10 00:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.value("ranges")
 
-    expect_equal(result, expected, info = "Time ranges.")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "time-based",
+        split.length = "3 years",
+        split.basis = "mails",
+        split.sliding.window = TRUE,
+        split.revisions = c("2004-10-09 18:38:13", "2006-04-10 15:38:13", "2007-10-10 12:38:13",
+                            "2009-04-10 09:38:13", "2010-10-10 06:38:13", "2012-04-10 03:38:13",
+                            "2013-10-10 00:38:13", "2015-04-10 21:38:13", "2016-07-12 16:05:38"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
+
 
     ## check data for all ranges
     expected.data = list(
@@ -188,6 +244,24 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
             "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$commits[0, ],
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$commits[1:2, ]
         ),
+        commit.messages = list(
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$commit.messages,
+            "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$commit.messages,
+            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$commit.messages,
+            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$commit.messages,
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$commit.messages,
+            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$commit.messages,
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$commit.messages
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$issues[0, ],
+            "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$issues[0, ],
+            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
+            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$issues[0, ],
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29, 37:40, 43:49), ]
+        ),
         mails = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
             "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$mails[0, ],
@@ -197,14 +271,14 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
             "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$mails[0, ],
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
         ),
-        issues = list(
-            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$issues[0, ],
-            "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$issues[0, ],
-            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
-            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$issues[0, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29), ]
+        pasta = list(
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
+            "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$pasta,
+            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$pasta,
+            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$pasta,
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$pasta,
+            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$pasta,
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$pasta
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$synchronicity,
@@ -214,23 +288,15 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$synchronicity,
             "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$synchronicity,
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$synchronicity
-        ),
-        pasta = list(
-            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
-            "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$pasta,
-            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$pasta,
-            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$pasta,
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$pasta,
-            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$pasta,
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -251,11 +317,12 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -269,9 +336,30 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
         "2015-04-22 11:52:09-2017-04-21 23:52:09",
         "2016-04-21 17:52:09-2017-05-23 12:32:40"
     )
-    result = proj.conf$get.value("ranges")
 
-    expect_equal(result, expected, info = "Time ranges.")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "time-based",
+        split.length = "2 years",
+        split.basis = "issues",
+        split.sliding.window = TRUE,
+        split.revisions = c("2013-04-21 23:52:09", "2014-04-22 05:52:09", "2015-04-22 11:52:09",
+                            "2016-04-21 17:52:09", "2017-04-21 23:52:09", "2017-05-23 12:32:40"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -281,37 +369,44 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$commits,
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$commits
         ),
+        commit.messages = list(
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$commit.messages,
+            "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$commit.messages,
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$commit.messages,
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$commit.messages
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$issues[0, ],
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(14:34, 37:49), ],
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:36, 37:49), ]
+        ),
         mails = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$mails[0, ],
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[rownames(data$mails) %in% 14:17, ],
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
         ),
-        issues = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$issues[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% 14:34, ],
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 14:36, ]
+        pasta = list(
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$pasta,
+            "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$pasta,
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$pasta,
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$pasta
         ),
         synchronicity = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$synchronicity,
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$synchronicity,
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$synchronicity,
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$synchronicity
-        ),
-        pasta = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$pasta,
-            "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$pasta,
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$pasta,
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -333,11 +428,12 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -350,8 +446,28 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
         "2016-01-01 00:00:00-2016-12-31 23:59:59",
         "2016-12-31 23:59:59-2017-06-03 03:03:03"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges.")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "time-based",
+        split.length = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
+        split.basis = NULL,
+        split.sliding.window = FALSE,
+        split.revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -359,32 +475,36 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commits,
             "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$commits[0, ]
         ),
+        commit.messages = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commit.messages,
+            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$commit.messages
+        ),
+        issues = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(14:34, 37:49), ],
+            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% 35:36, ]
+        ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ],
             "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$mails[0, ]
         ),
-        issues = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% 14:34, ],
-            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% 35:36, ]
+        pasta = list(
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$pasta,
+            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$pasta
         ),
         synchronicity = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$synchronicity,
             "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$pasta,
-            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-
 })
 
 ## * activity-based --------------------------------------------------------
@@ -403,11 +523,12 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -421,8 +542,30 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
         "2016-07-12 16:06:10-2016-07-12 16:06:32",
         "2016-07-12 16:06:20-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (activity.amount).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (activity.amount).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 3,
+        split.basis = "commits",
+        split.sliding.window = TRUE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -432,37 +575,44 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
             "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$commits[4:6, ],
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commits[5:8, ]
         ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$commit.messages,
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$commit.messages,
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$commit.messages,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 29, 40:41, 45:49), ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 23, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$mails[rownames(data$mails) %in% 16:17, ],
             "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
             "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$mails[0, ],
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ]
         ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 29), ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 23, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$pasta,
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$pasta,
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$pasta,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$synchronicity,
             "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$synchronicity,
             "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$synchronicity,
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$pasta,
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$pasta,
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$pasta,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
@@ -478,33 +628,58 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     expected = c(
         "2016-07-12 15:58:59-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (too-large activity amount).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 18,
+        split.basis = "commits",
+        split.sliding.window = TRUE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
         commits = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commits
         ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(14:15, 20:23, 29, 37:41, 45:49), ]
+        ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) %in% 16:17, ]
         ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(14:15, 20:23, 29), ]
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges for too-large activity amount (activity.amount).")
 
@@ -521,8 +696,29 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
         "2016-07-12 15:58:59-2016-07-12 16:06:20",
         "2016-07-12 16:06:20-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (number.windows).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 4,
+        split.basis = "commits",
+        split.sliding.window = FALSE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -530,29 +726,34 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commits[1:4, ],
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commits[5:8, ]
         ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commit.messages,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ]
         ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$pasta,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$synchronicity,
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$pasta,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 
@@ -560,7 +761,7 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
 
     expect_error(
         split.data.activity.based(project.data, activity.type = "commits",
-                                  number.windows = nrow(project.data$get.commits()) + 10, sliding.window = TRUE),
+                                  number.windows = nrow(project.data$get.commits.unfiltered()) + 10, sliding.window = TRUE),
         info = "Error expected (number.windows) (1)."
     )
 
@@ -582,7 +783,7 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     project.data = ProjectData$new(proj.conf)
 
     ## add one commit to the commit data having same date as latest commit
-    commit.data = project.data$get.commits()
+    commit.data = project.data$get.commits.unfiltered()
     latest.commit = commit.data[nrow(commit.data), ]
     latest.commit[1, "commit.id"] = "<commit-added>"
     latest.commit[1, "hash"] = "abcdefghijklmnopqrstuvxyz"
@@ -590,11 +791,12 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
     project.data$set.commits(commit.data)
 
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -609,8 +811,31 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
         "2016-07-12 16:06:20-2016-07-12 16:06:33",
         "2016-07-12 16:06:32-2016-07-12 16:06:33"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (activity.amount).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (activity.amount).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 3,
+        split.basis = "commits",
+        split.sliding.window = TRUE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33",
+                            "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -621,6 +846,20 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commits[5:8, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commits[7:9, ]
         ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$commit.messages,
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$commit.messages,
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$commit.messages,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages,
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 29, 40:41, 45:49), ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 23, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ],
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$issues[0, ]
+        ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$mails[rownames(data$mails) %in% 16:17, ],
             "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
@@ -628,12 +867,12 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$mails[0, ]
         ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 29), ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 23, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ],
-            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$issues[0, ]
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$pasta,
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$pasta,
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$pasta,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta,
+            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$synchronicity,
@@ -641,21 +880,15 @@ test_that("Split a data object activity-based (activity.type = 'commits', slidin
             "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$synchronicity,
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$synchronicity,
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$synchronicity
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$pasta,
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$pasta,
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$pasta,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta,
-            "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
@@ -676,11 +909,12 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -700,8 +934,31 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
         "2016-07-12 15:58:40-2016-07-12 16:05:37",
         "2016-07-12 15:58:50-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges.")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 3,
+        split.basis = "mails",
+        split.sliding.window = TRUE,
+        split.revisions = c("2004-10-09 18:38:13", "2005-02-09 18:49:49", "2010-07-12 11:05:35",
+                            "2010-07-12 12:05:34", "2010-07-12 12:05:41", "2010-07-12 12:05:42",
+                            "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2016-07-12 15:58:40",
+                            "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:05:38"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -717,6 +974,30 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
             "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commits[1:2, ],
             "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$commits[1:2, ]
         ),
+        commit.messages = list(
+            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$commit.messages,
+            "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$commit.messages,
+            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$commit.messages,
+            "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$commit.messages,
+            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$commit.messages,
+            "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$commit.messages,
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$commit.messages,
+            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$commit.messages,
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$commit.messages,
+            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$commit.messages
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$issues[0, ],
+            "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$issues[0, ],
+            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$issues[0, ],
+            "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$issues[0, ],
+            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$issues[0, ],
+            "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$issues[0, ],
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 27:28, 43:44), ],
+            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$issues[rownames(data$issues) %in% c(1:13, 27:28, 43:44), ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:40, 45:49), ],
+            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:40, 45:49), ]
+        ),
         mails = list(
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$mails[rownames(data$mails) %in% 1:3, ],
             "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$mails[rownames(data$mails) %in% 2:4, ],
@@ -729,17 +1010,17 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
             "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$mails[rownames(data$mails) %in% 14:16, ],
             "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 15:17, ]
         ),
-        issues = list(
-            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$issues[0, ],
-            "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$issues[0, ],
-            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$issues[0, ],
-            "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$issues[0, ],
-            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$issues[0, ],
-            "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$issues[0, ],
-            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 27:28), ],
-            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$issues[rownames(data$issues) %in% c(1:13, 27:28), ],
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ],
-            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29), ]
+        pasta = list(
+            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$pasta,
+            "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$pasta,
+            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$pasta,
+            "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$pasta,
+            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$pasta,
+            "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$pasta,
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$pasta,
+            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$pasta,
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$pasta,
+            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$pasta
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$synchronicity,
@@ -752,26 +1033,15 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
             "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$synchronicity,
             "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$synchronicity,
             "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$synchronicity
-        ),
-        pasta = list(
-            "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$pasta,
-            "2005-02-09 18:49:49-2010-07-12 12:05:34" = data$pasta,
-            "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$pasta,
-            "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$pasta,
-            "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$pasta,
-            "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$pasta,
-            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$pasta,
-            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$pasta,
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$pasta,
-            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -787,33 +1057,58 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
     expected = c(
         "2004-10-09 18:38:13-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (too-large activity amount).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 26,
+        split.basis = "mails",
+        split.sliding.window = TRUE,
+        split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
         commits = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commits[1:2, ]
         ),
+        commit.messages = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commit.messages
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:49), ]
+        ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
         ),
-        issues = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29), ]
+        pasta = list(
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$pasta
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$synchronicity
-        ),
-        pasta = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 
@@ -830,8 +1125,29 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
         "2004-10-09 18:38:13-2010-07-12 12:05:43",
         "2010-07-12 12:05:43-2016-07-12 16:05:38"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (number.windows).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 8,
+        split.basis = "mails",
+        split.sliding.window = FALSE,
+        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
@@ -839,29 +1155,34 @@ test_that("Split a data object activity-based (activity.type = 'mails', sliding.
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commits[0, ],
             "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits[1:2, ]
         ),
+        commit.messages = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commit.messages,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commit.messages
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:49), ]
+        ),
         mails = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
             "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 9:17, ]
         ),
-        issues = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29), ]
+        pasta = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$pasta,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$pasta
         ),
         synchronicity = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$synchronicity,
             "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$synchronicity
-        ),
-        pasta = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$pasta,
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$pasta
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 
@@ -894,11 +1215,12 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
     ## data object
     project.data = ProjectData$new(proj.conf)
     data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
         issues = project.data$get.issues(),
-        synchronicity = project.data$get.synchronicity(),
-        pasta = project.data$get.pasta()
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
     )
 
     ## split data
@@ -908,70 +1230,117 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
     ## check time ranges
     expected = c(
         "2013-04-21 23:52:09-2013-05-25 06:22:23",
-        "2013-05-06 01:04:34-2016-07-12 15:59:25",
-        "2013-05-25 06:22:23-2016-07-12 16:03:59",
-        "2016-07-12 15:59:25-2016-07-27 20:12:08",
-        "2016-07-12 16:03:59-2016-10-05 15:30:02",
+        "2013-05-06 01:04:34-2016-07-12 15:30:02",
+        "2013-05-25 06:22:23-2016-07-12 15:59:59",
+        "2016-07-12 15:30:02-2016-07-12 16:02:02",
+        "2016-07-12 15:59:59-2016-07-12 16:06:30",
+        "2016-07-12 16:02:02-2016-07-27 20:12:08",
+        "2016-07-12 16:06:30-2016-10-05 15:30:02",
         "2016-07-27 20:12:08-2017-05-23 12:31:34",
         "2016-10-05 15:30:02-2017-05-23 12:32:40"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges.")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 9,
+        split.basis = "issues",
+        split.sliding.window = TRUE,
+        split.revisions = c("2013-04-21 23:52:09", "2013-05-06 01:04:34", "2013-05-25 06:22:23",
+                            "2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 16:02:02",
+                            "2016-07-12 16:06:30", "2016-07-27 20:12:08", "2016-10-05 15:30:02",
+                            "2017-05-23 12:31:34", "2017-05-23 12:32:40"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
         commits = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$commits[0, ],
-            "2013-05-06 01:04:34-2016-07-12 15:59:25" = data$commits[1, ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$commits[1:2, ],
-            "2016-07-12 15:59:25-2016-07-27 20:12:08" = data$commits[2:8, ],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$commits[3:8, ],
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$commits[0, ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$commits[1, ],
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$commits[1:2, ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$commits[2:5, ],
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$commits[3:8, ],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$commits[6:8, ],
             "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$commits[0, ],
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$commits[0, ]
         ),
-        mails = list(
-            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$mails[0, ],
-            "2013-05-06 01:04:34-2016-07-12 15:59:25" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 15:59:25-2016-07-27 20:12:08" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$mails[0, ],
-            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$mails[0, ]
+        commit.messages = list(
+            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$commit.messages,
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$commit.messages,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$commit.messages,
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$commit.messages,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$commit.messages,
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$commit.messages,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$commit.messages,
+            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$commit.messages,
+            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$issues[rownames(data$issues) %in% 1:10, ],
-            "2013-05-06 01:04:34-2016-07-12 15:59:25" = data$issues[rownames(data$issues) %in% c(6:13, 27:28), ],
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$issues[rownames(data$issues) %in% c(11:15, 20:22, 27:28), ],
-            "2016-07-12 15:59:25-2016-07-27 20:12:08" = data$issues[rownames(data$issues) %in% c(14:17, 20:23, 29),],
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 29:30), ],
-            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 30:34),],
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$issues[rownames(data$issues) %in% c(6:13, 43:44), ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 20:21, 27:28, 37:38, 43:44), ],
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(14, 20:22, 27:28, 37:40),],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(14:15, 22, 29, 39:41, 45:49), ],
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$issues[rownames(data$issues) %in% c(15:17, 23, 29, 41:42, 45:49),],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 30, 42), ],
+            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 30:34), ],
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(26, 31:36), ]
         ),
-        synchronicity = list(
-            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$synchronicity,
-            "2013-05-06 01:04:34-2016-07-12 15:59:25" = data$synchronicity,
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$synchronicity,
-            "2016-07-12 15:59:25-2016-07-27 20:12:08" = data$synchronicity,
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$synchronicity,
-            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$synchronicity,
-            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$synchronicity
+        mails = list(
+            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$mails[0, ],
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$mails[0, ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$mails[0, ],
+            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$mails[0, ],
+            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         pasta = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$pasta,
-            "2013-05-06 01:04:34-2016-07-12 15:59:25" = data$pasta,
-            "2013-05-25 06:22:23-2016-07-12 16:03:59" = data$pasta,
-            "2016-07-12 15:59:25-2016-07-27 20:12:08" = data$pasta,
-            "2016-07-12 16:03:59-2016-10-05 15:30:02" = data$pasta,
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$pasta,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$pasta,
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$pasta,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$pasta,
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$pasta,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$pasta,
             "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$pasta,
             "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$pasta
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$synchronicity,
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$synchronicity,
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$synchronicity,
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$synchronicity,
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$synchronicity,
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$synchronicity,
+            "2016-07-12 16:06:30-2016-10-05 15:30:02" = data$synchronicity,
+            "2016-07-27 20:12:08-2017-05-23 12:31:34" = data$synchronicity,
+            "2016-10-05 15:30:02-2017-05-23 12:32:40" = data$synchronicity
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -987,33 +1356,58 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
     expected = c(
         "2013-04-21 23:52:09-2017-05-23 12:32:40"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (too-large activity amount).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (too-large activity amount).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 59,
+        split.basis = "issues",
+        split.sliding.window = TRUE,
+        split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
         commits = list(
             "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$commits
         ),
-        mails = list(
-            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
+        commit.messages = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
             "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$issues
         ),
-        synchronicity = list(
-            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$synchronicity
+        mails = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
         ),
         pasta = list(
             "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$pasta
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2017-05-23 12:32:40" = data$synchronicity
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 
@@ -1027,41 +1421,67 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
 
     ## check time ranges
     expected = c(
-        "2013-04-21 23:52:09-2016-07-12 16:02:30",
-        "2016-07-12 16:02:30-2017-05-23 12:32:40"
+        "2013-04-21 23:52:09-2016-07-12 16:02:02",
+        "2016-07-12 16:02:02-2017-05-23 12:32:40"
     )
-    result = proj.conf$get.value("ranges")
-    expect_equal(result, expected, info = "Time ranges (number.windows).")
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must not modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 21,
+        split.basis = "issues",
+        split.sliding.window = FALSE,
+        split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:02:02", "2017-05-23 12:32:40"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
 
     ## check data for all ranges
     expected.data = list(
         commits = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$commits[1:2, ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$commits[3:8, ]
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commits[1:2, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commits[3:8, ]
         ),
-        mails = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
+        commit.messages = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commit.messages,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28), ],
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36), ]
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28, 37:40, 43:44), ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36, 41:42, 45:49), ]
         ),
-        synchronicity = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$synchronicity,
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$synchronicity
+        mails = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
         ),
         pasta = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:30" = data$pasta,
-            "2016-07-12 16:02:30-2017-05-23 12:32:40" = data$pasta
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$pasta,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$pasta
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$synchronicity,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$synchronicity
         )
     )
     results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
         issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta())
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 

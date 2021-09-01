@@ -19,11 +19,13 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
 ## The definition of column names for each individual data source used in this file corresponds to the individual
-## extraction process of the tool 'codeface-extraction' (https://github.com/se-passau/codeface-extraction; use
+## extraction process of the tool 'codeface-extraction' (https://github.com/se-sic/codeface-extraction; use
 ## commit 0700f94 or a compatible later commit).
 
 
@@ -35,7 +37,19 @@ requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
 requireNamespace("sqldf") # for SQL-selections on data.frames
+requireNamespace("data.table") # for faster data.frame processing
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Helper functions ---------------------------------------------------------------
+
+#' Remove the "deleted user" or the author with empty name "" from a data frame.
+#'
+#' @param data the data from which to remove the "deleted user" and author with empty name
+#'
+#' @return the data frame without the rows in which the author name is "deleted user" or ""
+remove.deleted.and.empty.user = function(data) {
+    return(data[data["author.name"] != "deleted user" & data["author.name"] != "", ])
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Main data sources -------------------------------------------------------
@@ -154,13 +168,15 @@ read.commits = function(data.path, artifact) {
                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                           commit.data[["artifact.type"]])
 
+    commit.data = remove.deleted.and.empty.user(commit.data) # filter deleted user
+
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
     commit.data[["committer.date"]] = get.date.from.string(commit.data[["committer.date"]])
     commit.data = commit.data[order(commit.data[["date"]], decreasing = FALSE), ] # sort!
 
     ## set pattern for commit ID for better recognition
-    commit.data[["commit.id"]] = sprintf("<commit-%s>", commit.data[["commit.id"]])
+    commit.data[["commit.id"]] = format.commit.ids(commit.data[["commit.id"]])
     row.names(commit.data) = seq_len(nrow(commit.data))
 
     ## store the commit data
@@ -244,6 +260,7 @@ read.mails = function(data.path) {
             sum(break.to.cut), break.date
         )
     }
+    mail.data = remove.deleted.and.empty.user(mail.data) # filter deleted user
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")
@@ -282,6 +299,10 @@ ISSUES.LIST.DATA.TYPES = c(
 
 #' Read and parse the issue data from the 'issues.list' file.
 #'
+#' Note: The dates in the \code{"date"} column may be remapped to the creation date of the corresponding issue,
+#' especially for \code{"commit_added"} events. This happens when the event has happened before the issue creation date.
+#' The original date of these events can always be found in the \code{"event.info.2"} column.
+#'
 #' @param data.path the path to the issue data
 #' @param issues.sources the sources of the issue data. One or both of \code{"jira"} and \code{"github"}.
 #'
@@ -292,7 +313,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     ## check arguments
     issues.sources = match.arg(arg = issues.sources, several.ok = TRUE)
 
-    ## read data from choosen sources
+    ## read data from chosen sources
     issue.data = lapply(issues.sources, function(issue.source) {
 
         ## get file name of source issue data
@@ -341,7 +362,19 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
-    issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+
+    if (nrow(issue.data) > 0) {
+        ## fix all dates to be after the creation date
+        ## violations can happen for "commit_added" events if the commit was made before the PR was opened
+        ## the original date for "commit_added" events is stored in "event.info.2" in any case
+        commit.added.events = issue.data[["event.name"]] == "commit_added"
+        issue.data[commit.added.events, "event.info.2"] = get.date.string(issue.data[commit.added.events, "date"])
+        commit.added.events.before.creation = commit.added.events &
+            !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
+        issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
+        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
+        issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
+    }
 
     ## generate a unique event ID from issue ID, author, and date
     issue.data[["event.id"]] = sapply(
@@ -368,14 +401,58 @@ create.empty.issues.list = function() {
 
 ## * Author data -----------------------------------------------------------
 
+
+
+## column names of a data frame containing bot information (see file
+## 'bots.list' and function \code{read.bot.list})
+BOT.LIST.COLUMNS = c(
+    "author.name", "author.email", ## author
+    "is.bot" ## whether this is a bot
+)
+
+#' Read the bot classification from the 'bots.list' file.
+#'
+#' @param data.path the path to the commit-messages list
+#'
+#' @return a data frame with author.name, author.email, and a (potentially NA) boolean whether this is a bot,
+#'         or \code{NULL} if the above file is not present.
+read.bot.info = function(data.path) {
+    logging::logdebug("read.bot.info: starting.")
+
+    ## read the file with the bot info
+    file = file.path(data.path, "bots.list")
+
+    bot.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                         encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the bot info is empty
+    if (inherits(bot.data, "try-error")) {
+        logging::logwarn("There is no bot information available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return a data frame with the correct columns but zero rows
+        return(NULL)
+    }
+
+    ## set column names for new data frame
+    colnames(bot.data) = BOT.LIST.COLUMNS
+    bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+    logging::logdebug("read.bot.info: finished.")
+    return(bot.data)
+}
+
+
 ## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
-    "author.id", "author.name", "author.email"
+    "author.id", "author.name", "author.email", "is.bot"
 )
+
+## column names of a dataframe containing authors, before adding bot data.
+AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = AUTHORS.LIST.COLUMNS[1:3]
 
 ## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
 AUTHORS.LIST.DATA.TYPES = c(
-    "character", "character", "character"
+    "character", "character", "character", "logical"
 )
 
 #' Read the author data from the 'authors.list' file.
@@ -393,6 +470,7 @@ read.authors = function(data.path) {
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 
+
     ## break if the list of authors is empty
     if (inherits(authors.df, "try-error")) {
         logging::logerror("There are no authors available for the current environment.")
@@ -401,10 +479,24 @@ read.authors = function(data.path) {
     }
 
     ## if there is no third column, we need to add e-mail-address dummy data (NAs)
-    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS)) {
+    if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS.WITHOUT.BOTS)) {
         authors.df[3] = NA
     }
-    colnames(authors.df) = AUTHORS.LIST.COLUMNS
+    colnames(authors.df) = AUTHORS.LIST.COLUMNS.WITHOUT.BOTS
+
+    bot.data = read.bot.info(data.path)
+    if (!is.null(bot.data)) {
+        authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
+        authors.df = authors.df[order(authors.df[["author.id"]]), ] # re-order after read
+        row.names(authors.df) = seq_len(nrow(authors.df))
+    } else {
+        ## if bot data is not available, add NA data, which is what would have happened
+        ## if the file was empty
+        authors.df[["is.bot"]] = NA
+    }
+    ## re-order the columns
+    authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
+    authors.df = remove.deleted.and.empty.user(authors.df)
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -417,6 +509,113 @@ read.authors = function(data.path) {
 #' @return the empty dataframe
 create.empty.authors.list = function() {
     return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
+}
+
+## * Commit message data ---------------------------------------------------
+
+## column names of a dataframe containing commit messages (see file
+## 'commitMessages.list' and function \code{read.commit.messages})
+COMMIT.MESSAGE.LIST.COLUMNS = c(
+    "commit.id", # id
+    "hash", "title", "message"
+)
+
+## declare the datatype for each column in the constant 'COMMIT.MESSAGE.LIST.COLUMNS'
+COMMIT.MESSAGE.LIST.DATA.TYPES = c(
+    "character",
+    "character", "character", "character"
+)
+
+## declare the constant (5 spaces) which is used by codeface to separate lines in
+## commit messages
+COMMIT.MESSAGE.LINE.SEP.CODEFACE = paste0(rep(" ", 5), collapse = "")
+## declare the constant to how line breaks should look like in the data
+COMMIT.MESSAGE.LINE.SEP.REPLACE = "\n"
+
+#' Read the commit messages from the 'commitMessages.list' file.
+#' Turn line breaks represented with five spaces into \n line breaks and
+#' ignore initial spaces. Also remove spaces at the beginning and the end of
+#' the message.
+#'
+#' @param data.path the path to the commit-messages list
+#'
+#' @return a data frame with id, hash, title and message body´
+read.commit.messages = function(data.path) {
+    logging::logdebug("read.commit.messages: starting.")
+
+    ## read the file with the commit messages
+    file = file.path(data.path, "commitMessages.list")
+
+    commit.message.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                         encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the list of commits is empty
+    if (inherits(commit.message.data, "try-error")) {
+        logging::logwarn("There are no commit messages available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return a dataframe with the correct columns but zero rows
+        return(create.empty.commit.message.list())
+    }
+
+    ## set column names for new data frame; unprocessed data only has three columns so omit the "title" column
+    colnames(commit.message.data) = COMMIT.MESSAGE.LIST.COLUMNS[COMMIT.MESSAGE.LIST.COLUMNS != "title"]
+    ## split the message string with the new line symbol
+    message.split = strsplit(commit.message.data[["message"]], COMMIT.MESSAGE.LINE.SEP.CODEFACE)
+
+    ## prepare the 'message.split' object so that it contains a two-element vector for each commit
+    message.split.df = lapply(message.split, function(tuple) {
+        ## clear the message from empty lines
+        lines = tuple[tuple != ""]
+
+        ## remove spaces before first line
+        lines = gsub("^\\s+", "", lines)
+        ## remove spaces at the end of the message
+        lines = gsub("\\s+$", "", lines)
+
+        ## set title and message empty in case there was no actual commit message or it was consisting of spaces only
+        title = ""
+        message = ""
+
+        ## if there is only one line, create an empty body
+        if (length(lines) == 1) {
+            title = lines[[1]]
+        }
+        ## if there are more than two lines, merge all except for the first one
+        else if (length(lines) >= 2) {
+            title = lines[[1]]
+            ## use an ascii line break instead
+            message = paste(tail(lines, -1), collapse = COMMIT.MESSAGE.LINE.SEP.REPLACE)
+        }
+
+        return(data.table::data.table(title = title, message = message))
+    })
+
+    ## convert to a data.table with two columns
+    message.split.df = data.table::rbindlist(message.split.df)
+
+    ## create a data frame containing all four necessary columns
+    commit.message.data["title"] = message.split.df[["title"]] # title
+    commit.message.data["message"] = message.split.df[["message"]] # message
+    ## reorder columns because they are added alphabetically
+    commit.message.data = commit.message.data[, COMMIT.MESSAGE.LIST.COLUMNS]
+
+    ## Make commit.id have numeric type and set row names
+    commit.message.data[["commit.id"]] = format.commit.ids(commit.message.data[["commit.id"]])
+    row.names(commit.message.data) = seq_len(nrow(commit.message.data))
+
+    logging::logdebug("read.commit.messages: finished.")
+
+    return(commit.message.data)
+}
+
+#' Create a empty dataframe which has the same shape as a dataframe containing commit messages.
+#' The dataframe has the column names and column datatypes defined in \code{COMMIT.MESSAGE.LIST.COLUMNS} and
+#' \code{COMMIT.MESSAGE.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.commit.message.list = function() {
+    return (create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
 }
 
 ## * PaStA data ------------------------------------------------------------
@@ -535,7 +734,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
     file = file.path(data.path, file.name)
 
     ## handle the case that the synchronicity data is empty
-    if (!file.exists(file)) {
+    if (!file.exists(file) || file.info(file)$size == 0) {
         logging::logwarn("There are no synchronicity data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.synchronicity.list())
@@ -565,3 +764,20 @@ read.synchronicity = function(data.path, artifact, time.window) {
 create.empty.synchronicity.list = function() {
     return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
+
+
+## Helper functions --------------------------------------------------------
+
+## declare a global format for the commit.id column in several data frames
+COMMIT.ID.FORMAT = "<commit-%s>"
+
+#' Format a vector of commit ids into a global format
+#'
+#' @param commit.ids a vector containing all the commit ids to be formatted
+#'
+#' @return a vector with the formatted commit ids
+format.commit.ids = function(commit.ids) {
+    return (sprintf(COMMIT.ID.FORMAT, commit.ids))
+}
+
+

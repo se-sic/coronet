@@ -15,12 +15,15 @@
 ## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -93,11 +96,14 @@ Conf = R6::R6Class("Conf",
         #' @param value the new value for the attribute
         #' @param name the name of the attribute
         #'
-        #' @return a named list of logical values, named:
+        #' @return a named vector of logical values, named:
         #'         - existing,
         #'         - type,
-        #'         - allowed, and
-        #'         - allowed.number.
+        #'         - allowed,
+        #'         - allowed.number, and
+        #'         - updatable.
+        #'         Does not need to contain all of the above; e.g. if \code{existing} is \code{FALSE} the result
+        #'         consists of only this value.
         check.value = function(value, name) {
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
@@ -124,7 +130,6 @@ Conf = R6::R6Class("Conf",
             }
             return(result)
         }
-
     ),
 
     ## * public ------------------------------------------------------------
@@ -165,7 +170,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @param allowed Indicator whether to print information on allowed values [default: FALSE]
         print = function(allowed = FALSE) {
-            logging::loginfo("Network configuration:\n%s", self$get.conf.as.string(allowed))
+            logging::loginfo("Configuration:\n%s", self$get.conf.as.string(allowed))
         },
 
         ## * * updating ----------------------------------------------------
@@ -255,7 +260,23 @@ Conf = R6::R6Class("Conf",
                     paste(names.to.update, collapse = ", ")
                 )
                 for (name in names.to.update) {
-                    private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                    ## check if the default value or the given new value are NA
+                    ## if only one of both is NA that means that the value has to be changed
+                    if (is.na(private[["attributes"]][[name]][["default"]]) && !is.na(updated.values[[name]]) ||
+                        !is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
+                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                    } ## if the default value and the given value are the same and if the 'value' field is present
+                      ## then reset the 'value' field
+                    else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]]) ||
+                               identical(sort(updated.values[[name]]),
+                                         sort(private[["attributes"]][[name]][["default"]]))) {
+                        if ("value" %in% names(private[["attributes"]][[name]])) {
+                            private[["attributes"]][[name]][["value"]] = NULL
+                        }
+                    } ## otherwise proceed with updating the value
+                    else {
+                        private[["attributes"]][[name]][["value"]] = sort(updated.values[[name]])
+                    }
                 }
             } else {
                 logging::logwarn(
@@ -356,7 +377,49 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            commits.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commit.messages = list(
+                default = "none",
+                type = "character",
+                allowed = c("none", "title", "message"),
+                allowed.number = 1
+            ),
+            issues.only.comments = list(
+                default = TRUE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            filter.bots = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            issues.from.source = list(
+                default = c("jira", "github"),
+                type = "character",
+                allowed = c("jira", "github"),
+                allowed.number = Inf
+            ),
+            issues.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             mails.filter.patchstack.mails = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            mails.locked = list(
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
@@ -379,18 +442,6 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
-            ),
-            issues.only.comments = list(
-                default = TRUE,
-                type = "logical",
-                allowed = c(TRUE, FALSE),
-                allowed.number = 1
-            ),
-            issues.from.source = list(
-                default = c("jira", "github"),
-                type = "character",
-                allowed = c("jira", "github"),
-                allowed.number = Inf
             )
         ),
 
@@ -934,7 +985,7 @@ generate.range.directory.names = function(ranges) {
     directory.names = mapply(range.numbers, ranges, SIMPLIFY = FALSE, FUN = function(range.number, range) {
         revisions = strsplit(range, "-")[[1]]
 
-        if (length(revisions[1]) == 40) {
+        if (nchar(revisions[1]) == 40) {
             revisions[1] = substr(revisions[1], 0, 6)
             revisions[2] = substr(revisions[2], 0, 6)
         }

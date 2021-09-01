@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -24,6 +25,7 @@ context("Basic network-building functionality.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
+CASESTUDY_EMPTY = "test_empty"
 ARTIFACT = "feature" # function, feature, file, featureexpression
 
 ## use only when debugging this file independently
@@ -179,7 +181,7 @@ test_that("Extraction of sub-networks", {
 test_that("Construction of networks without data", {
 
     ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", TRUE)
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
     net.conf = NetworkConf$new()
@@ -413,7 +415,7 @@ test_that("Construction of networks from empty edge list (without vertices)", {
 test_that("Addition of edge attributes regardless of empty data", {
 
     ## configurations
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$clear.edge.attributes() # remove all but the mandatory edge attributes
@@ -695,4 +697,33 @@ test_that("Addition of edge attributes with data", {
         info = "multi network – issue/cochange"
     )
 
+})
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Extract data sources ----------------------------------------------------
+test_that("Get the data sources from a network with two relations", {
+    expected.data.sources = c("mails", "commits")
+    network = get.sample.network()
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails, commits")
+})
+
+test_that("Get the data sources from a network with one relation", {
+    expected.data.sources = c("mails")
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    ## construct network builder
+    net.conf = NetworkConf$new()
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+
+    ## build network
+    network = network.builder$get.author.network()
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails")
 })

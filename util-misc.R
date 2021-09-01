@@ -16,8 +16,9 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -170,7 +171,7 @@ create.empty.data.frame = function(columns, data.types = NULL) {
         ## replace column with column of correct type
         switch(tolower(data.types[i]),
                "posixct" = {
-                   column = as.POSIXct(column)
+                   column = lubridate::with_tz(as.POSIXct(column), tzone = TIMEZONE)
                },
                "integer" = {
                    column = as.integer(column)
@@ -202,6 +203,21 @@ create.empty.data.frame = function(columns, data.types = NULL) {
     return(data.frame)
 }
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vector misc--------------------------------------------------------------
+
+#' Get the second last element of a vector, if it has, at least, two elements.
+#'
+#' @param v the vector of which to retrieve the last element but one
+#'
+#' @return the second last element of \code{v}. If the vector has less than two elements, return \code{NA}.
+get.second.last.element = function(v) {
+    if (length(v) >= 2) {
+        return(tail(v, n = 2)[[1]])
+    } else {
+        return(NA)
+    }
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
@@ -214,7 +230,6 @@ create.empty.data.frame = function(columns, data.types = NULL) {
 get.stacktrace = function(calls) {
     lapply(calls, deparse)
 }
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Intermediate data -------------------------------------------------------
@@ -415,6 +430,14 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
 construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
+
+    ## make sure that, at least, two revisions are provided
+    if (length(revs) < 2) {
+        error.message = "Cannot construct ranges from less than 2 revisions."
+        logging::logerror(error.message)
+        stop(error.message)
+    }
+
     ## setting offset to construct ranges, i.e.,
     ## combine each $offset revisions
     offset = 1
@@ -425,7 +448,11 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
 
     ## extract sequences of revisions
     seq1 = revs[ 1:(length(revs) - offset) ]
-    seq2 = revs[ (offset + 1):length(revs) ]
+    if ((offset + 1) <= length(revs)) {
+        seq2 = revs[ (offset + 1):length(revs) ]
+    } else {
+        seq2 = revs[ length(revs) ]
+    }
 
     ## construct ranges
     ranges = mapply(seq1, seq2, SIMPLIFY = FALSE, FUN = function(start, end) {
@@ -857,4 +884,32 @@ get.range.bounds = function(range) {
     }
 
     return (range)
+}
+
+
+#' Get the data from a data frame in a specific range.
+#'
+#' @param range The range object that specifies the range
+#' @param data The data frame that the data shall be extracted from. It must have a 'date' column.
+#'
+#' @return A data frame holding the data corresponding to the given range
+get.data.from.range = function(range, data) {
+    range.bounds = get.range.bounds(range)
+    range.bounds.date = get.date.from.string(range.bounds)
+    df.bins = findInterval(data[["date"]], range.bounds.date, all.inside = FALSE)
+
+    ## split data by this bin; this gives a list of three data frames, "0" contains the data before the range, "1" the
+    ## data within the range and "2" the holds the data after the range
+    split.data = split.data.by.bins(data, df.bins)
+
+    ## look for the element with name "1", as we are interested in the data within the range
+    ## if there is no data, return an empty data frame corresponding to the data we want to cut
+    data.between = split.data["1"][[1]]
+    if (is.null(data.between)) {
+        ## in order to get an empty data frame, get the data with all rows removed
+        empty.data = data[0, ]
+        return(empty.data)
+    } else {
+        return(data.between)
+    }
 }

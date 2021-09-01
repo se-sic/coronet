@@ -19,6 +19,8 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -29,7 +31,6 @@ requireNamespace("igraph") # networks
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("lubridate") # for date conversion
-
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
@@ -53,30 +54,43 @@ requireNamespace("lubridate") # for date conversion
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                 sliding.window = FALSE) {
-    ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
-    split.data = names(data)
-    names(split.data) = split.data
-
-    ## initialize additional data sources to avoid multiple redundant initalizations later
-    additional.data = list(
-        authors = project.data$get.authors(),
-        pasta = project.data$get.pasta(),
-        synchronicity = project.data$get.synchronicity()
-    )
-    additional.data.sources = names(additional.data)
+                                 sliding.window = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(split.basis %in% project.data$get.cached.data.sources("only.unfiltered"))) {
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
+        project.data[[function.name]]()
+    }
+
+    ## get actual raw data
+    data.to.split = project.data$get.cached.data.sources("only.unfiltered")
+
+    data = lapply(data.to.split, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
+        return(project.data[[function.name]]())
+    })
+    names(data) = data.to.split
+
+    ## load available additional data sources
+    additional.data.sources = project.data$get.cached.data.sources("only.additional")
+    additional.data = lapply(additional.data.sources, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[ds]]
+        return(project.data[[function.name]]())
+    })
+    names(additional.data) = additional.data.sources
+
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -120,10 +134,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         sliding.window = FALSE
     }
 
-    if (!sliding.window) {
+    if (is.null(project.conf.new)) {
+        ## Clone the project configuration, so that splitting repeatedly does not interfere
+        ## with the same configuration.
+        project.conf.new = project.data$get.project.conf()$clone()
+    }
 
+    if (!sliding.window) {
         ## split data
-        data.split = parallel::mclapply(split.data, function(df.name) {
+        data.split = parallel::mclapply(data.to.split, function(df.name) {
             logging::logdebug("Splitting %s.", df.name)
             ## identify bins for data
             df = data[[df.name]]
@@ -134,6 +153,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
             names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
             return(df.split)
         })
+        ## set the names to the data sources obtained earlier
+        names(data.split) = data.to.split
 
         ## re-arrange data to get the proper list of data per range
         logging::logdebug("Re-arranging data.")
@@ -141,23 +162,24 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         names(data.split) = bins.ranges
 
         ## adapt project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date)
+        project.conf.new$set.revisions(bins, bins.date)
 
         ## construct RangeData objects
         logging::logdebug("Constructing RangeData objects.")
+
         cf.data = parallel::mclapply(bins.ranges, function(range) {
             logging::logdebug("Constructing data for range %s.", range)
             ## construct object for current range
-            cf.range.data = RangeData$new(project.data$get.project.conf(), range)
+            cf.range.data = RangeData$new(project.conf.new, range)
             ## get data for current range
             df.list = data.split[[range]]
 
             ## set main data sources: commits, mails, issues
-            for (data.source in split.data) {
+            for (data.source in data.to.split) {
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](df.list[[data.source]])
             }
-            ## set additional data sources: authors, pasta, synchronicity
+            ## set additional data sources: authors, commit.messages, pasta, synchronicity
             for (data.source in additional.data.sources) {
                 setter.name = sprintf("set.%s", data.source)
                 cf.range.data[[setter.name]](additional.data[[data.source]])
@@ -183,15 +205,15 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         cf.data = split.data.time.based.by.ranges(project.data, ranges)
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
+        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
-            cf.conf = cf$set.project.conf(project.data$get.project.conf())
+            cf.conf = cf$set.project.conf(project.conf.new)
         }
     }
 
     ## add splitting information to project configuration
-    project.data$get.project.conf()$set.splitting.info(
+    project.conf.new$set.splitting.info(
         type = "time-based",
         length = if (split.by.bins) bins else time.period,
         basis = split.basis,
@@ -222,21 +244,32 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'                       'sliding.window = FALSE') [default: NULL]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
 #'
 #' @return the list of RangeData objects, each referring to one time period
 split.data.activity.based = function(project.data, activity.type = c("commits", "mails", "issues"),
                                      activity.amount = 5000, number.windows = NULL,
-                                     sliding.window = FALSE) {
+                                     sliding.window = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
-    data = list(
-        commits = project.data$get.commits(),
-        mails = project.data$get.mails(),
-        issues = project.data$get.issues()
-    )
+    data.sources = project.data$get.cached.data.sources("only.unfiltered")
+    data = lapply(data.sources, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
+        return(project.data[[function.name]]())
+    })
+    names(data) = data.sources
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(activity.type %in% project.data$get.cached.data.sources("only.unfiltered"))) {
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
+        project.data[[function.name]]()
+    }
 
     ## define ID columns for mails and commits
     id.column = list(
@@ -248,6 +281,12 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## get amount of available activity
     activity = length(unique(data[[activity.type]][[ id.column[[activity.type]] ]]))
 
+    if (is.null(project.conf.new)) {
+        ## Clone the project configuration, so that splitting repeatedly does not interfere
+        ## with the same configuration.
+        project.conf.new = project.data$get.project.conf()$clone()
+    }
+
     ## activity amount given (number of windows NOT given)
     if (is.null(number.windows)) {
         if (activity < 1) {
@@ -256,6 +295,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         }
         ## compute the number of time windows according to the activity amount
         number.windows = ceiling(activity / activity.amount)
+        if (activity < activity.amount) {
+            activity.type.pretty = list(
+                commits = "commits",
+                mails = "mails",
+                issues = "issue events"
+            )[[activity.type]]
+            logging::logwarn("Can not form bins of %s %s for splitting data %s, as there are only %s %s.",
+                             activity.amount, activity.type.pretty, project.data$get.class.name(), activity, activity.type.pretty)
+        }
     }
     ## number of windows given (ignoring amount of activity)
     else {
@@ -283,7 +331,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
-    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type)
+    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type,
+                                    project.conf.new = project.conf.new)
 
     ## perform additional steps for sliding-window approach:
     ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
@@ -327,7 +376,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## split data for sliding windows
         cf.data.sliding = split.data.activity.based(project.data.clone, activity.type = activity.type,
-                                                    activity.amount = activity.amount, sliding.window = FALSE)
+                                                    activity.amount = activity.amount, sliding.window = FALSE,
+                                                    project.conf.new = project.conf.new)
 
         ## append data to normally-split data
         cf.data = append(cf.data, cf.data.sliding)
@@ -348,7 +398,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## remove the last regular range as it is not complete and we don't loose data when removing it
         last.regular.range = cf.data[[length(cf.data)]]
         last.sliding.range = cf.data[[length(cf.data) - 1]]
-        get.activity.data = paste0("get.", activity.type)
+        get.activity.data = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
+
         last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         last.sliding.range.ids = (last.sliding.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
         if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
@@ -375,15 +426,15 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         }
 
         ## update project configuration
-        project.data$get.project.conf()$set.revisions(bins, bins.date, sliding.window = TRUE)
+        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
         for (cf in cf.data) {
             ## re-set project configuration due to object duplication
-            cf.conf = cf$set.project.conf(project.data$get.project.conf(), reset.environment = FALSE)
+            cf.conf = cf$set.project.conf(project.conf.new, reset.environment = FALSE)
         }
     }
 
     ## add splitting information to project configuration
-    project.data$get.project.conf()$set.splitting.info(
+    project.conf.new$set.splitting.info(
         type = "activity-based",
         length = activity.amount,
         basis = activity.type,

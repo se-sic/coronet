@@ -1,4 +1,58 @@
+<link rel="shortcut icon" type="image/png" href="logo/3.favicon_radius.png">
+
 # coronet – Changelog
+
+## 4.0
+
+### Announcement
+- `coronet` now has a logo and a website: [https://se-sic.github.io/coronet](https://se-sic.github.io/coronet) (#167, PR #196)
+
+### Added
+- Add functionality to read and process commit messages in order to merge them to the commit data (see issue #180). Three values are available for the new attribute `commit.messages` in `ProjectConf`: `none`, `title` and `messages` (PR #193, 85b1d0572c0fb9f4c062bceb1363b0398f98b85f, fdc414ade1a640f533e809a25cfe012e42b3cffa, 43e1894998e18faff3a65114fa65ee54e1d2f66e)
+- Add functions `cleanup.commit.message.data` and `cleanup.synchronicity.data` to remove commit hashes that are not any more present in the commit data from the commit message data or synchronicity data (PR #193, 98e83b037ecc88d9a29e8e4ca93598a9978e85a2)
+- Add function `metrics.is.smallworld` to the metrics module in order to unify checks for smallworldness (similar to scalefreeness) (PR #195, ce1f8124298d73830f3fd96aa84e82ba89181aa6)
+- Add function `metrics.vertex.centralities` to metrics module in order to simplify getting a data frame containing author names and their respective centrality values (d3cd528609480f87658601ef13326e950a74cce7, e7182e7185d4f3acd90da5c05987a082bc40d607)
+- Add function `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
+- Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
+- Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
+- Add function `preprocess.issue.data`, which implements common issue data filtering operations. (fcf5cee64c809d62a33275cbd3272b8087869eea, a566caec6d7e649cc495d292a19eca8a7ffccde8, 5ba6feb988c44e2ba398bccce6c88e69d3bb552e)
+- Add function `get.issues.uncached`, which gets the issues filtered without poisoning or using the cache. (eb919fad9519d6e1a23261977bb3bfa2b899aaf9)
+- Add function `get.issues.unfiltered` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits (b9dd94c8575b8cab40d0d1185368854f84299d87, e05f3448e1e2e8faaac219ed4ac818f82f3d8ff7)
+- Add per-author vertex attributes regarding counting of issues, issue-creations, issue-comments, mails, mail-threads, ... (like mail thread count, issue creation count) (PR #194, issue #188, 9f9150a97ffbb64607df0ddcbce299e16c2580da, 7260d62cf6f1470584753f76970d19664638eeed, 139f70b67903909bcd4c57e26afa458681a869f2, eb4f649c04155e22195627072e0f08bb8fe65dc4, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 1e1406f4a0898cac3e61a7bc9a5aa665dceef79f, 98e11abc651b5fe0ec994eddea078635b0d6f0b2, a566caec6d7e649cc495d292a19eca8a7ffccde8)
+- Add functionality that allows to read any data source at any point in time, even after splitting. In this case, the read data is automatically cut to the corresponding range on the `RangeData` object (PR #201, 7f9394f528068f52957be67ab7e2efb733011c6b). Additionally, when changing the configuration parameters concerning additional data sources, the environment of a `ProjectData` object is no longer reset (PR #201, eed45ac1f97b4915ec42fb869f34359da1df4c60)
+- Add new configuration parameters `commits.locked`, `mails.locked` and `issues.locked` to `ProjectConf` which, when set to `TRUE`, prevent the respective getters from triggering the read of the data if it is not present yet (PR #201, 382167790e7d096b539eeed6464efeb9bb501d43)
+- Add support for classifying developers on the basis of more count-based classification metrics, including mail-count, mail-thread count, issue-count, issue-comment count, issue-commented-in count, and issue-created count (issue #70, PR #209, d7b2455ece9840caba7c3a46704d2a62a11bee57, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Add bot filtering mechanism, which allows removing issues/mails/commits made by bots (838855ffbe6d404bcb447d470a97870b238754ae, dcce82de58e25c6a0f3c27c9a7c46fb35a47fced)
+- Ignore the "deleted user", as well as the author having an empty name "" (1a08140884f30366995352af315218cfd315b958, 24c222a21238cf0d21dfa750d8c951f39b4d0500)
+
+### Changed/Improved
+- **Breaking Change**: Rename getters for main data sources: Unfiltered date is now acquired using `get.<datasource>.unfiltered`, filtered data is acquired using `get.<datasource>` (edf19cfee9c2855a1d968f37158b0fd2c196766a, e05f3448e1e2e8faaac219ed4ac818f82f3d8ff7)
+- Add check for empty network in `metrics.hub.degree` function. In the case of an empty network, a warning is being printed and `NA` is returned (PR #195, 4b164bebea1e8258cb93febf51271a4b6f486779)
+- Adjust the function `ProjectData$get.artifacts`: Rename its single parameter to `data.sources` and change the function so that it can extract the artifacts for multiple data sources at once. The default is still that only artifacts from the commit data are extracted. (PR #195, cf795f26652b00de5d717c703c688af55a972943, 70c05ecd1e3c0f10810acc2b2ae06a3eb8856317, 5a46ff4d428af7f301fe57d6e9e10421f553a9cc, fd767bb37ca608c28d9ff4a449415cc0e863d7ee)
+- Change the internal representation of empty data from `NULL` to empty data frames and adapt function `get.cached.data.sources()` of `ProjectData` which returns a vector of all data sources that are cached (including additional and filtered data sources) (PR #201, aec898e105ff5478fb75ba488b56c9c258a17a80, e55d088f926ae7a069761864855c179c04ed07dc, 24c222a21238cf0d21dfa750d8c951f39b4d0500); additionally, introduce new function `is.data.source.cached()` in `util-data.R` that returns a logical vector indicating which of the given data sources are cached (PR #201, b49cc5df4da04af9df2ae9bcdc7847fafb6befc9, 491e70c44dd71e4d51b40ee83bc8eb598d413bc0, 24c222a21238cf0d21dfa750d8c951f39b4d0500)
+- Change the threshold calculation for the classification of developers to use a quantile approach when classifying on the basis of network centrality metrics (issue #205, PR #209, PR #210, 5128252572ab6471a9dd5437360232622c33e958, 0d6a3a16bac9d11a9b69e77ed082664e2c0d245d)
+- Update documentation in `util-network-metrics.R` and `util.conf.R` (PR #195, f929248182594613bd203e100268e3e3dce87f34, de9988cc171cafdd084701d5a2693a74176a802a, PR #199, 059b286a3cebc586e88ce6446d98133ddd619260)
+- Splitting no longer loads all (additional) data sources, but only the ones that have already been cached in the `ProjectData` (PR #201, 52a3014b3c4a1d6dda1347adcffed4e90fae1d2b, aec898e105ff5478fb75ba488b56c9c258a17a80, de1bbfe644c52200e80a769e7c0e447c3a087278)
+- Improve the documentation in `util-core-peripheral.R` by adding roxygen skeleton documentation to undocumented functions (issue #70, PR #209, a3d5ca7a5f8c021e0bed588219321798388790ac, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Change the `$` notation to the bracket notation in `util-core-peripehral.R` (issue #70, PR #209, 6f737c8859519867928acc4e545c89bfd91b1e2e)
+- Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
+- Not only run test suite in our CI pipeline, but also run the showcase file in our CI pipeline using test data (719a4f0e067c4a68587bcdede0bbf72f6a6a666e, 3eb31d81156a1a9ab74598b48d585b7477358dd3)
+- Add R version 4.1 to test suite and adjust missing time-zone attributes on `NA` vectors or empty POSIXct vectors which are correctly added as of R version 4.1 (PR #203, 6b7fb36478325185f80f95e03dd0a0135bf44346, 98c56715502cf5140d98796dc2d6cb18f71760b2, 09d11ab631de8051ca317f36652ab0fee9cc0cce)
+
+### Fixed
+- Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
+- Fix the function `reset.environment()` of both the `ProjectData` and `NetworkBuilder` class; they now reset all the data (PR #199, de091a5e6c70fea5161276d6585bea916178e4de, fc4c086bf2691b5bb37614d21c7690f53e52f29e)
+- Adjust the functions `update.commit.message.data()`, `update.pasta.data()`, and `update.synchronicity.data()`: no warning is being printed anymore when being called by the corresponding cleanup function (PR #199, e5c60a50f8fa0f5bf9d362fdf49845d58652dd75)
+- Fix issue where the data path on `RangeData` objects was wrong in special cases. Introduce the (private) flag `built.from.range.data.read` that is set according to how the object has been created (splitting manually or reading codeface ranges) and calculating the data path accordingly (PR #199, cce95279692b8d29ae464e12cfe48e923f417ac7, 917bf64e7a439c6a33b922e04929030479722bd1, 169c034c2364fc56507573e6f2316cc432631ba6). Also add tests for this new behaviour (PR #199, ef5bac63580d171dd7f68da6c4ec7279dcd400b5, 3aa8e7de4b847924afa350a1fc4a53a7f8fa86e1, d454e5a3468d765247ed4827e708b8576e54f87c, 66ad1272148e3d98f9508ff0e83180d967b6abaa)
+- Make splitting no longer modify the original `ProjectConf`, instead create a copy (e82d056b7a67288addb5989ded1e8c921d5ed0a4)
+- Fix and update outdated examples in the showcase file (473c09458741c8d24e7025646e70f8e052b0a9c, 287fbfa2f892e586c4955a408d914590573f5e83, 0a5cce4c6cb2813981e6cb05b65fbaf0e51ef3af, PR #207)
+- Fix generation of Codeface range directory names from commit hashes (5c90d1cbb6f8ca9b217b99b7a7ecc687d6c0d0e1)
+- Fix plotting an empty network via `plot.network` (03f986d760da8f8fec0e7aa530672736ea3068c7)
+- Fix behavior of `construct.ranges` when only one range has to bee constructed and `sliding.window = TRUE` (000314b961247c55051f03da3b2034fbc668847e)
+- Add package `reshape2` to the install script as this package is used in module `util-plot-evolution.R` for quite a while but never has been added to the list of packages to install (7bb4e7bc15b77c1faf8ddf8655c820822be25f80)
+- Fix data tests in `test-data.R` to use deep clones of `ProjectData` objects (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
+- Fix the `update.values()` function in `util-conf.R` to delete the `value` field if the new value is equal to the default value as the comparison of two otherwise equal `Conf` objects fails without this (PR #209, d75373a56d9de9da3bd6d6f08c1bba0ed10b8425)
+
 
 ## 3.7
 
@@ -87,7 +141,7 @@
 - Do not redundantly initialize data sources when splitting (35698a1b41c25b9ad7c598977d0afd0add16044f)
 - Read PaStA and synchronicity data only if enabled (79bf3ca2b42d0f5c22f7ba3e9ec50c95586a3831)
 - Add and enforce coding convention to use 'vertices' and not 'nodes'. Most importantly, the function `metrics.node.degrees` is renamed to `metrics.vertex.degrees`. (d35ce616db76adae06b34b4b241a35bfbe77e10d)
-- Adjust range directories' names to start with a consecutive range number and to conform with the directories created by [Codeface](https://github.com/se-passau/codeface) (b3e29472a57e26935a31645b96fbef7d7785c25a, f6b28fbe3bb3599784a42e102fa4fc1e480c2a7a)
+- Adjust range directories' names to start with a consecutive range number and to conform with the directories created by [Codeface](https://github.com/se-sic/codeface) (b3e29472a57e26935a31645b96fbef7d7785c25a, f6b28fbe3bb3599784a42e102fa4fc1e480c2a7a)
 - Remove the two functions `get.author.class.activity` and `get.author.class.activity.overview` from the file `util-core-peripheral.R` (61b344a8ce6725ecf0415b108ada9ee08e1121d9)
 - Remove function `get.commit.data` from `util-data.R` and replace all calls to this function with statements of equivalent functionality despite the fact that they are now retrieving the commit data via `get.commits.filtered` instead of `get.commits` which was internally used in the function `get.commit.data` (#70, 4fc6b450cd70bc6c1c63f268aec805d6328849c6, 7fc454e9d8f3c951fcb9ac820f056f2fd08e6945, c4cf8d25d62d9448c4c2571ed973387835ac87c6)
 - Add possibility to decide whether the vertex attribute `active.ranges` should be computed per activity type or over all activity types (#92, aba8af959b39bbc16747786eab9781fe40e08ed3, 1bb81e86f1f8d62527de83c6489d1c9d5666f19d, 8f35a6b5194b664ef186e57650e6705b38ec610f)

@@ -17,6 +17,8 @@
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -43,7 +45,7 @@ test_that("Read the raw commit data with the feature artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
                                                                            32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:05:41",
@@ -91,7 +93,6 @@ test_that("Read the raw commit data with the feature artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
-
 test_that("Read the raw commit data with the file artifact.", {
 
     ## configuration object for the datapath
@@ -101,7 +102,7 @@ test_that("Read the raw commit data with the file artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = sprintf("<commit-%s>", c(32716, 32717, 32718, 32719, 32720, 32721, 32715)),
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32716, 32717, 32718, 32719, 32720, 32721, 32715)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                                     "2016-07-12 16:06:10", "2016-07-12 16:06:20", "2016-07-12 16:06:30",
                                                                     "2016-07-12 16:06:32")),
@@ -137,6 +138,26 @@ test_that("Read the raw commit data with the file artifact.", {
     expect_identical(dates, dates.expected, info = "Ordering by date.")
 })
 
+test_that("Read the commit message data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+
+    ## read the actual data
+    commit.message.data.read = read.commit.messages(proj.conf$get.value("datapath"))
+
+    ## build the expected data.frame
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32713, 32710, 32714, 32715, 32716, 32711)),
+                                      hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                               "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                               "418d1dc4929ad1df251d2aeb833dd45757b04a6f", "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                               "0a1a5c523d835459c42f33e863623138555e2526"),
+                                      title = c("Add stuff", "Add some more stuff", "I added important things", "I wish it would work now", "Wish", "...", ""),
+                                      message = c("", "", "the things are\nnothing", "", "intensifies", "still\ndoesn't\nwork\nas expected", "" ))
+
+    ## check the results
+    expect_identical(commit.message.data.read, commit.data.expected, info = "Commit message data.")
+})
 
 test_that("Read the synchronicity data.", {
     ## configuration object
@@ -222,11 +243,31 @@ test_that("Read the author data.", {
         author.id = as.integer(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
         author.name = c("Thomas", "Olaf", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max"),
         author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
-                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org")
+                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org"),
+        is.bot = c(TRUE, NA, FALSE, NA, NA, NA, NA, NA, NA)
     )
 
     ## check the results
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
+})
+
+test_that("Read the raw bot data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    bot.data.read = read.bot.info(proj.conf$get.value("datapath"))
+
+    ## build the expected data.frame
+    bot.data.expected = data.frame(
+        author.name = c("Thomas", "Björn", "udo", "CLAassistant"),
+        author.email = c("thomas@example.org", "bjoern@example.org", "udo@example.org", "nomail"),
+        is.bot = c(TRUE, FALSE, NA, TRUE)
+    )
+
+    ## check the results
+    expect_identical(bot.data.read, bot.data.expected, info = "Bot data.")
 })
 
 test_that("Read and parse the pasta data.", {
@@ -271,34 +312,53 @@ test_that("Read and parse the issue data.", {
 
     ## build the expected data.frame
     issue.data.expected = data.frame(issue.id = c(rep("<issue-jira-ZEPPELIN-328>", 13), rep("<issue-jira-ZEPPELIN-332>", 6),
-                                                  rep("<issue-github-3>", 7), rep("<issue-github-6>", 10)),
+                                                  rep("<issue-github-3>", 7), rep("<issue-github-6>", 10),
+                                                  rep("<issue-github-1>", 6), rep("<issue-github-2>", 4), rep("<issue-github-4>", 3)),
                                      issue.title = c(rep("[ZEPPELIN-328] Interpreter page should clarify the % magic syntax for interpreter group.name", 13),
                                                      rep("[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table", 6),
                                                      rep("Error in construct.networks.from.list for openssl function networks", 7),
-                                                     rep("Distinguish directedness of networks and edge-construction algorithm", 10)),
+                                                     rep("Distinguish directedness of networks and edge-construction algorithm", 10),
+                                                     rep("Example pull request 1", 6),
+                                                     rep("Example pull request 2", 4),
+                                                     rep("Example pull request 4", 3)),
                                      issue.type = I(c(rep(list(list("issue" , "bug")), 13), rep(list(list("issue" , "bug")), 6),
-                                                      rep(list(list("issue" , "bug")), 7), rep(list(list("issue", "bug", "enhancement")), 10))),
-                                     issue.state = c(rep("closed", 13), rep("open", 6), rep("closed", 7), rep("open", 10)),
+                                                      rep(list(list("issue" , "bug")), 7), rep(list(list("issue", "bug", "enhancement")), 10),
+                                                    rep(list(list("pull request")), 6), rep(list(list("pull request")), 4), rep(list(list("pull request", "enhancement")), 3))),
+                                     issue.state = c(rep("closed", 13), rep("open", 6), rep("closed", 7), rep("open", 10),
+                                                     rep("reopened", 6), rep("closed", 4), rep("open", 3)),
                                      issue.resolution = I(c(rep(list(list("fixed")), 13), rep(list(list("unresolved")), 6),
-                                                            rep(list(list()), 7), rep(list(list()), 10))),
+                                                            rep(list(list()), 7), rep(list(list()), 10),
+                                                            rep(list(list()), 6), rep(list(list()), 4), rep(list(list()), 3))),
                                      creation.date = get.date.from.string(c(rep("2013-04-21 23:52:09", 13),
-                                                                            rep("2016-04-17 02:06:38", 6),
+                                                                            rep("2016-07-12 16:01:30", 6),
                                                                             rep("2016-07-12 15:59:25", 7),
-                                                                            rep("2016-07-12 14:30:13", 10))),
+                                                                            rep("2016-07-12 14:30:13", 10),
+                                                                            rep("2016-07-14 13:37:00", 6),
+                                                                            rep("2016-07-12 14:59:25", 4),
+                                                                            rep("2016-07-12 16:02:02", 3))),
                                      closing.date = get.date.from.string(c(rep("2013-05-25 20:02:08", 13), rep(NA, 6),
-                                                                           rep("2016-12-07 15:37:02", 7), rep(NA, 10))),
+                                                                           rep("2016-07-12 16:06:30", 7), rep(NA, 10),
+                                                                           rep(NA, 6),
+                                                                           rep("2016-07-12 16:04:59", 4),
+                                                                           rep(NA, 3))),
                                      issue.components = I(c(rep(list(list("GUI" , "Interpreters")), 13), rep(list(list("Interpreters")), 6),
-                                                            rep(list(list()), 7), rep(list(list()), 10))),
+                                                            rep(list(list()), 7), rep(list(list()), 10),
+                                                            rep(list(list()), 6), rep(list(list()), 4), rep(list(list()), 3))),
                                      event.name = c("created", "commented", "commented", "commented", "commented", "commented",
                                                     "commented", "commented", "commented", "commented", "commented", "commented",
                                                     "resolution_updated", "created", "commented", "commented", "commented", "commented",
                                                     "commented", "created", "assigned", "commented", "state_updated", "add_link",
                                                     "referenced", "referenced", "mentioned", "subscribed", "commented", "mentioned",
-                                                    "subscribed", "add_link", "mentioned", "subscribed", "labeled", "commented"),
+                                                    "subscribed", "add_link", "mentioned", "subscribed", "labeled", "commented",
+                                                    "created", "commented", "state_updated", "commented", "commented", "state_updated",
+                                                    "created", "commented", "merged", "state_updated",
+                                                    "commit_added", "created", "commented"),
                                      author.name = c("Thomas", "Thomas", "Björn", "Björn", "Björn", "Björn", "Olaf", "Björn",
                                                      "Björn", "Olaf", "Olaf", "Olaf", "Björn", "Björn", "Björn", "Björn", "Max",
                                                      "Max", "Max", "Karl", "Olaf", "Karl", "Olaf", "Karl", "Karl", "Thomas", "udo",
-                                                     "udo", "Thomas", "Björn", "Björn", "Thomas", "Björn", "Björn", "Olaf", "Björn"),
+                                                     "udo", "Thomas", "Björn", "Björn", "Thomas", "Björn", "Björn", "Olaf", "Björn",
+                                                     "Thomas", "Thomas", "Thomas", "Olaf", "Björn", "Olaf",
+                                                     "Björn", "Björn", "Olaf", "Olaf", "Björn", "Olaf", "Olaf"),
                                      author.email = c("thomas@example.org", "thomas@example.org", "bjoern@example.org",
                                                       "bjoern@example.org", "bjoern@example.org", "bjoern@example.org",
                                                       "olaf@example.org", "bjoern@example.org", "bjoern@example.org",
@@ -310,7 +370,12 @@ test_that("Read and parse the issue data.", {
                                                       "karl@example.org", "thomas@example.org", "udo@example.org",
                                                       "udo@example.org", "thomas@example.org", "bjoern@example.org",
                                                       "bjoern@example.org", "thomas@example.org", "bjoern@example.org",
-                                                      "bjoern@example.org", "olaf@example.org", "bjoern@example.org"),
+                                                      "bjoern@example.org", "olaf@example.org", "bjoern@example.org",
+                                                      "thomas@example.org", "thomas@example.org", "thomas@example.org",
+                                                      "olaf@example.org", "bjoern@example.org", "olaf@example.org",
+                                                      "bjoern@example.org", "bjoern@example.org", "olaf@example.org",
+                                                      "olaf@example.org", "bjoern@example.org", "olaf@example.org",
+                                                      "olaf@example.org"),
                                      date = get.date.from.string(c("2013-04-21 23:52:09", "2013-04-21 23:52:09",
                                                                    "2013-05-05 21:46:30", "2013-05-05 21:49:21",
                                                                    "2013-05-05 21:49:34", "2013-05-06 01:04:34",
@@ -328,15 +393,25 @@ test_that("Read and parse the issue data.", {
                                                                    "2016-07-12 16:03:59", "2016-08-31 15:30:02",
                                                                    "2016-10-05 15:30:02", "2016-10-13 15:30:02",
                                                                    "2016-12-07 15:30:02", "2016-12-07 15:30:02",
-                                                                   "2017-05-23 12:31:34", "2017-05-23 12:32:39")),
+                                                                   "2017-05-23 12:31:34", "2017-05-23 12:32:39",
+                                                                   "2016-07-12 15:59:25", "2016-07-12 15:59:25",
+                                                                   "2016-07-12 15:59:59", "2016-07-12 16:01:01",
+                                                                   "2016-07-12 16:06:01", "2016-07-14 13:37:00",
+                                                                   "2016-07-12 14:59:25", "2016-07-12 14:59:25",
+                                                                   "2016-07-12 16:04:59", "2016-07-12 16:04:59",
+                                                                   "2016-07-12 16:02:02", "2016-07-12 16:02:02",
+                                                                   "2016-07-12 16:02:02")),
                                      event.info.1 = c("open", "open", "open", "open", "open", "open", "open", "open", "open",
                                                      "open", "open", "open", "fixed", "open", "open", "open", "open", "open",
                                                      "open", "open", "", "open", "closed", "930af63a030fb92e48eddff01f53284c3eeba80e",
                                                      "", "", "Thomas", "Thomas", "open", "Thomas", "Thomas", "fb52357f05958007b867da06f4077abdc04fa0d8",
-                                                     "udo", "udo", "decided", "open"),
+                                                     "udo", "udo", "decided", "open",
+                                                     "open", "open", "closed", "closed", "closed", "open",
+                                                     "open", "open", "", "closed",
+                                                     "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "open", "open"),
                                      event.info.2 = NA, # is assigned later
                                      event.id = NA, # is assigned later
-                                     issue.source = c(rep("jira", 19), rep("github", 17)),
+                                     issue.source = c(rep("jira", 19), rep("github", 17), rep("github", 13)),
                                      artifact.type = "IssueEvent"
                                      )
 
@@ -348,7 +423,10 @@ test_that("Read and parse the issue data.", {
                                                 list("unresolved"), list("unresolved"), list("unresolved"), list(), "", list(), "open",
                                                 "commit", "", "", "thomas@example.org", "thomas@example.org", list(),
                                                 "thomas@example.org", "thomas@example.org", "commit", "udo@example.org",
-                                                "udo@example.org", "", list()
+                                                "udo@example.org", "", list(),
+                                                list(), list(), "open", list(), list(), "closed",
+                                                list(), list(), "", "open",
+                                                "2016-07-12 15:58:59", list(), list()
                                             ))
 
     ## calculate event IDs
