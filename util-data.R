@@ -959,6 +959,8 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.commits.uncached
         get.commits = function() {
+            logging::loginfo("Getting commit data.")
+
             if (!self$is.data.source.cached("commits")) {
                 private$commits = private$filter.commits(
                     self$get.commits.unfiltered(),
@@ -984,6 +986,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.commits
         get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
+            logging::loginfo("Getting commit data (uncached).")
             return (private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
         },
 
@@ -993,7 +996,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of commits
         get.commits.unfiltered = function() {
-            logging::loginfo("Getting commit data.")
+            logging::loginfo("Getting unfiltered commit data.")
 
             ## if commits are not read already and are not locked in the configuration, do this
             if (!self$is.data.source.cached("commits.unfiltered") && !private$project.conf$get.value("commits.locked")) {
@@ -1083,7 +1086,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of commit messages
         get.commit.messages = function() {
-            logging::loginfo("Getting commit messages.´")
+            logging::loginfo("Getting commit messages.")
 
             if (private$project.conf$get.value("commit.messages") == "title" |
                 private$project.conf$get.value("commit.messages") == "message") {
@@ -1288,7 +1291,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             ## remove commit hashes that don't appear in the commit data
-            if (self$is.data.source.cached("foo5.commits")) {
+            if (self$is.data.source.cached("commits.unfiltered")) {
                 pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
                 commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits.unfiltered[["hash"]]
                 commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
@@ -1337,7 +1340,6 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the mail data
         get.mails = function() {
-            logging::loginfo("Getting e-mail data.")
             self$get.mails.unfiltered()
             return(private$mails)
         },
@@ -1455,7 +1457,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.issues
         get.issues.uncached = function(issues.only.comments, filter.bots = FALSE) {
-            logging::loginfo("Getting issue data.")
+            logging::loginfo("Getting issue data (uncached).")
             return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots))
         },
 
@@ -1466,7 +1468,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @seealso get.issues for a detailed description of filtering options
         get.issues.unfiltered = function() {
-            logging::loginfo("Getting issue data.")
+            logging::loginfo("Getting unfiltered issue data.")
 
             ## if issues have not been read yet and are not locked in the configuration, do this
             if (!self$is.data.source.cached("issues.unfiltered") && !private$project.conf$get.value("issues.locked")) {
