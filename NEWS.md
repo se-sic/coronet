@@ -2,7 +2,7 @@
 
 # coronet – Changelog
 
-## Unversioned
+## 4.0
 
 ### Announcement
 - `coronet` now has a logo and a website: [https://se-sic.github.io/coronet](https://se-sic.github.io/coronet) (#167, PR #196)
@@ -38,7 +38,6 @@
 - Add `.drone.yml` to enable running our CI pipelines on drone.io (PR #191, 1c5804b59c582cf34af6970b435add51452fbd11)
 - Not only run test suite in our CI pipeline, but also run the showcase file in our CI pipeline using test data (719a4f0e067c4a68587bcdede0bbf72f6a6a666e, 3eb31d81156a1a9ab74598b48d585b7477358dd3)
 - Add R version 4.1 to test suite and adjust missing time-zone attributes on `NA` vectors or empty POSIXct vectors which are correctly added as of R version 4.1 (PR #203, 6b7fb36478325185f80f95e03dd0a0135bf44346, 98c56715502cf5140d98796dc2d6cb18f71760b2, 09d11ab631de8051ca317f36652ab0fee9cc0cce)
-
 
 ### Fixed
 - Fix fencing issue timing data so that issue events "happen" after the issue was created. Since only `commit_added` events are affected, that only happens for these. (issue #185, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 6ff585d9da1da3432668605f0c09f8e182ad0d2f)
