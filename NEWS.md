@@ -2,6 +2,14 @@
 
 # coronet – Changelog
 
+## Unversioned
+
+### Added
+- Add gender related configurations to `util-conf.R` file (ebe4899dad80f37cf2ced20ed1591b9b7fd2f2f4)
+- Add function `read.gender` to read the gender data (27bf76288525a75e0f948570f43e16f947874ee3)
+- Add the base functions `get.data.path.gender`, `get.gender`, `set.gender`, and `update.gender.data` to manage gender data (20a4e9013b401361b831af1ecafbddb3710253f3)
+- Add test, test data, and sample data to test the `read.gender` function (9c9d2612bb481d0f6ddbf36b5b22d918fa2d0cab)
+
 ## 4.0
 
 ### Announcement
