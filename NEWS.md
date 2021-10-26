@@ -2,6 +2,12 @@
 
 # coronet – Changelog
 
+## Unversioned
+
+### Added
+- Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, ebe4899dad80f37cf2ced20ed1591b9b7fd2f2f4, 27bf76288525a75e0f948570f43e16f947874ee3, 20a4e9013b401361b831af1ecafbddb3710253f3, 9c9d2612bb481d0f6ddbf36b5b22d918fa2d0cab)
+
+
 ## 4.0
 
 ### Announcement
