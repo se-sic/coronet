@@ -531,42 +531,27 @@ GENDER.LIST.DATA.TYPES = c(
 #'
 #' @return the read and parsed gender data
 read.gender = function(data.path) {
-    # constant for seperating key and value
-    SEPERATOR = ";"
 
-    ## get file name of gender data
-    filepath = file.path(data.path, "gender")
+    ## get file name of the gender data
+    file = file.path(data.path, "gender")
 
-    ## read data from disk [can be empty]
-    lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
+    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    gender.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                 encoding = "UTF-8"), silent = TRUE)
+
 
     ## handle the case if the list of items is empty
-    if (inherits(lines, "try-error")) {
+    if (inherits(gender.data, "try-error")) {
         logging::logwarn("There are no gender data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.gender.list())
     }
 
-    result.list = parallel::mcmapply(lines, seq_along(lines), SIMPLIFY = FALSE, FUN = function(line, line.id) {
-        if ( nchar(line) == 0 ) {
-            return(NULL)
-        }
-
-        # 1) split key
-        # 2) split value
-        line.split = unlist(strsplit(line, SEPERATOR))
-        key = line.split[1]
-        value = line.split[2]
-
-        # Transform data to data.frame
-        df = merge(key, value)
-        colnames(df) = c("author.name", "gender")
-        return(df)
-    })
-
-    result.df = plyr::rbind.fill(result.list)
+    colnames(gender.data) = GENDER.LIST.COLUMNS
+    gender.data = gender.data[order(gender.data[["author.name"]]), ] # re-order after read
     logging::logdebug("read.gender: finished.")
-    return(result.df)
+    return(gender.data)
+
 }
 
 #' Create an empty dataframe which has the same shape as a dataframe containing gender data.
