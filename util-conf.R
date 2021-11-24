@@ -600,10 +600,10 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
             ## store path to PaStA data
             conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
-            ## store path to issue data
-            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
             ## store path to gender data
             conf$datapath.gender = private$get.results.folder(data, selection.process, casestudy, "gender")
+            ## store path to issue data
+            conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
             
             ## READ REVISIONS META-DATA
 
