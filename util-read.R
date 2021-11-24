@@ -517,7 +517,6 @@ GENDER.LIST.DATA.TYPES = c(
 )
 
 #' Read and parse the gender data from the 'gender' file.
-#' The form in the file is : author.name, gender
 #' The parsed form is a data frame with author.name as key, gender as value.
 #'
 #' @param data.path the path to the gender data
