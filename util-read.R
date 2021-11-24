@@ -387,6 +387,14 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     return(issue.data)
 }
 
+#' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
+#' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.issues.list = function() {
+    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Additional data sources -------------------------------------------------
@@ -559,14 +567,6 @@ read.gender = function(data.path) {
     result.df = plyr::rbind.fill(result.list)
     logging::logdebug("read.gender: finished.")
     return(result.df)
-}
-
-#' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
-#' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
-#'
-#' @return the empty dataframe
-create.empty.issues.list = function() {
-    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
 }
 
 #' Create an empty dataframe which has the same shape as a dataframe containing gender data.
