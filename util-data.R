@@ -164,11 +164,11 @@ ProjectData = R6::R6Class("ProjectData",
         ## authors
         authors = create.empty.authors.list(), # data.frame
         ## additional data sources
+        gender = create.empty.gender.list(), # data.frame
         synchronicity = create.empty.synchronicity.list(), # data.frame
         pasta = create.empty.pasta.list(), # data.frame
         pasta.mails = create.empty.pasta.list(), # data.frame
         pasta.commits = create.empty.pasta.list(), # data.frame
-        gender = create.empty.gender.list(), # data.frame
         ## timestamps of mail, issue and commit data
         data.timestamps = data.frame(start = numeric(0), end = numeric(0)), # data.frame
 
@@ -394,6 +394,29 @@ ProjectData = R6::R6Class("ProjectData",
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
         },
+        ## * * Gender data --------------------------------------------------
+
+        #' Update the gender related fields of: \code{authors}
+        #'
+        #' This method should be called whenever the field \code{gender} is changed.
+        update.gender.data = function() {
+            logging::logdebug("update.gender.data: starting.")
+
+            ## update author data by attaching gender data
+            if (!is.null(private$authors)) {
+
+                ## remove previous gender data
+                private$authors["gender"] = NULL
+
+                ## merge gender data
+                private$authors = merge(private$authors, private$gender,
+                                        by = "author.name", all.x = TRUE, sort = FALSE)
+
+            }
+
+            logging::logdebug("update.gender.data: finished.")
+        },
+
 
         ## * * PaStA data --------------------------------------------------
 
@@ -635,26 +658,6 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.data: finished.")
         },
 
-        #' Update the gender related fields of: \code{authors}
-        #'
-        #' This method should be called whenever the field \code{gender} is changed.
-        update.gender.data = function() {
-            logging::logdebug("update.gender.data: starting.")
-
-            ## update author data by attaching gender data
-            if (!is.null(private$authors)) {
-
-                ## remove previous gender data
-                private$authors["gender"] = NULL
-
-                ## merge gender data
-                private$authors = merge(private$authors, private$gender,
-                                    by = "author.name", all.x = TRUE, sort = FALSE)
-
-            }
-
-            logging::logdebug("update.gender.data: finished.")
-        },
 
 
         ## * * synchronicity data ------------------------------------------
@@ -813,8 +816,8 @@ ProjectData = R6::R6Class("ProjectData",
             private$pasta = create.empty.pasta.list()
             private$pasta.mails = create.empty.pasta.list()
             private$pasta.commits = create.empty.pasta.list()
-            private$synchronicity = create.empty.synchronicity.list()
             private$gender = create.empty.gender.list()
+            private$synchronicity = create.empty.synchronicity.list()
         },
 
         ## * * configuration -----------------------------------------------
@@ -1479,10 +1482,10 @@ ProjectData = R6::R6Class("ProjectData",
             ## if authors are not read already, do this
             if (!self$is.data.source.cached("authors")) {
 
-                # read gender data
+                ## read author data
                 author.data = read.authors(self$get.data.path());
 
-                # set author data and add gender data (if configured in the 'project.conf')
+                ## set author data and add gender data (if configured in the 'project.conf')
                 self$set.authors(author.data)
             }
 
