@@ -14,7 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -49,7 +49,7 @@ requireNamespace("data.table") # for faster data.frame processing
 #'
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
 remove.deleted.and.empty.user = function(data) {
-    return(data[data["author.name"] != "deleted user" & data["author.name"] != "", ])
+    return(data[tolower(data[, "author.name"]) != "deleted user" & data["author.name"] != "", ])
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
