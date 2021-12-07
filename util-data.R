@@ -1312,6 +1312,22 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$gender)
         },
 
+        #' remove all lines from the gender data that
+        #' contain author names that do not appear
+        #' in the author data.
+
+        cleanup.gender.data = function(){
+            logging::loginfo("Cleaning up Gender data")
+
+            if (self$is.data.source.cached("authors")) {
+
+                author.name.contained = private$gender[["author.name"]] %in% private$authors[["author.name"]]
+                private$gender = private$gender[author.name.contained, ]
+                View(author.name.contained)
+                View(private$gender)
+            }
+        },
+
         #' Set the PaStA data to the given new data and,
         #' if configured in the field \code{project.conf},
         #' also update it for the mail and commit data.
