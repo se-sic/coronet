@@ -533,7 +533,7 @@ GENDER.LIST.DATA.TYPES = c(
 read.gender = function(data.path) {
 
     ## get file name of the gender data
-    file = file.path(data.path, "gender")
+    file = file.path(data.path, "gender.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     gender.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
