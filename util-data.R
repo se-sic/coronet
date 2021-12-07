@@ -1296,7 +1296,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("gender")) {
 
                 ## if data are not read already, read them
-                if (is.null(private$gender)) {
+                if (empty(private$gender)) {
 
                     ## read gender data from disk
                     gender.data = read.gender(self$get.data.path.gender())
@@ -1498,10 +1498,9 @@ ProjectData = R6::R6Class("ProjectData",
         set.authors = function(data) {
             logging::loginfo("Setting author data.")
             private$authors = data
-
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
-                if (is.null(private$gender)) {
+                if (empty(private$gender)) {
                     ## get data (no assignment because we just want to trigger anything gender-related)
                     self$get.gender()
                 } else {
