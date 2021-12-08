@@ -252,6 +252,22 @@ test_that("Read the author data.", {
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
 })
 
+test_that("Read and parse the gender data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    gender.data.read = read.gender(proj.conf$get.value("datapath.gender"))
+
+    ## build the expected data.frame
+    gender.data.expected = data.frame(author.name = c("Thomas", "Olaf", "Karl", "Max", "udo", "Björn", "georg", "Hans", "Fritz fritz@example.org"),
+                                     gender = c("male", "female", "male", "male", "female", "male", "male", "male", NA))
+
+    ## check the results
+    expect_identical(gender.data.read, gender.data.expected, info = "Gender data.")
+})
+
 test_that("Read the raw bot data.", {
 
     ## configuration object for the datapath
@@ -456,18 +472,3 @@ test_that("Read and parse the issue data.", {
     expect_identical(issue.data.read.github, issue.data.expected.github, info = "Issue data github.")
 })
 
-test_that("Read and parse the gender data.", {
-
-    ## configuration object for the datapath
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-
-    ## read the actual data
-    gender.data.read = read.gender(proj.conf$get.value("datapath.gender"))
-
-    ## build the expected data.frame
-    gender.data.expected = data.frame(author.name = c("Thomas", "Olaf", "Karl", "Max", "udo", "Björn", "georg", "Hans", "Fritz fritz@example.org"),
-                                     gender = c("male", "female", "male", "male", "female", "male", "male", "male", NA))
-
-    ## check the results
-    expect_identical(gender.data.read, gender.data.expected, info = "Gender data.")
-})

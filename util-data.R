@@ -1312,7 +1312,7 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$gender)
         },
 
-        #' remove all lines from the gender data that
+        #' Remove all lines from the gender data that
         #' contain author names that do not appear
         #' in the author data.
 
