@@ -7,6 +7,10 @@
 ### Added
 - Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, ebe4899dad80f37cf2ced20ed1591b9b7fd2f2f4, 27bf76288525a75e0f948570f43e16f947874ee3, 20a4e9013b401361b831af1ecafbddb3710253f3, 9c9d2612bb481d0f6ddbf36b5b22d918fa2d0cab)
 
+## Fixed
+- Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.2.7 in `install.R` and document it in the `README.md` (here the commit hash)
+- Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, here the commit hash)
+
 
 ## 4.0
 
