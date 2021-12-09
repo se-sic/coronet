@@ -259,10 +259,12 @@ test_that("Read and parse the gender data.", {
 
     ## read the actual data
     gender.data.read = read.gender(proj.conf$get.value("datapath.gender"))
+    
+    rownames(gender.data.read) = NULL
 
     ## build the expected data.frame
-    gender.data.expected = data.frame(author.name = c("Thomas", "Olaf", "Karl", "Max", "udo", "Björn", "georg", "Hans", "Fritz fritz@example.org"),
-                                     gender = c("male", "female", "male", "male", "female", "male", "male", "male", NA))
+    gender.data.expected = data.frame(author.name = c("Björn", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max", "Olaf", "Thomas", "udo"),
+                                     gender = c("male", "", "male", "male", "male", "male", "female", "male", "female"))
 
     ## check the results
     expect_identical(gender.data.read, gender.data.expected, info = "Gender data.")

@@ -1296,8 +1296,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("gender")) {
 
                 ## if data are not read already, read them
-                if (empty(private$gender)) {
-
+                if (!self$is.data.source.cached("gender")) {
                     ## read gender data from disk
                     gender.data = read.gender(self$get.data.path.gender())
                     self$set.gender(gender.data)
@@ -1323,8 +1322,6 @@ ProjectData = R6::R6Class("ProjectData",
 
                 author.name.contained = private$gender[["author.name"]] %in% private$authors[["author.name"]]
                 private$gender = private$gender[author.name.contained, ]
-                View(author.name.contained)
-                View(private$gender)
             }
         },
 
@@ -1516,7 +1513,9 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
-                if (empty(private$gender)) {
+                
+                ## if data are not read already, read them
+                if (!self$is.data.source.cached("gender")) {
                     ## get data (no assignment because we just want to trigger anything gender-related)
                     self$get.gender()
                 } else {
@@ -1750,7 +1749,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta","gender")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
