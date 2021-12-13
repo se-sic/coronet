@@ -72,7 +72,8 @@ DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
     "authors"         = "get.authors",
     "commit.messages" = "get.commit.messages",
     "synchronicity"   = "get.synchronicity",
-    "pasta"           = "get.pasta"
+    "pasta"           = "get.pasta",
+    "gender"          = "get.gender"
 )
 
 #' Applies a function to list keys
@@ -111,6 +112,7 @@ PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
 ## configuration parameters that do not reset the environment when changed
 CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                          "pasta",
+                                         "gender",
                                          "synchronicity",
                                          "synchronicity.time.window",
                                          "commits.locked",
@@ -1847,7 +1849,6 @@ ProjectData = R6::R6Class("ProjectData",
                     return(FALSE)
                 }
             }
-
             return(TRUE)
         },
 
