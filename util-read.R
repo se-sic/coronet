@@ -524,6 +524,11 @@ GENDER.LIST.DATA.TYPES = c(
     "character", "character"
 )
 
+## declare predefined values for the gender column
+GENDER.LIST.VALUES = c(
+    "male", "female","unknown"
+)
+
 #' Read and parse the gender data from the 'gender' file.
 #' The parsed form is a data frame with author.name as key, gender as value.
 #'
@@ -548,6 +553,27 @@ read.gender = function(data.path) {
     }
 
     colnames(gender.data) = GENDER.LIST.COLUMNS
+
+    ## check whether there are undefined gender labels
+    undefined.labels = setdiff(gender.data[["gender"]], GENDER.LIST.VALUES)
+
+    if (length(undefined.labels) > 0){
+        ## find authors who have undefined gender labels
+        undefined.labels.authors = filter(gender.data, gender %in% undefined.labels)
+        logging::logwarn(sprintf("Undefined gender labels. %s cannot be used. Only %s are allowed.
+                                 The following authors have undefined labels: %s ",
+                                 paste(shQuote(undefined.labels), collapse = ","),
+                                 paste(shQuote(GENDER.LIST.VALUES), collapse = ", "),
+                                 paste(shQuote(undefined.labels.authors[["author.name"]]), collapse = ",")))
+
+        ## replace all undefined labels with 'unknown'
+        gender.data[["gender"]][gender.data[["gender"]] %in% undefined.labels] = 'unknown'
+        logging::logwarn("Undefined gender labels have been replaced with 'unknown'.")
+    }
+
+    ## replace all 'unknown' values with NA
+    gender.data[["gender"]][gender.data[["gender"]] == "unknown"] = NA
+
     gender.data = gender.data[order(gender.data[["author.name"]]), ] # re-order after read
     logging::logdebug("read.gender: finished.")
     return(gender.data)
