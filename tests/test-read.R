@@ -264,7 +264,7 @@ test_that("Read and parse the gender data.", {
 
     ## build the expected data.frame
     gender.data.expected = data.frame(author.name = c("Björn", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max", "Olaf", "Thomas", "udo"),
-                                     gender = c("male", "", "male", "male", "male", "male", "female", "male", "female"))
+                                      gender = c("male", NA, "male", "male", "male", "male", "female", "male", "female"))
 
     ## check the results
     expect_identical(gender.data.read, gender.data.expected, info = "Gender data.")
