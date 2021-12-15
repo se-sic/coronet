@@ -413,7 +413,6 @@ ProjectData = R6::R6Class("ProjectData",
                 ## merge gender data
                 private$authors = merge(private$authors, private$gender,
                                         by = "author.name", all.x = TRUE, sort = FALSE)
-
             }
 
             logging::logdebug("update.gender.data: finished.")
@@ -1287,46 +1286,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(private$pasta)
         },
 
-        #' Get the gender data. If it is not already stored in the ProjectData, this function triggers a read
-        #' from disk.
-        #'
-        #' @return the gender data
-        get.gender = function() {
-            logging::loginfo("Getting gender data.")
-
-            ## if gender data are to be read, do this
-            if (private$project.conf$get.value("gender")) {
-
-                ## if data are not read already, read them
-                if (!self$is.data.source.cached("gender")) {
-                    ## read gender data from disk
-                    gender.data = read.gender(self$get.data.path.gender())
-                    self$set.gender(gender.data)
-                }
-            } else {
-                logging::logwarn("You have not set the ProjectConf parameter 'gender' to 'TRUE'! Ignoring...")
-
-                ## mark gender data as empty
-                self$set.gender(NULL)
-            }
-
-            return(private$gender)
-        },
-
-        #' Remove all lines from the gender data that
-        #' contain author names that do not appear
-        #' in the author data.
-
-        cleanup.gender.data = function(){
-            logging::loginfo("Cleaning up Gender data")
-
-            if (self$is.data.source.cached("authors")) {
-
-                author.name.contained = private$gender[["author.name"]] %in% private$authors[["author.name"]]
-                private$gender = private$gender[author.name.contained, ]
-            }
-        },
-
         #' Set the PaStA data to the given new data and,
         #' if configured in the field \code{project.conf},
         #' also update it for the mail and commit data.
@@ -1357,6 +1316,56 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        #' Remove lines in the PaStA data that contain message ids or commit hashes
+        #' that don't appear in the commit or mail data.
+        cleanup.pasta.data = function() {
+            logging::loginfo("Cleaning up PaStA data")
+
+            ## remove message ids that don't appear in the mail data
+            if (self$is.data.source.cached("mails.unfiltered")) {
+                rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails.unfiltered[["revision.set.id"]]
+                private$pasta = private$pasta[rev.id.contained, ]
+            }
+
+            ## remove commit hashes that don't appear in the commit data
+            if (self$is.data.source.cached("commits.unfiltered")) {
+                pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
+                commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits.unfiltered[["hash"]]
+                commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
+                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
+                rows.to.remove = unlist(private$pasta[["commit.hash"]]) %in% commit.hashes.to.eliminate
+                private$pasta = private$pasta[!rows.to.remove, ]
+            }
+
+            ## update pasta data again
+            private$update.pasta.data()
+        },
+
+        #' Get the gender data. If it is not already stored in the ProjectData, this function triggers a read
+        #' from disk.
+        #'
+        #' @return the gender data
+        get.gender = function() {
+            logging::loginfo("Getting gender data.")
+
+            ## if gender data are to be read, do this
+            if (private$project.conf$get.value("gender")) {
+
+                ## if data are not read already, read them
+                if (!self$is.data.source.cached("gender")) {
+                    ## read gender data from disk
+                    gender.data = read.gender(self$get.data.path.gender())
+                    self$set.gender(gender.data)
+                }
+            } else {
+                logging::logwarn("You have not set the ProjectConf parameter 'gender' to 'TRUE'! Ignoring...")
+
+                ## mark gender data as empty
+                self$set.gender(NULL)
+            }
+
+            return(private$gender)
+        },
 
         #' Set the gender data to the given new data and,
         #' if configured in the field \code{project.conf},
@@ -1381,29 +1390,18 @@ ProjectData = R6::R6Class("ProjectData",
 
             }
         },
-        #' Remove lines in the PaStA data that contain message ids or commit hashes
-        #' that don't appear in the commit or mail data.
-        cleanup.pasta.data = function() {
-            logging::loginfo("Cleaning up PaStA data")
 
-            ## remove message ids that don't appear in the mail data
-            if (self$is.data.source.cached("mails.unfiltered")) {
-                rev.id.contained = private$pasta[["revision.set.id"]] %in% private$mails.unfiltered[["revision.set.id"]]
-                private$pasta = private$pasta[rev.id.contained, ]
+        #' Remove all lines from the gender data that
+        #' contain author names that do not appear
+        #' in the author data.
+        cleanup.gender.data = function(){
+            logging::loginfo("Cleaning up Gender data")
+
+            if (self$is.data.source.cached("authors")) {
+
+                author.name.contained = private$gender[["author.name"]] %in% private$authors[["author.name"]]
+                private$gender = private$gender[author.name.contained, ]
             }
-
-            ## remove commit hashes that don't appear in the commit data
-            if (self$is.data.source.cached("commits.unfiltered")) {
-                pasta.commit.hashes = unlist(private$pasta[["commit.hash"]])
-                commit.hashes.contained = unlist(private$pasta[["commit.hash"]]) %in% private$commits.unfiltered[["hash"]]
-                commit.hashes.to.eliminate = pasta.commit.hashes[!commit.hashes.contained]
-                commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
-                rows.to.remove = unlist(private$pasta[["commit.hash"]]) %in% commit.hashes.to.eliminate
-                private$pasta = private$pasta[!rows.to.remove, ]
-            }
-
-            ## update pasta data again
-            private$update.pasta.data()
         },
 
         #' Get the mail data, unfiltered.
@@ -1751,7 +1749,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta","gender")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
