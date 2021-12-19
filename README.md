@@ -561,7 +561,6 @@ There is no way to update the entries, except for the revision-based parameters.
 - `gender`
     * Read and add gender data to authors (column `gender`)
     * [`TRUE`, *`FALSE`*]
-    * **Note**: To include PaStA-based edge attributes, you need to give the `"gender"` edge attribute for `edge.attributes`.
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes
     * [*`TRUE`*, `FALSE`]
