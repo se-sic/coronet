@@ -526,7 +526,7 @@ GENDER.LIST.DATA.TYPES = c(
 
 ## declare predefined values for the gender column
 GENDER.LIST.VALUES = c(
-    "male", "female","unknown"
+    "male", "female", "unknown"
 )
 
 #' Read and parse the gender data from the 'gender' file.
@@ -567,7 +567,7 @@ read.gender = function(data.path) {
                                  paste(shQuote(undefined.labels.authors[["author.name"]]), collapse = ",")))
 
         ## replace all undefined labels with 'unknown'
-        gender.data[["gender"]][gender.data[["gender"]] %in% undefined.labels] = 'unknown'
+        gender.data[["gender"]][gender.data[["gender"]] %in% undefined.labels] = "unknown"
         logging::logwarn("Undefined gender labels have been replaced with 'unknown'.")
     }
 
@@ -575,6 +575,10 @@ read.gender = function(data.path) {
     gender.data[["gender"]][gender.data[["gender"]] == "unknown"] = NA
 
     gender.data = gender.data[order(gender.data[["author.name"]]), ] # re-order after read
+
+    ## remove rownames
+    rownames(gender.data) = NULL
+
     logging::logdebug("read.gender: finished.")
     return(gender.data)
 
