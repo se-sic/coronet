@@ -17,6 +17,7 @@
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -40,6 +41,7 @@ test_that("Compare two ProjectData objects on empty data", {
     ## initialize a ProjectData object with the ProjectConf and clone it into another one
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY_EMPTY, ARTIFACT)
     proj.conf$update.value("pasta", TRUE)
+    proj.conf$update.value("gender", TRUE)
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone(deep = TRUE)
 
@@ -74,6 +76,11 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.one$get.authors()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (authors).")
 
+    proj.data.two$get.gender()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (gender).")
+    proj.data.one$get.gender()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (gender).")
+
     proj.data.one$set.project.conf.entry("synchronicity", TRUE)
     proj.data.one$set.project.conf.entry("synchronicity.time.window", 5)
     proj.data.one$get.synchronicity()
@@ -96,6 +103,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
     ## initialize a ProjectData object with the ProjectConf and clone it into another one
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("pasta", TRUE)
+    proj.conf$update.value("gender", TRUE)
 
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone(deep = TRUE)
@@ -144,6 +152,13 @@ test_that("Compare two ProjectData objects on non-empty data", {
 
     proj.data.two$get.issues()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
+
+    ## test 'equals' on gender
+    proj.data.two$get.gender()    
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (gender).")
+
+    proj.data.one$get.gender()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (gender).")
 
     ## test 'equals' on authors
     proj.data.two$get.authors()

@@ -18,6 +18,7 @@
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
+## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## Adapted from https://github.com/siemens/codeface/blob/be382e9171fb91b4aa99b99b09b2ef64a6dba0d5/packages.r
@@ -62,4 +63,9 @@ if (length(p) > 0) {
 
     ## set dependencies to 'NA' to install only necessary dependencies (i.e., "Depends", "Imports", "LinkingTo")
     install.packages(p, dependencies = NA, verbose = TRUE, quiet = TRUE)
+
+    igraph.version = installed.packages()[rownames(installed.packages()) == "igraph", "Version"]
+    if (compareVersion(igraph.version, "1.2.7") == -1) {
+        print("WARNING: igraph version 1.2.7 or higher is recommended for using coronet.")
+    }
 }

@@ -66,10 +66,13 @@ test_that("Eigenvector classification", {
     result = get.author.class.network.eigen(network)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf", "Thomas"),
-                               eigen.centrality = c(1.0, 0.7116159)) # the threshold is 0.7116148
-    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Fritz fritz@example.org", "georg", "Hans"),
-                                     eigen.centrality = c(0.7116104, 0.2499983, 0.2499983, 0.2499983, 0.2499983))
+    expected.core = data.frame(author.name = c("Olaf"),
+                               eigen.centrality = c(1.0))
+    expected.peripheral = data.frame(author.name = c("Thomas", "Björn", "udo", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     ## the following values are only correct with igraph version 1.2.7 or higher
+                                     eigen.centrality = c(7.071068e-01, 7.071068e-01, 3.925231e-17,
+                                                          3.925231e-17, 3.925231e-17, 3.925231e-17))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL

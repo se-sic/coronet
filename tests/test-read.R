@@ -19,6 +19,7 @@
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -251,6 +252,22 @@ test_that("Read the author data.", {
     expect_identical(author.data.read, author.data.expected, info = "Author data.")
 })
 
+test_that("Read and parse the gender data.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    ## read the actual data
+    gender.data.read = read.gender(proj.conf$get.value("datapath.gender"))
+    
+    ## build the expected data.frame
+    gender.data.expected = data.frame(author.name = c("Björn", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max", "Olaf", "Thomas", "udo"),
+                                      gender = c("male", NA, "male", "male", "male", "male", "female", "male", "female"))
+
+    ## check the results
+    expect_identical(gender.data.read, gender.data.expected, info = "Gender data.")
+})
+
 test_that("Read the raw bot data.", {
 
     ## configuration object for the datapath
@@ -454,3 +471,4 @@ test_that("Read and parse the issue data.", {
     expect_identical(issue.data.read.jira, issue.data.expected.jira, info = "Issue data jira.")
     expect_identical(issue.data.read.github, issue.data.expected.github, info = "Issue data github.")
 })
+

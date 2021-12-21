@@ -23,6 +23,7 @@
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -71,7 +72,8 @@ DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
     "authors"         = "get.authors",
     "commit.messages" = "get.commit.messages",
     "synchronicity"   = "get.synchronicity",
-    "pasta"           = "get.pasta"
+    "pasta"           = "get.pasta",
+    "gender"          = "get.gender"
 )
 
 #' Applies a function to list keys
@@ -110,6 +112,7 @@ PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
 ## configuration parameters that do not reset the environment when changed
 CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                          "pasta",
+                                         "gender",
                                          "synchronicity",
                                          "synchronicity.time.window",
                                          "commits.locked",
@@ -163,6 +166,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## authors
         authors = create.empty.authors.list(), # data.frame
         ## additional data sources
+        gender = create.empty.gender.list(), # data.frame
         synchronicity = create.empty.synchronicity.list(), # data.frame
         pasta = create.empty.pasta.list(), # data.frame
         pasta.mails = create.empty.pasta.list(), # data.frame
@@ -392,6 +396,28 @@ ProjectData = R6::R6Class("ProjectData",
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
         },
+        ## * * Gender data --------------------------------------------------
+
+        #' Update the gender related fields of: \code{authors}
+        #'
+        #' This method should be called whenever the field \code{gender} is changed.
+        update.gender.data = function() {
+            logging::logdebug("update.gender.data: starting.")
+
+            ## update author data by attaching gender data
+            if (!is.null(private$authors)) {
+
+                ## remove previous gender data
+                private$authors["gender"] = NULL
+
+                ## merge gender data
+                private$authors = merge(private$authors, private$gender,
+                                        by = "author.name", all.x = TRUE, sort = FALSE)
+            }
+
+            logging::logdebug("update.gender.data: finished.")
+        },
+
 
         ## * * PaStA data --------------------------------------------------
 
@@ -633,6 +659,8 @@ ProjectData = R6::R6Class("ProjectData",
             logging::logdebug("update.pasta.data: finished.")
         },
 
+
+
         ## * * synchronicity data ------------------------------------------
 
         #' Update the column \code{synchronicity} that is appended to commits using the currently available
@@ -789,6 +817,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$pasta = create.empty.pasta.list()
             private$pasta.mails = create.empty.pasta.list()
             private$pasta.commits = create.empty.pasta.list()
+            private$gender = create.empty.gender.list()
             private$synchronicity = create.empty.synchronicity.list()
         },
 
@@ -920,6 +949,14 @@ ProjectData = R6::R6Class("ProjectData",
         #' @return the path to the result folder
         get.data.path = function() {
             data.path = private$project.conf$get.value("datapath")
+            return(data.path)
+        },
+
+        #' Get the absolute path to the result folder for gender data.
+        #'
+        #' @return the path to the gender data
+        get.data.path.gender = function() {
+            data.path = private$project.conf$get.value("datapath.gender")
             return(data.path)
         },
 
@@ -1304,6 +1341,69 @@ ProjectData = R6::R6Class("ProjectData",
             private$update.pasta.data()
         },
 
+        #' Get the gender data. If it is not already stored in the ProjectData, this function triggers a read
+        #' from disk.
+        #'
+        #' @return the gender data
+        get.gender = function() {
+            logging::loginfo("Getting gender data.")
+
+            ## if gender data are to be read, do this
+            if (private$project.conf$get.value("gender")) {
+
+                ## if data are not read already, read them
+                if (!self$is.data.source.cached("gender")) {
+                    ## read gender data from disk
+                    gender.data = read.gender(self$get.data.path.gender())
+                    self$set.gender(gender.data)
+                }
+            } else {
+                logging::logwarn("You have not set the ProjectConf parameter 'gender' to 'TRUE'! Ignoring...")
+
+                ## mark gender data as empty
+                self$set.gender(NULL)
+            }
+
+            return(private$gender)
+        },
+
+        #' Set the gender data to the given new data and,
+        #' if configured in the field \code{project.conf},
+        #' also update it for the author data.
+        #'
+        #' @param data the new gender data
+        set.gender = function(data) {
+            logging::loginfo("Setting gender data.")
+
+            if (is.null(data)) {
+                data = create.empty.gender.list()
+            }
+
+            ## set the actual data
+            private$gender = data
+
+            ## add gender data to author data if configured
+            if (private$project.conf$get.value("gender")) {
+
+                ## update all gender-related data
+                private$update.gender.data()
+
+            }
+        },
+
+        #' Remove all lines from the gender data that
+        #' contain author names that do not appear
+        #' in the author data.
+        cleanup.gender.data = function(){
+            logging::loginfo("Cleaning up Gender data")
+
+            if (self$is.data.source.cached("authors")) {
+
+                author.name.contained = private$gender[["author.name"]] %in% private$authors[["author.name"]]
+                private$gender = private$gender[author.name.contained, ]
+            }
+        },
+
         #' Get the mail data, unfiltered.
         #' If it does not already exist call the read method.
         #' Call the setter function to set the data and add PaStA
@@ -1394,18 +1494,36 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if authors are not read already, do this
             if (!self$is.data.source.cached("authors")) {
-                private$authors = read.authors(self$get.data.path())
+
+                ## read author data
+                author.data = read.authors(self$get.data.path());
+
+                ## set author data and add gender data (if configured in the 'project.conf')
+                self$set.authors(author.data)
             }
 
             return(private$authors)
         },
 
-        #' Set the atuhor data to the given new data.
+        #' Set the author data to the given new data.
         #'
         #' @param data the new author data
         set.authors = function(data) {
             logging::loginfo("Setting author data.")
             private$authors = data
+            ## add gender data if wanted
+            if (private$project.conf$get.value("gender")) {
+                
+                ## if data are not read already, read them
+                if (!self$is.data.source.cached("gender")) {
+                    ## get data (no assignment because we just want to trigger anything gender-related)
+                    self$get.gender()
+                } else {
+                    ## update all gender-related data
+                    private$update.gender.data()
+                }
+            }
+
         },
 
         #' Filter bots from given data.
@@ -1631,7 +1749,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
@@ -1729,7 +1847,6 @@ ProjectData = R6::R6Class("ProjectData",
                     return(FALSE)
                 }
             }
-
             return(TRUE)
         },
 
