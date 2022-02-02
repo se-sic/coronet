@@ -19,6 +19,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -1019,6 +1020,26 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         )
         return(minima.per.person)
     })
+
+    ## if activity.by.type is null, print a warning and return an empty list
+    if (is.null(activity.by.type)) {
+        logging::logwarn('There were no activities in the given RangeData')
+        return(list())
+    }
+
+    ## for each missing activity type add it with together with a copy of
+    ## any other key but with the author lists set to NA;
+    ## additionally, print a warning
+    missing.keys = setdiff(names(activity.by.type), activity.types)
+    present.key = intersect(names(activity.by.type), activity.types)[[1]]
+    na.list = lapply(activity.by.type[present.key], function (x) NA)
+
+    for (missing.key in missing.keys) {
+        logging::logwarn(paste(c('The type', missing.key, 'was configured',
+                                 'but the RangeData did not cotain any',
+                                 'activities of that type'), sep = ' '))
+        activity.by.type[missing.key] = na.list
+    }
 
     ## accumulate/fold lists 'activity.by.type' by adding all values of each list
     ## to an intermediate list (start with first list); for example:
