@@ -1022,9 +1022,10 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         )
         return(minima.per.person)
     })
+    names(activity.by.type) = activity.types
 
     ## if activity.by.type is null or the list is empty, print a warning and return an empty list
-    if (is.null(activity.by.type) | length(activity.by.type) == 0) {
+    if (is.null(activity.by.type) || length(activity.by.type) == 0) {
         logging::logwarn("There were no activities in the given RangeData at all")
         return(list())
     }
@@ -1043,7 +1044,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     ## for the configured activity types
     if (length(present.keys) == 0 || is.null(present.keys)) {
         logging::logwarn("There were no activities in the given RangeData that were configured")
-        return(list())
+        return(list(NA))
     }
 
     ## else, take the first present item, copy its list and replace all entries with NA so that the reduce and apply
