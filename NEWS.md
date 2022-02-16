@@ -13,7 +13,7 @@
 ### Fixed
 - Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.2.7 in `install.R` and document it in the `README.md`.(25fb86277c7cc15b94ca0327bff4bb7e818ca09b)
 - Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, 1b4072c7ec0e33a595e31d9e9d27bb5c133b1556)
-
+- Add check to `get.first.activity.data` to look for missing activity types. If no activities are in the RangeData, the function will print a warning and return an empty list (PR #220, #217, 5dc975f51320fd80b79f533d9a86a1916a0562a2, 01f43a82777ded0a639d6089b2c884407e1a2af1, f3c6c305edb1a524abf70f40e8cdf0559e5c9798)
 
 ## 4.0
 

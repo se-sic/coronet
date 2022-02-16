@@ -1030,9 +1030,9 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
         return(list())
     }
 
-    ## check for keys whose member lists are not empty or na
+    ## check for keys whose member lists are empty or NA
     missing.keys = activity.types[is.na(activity.by.type[activity.types]) |
-                                      length(activity.by.type[activity.types]) == 0]
+                                  length(activity.by.type[activity.types]) == 0]
     ## get the keys that contain valid data for finding a candidate for copying lists from to replace the missing keys
     present.keys = setdiff(activity.types, missing.keys)
 
