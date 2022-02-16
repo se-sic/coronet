@@ -1024,36 +1024,31 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     })
     names(activity.by.type) = activity.types
 
-    ## if activity.by.type is null or the list is empty, print a warning and return an empty list
+    ## if 'activity.by.type' is null or the list is empty, print a warning and return an empty list
     if (is.null(activity.by.type) || length(activity.by.type) == 0) {
         logging::logwarn("There were no activities in the given RangeData at all")
         return(list())
     }
 
-    ## first, get the keys that are entirely missing or present
-    missing.keys = setdiff(names(activity.by.type), activity.types)
-    present.keys = intersect(names(activity.by.type), activity.types)
+    ## check for keys whose member lists are not empty or na
+    missing.keys = activity.types[is.na(activity.by.type[activity.types]) |
+                                      length(activity.by.type[activity.types]) == 0]
+    ## get the keys that contain valid data for finding a candidate for copying lists from to replace the missing keys
+    present.keys = setdiff(activity.types, missing.keys)
 
-    ## now check for the present keys whether their list is actually empty; in this case, the key is also declared
-    ## missing
-    present.keys = present.keys[!is.na(activity.by.type[present.keys]) & length(activity.by.type[present.keys]) > 0]
-    append(missing.keys,
-        present.keys[is.na(activity.by.type[present.keys]) | length(activity.by.type[present.keys]) == 0])
-
-    ## if there are no keys left, that are present, again, print a warning and return an empty list as there is no data
+    ## if there are no keys left that are present, again, print a warning and return an empty list as there is no data
     ## for the configured activity types
-    if (length(present.keys) == 0 || is.null(present.keys)) {
+    if (length(present.keys) == 0 || is.na(present.keys) || is.null(present.keys)) {
         logging::logwarn("There were no activities in the given RangeData that were configured")
-        return(list(NA))
+        return(list())
     }
 
-    ## else, take the first present item, copy its list and replace all entries with NA so that the reduce and apply
-    ## can work it out
-    na.list = lapply(activity.by.type[present.keys[[1]]], function (x) NA)
+    ## else, take the first present item, copy its list and replace all entries with NA so that the reduce and apply can
+    ## work it out
+    na.list = lapply(activity.by.type[present.keys[[1]]], function(x) return(NA))
 
     for (missing.key in missing.keys) {
-        logging::logwarn(paste(c("The type", missing.key, "was configured",
-                                 "but the RangeData did not cotain any",
+        logging::logwarn(paste(c("The type", missing.key, "was configured but the RangeData did not cotain any",
                                  "activities of that type"), sep = " "))
         activity.by.type[missing.key] = na.list
     }
