@@ -1017,6 +1017,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
                 m = list(min(x[["date"]]))
                 ## add activity type as name to the list
                 names(m) = type
+
                 return(m)
             }
         )
@@ -1031,8 +1032,13 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     }
 
     ## check for keys whose member lists are empty or NA
-    missing.keys = activity.types[is.na(activity.by.type[activity.types]) |
-                                  length(activity.by.type[activity.types]) == 0]
+    ## first, get a logical vector indicating all missing keys
+    missing.keys = sapply(activity.types, function(x) {
+        is.na(activity.by.type[[x]]) || length(activity.by.type[[x]]) == 0
+    })
+    ## then apply this vector to the 'activity.types' vector in order to pick the actual keys
+    missing.keys = activity.types[missing.keys]
+
     ## get the keys that contain valid data for finding a candidate for copying lists from to replace the missing keys
     present.keys = setdiff(activity.types, missing.keys)
 
