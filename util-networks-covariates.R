@@ -1051,7 +1051,10 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 
     ## else, take the first present item, copy its list and replace all entries with NA so that the reduce and apply can
     ## work it out
-    na.list = lapply(activity.by.type[present.keys[[1]]], function(x) return(NA))
+    na.list = lapply(activity.by.type[present.keys[[1]]], function(x) {
+        authors = lapply(x, function(author) return(NA))
+        return(authors)
+    })
 
     for (missing.key in missing.keys) {
         logging::logwarn(paste(c("The type", missing.key, "was configured but the RangeData did not cotain any",
