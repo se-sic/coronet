@@ -18,6 +18,7 @@
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -72,13 +73,15 @@ metrics.avg.degree = function(network, mode = c("total", "in", "out")) {
 #' @param sort whether the resulting dataframe is to be sorted by the vertex degree [default: TRUE]
 #' @param sort.decreasing if sorting is active, this says whether the dataframe is to be
 #'                        sorted in descending or ascending order [default: TRUE]
+#' @param mode character string, "out" for out-degree, "in" for in-degree,
+#'             "total" or "all" for the sum of the two [default: "total"]
 #'
 #' @return A dataframe containing the vertices and their respective degrees.
-metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE) {
+metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE, mode = "total") {
     if (sort) {
-        degrees = sort(igraph::degree(network, mode = "total"), decreasing = sort.decreasing)
+        degrees = sort(igraph::degree(network, mode = mode), decreasing = sort.decreasing)
     } else {
-        degrees = igraph::degree(network, mode = "total")
+        degrees = igraph::degree(network, mode = mode)
     }
     return(data.frame("name" = names(degrees), "degree" = unname(degrees)))
 }
