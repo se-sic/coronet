@@ -1057,8 +1057,8 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     })
 
     for (missing.key in missing.keys) {
-        logging::logwarn(paste(c("The type", missing.key, "was configured but the RangeData did not cotain any",
-                                 "activities of that type"), sep = " "))
+        logging::logwarn(paste("The type", missing.key, "was configured but the RangeData did not cotain any",
+                                 "activities of that type"), sep = " ")
         activity.by.type[missing.key] = na.list
     }
 

@@ -19,7 +19,7 @@
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
-## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2021-2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -839,7 +839,6 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
     })
 })
 
-
 #' Test the add.vertex.attribute.author.email method
 test_that("Test add.vertex.attribute.author.email", {
 
@@ -1406,4 +1405,58 @@ test_that("Test addition of attributes despite of non-captured vertices", {
     expect_true("commit.count.committer.and.author" %in% igraph::list.vertex.attributes(net.commit.count))
     expect_identical(igraph::get.vertex.attribute(net.commit.count, "commit.count.committer.and.author"), 0L)
 
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Unit tests for helper functions------------------------------------------
+#' Test addition of attributes despite of non-captured vertices
+test_that("Test get.first.activity.data with missing commits and mails", {
+
+    ## initialize a ProjectData object with the ProjectConf
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data.base = ProjectData$new(project.conf = proj.conf)
+
+    ## create a RangeData object with the same data sources as proj.data.base
+    ## here, some data is already missing; this is used to test whether the function correctly sets missing data as 'NA'
+    ## lists
+    timestamps = proj.data.base$get.data.timestamps(outermost = TRUE)
+    range.data = split.data.time.based(proj.data.base, bins =
+                                                c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]))[[1]]
+
+    first.activity.data = get.first.activity.data(range.data)
+
+    expected.activity.data = list(
+        list(commits = get.date.from.string("2016-07-12 15:58:59"),
+             mails = get.date.from.string("2004-10-09 18:38:13"),
+                     issues = get.date.from.string("2013-05-05 21:46:30")),
+        list(commits = get.date.from.string("2016-07-12 16:00:45"),
+             mails = get.date.from.string(" 2016-07-12 15:58.50"),
+                    issues = get.date.from.string("2013-05-25 03:25:06")),
+        list(commits = get.date.from.string("2016-07-12 16:06:32"),
+             mails = get.date.from.string("2016-07-12 16:04:40"),
+             issues = get.date.from.string("2013-04-21 23:52:09")),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string("2010-07-12 11:05:35"),
+             issues = get.date.from.string(NA)),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string("2010-07-12 12:05:34"),
+             issues = get.date.from.string(NA)),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string("2010-07-12 12:05:40"),
+             issues = get.date.from.string(NA)),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string("2010-07-12 10:05:36"),
+             issues = get.date.from.string(NA)),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string(NA),
+             issues = get.date.from.string("2016-07-12 15:59:59")),
+        list(commits = get.date.from.string(NA),
+             mails = get.date.from.string(NA),
+             issues = get.date.from.string("2016-07-15 20:07:47"))
+    )
+    names(expected.activity.data) = c("Björn", "Olaf", "Thomas", "Fritz fritz@example.org", "georg", "Hans",
+                                      "udo", "Karl", "Max")
+
+    expect_equal(first.activity.data, expected.activity.data)
 })
