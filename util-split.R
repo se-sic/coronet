@@ -21,6 +21,7 @@
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -215,7 +216,13 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## add splitting information to project configuration
     project.conf.new$set.splitting.info(
         type = "time-based",
-        length = if (split.by.bins) bins else time.period,
+        length = if (split.by.bins)
+            bins
+        else if (!is.null(number.windows))
+            as.character(get.time.period.by.amount(min(data[[split.basis]][["date"]]),
+                                                   max(data[[split.basis]][["date"]]),
+                                                   number.windows))
+        else time.period,
         basis = split.basis,
         sliding.window = sliding.window,
         revisions = bins,

@@ -19,6 +19,7 @@
 ## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -380,11 +381,7 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     if (is.null(length.out)) {
         time.period = lubridate::duration(by)
     } else {
-        time.complete = lubridate::as.duration(lubridate::interval(start.date, end.date))
-        time.period =  time.complete / length.out
-        ## to avoid rounding differences, we round the time period up
-        ## (otherwise, we may end up with another unwanted date in the sequence)
-        time.period = ceiling(time.period)
+        time.period = get.time.period.by.amount(start.date, end.date, length.out)
     }
 
     ## convenience function for next step
@@ -411,6 +408,22 @@ generate.date.sequence = function(start.date, end.date, by, length.out = NULL) {
     dates = lubridate::with_tz(dates, tzone = TIMEZONE)
 
     return(dates)
+}
+
+#' Calculate the time period for splitting a time period into equally sized windows.
+#'
+#' @param start.date The start time as string or POSIXct object
+#' @param end.date The end time as string or POSIXct object
+#' @param amount The desired amount of windows
+#'
+#' @return The duration of a single window
+get.time.period.by.amount = function(start.date, end.date, amount) {
+    time.complete = lubridate::as.duration(lubridate::interval(start.date, end.date))
+    time.period =  time.complete / amount
+    ## to avoid rounding differences, we round the time period up
+    ## (otherwise, we may end up with another unwanted date in the sequence)
+    time.period = ceiling(time.period)
+    return(time.period)
 }
 
 
