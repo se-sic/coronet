@@ -46,27 +46,18 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## In this test file, we rather test the raw data contents of the data objects
 ## instead of the networks that can be constructed from these data items!
 
-
-##
-## TODO
-##
-
-## - net.conf$update.values(list(pasta = TRUE, synchronicity = TRUE))
-
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
 
 ## * time-based ------------------------------------------------------------
 
-## * * time period ---------------------------------------------------------
+## * * window numbers ---------------------------------------------------------
 
 ##
 ## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'commits')
 ##
 
-test_that(
-    "Split a data object time-based with equally sized windows (number.windows = ..., split.basis = 'commits').", {
+test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -379,7 +370,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
 ## * time-based ------------------------------------------------------------
 
-## * * time period ---------------------------------------------------------
+## * * window numbers ---------------------------------------------------------
 
 ##
 ## Tests for split.network.time.based(..., time.period = ...)
@@ -465,6 +456,19 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
 
     ## check whether the splitting information of the two split networks are identical
     expect_identical(attributes(net.split[[1]]), attributes(net.split[[2]]), info = "Splitting information.")
+
+    ## check whether the splitting information is as expected
+    expected = list (
+        "bins" = c(as.POSIXct("2010-07-12 12:05:41", tz="UTC"),
+                   as.POSIXct("2012-07-12 05:25:58", tz="UTC"),
+                   as.POSIXct("2014-07-12 22:46:15", tz="UTC"),
+                   as.POSIXct("2016-07-12 16:06:33", tz="UTC")),
+        "names" = c("2010-07-12 12:05:41-2012-07-12 05:25:58",
+                    "2012-07-12 05:25:58-2014-07-12 22:46:15",
+                    "2014-07-12 22:46:15-2016-07-12 16:06:33")
+    )
+
+    expect_identical(expected, attributes(net.split[[1]]), info = "Splitting information.")
 
     ## check whether this works also with one network in the list (if not, an error will occur)
     net.split = split.networks.time.based(
