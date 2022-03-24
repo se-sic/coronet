@@ -7,7 +7,10 @@
 ### Added
 - Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, 8868ff47900cf804553ec98683b736b07350fc64, bfbe4deb9d14faeed56bdf37f9f732e01c41af57, 0a23862c6308c27fe4f93835c3a4480eac03ca91, a7744b548ac5ab697a4eb3d71987ddedef180d59, 6a50fd15bdd6382fa3d868a21a41a4b0a36ffce7, 413e24c18532d06144ef996184192594a0893ca3, 39db3158e931fa627e974451ae66c57bd0b77b12, 1e4026def1995a23b3f42eac5eb343ee5a518798)
 
-## Fixed
+### Changed/Improved
+- Add `mode` parameter to `metrics.vertex.degrees` to allow choosing between indegree, outdegree, and total (#219, ae14eb4cb83c6ab8f387886228cdf7ea6f3258c4)
+
+### Fixed
 - Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.2.7 in `install.R` and document it in the `README.md`.(25fb86277c7cc15b94ca0327bff4bb7e818ca09b)
 - Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, 1b4072c7ec0e33a595e31d9e9d27bb5c133b1556)
 
