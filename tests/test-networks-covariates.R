@@ -1484,9 +1484,7 @@ test_that("Test get.first.activity.data with missing commits and mails for all a
                                        bins = c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]),
                                        split.basis = c("issues"))[[1]]
 
-    ## assert that warnings are thrown for the missing data sources (making the test pass instead of result in warning).
-    ## here, using '=' instead of '<-' leads to an error.
-    expect_warning(first.activity.data <- get.first.activity.data(range.data))
+    first.activity.data = get.first.activity.data(range.data)
 
     ## leave the authors without any data out
     expected.activity.data = list(
