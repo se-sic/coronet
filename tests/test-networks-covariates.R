@@ -1410,53 +1410,101 @@ test_that("Test addition of attributes despite of non-captured vertices", {
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Unit tests for helper functions------------------------------------------
-#' Test addition of attributes despite of non-captured vertices
-test_that("Test get.first.activity.data with missing commits and mails", {
+
+#' Test get.first.activity.data with missing commits, mails, and issues.
+#' Not all authors are expected to have activities in all data sources
+test_that("Test get.first.activity.data with missing commits, mails, and issues", {
 
     ## initialize a ProjectData object with the ProjectConf
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.data.base = ProjectData$new(project.conf = proj.conf)
 
-    ## create a RangeData object with the same data sources as proj.data.base
-    ## here, some data is already missing; this is used to test whether the function correctly sets missing data as 'NA'
-    ## lists
+    ## create a RangeData object with the same data sources as 'proj.data.base'.
+    ## some data is already missing; this is used to test whether the function correctly sets missing data as 'NA'.
     timestamps = proj.data.base$get.data.timestamps(outermost = TRUE)
-    range.data = split.data.time.based(proj.data.base, bins =
-                                                c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]))[[1]]
+    range.data = split.data.time.based(proj.data.base,
+                                       bins = c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]))[[1]]
 
     first.activity.data = get.first.activity.data(range.data)
 
     expected.activity.data = list(
-        list(commits = get.date.from.string("2016-07-12 15:58:59"),
-             mails = get.date.from.string("2004-10-09 18:38:13"),
-                     issues = get.date.from.string("2013-05-05 21:46:30")),
-        list(commits = get.date.from.string("2016-07-12 16:00:45"),
-             mails = get.date.from.string(" 2016-07-12 15:58.50"),
-                    issues = get.date.from.string("2013-05-25 03:25:06")),
-        list(commits = get.date.from.string("2016-07-12 16:06:32"),
-             mails = get.date.from.string("2016-07-12 16:04:40"),
-             issues = get.date.from.string("2013-04-21 23:52:09")),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string("2010-07-12 11:05:35"),
-             issues = get.date.from.string(NA)),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string("2010-07-12 12:05:34"),
-             issues = get.date.from.string(NA)),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string("2010-07-12 12:05:40"),
-             issues = get.date.from.string(NA)),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string("2010-07-12 10:05:36"),
-             issues = get.date.from.string(NA)),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string(NA),
-             issues = get.date.from.string("2016-07-12 15:59:59")),
-        list(commits = get.date.from.string(NA),
-             mails = get.date.from.string(NA),
-             issues = get.date.from.string("2016-07-15 20:07:47"))
+        "Björn" = list(commits = get.date.from.string("2016-07-12 15:58:59"),
+                       mails = get.date.from.string("2004-10-09 18:38:13"),
+                       issues = get.date.from.string("2013-05-05 21:46:30")),
+        "Olaf" = list(commits = get.date.from.string("2016-07-12 16:00:45"),
+                      mails = get.date.from.string("2016-07-12 15:58:50"),
+                      issues = get.date.from.string("2013-05-25 03:25:06")),
+        "Thomas" = list(commits = get.date.from.string("2016-07-12 16:06:32"),
+                        mails = get.date.from.string("2016-07-12 16:04:40"),
+                        issues = get.date.from.string("2013-04-21 23:52:09")),
+        "Fritz fritz@example.org" = list(commits = get.date.from.string(NA),
+                                         mails = get.date.from.string("2010-07-12 11:05:35"),
+                                         issues = get.date.from.string(NA)),
+        "georg" = list(commits = get.date.from.string(NA),
+                       mails = get.date.from.string("2010-07-12 12:05:34"),
+                       issues = get.date.from.string(NA)),
+        "Hans" = list(commits = get.date.from.string(NA),
+                      mails = get.date.from.string("2010-07-12 12:05:40"),
+                      issues = get.date.from.string(NA)),
+        "udo" = list(commits = get.date.from.string(NA),
+                     mails = get.date.from.string("2010-07-12 10:05:36"),
+                     issues = get.date.from.string(NA)),
+        "Karl" = list(commits = get.date.from.string(NA),
+                      mails = get.date.from.string(NA),
+                      issues = get.date.from.string("2016-07-12 15:59:59")),
+        "Max" = list(commits = get.date.from.string(NA),
+                      mails = get.date.from.string(NA),
+                      issues = get.date.from.string("2016-07-15 20:07:47"))
     )
-    names(expected.activity.data) = c("Björn", "Olaf", "Thomas", "Fritz fritz@example.org", "georg", "Hans",
-                                      "udo", "Karl", "Max")
+
+    expect_equal(first.activity.data, expected.activity.data)
+})
+
+#' Test get.first.activity.data with missing commits and mails for all authors
+test_that("Test get.first.activity.data with missing commits and mails for all authors", {
+
+    ## initialize a ProjectData object with the ProjectConf
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    ## get the timestamps for splitting before discarding the data
+    timestamps = proj.data$get.data.timestamps(outermost = TRUE)
+
+    ## clear commit and mail data completely so that all authors have neither any commits nor mails left
+    proj.data$set.commits(create.empty.commits.list())
+    proj.data$set.mails(create.empty.mails.list())
+
+    ## also lock the data sources in order to prevent reloading the data when calling the getters
+    proj.conf$update.value("commits.locked", TRUE)
+    proj.conf$update.value("mails.locked", TRUE)
+
+    ## create a RangeData object with the same data sources as 'proj.data.base'.
+    ## some data is already missing; this is used to test whether the function correctly sets missing data as 'NA'.
+    range.data = split.data.time.based(proj.data,
+                                       bins = c(timestamps[["start"]][[1]], timestamps[["end"]][[1]]),
+                                       split.basis = c("issues"))[[1]]
+
+    ## assert that warnings are thrown for the missing data sources (making the test pass instead of result in warning).
+    ## here, using '=' instead of '<-' leads to an error.
+    expect_warning(first.activity.data <- get.first.activity.data(range.data))
+
+    ## leave the authors without any data out
+    expected.activity.data = list(
+        "Björn" = list(commits = get.date.from.string(NA),
+                       mails = get.date.from.string(NA),
+                       issues = get.date.from.string("2013-05-05 21:46:30")),
+        "Karl" = list(commits = get.date.from.string(NA),
+                      mails = get.date.from.string(NA),
+                      issues = get.date.from.string("2016-07-12 15:59:59")),
+        "Max" = list(commits = get.date.from.string(NA),
+                     mails = get.date.from.string(NA),
+                     issues = get.date.from.string("2016-07-15 20:07:47")),
+        "Olaf" = list(commits = get.date.from.string(NA),
+                      mails = get.date.from.string(NA),
+                      issues = get.date.from.string("2013-05-25 03:25:06")),
+        "Thomas" = list(commits = get.date.from.string(NA),
+                        mails = get.date.from.string(NA),
+                        issues = get.date.from.string("2013-04-21 23:52:09")))
 
     expect_equal(first.activity.data, expected.activity.data)
 })
