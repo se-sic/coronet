@@ -14,7 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -541,8 +541,11 @@ read.gender = function(data.path) {
     file = file.path(data.path, "gender.list")
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    ## comment char is set to empty string as the names of developers can contain the
+    ## char '#'. This does not affect the other data sources as all names there are
+    ## in "".
     gender.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 encoding = "UTF-8"), silent = TRUE)
+                                 encoding = "UTF-8", comment.char = ""), silent = TRUE)
 
 
     ## handle the case if the list of items is empty
