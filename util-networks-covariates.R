@@ -19,6 +19,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -991,6 +992,8 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #' @param default.value The default value to add if no information is available per author and activity type. [default: NA]
 #'
 #' @return A list containing per author a list of first activity values named with the corresponding activity type.
+#'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
+#'         types in \code{activity.types}
 get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
                                    default.value = NA) {
 
@@ -1014,11 +1017,50 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
                 m = list(min(x[["date"]]))
                 ## add activity type as name to the list
                 names(m) = type
+
                 return(m)
             }
         )
         return(minima.per.person)
     })
+    names(activity.by.type) = activity.types
+
+    ## if 'activity.by.type' is null or the list is empty, print a warning and return an empty list
+    if (is.null(activity.by.type) || length(activity.by.type) == 0) {
+        logging::logwarn("There were no activities in the given RangeData at all")
+        return(list())
+    }
+
+    ## check for keys whose member lists are empty or NA
+    ## first, get a logical vector indicating all missing keys
+    missing.keys = sapply(activity.types, function(x) {
+        is.na(activity.by.type[[x]]) || length(activity.by.type[[x]]) == 0
+    })
+    ## then apply this vector to the 'activity.types' vector in order to pick the actual keys
+    missing.keys = activity.types[missing.keys]
+
+    ## get the keys that contain valid data for finding a candidate for copying lists from to replace the missing keys
+    present.keys = setdiff(activity.types, missing.keys)
+
+    ## if there are no keys left that are present, again, print a warning and return an empty list as there is no data
+    ## for the configured activity types
+    if (length(present.keys) == 0 || is.na(present.keys) || is.null(present.keys)) {
+        logging::logwarn("There were no activities in the given RangeData that were configured")
+        return(list())
+    }
+
+    ## else, take the first present item, copy its list and replace all entries with NA so that the reduce and apply can
+    ## work it out
+    na.list = lapply(activity.by.type[present.keys[[1]]], function(x) {
+        authors = lapply(x, function(author) return(NA))
+        return(authors)
+    })
+
+    for (missing.key in missing.keys) {
+        logging::logwarn(paste("The type", missing.key, "was configured but the RangeData did not contain any",
+                                 "activities of that type"), sep = " ")
+        activity.by.type[missing.key] = na.list
+    }
 
     ## accumulate/fold lists 'activity.by.type' by adding all values of each list
     ## to an intermediate list (start with first list); for example:
