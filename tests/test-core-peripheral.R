@@ -14,6 +14,7 @@
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## All Rights Reserved.
@@ -76,6 +77,28 @@ test_that("Eigenvector classification", {
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result$core) = NULL
+    row.names(result$peripheral) = NULL
+
+    #expect_equal(expected, result, tolerance = 0.0001)
+    # TODO: Find a way to directly test for equality without the need of taking care of different orders of author
+    #       names. For the moment, we take the following workaround:
+
+    ## Due to floating point precision differences, values might differ and also the order of author names of
+    ## authors that have an equal centrality value are might be different. Therefore, first check for the equality
+    ## of the centrality values and the equality of the sets of authors.
+    expect_equal(expected.peripheral$eigen.centrality,
+                 result$peripheral$eigen.centrality, tolerance = 0.0001)
+    expect_setequal(expected.peripheral$author.name, result$peripheral$author.name)
+
+    ## Second, round the centrality values and alphabetically reorder rows that have an equal centrality value
+    expected.peripheral$eigen.centrality = round(expected.peripheral$eigen.centrality, 5)
+    result$peripheral$eigen.centrality = round(result$peripheral$eigen.centrality, 5)
+    expected.peripheral = expected.peripheral[order(-expected.peripheral$eigen.centrality$,
+                                                    expected.peripheral$author.name), , drop = FALSE]
+    row.names(expected.peripheral) = NULL
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    result$peripheral = result$peripheral[order(-result$peripheral$eigen.centrality,
+                                                result$peripheral$author.name), , drop = FALSE]
     row.names(result$peripheral) = NULL
     expect_equal(expected, result, tolerance = 0.0001)
 })
