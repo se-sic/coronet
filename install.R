@@ -16,6 +16,7 @@
 ## Copyright 2015 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2015-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -65,7 +66,7 @@ if (length(p) > 0) {
     install.packages(p, dependencies = NA, verbose = TRUE, quiet = TRUE)
 
     igraph.version = installed.packages()[rownames(installed.packages()) == "igraph", "Version"]
-    if (compareVersion(igraph.version, "1.2.7") == -1) {
-        print("WARNING: igraph version 1.2.7 or higher is recommended for using coronet.")
+    if (compareVersion(igraph.version, "1.3.0") == -1) {
+        print("WARNING: igraph version 1.3.0 or higher is recommended for using coronet.")
     }
 }
