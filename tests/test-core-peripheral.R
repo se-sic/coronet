@@ -80,11 +80,11 @@ test_that("Eigenvector classification", {
     row.names(result[["peripheral"]]) = NULL
 
     expect_equal(expected, result, tolerance = 0.0001)
-    # TODO: Find a way to directly test for equality without the need of taking care of different orders of author
-    #       names. For the moment, we take the following workaround:
+    ## TODO: Find a way to directly test for equality without the need of taking care of different orders of author
+    ##       names. For the moment, we take the following workaround:
 
     ## Due to floating point precision differences, values might differ and also the order of author names of
-    ## authors that have an equal centrality value are might be different. Therefore, first check for the equality
+    ## authors that have an equal centrality value might be different. Therefore, first check for the equality
     ## of the centrality values and the equality of the sets of authors.
     expect_equal(expected.peripheral[["eigen.centrality"]],
                  result[["peripheral"]][["eigen.centrality"]], tolerance = 0.0001)
