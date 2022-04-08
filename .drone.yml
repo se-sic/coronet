@@ -121,17 +121,17 @@ steps:
   commands: *runShowcase
   depends_on: [clone]
 
-- name: R-3.5
-  pull: if-not-exists
-  image: rocker/r-ver:3.5.3
-  commands: *runShowcase
-  depends_on: [clone]
-
-- name: R-3.4
-  pull: if-not-exists
-  image: rocker/r-ver:3.4.4
-  commands: *runShowcase
-  depends_on: [clone]
+#- name: R-3.5
+#  pull: if-not-exists
+#  image: rocker/r-ver:3.5.3
+#  commands: *runShowcase
+#  depends_on: [clone]
+#
+#- name: R-3.4
+#  pull: if-not-exists
+#  image: rocker/r-ver:3.4.4
+#  commands: *runShowcase
+#  depends_on: [clone]
 
 #trigger:
 #  branch:
