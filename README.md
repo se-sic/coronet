@@ -59,9 +59,9 @@ While using the package, we require the following infrastructure.
 
 #### [`R`](https://www.r-project.org/)
 
-Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
+Minimum requirement is `R` version `3.4.4`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
 
-We currently recommend version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
+We currently *recommend* `R` version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 

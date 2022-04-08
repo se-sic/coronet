@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 # Drone CI Setup
@@ -69,12 +69,6 @@ steps:
   commands: *runTests
   depends_on: [clone]
 
-- name: R-3.3
-  pull: if-not-exists
-  image: r-base:3.3.2
-  commands: *runTests
-  depends_on: [clone]
-
 ---
 # Pipeline "run showcase file"
 kind: pipeline
@@ -128,13 +122,6 @@ steps:
   image: r-base:3.4.4
   commands: *runShowcase
   depends_on: [clone]
-
-- name: R-3.3
-  pull: if-not-exists
-  image: r-base:3.3.2
-  commands: *runShowcase
-  depends_on: [clone]
-
 
 #trigger:
 #  branch:
