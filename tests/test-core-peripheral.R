@@ -55,8 +55,8 @@ test_that("Vertex-degree classification using 'restrict.classification.to.author
     expected.peripheral = data.frame(author.name = c("Björn", "Darth Sidious"), vertex.degree = c(2, NA))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -76,8 +76,8 @@ test_that("Eigenvector classification", {
                                                           3.925231e-17, 3.925231e-17, 3.925231e-17))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
 
     #expect_equal(expected, result, tolerance = 0.0001)
     # TODO: Find a way to directly test for equality without the need of taking care of different orders of author
@@ -86,20 +86,20 @@ test_that("Eigenvector classification", {
     ## Due to floating point precision differences, values might differ and also the order of author names of
     ## authors that have an equal centrality value are might be different. Therefore, first check for the equality
     ## of the centrality values and the equality of the sets of authors.
-    expect_equal(expected.peripheral$eigen.centrality,
-                 result$peripheral$eigen.centrality, tolerance = 0.0001)
-    expect_setequal(expected.peripheral$author.name, result$peripheral$author.name)
+    expect_equal(expected.peripheral[["eigen.centrality"]],
+                 result[["peripheral"]][["eigen.centrality"]], tolerance = 0.0001)
+    expect_setequal(expected.peripheral[["author.name"]], result[["peripheral"]][["author.name"]])
 
     ## Second, round the centrality values and alphabetically reorder rows that have an equal centrality value
-    expected.peripheral$eigen.centrality = round(expected.peripheral$eigen.centrality, 5)
-    result$peripheral$eigen.centrality = round(result$peripheral$eigen.centrality, 5)
-    expected.peripheral = expected.peripheral[order(-expected.peripheral$eigen.centrality$,
-                                                    expected.peripheral$author.name), , drop = FALSE]
+    expected.peripheral[["eigen.centrality"]] = round(expected.peripheral[["eigen.centrality"]], 5)
+    result[["peripheral"]][["eigen.centrality"]] = round(result[["peripheral"]][["eigen.centrality"]], 5)
+    expected.peripheral = expected.peripheral[order(-expected.peripheral[["eigen.centrality"]],
+                                                    expected.peripheral[["author.name"]]), , drop = FALSE]
     row.names(expected.peripheral) = NULL
     expected = list(core = expected.core, peripheral = expected.peripheral)
-    result$peripheral = result$peripheral[order(-result$peripheral$eigen.centrality,
-                                                result$peripheral$author.name), , drop = FALSE]
-    row.names(result$peripheral) = NULL
+    result[["peripheral"]] = result[["peripheral"]][order(-result[["peripheral"]][["eigen.centrality"]],
+                                                          result[["peripheral"]][["author.name"]]), , drop = FALSE]
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result, tolerance = 0.0001)
 })
 
@@ -114,8 +114,8 @@ test_that("Commit-count classification using 'result.limit'" , {
     expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), commit.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -128,8 +128,8 @@ test_that("LOC-count classification" , {
     expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), loc.count = c(2, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -144,8 +144,8 @@ test_that("Mail-count classification" , {
     expected.peripheral = data.frame(author.name = c("Thomas", "georg", "udo"), mail.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -160,8 +160,8 @@ test_that("Mail-thread-count classification" , {
     expected.peripheral = data.frame(author.name = c("georg", "udo"), mail.thread.count = c(1, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -175,8 +175,8 @@ test_that("Issue-count classification" , {
     expected.peripheral = data.frame(author.name = c("Karl", "Max", "udo"), issue.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -192,8 +192,8 @@ test_that("Issue-comment-count classification" , {
                                issue.comment.count = c(2, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -209,8 +209,8 @@ test_that("Issue-commented-in-count classification" , {
                                      issue.commented.in.count = c(1, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
@@ -224,8 +224,8 @@ test_that("Issue-created-count classification" , {
                                issue.created.count = c(1, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
-    row.names(result$core) = NULL
-    row.names(result$peripheral) = NULL
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
 
