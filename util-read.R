@@ -14,13 +14,14 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -48,7 +49,7 @@ requireNamespace("data.table") # for faster data.frame processing
 #'
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
 remove.deleted.and.empty.user = function(data) {
-    return(data[data["author.name"] != "deleted user" & data["author.name"] != "", ])
+    return(data[tolower(data[, "author.name"]) != "deleted user" & data["author.name"] != "", ])
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -386,7 +387,6 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     return(issue.data)
 }
 
-
 #' Create an empty dataframe which has the same shape as a dataframe containing issues. The dataframe has the column
 #' names and column datatypes defined in \code{ISSUES.LIST.COLUMNS} and \code{ISSUES.LIST.DATA.TYPES}, respectively.
 #'
@@ -510,6 +510,92 @@ read.authors = function(data.path) {
 create.empty.authors.list = function() {
     return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
 }
+
+
+## * Gender data ------------------------------------------------------------
+
+## column names of a dataframe containing gender data (see function \code{read.gender})
+GENDER.LIST.COLUMNS = c(
+    "author.name", "gender"
+)
+
+## declare the datatype for each column in the constant 'GENDER.LIST.COLUMNS'
+GENDER.LIST.DATA.TYPES = c(
+    "character", "character"
+)
+
+## declare predefined values for the gender column
+GENDER.LIST.VALUES = c(
+    "male", "female", "unknown"
+)
+
+#' Read and parse the gender data from the 'gender' file.
+#' The parsed form is a data frame with author.name as key, gender as value.
+#'
+#' @param data.path the path to the gender data
+#'
+#' @return the read and parsed gender data
+read.gender = function(data.path) {
+
+    ## get file name of the gender data
+    file = file.path(data.path, "gender.list")
+
+    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    ## comment char is set to empty string as the names of developers can contain the
+    ## char '#'. This does not affect the other data sources as all names there are
+    ## in "".
+    gender.data = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                 encoding = "UTF-8", comment.char = ""), silent = TRUE)
+
+
+    ## handle the case if the list of items is empty
+    if (inherits(gender.data, "try-error")) {
+        logging::logwarn("There are no gender data available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+        return(create.empty.gender.list())
+    }
+
+    colnames(gender.data) = GENDER.LIST.COLUMNS
+
+    ## check whether there are undefined gender labels
+    undefined.labels = setdiff(gender.data[["gender"]], GENDER.LIST.VALUES)
+
+    if (length(undefined.labels) > 0){
+        ## find authors who have undefined gender labels
+        undefined.labels.authors = filter(gender.data, gender %in% undefined.labels)
+        logging::logwarn(sprintf("Undefined gender labels. %s cannot be used. Only %s are allowed.
+                                 The following authors have undefined labels: %s ",
+                                 paste(shQuote(undefined.labels), collapse = ","),
+                                 paste(shQuote(GENDER.LIST.VALUES), collapse = ", "),
+                                 paste(shQuote(undefined.labels.authors[["author.name"]]), collapse = ",")))
+
+        ## replace all undefined labels with 'unknown'
+        gender.data[["gender"]][gender.data[["gender"]] %in% undefined.labels] = "unknown"
+        logging::logwarn("Undefined gender labels have been replaced with 'unknown'.")
+    }
+
+    ## replace all 'unknown' values with NA
+    gender.data[["gender"]][gender.data[["gender"]] == "unknown"] = NA
+
+    gender.data = gender.data[order(gender.data[["author.name"]]), ] # re-order after read
+
+    ## remove rownames
+    rownames(gender.data) = NULL
+
+    logging::logdebug("read.gender: finished.")
+    return(gender.data)
+
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing gender data.
+#' The dataframe has the column names and column datatypes defined in \code{GENDER.LIST.COLUMNS}
+#' and \code{GENDER.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.gender.list = function() {
+    return (create.empty.data.frame(GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES))
+}
+
 
 ## * Commit message data ---------------------------------------------------
 

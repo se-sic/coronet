@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 # Drone CI Setup
@@ -27,12 +27,17 @@ platform:
 
 steps:
 - name: R-latest
-  image: r-base:latest
+  image: rocker/r-ver:latest
   commands: &runTests
   # stop treating warnings as errors
   - unset CI
   # package dependencies
-  - apt install update -y && libudunits2-dev
+  #  - apt install update -y && libudunits2-dev
+  - apt-get update -y
+  - apt-get install --assume-yes libxml2
+  - apt-get install --assume-yes libxml2-dev
+  - apt-get install --assume-yes libglpk-dev
+  - echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >>"/usr/local/lib/R/etc/Rprofile.site"
   # package installation
   - Rscript install.R
   # execute test suite
@@ -41,37 +46,31 @@ steps:
 
 - name: R-4.1
   pull: if-not-exists
-  image: r-base:4.1.1
+  image: rocker/r-ver:4.1.3
   commands: *runTests
   depends_on: [clone]
 
 - name: R-4.0
   pull: if-not-exists
-  image: r-base:4.0.5
+  image: rocker/r-ver:4.0.5
   commands: *runTests
   depends_on: [clone]
 
 - name: R-3.6
   pull: if-not-exists
-  image: r-base:3.6.3
+  image: rocker/r-ver:3.6.3
   commands: *runTests
   depends_on: [clone]
 
 - name: R-3.5
   pull: if-not-exists
-  image: r-base:3.5.3
+  image: rocker/r-ver:3.5.3
   commands: *runTests
   depends_on: [clone]
 
 - name: R-3.4
   pull: if-not-exists
-  image: r-base:3.4.4
-  commands: *runTests
-  depends_on: [clone]
-
-- name: R-3.3
-  pull: if-not-exists
-  image: r-base:3.3.2
+  image: rocker/r-ver:3.4.4
   commands: *runTests
   depends_on: [clone]
 
@@ -87,12 +86,17 @@ platform:
 
 steps:
 - name: R-latest
-  image: r-base:latest
+  image: rocker/r-ver:latest
   commands: &runShowcase
   # stop treating warnings as errors
   - unset CI
   # package dependencies
-  - apt install update -y && libudunits2-dev
+  #- apt install update -y && libudunits2-dev
+  - apt-get update -y
+  - apt-get install --assume-yes libxml2
+  - apt-get install --assume-yes libxml2-dev
+  - apt-get install --assume-yes libglpk-dev
+  - echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >>"/usr/local/lib/R/etc/Rprofile.site"
   # package installation
   - Rscript install.R
   # execute showcase file
@@ -101,40 +105,33 @@ steps:
 
 - name: R-4.1
   pull: if-not-exists
-  image: r-base:4.1.0
+  image: rocker/r-ver:4.1.3
   commands: *runShowcase
   depends_on: [clone]
 
 - name: R-4.0
   pull: if-not-exists
-  image: r-base:4.0.5
+  image: rocker/r-ver:4.0.5
   commands: *runShowcase
   depends_on: [clone]
 
 - name: R-3.6
   pull: if-not-exists
-  image: r-base:3.6.3
+  image: rocker/r-ver:3.6.3
   commands: *runShowcase
   depends_on: [clone]
 
-- name: R-3.5
-  pull: if-not-exists
-  image: r-base:3.5.3
-  commands: *runShowcase
-  depends_on: [clone]
-
-- name: R-3.4
-  pull: if-not-exists
-  image: r-base:3.4.4
-  commands: *runShowcase
-  depends_on: [clone]
-
-- name: R-3.3
-  pull: if-not-exists
-  image: r-base:3.3.2
-  commands: *runShowcase
-  depends_on: [clone]
-
+#- name: R-3.5
+#  pull: if-not-exists
+#  image: rocker/r-ver:3.5.3
+#  commands: *runShowcase
+#  depends_on: [clone]
+#
+#- name: R-3.4
+#  pull: if-not-exists
+#  image: rocker/r-ver:3.4.4
+#  commands: *runShowcase
+#  depends_on: [clone]
 
 #trigger:
 #  branch:

@@ -59,9 +59,9 @@ While using the package, we require the following infrastructure.
 
 #### [`R`](https://www.r-project.org/)
 
-Minimum requirement is `R` version `3.3.1`. Hence, later `R` versions also work.
+Minimum requirement is `R` version `3.4.4`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
 
-We currently recommend version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
+We currently *recommend* `R` version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
@@ -125,7 +125,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)
 - `R6`: For proper classes
-- `igraph`: For the construction of networks
+- `igraph`: For the construction of networks (package version `1.3.0` or higher is recommended)
 - `plyr`: For the `dlply` splitting-function and `rbind.fill`
 - `parallel`: For parallelization
 - `logging`: Logging
@@ -192,6 +192,7 @@ There are two distinguishable types of data sources that are both handled by the
         1. `none` is the default value and does not impact the configuration at all.
         2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
         3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
+    * Gender data of authors (see also the parameter `gender` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)))
     * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
@@ -556,6 +557,9 @@ There is no way to update the entries, except for the revision-based parameters.
     * [*`none`*, `title`, `messages`]
 - `filter.bots`
     * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file.
+    * [`TRUE`, *`FALSE`*]
+- `gender`
+    * Read and add gender data to authors (column `gender`)
     * [`TRUE`, *`FALSE`*]
 - `issues.only.comments`
     * Only use comments from the issue data on disk and no further events such as references and label changes

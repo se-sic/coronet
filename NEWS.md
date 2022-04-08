@@ -2,6 +2,21 @@
 
 # coronet – Changelog
 
+## 4.1
+
+### Added
+- Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, 8868ff47900cf804553ec98683b736b07350fc64, bfbe4deb9d14faeed56bdf37f9f732e01c41af57, 0a23862c6308c27fe4f93835c3a4480eac03ca91, a7744b548ac5ab697a4eb3d71987ddedef180d59, 6a50fd15bdd6382fa3d868a21a41a4b0a36ffce7, 413e24c18532d06144ef996184192594a0893ca3, 39db3158e931fa627e974451ae66c57bd0b77b12, 1e4026def1995a23b3f42eac5eb343ee5a518798)
+
+### Changed/Improved
+- Add `mode` parameter to `metrics.vertex.degrees` to allow choosing between indegree, outdegree, and total (#219, ae14eb4cb83c6ab8f387886228cdf7ea6f3258c4)
+- Adjust `.drone.yml` CI config to prevent pipeline fails: `R` version `3.3` is not tested any more as some packages are not available any more for this `R` version (ca6b474d773c045dd88a19aee905283a373df0a6). Also another docker container in the CI pipeline is used as there are problems with the previously used docker instance (937f797ee04b78a087ea84043d075e7ca7558d70)
+
+### Fixed
+- Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.3.0 in `install.R` and document it in the `README.md` (25fb86277c7cc15b94ca0327bff4bb7e818ca09b, 1bcbca96d6dbaa2d4a28e830da963604682eac70)
+- Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, 1b4072c7ec0e33a595e31d9e9d27bb5c133b1556)
+- Add check to `get.first.activity.data` to look for missing activity types. If no activities are in the RangeData, the function will print a warning and return an empty list (PR #220, #217, 5707517600c5579095c245b63c745d01cde02799, 42a4befb36e7fd9830924dc7fb2e04ecdf86e209,  d6424c03baff05562448df1b6b87828ca9a37b88, ca8a1b4c628261dcb471e1da3603439e75e4cc56, f6553c6106e5fec3837c6edb906a4d0960c5c5fb)
+
+
 ## 4.0
 
 ### Announcement
@@ -15,7 +30,7 @@
 - Add function `get.data.sources.from.relations` to `util-networks.R` which extracts the data sources of a network that were used when building it (PR #195, d1e4413a49ab83a115a7f26719592876371ab264)
 - Add tests for the `get.data.sources.from.relations` function (PR #195, add0c746dde8279da41d180deecf52b91a46095c)
 - Add logo directory containing several logo variants (PR #196, 82f99719b8a43b0a44914b67b26bf1a34bb076c6, dc4659ea354e97159f8ee6167811db544f0b7087, fdc5e677325225f92d1f99948cb9441bfe1d150d, 752a9b376ffeffd5d6b380b4fdba838a890e3ef7)
-- Add function `preprocess.issue.data`, which implements common issue data filtering operations. (fcf5cee64c809d62a33275cbd3272b8087869eea, a566caec6d7e649cc495d292a19eca8a7ffccde8, 5ba6feb988c44e2ba398bccce6c88e69d3bb552e)
+- Add function `preprocess.issue.data`, which implements common issue data filtering operations (fcf5cee64c809d62a33275cbd3272b8087869eea, a566caec6d7e649cc495d292a19eca8a7ffccde8, 5ba6feb988c44e2ba398bccce6c88e69d3bb552e)
 - Add function `get.issues.uncached`, which gets the issues filtered without poisoning or using the cache. (eb919fad9519d6e1a23261977bb3bfa2b899aaf9)
 - Add function `get.issues.unfiltered` to get the unfiltered issues so that these methods follow the naming scheme known from the respective methods for commits (b9dd94c8575b8cab40d0d1185368854f84299d87, e05f3448e1e2e8faaac219ed4ac818f82f3d8ff7)
 - Add per-author vertex attributes regarding counting of issues, issue-creations, issue-comments, mails, mail-threads, ... (like mail thread count, issue creation count) (PR #194, issue #188, 9f9150a97ffbb64607df0ddcbce299e16c2580da, 7260d62cf6f1470584753f76970d19664638eeed, 139f70b67903909bcd4c57e26afa458681a869f2, eb4f649c04155e22195627072e0f08bb8fe65dc4, 627873c641410182ca8fee0e78b95d7bda1e8e6b, 1e1406f4a0898cac3e61a7bc9a5aa665dceef79f, 98e11abc651b5fe0ec994eddea078635b0d6f0b2, a566caec6d7e649cc495d292a19eca8a7ffccde8)

@@ -12,6 +12,7 @@ We have two test projects you can use when writing your tests:
      * Issues
      * Authors
      * Bots
+     * Gender
      * Commit messages
      * Pasta
      * Synchronicity
