@@ -51,6 +51,8 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 ## * activity-based --------------------------------------------------------
 
+## * * activity amount -----------------------------------------------------
+
 ##
 ## Tests for split.data.activity.based(..., activity.type = 'commits')
 ##
@@ -216,93 +218,6 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges for too-large activity amount (activity.amount).")
-
-    ##
-    ## split by number of windows
-    ##
-
-    ## split data
-    results = split.data.activity.based(project.data, number.windows = 2,
-                                        activity.type = "commits", sliding.window = FALSE)
-
-    ## check time ranges
-    expected = c(
-        "2016-07-12 15:58:59-2016-07-12 16:06:20",
-        "2016-07-12 16:06:20-2016-07-12 16:06:33"
-    )
-    lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")
-    })
-
-    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
-    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
-
-    ## test that the config contains the correct splitting information
-    expected.config = list(
-        split.type = "activity-based",
-        split.length = 4,
-        split.basis = "commits",
-        split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
-    )
-    lapply(results, function(res) {
-        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
-        names(actual) = names(expected.config)
-        expect_equal(expected.config, actual)
-    })
-
-    ## check data for all ranges
-    expected.data = list(
-        commits = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commits[1:4, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commits[5:8, ]
-        ),
-        commit.messages = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commit.messages,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
-        ),
-        issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
-        ),
-        mails = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ]
-        ),
-        pasta = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$pasta,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
-        ),
-        synchronicity = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$synchronicity,
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$synchronicity
-        )
-    )
-    results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
-        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
-    )
-    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
-
-    ## too large number of windows
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "commits", number.windows = nrow(project.data$get.commits.unfiltered()) + 10),
-        info = "Error expected (number.windows) (1)."
-    )
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "commits", number.windows = 0),
-        info = "Error expected (number.windows) (2)."
-    )
-
 })
 
 
@@ -493,92 +408,6 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
-
-    ##
-    ## split by number of windows
-    ##
-
-    ## split data
-    results = split.data.activity.based(project.data, number.windows = 2,
-                                        activity.type = "mail", sliding.window = FALSE)
-
-    ## check time ranges
-    expected = c(
-        "2004-10-09 18:38:13-2010-07-12 12:05:43",
-        "2010-07-12 12:05:43-2016-07-12 16:05:38"
-    )
-    lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")
-    })
-
-    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
-    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
-
-    ## test that the config contains the correct splitting information
-    expected.config = list(
-        split.type = "activity-based",
-        split.length = 8,
-        split.basis = "mails",
-        split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
-    )
-    lapply(results, function(res) {
-        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
-        names(actual) = names(expected.config)
-        expect_equal(expected.config, actual)
-    })
-
-    ## check data for all ranges
-    expected.data = list(
-        commits = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commits[0, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits[1:2, ]
-        ),
-        commit.messages = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commit.messages,
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commit.messages
-        ),
-        issues = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:45, 46:49), ]
-        ),
-        mails = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 9:17, ]
-        ),
-        pasta = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$pasta,
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$pasta
-        ),
-        synchronicity = list(
-            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$synchronicity,
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$synchronicity
-        )
-    )
-    results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
-        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
-    )
-    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
-
-    ## too large number of windows
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "mails", number.windows = nrow(project.data$get.mails()) + 10),
-        info = "Error expected (number.windows) (1)."
-    )
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "mails", number.windows = 0),
-        info = "Error expected (number.windows) (2)."
-    )
 })
 
 
@@ -761,96 +590,10 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
-
-    ##
-    ## split by number of windows
-    ##
-
-    ## split data
-    results = split.data.activity.based(project.data, number.windows = 2,
-                                        activity.type = "issues", sliding.window = FALSE)
-
-    ## check time ranges
-    expected = c(
-        "2013-04-21 23:52:09-2016-07-12 16:02:02",
-        "2016-07-12 16:02:02-2017-05-23 12:32:40"
-    )
-    lapply(results, function(res) {
-        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
-                     info = "Time ranges (number.windows).")
-    })
-
-    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
-    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
-
-    ## test that the config contains the correct splitting information
-    expected.config = list(
-        split.type = "activity-based",
-        split.length = 21,
-        split.basis = "issues",
-        split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:02:02", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
-    )
-    lapply(results, function(res) {
-        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
-        names(actual) = names(expected.config)
-        expect_equal(expected.config, actual)
-    })
-
-    ## check data for all ranges
-    expected.data = list(
-        commits = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commits[1:2, ],
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commits[3:8, ]
-        ),
-        commit.messages = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commit.messages,
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commit.messages
-        ),
-        issues = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28, 37:40, 43:44), ],
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36, 41:42, 45:49), ]
-        ),
-        mails = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
-        ),
-        pasta = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$pasta,
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$pasta
-        ),
-        synchronicity = list(
-            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$synchronicity,
-            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$synchronicity
-        )
-    )
-    results.data = list(
-        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
-        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
-        issues = lapply(results, function(cf.data) cf.data$get.issues()),
-        mails = lapply(results, function(cf.data) cf.data$get.mails()),
-        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
-        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
-    )
-    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
-
-    ## too large number of windows
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "issues", number.windows = nrow(project.data$get.issues()) + 10),
-        info = "Error expected (number.windows) (1)."
-    )
-
-    expect_error(
-        split.data.activity.based(project.data, activity.type = "issues", number.windows = 0),
-        info = "Error expected (number.windows) (2)."
-    )
 })
 
 
-## * * sliding windows
+## * * activity amount, sliding windows ------------------------------------
 ##
 ## Tests for split.data.activity.based(..., activity.type = 'commits') using sliding windows
 ##
@@ -1837,6 +1580,326 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
 
     expect_error(
         split.data.activity.based(project.data, activity.type = "issues", number.windows = 0, sliding.window = TRUE),
+        info = "Error expected (number.windows) (2)."
+    )
+})
+
+## * * window numbers ------------------------------------------------------
+
+##
+## Tests for split.data.activity.based(..., activity.type = 'commits')
+##
+
+test_that("Split a data object activity-based (activity.type = 'commits').", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
+        issues = project.data$get.issues(),
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "commits", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2016-07-12 15:58:59-2016-07-12 16:06:20",
+        "2016-07-12 16:06:20-2016-07-12 16:06:33"
+    )
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must mot modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 4,
+        split.basis = "commits",
+        split.sliding.window = FALSE,
+        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commits[1:4, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commits[5:8, ]
+        ),
+        commit.messages = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$commit.messages,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
+        ),
+        issues = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 29, 37:41, 45:49), ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 23, ]
+        ),
+        mails = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$mails[rownames(data$mails) %in% 16:17, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$mails[0, ]
+        ),
+        pasta = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$pasta,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$pasta
+        ),
+        synchronicity = list(
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$synchronicity,
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$synchronicity
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "commits", number.windows = nrow(project.data$get.commits.unfiltered()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "commits", number.windows = 0),
+        info = "Error expected (number.windows) (2)."
+    )
+
+})
+
+
+##
+## Tests for split.data.activity.based(..., activity.type = 'mails')
+##
+
+test_that("Split a data object activity-based (activity.type = 'mails').", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
+        issues = project.data$get.issues(),
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "mail", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2004-10-09 18:38:13-2010-07-12 12:05:43",
+        "2010-07-12 12:05:43-2016-07-12 16:05:38"
+    )
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must mot modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 8,
+        split.basis = "mails",
+        split.sliding.window = FALSE,
+        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commits[0, ],
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commits[1:2, ]
+        ),
+        commit.messages = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$commit.messages,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$commit.messages
+        ),
+        issues = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:15, 20:22, 27:29, 37:40, 43:45, 46:49), ]
+        ),
+        mails = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$mails[rownames(data$mails) %in% 1:8, ],
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 9:17, ]
+        ),
+        pasta = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$pasta,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$pasta
+        ),
+        synchronicity = list(
+            "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$synchronicity,
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$synchronicity
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "mails", number.windows = nrow(project.data$get.mails()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "mails", number.windows = 0),
+        info = "Error expected (number.windows) (2)."
+    )
+})
+
+
+##
+## Tests for split.data.activity.based(..., activity.type = 'issues')
+##
+
+test_that("Split a data object activity-based (activity.type = 'issues').", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
+        issues = project.data$get.issues(),
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+
+    ## split data
+    results = split.data.activity.based(project.data, number.windows = 2,
+                                        activity.type = "issues", sliding.window = FALSE)
+
+    ## check time ranges
+    expected = c(
+        "2013-04-21 23:52:09-2016-07-12 16:02:02",
+        "2016-07-12 16:02:02-2017-05-23 12:32:40"
+    )
+    lapply(results, function(res) {
+        expect_equal(res$get.project.conf()$get.value("ranges"), expected,
+                     info = "Time ranges (number.windows).")
+    })
+
+    ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
+    expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
+                 info = "Splitting must mot modify the original ProjectConf.")
+
+    ## test that the config contains the correct splitting information
+    expected.config = list(
+        split.type = "activity-based",
+        split.length = 21,
+        split.basis = "issues",
+        split.sliding.window = FALSE,
+        split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:02:02", "2017-05-23 12:32:40"),
+        split.revision.dates = NULL
+    )
+    lapply(results, function(res) {
+        actual = lapply(names(expected.config), res$get.project.conf()$get.value)
+        names(actual) = names(expected.config)
+        expect_equal(expected.config, actual)
+    })
+
+    ## check data for all ranges
+    expected.data = list(
+        commits = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commits[1:2, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commits[3:8, ]
+        ),
+        commit.messages = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$commit.messages,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$commit.messages
+        ),
+        issues = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(1:14, 20:22, 27:28, 37:40, 43:44), ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(15:19, 23:26, 29:36, 41:42, 45:49), ]
+        ),
+        mails = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$mails[rownames(data$mails) %in% 14:15, ],
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 16:17, ]
+        ),
+        pasta = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$pasta,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$pasta
+        ),
+        synchronicity = list(
+            "2013-04-21 23:52:09-2016-07-12 16:02:02" = data$synchronicity,
+            "2016-07-12 16:02:02-2017-05-23 12:32:40" = data$synchronicity
+        )
+    )
+    results.data = list(
+        commits = lapply(results, function(cf.data) cf.data$get.commits.unfiltered()),
+        commit.messages = lapply(results, function(cf.data) cf.data$get.commit.messages()),
+        issues = lapply(results, function(cf.data) cf.data$get.issues()),
+        mails = lapply(results, function(cf.data) cf.data$get.mails()),
+        pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
+        synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
+    )
+    expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
+
+    ## too large number of windows
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "issues", number.windows = nrow(project.data$get.issues()) + 10),
+        info = "Error expected (number.windows) (1)."
+    )
+
+    expect_error(
+        split.data.activity.based(project.data, activity.type = "issues", number.windows = 0),
         info = "Error expected (number.windows) (2)."
     )
 })
