@@ -459,10 +459,10 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
 
     ## check whether the splitting information is as expected
     expected = list (
-        "bins" = c(as.POSIXct("2010-07-12 12:05:41", tz="UTC"),
-                   as.POSIXct("2012-07-12 05:25:58", tz="UTC"),
-                   as.POSIXct("2014-07-12 22:46:15", tz="UTC"),
-                   as.POSIXct("2016-07-12 16:06:33", tz="UTC")),
+        "bins" = c(get.date.from.string("2010-07-12 12:05:41"),
+                   get.date.from.string("2012-07-12 05:25:58"),
+                   get.date.from.string("2014-07-12 22:46:15"),
+                   get.date.from.string("2016-07-12 16:06:33")),
         "names" = c("2010-07-12 12:05:41-2012-07-12 05:25:58",
                     "2012-07-12 05:25:58-2014-07-12 22:46:15",
                     "2014-07-12 22:46:15-2016-07-12 16:06:33")
