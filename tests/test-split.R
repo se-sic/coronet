@@ -39,14 +39,6 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 
 ##
-## NOTE
-##
-
-## In this test file, we rather test the raw data contents of the data objects
-## instead of the networks that can be constructed from these data items!
-
-
-##
 ## TODO
 ##
 

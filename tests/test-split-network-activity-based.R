@@ -23,7 +23,7 @@
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
-context("Splitting functionality.")
+context("Splitting functionality, activity-based splitting of networks.")
 
 ##
 ## Context
@@ -36,14 +36,6 @@ ARTIFACT = "feature"
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
-
-
-##
-## NOTE
-##
-
-## In this test file, we rather test the raw data contents of the data objects
-## instead of the networks that can be constructed from these data items!
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

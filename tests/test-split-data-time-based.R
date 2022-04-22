@@ -23,7 +23,7 @@
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
-context("Splitting functionality.")
+context("Splitting functionality, time-based splitting of data.")
 
 ##
 ## Context
@@ -36,14 +36,6 @@ ARTIFACT = "feature"
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
-
-
-##
-## NOTE
-##
-
-## In this test file, we rather test the raw data contents of the data objects
-## instead of the networks that can be constructed from these data items!
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -91,7 +83,7 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -194,7 +186,7 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -302,7 +294,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -764,7 +756,7 @@ test_that("Split a data object time-based (bins = ... ).", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -1060,7 +1052,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
 
@@ -1126,7 +1118,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
 
 ##
-## Tests for split.data.time.based(..., split.basis = 'mails')
+## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'mails')
 ##
 
 test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'mails').", {
@@ -1164,7 +1156,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -1235,7 +1227,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
 
 ##
-## Tests for split.data.time.based(..., split.basis = 'issues')
+## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'issues')
 ##
 
 test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'issues').", {
@@ -1272,7 +1264,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(

@@ -23,7 +23,7 @@
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
-context("Splitting functionality.")
+context("Splitting functionality, activity-based splitting of data.")
 
 ##
 ## Context
@@ -38,14 +38,6 @@ ARTIFACT = "feature"
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 
-##
-## NOTE
-##
-
-## In this test file, we rather test the raw data contents of the data objects
-## instead of the networks that can be constructed from these data items!
-
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split data --------------------------------------------------------------
 
@@ -54,10 +46,10 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## * * activity amount -----------------------------------------------------
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'commits')
+## Tests for split.data.activity.based(..., activity.amount = ..., activity.type = 'commits')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'commits').", {
+test_that("Split a data object activity-based (activity.amount = ..., activity.type = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -92,7 +84,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -171,7 +163,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -222,10 +214,10 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'mails')
+## Tests for split.data.activity.based(..., activity.amount = ..., activity.type = 'mails')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'mails').", {
+test_that("Split a data object activity-based (activity.amount = ..., activity.type = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -262,7 +254,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -361,7 +353,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -412,10 +404,10 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'issues')
+## Tests for split.data.activity.based(..., activity.amount = ..., activity.type = 'issues')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'issues').", {
+test_that("Split a data object activity-based (activity.amount = ..., activity.type = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -451,7 +443,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -543,7 +535,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -1587,10 +1579,10 @@ test_that("Split a data object activity-based (activity.type = 'issues', sliding
 ## * * window numbers ------------------------------------------------------
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'commits')
+## Tests for split.data.activity.based(..., number.windows = ..., activity.type = 'commits')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'commits').", {
+test_that("Split a data object activity-based (number.windows = ..., activity.type = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -1624,7 +1616,7 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -1694,10 +1686,10 @@ test_that("Split a data object activity-based (activity.type = 'commits').", {
 
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'mails')
+## Tests for split.data.activity.based(..., number.windows = ..., activity.type = 'mails')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'mails').", {
+test_that("Split a data object activity-based (number.windows = ..., activity.type = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -1731,7 +1723,7 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
@@ -1800,10 +1792,10 @@ test_that("Split a data object activity-based (activity.type = 'mails').", {
 
 
 ##
-## Tests for split.data.activity.based(..., activity.type = 'issues')
+## Tests for split.data.activity.based(..., number.windows = ..., activity.type = 'issues')
 ##
 
-test_that("Split a data object activity-based (activity.type = 'issues').", {
+test_that("Split a data object activity-based (number.windows = ..., activity.type = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -1837,7 +1829,7 @@ test_that("Split a data object activity-based (activity.type = 'issues').", {
 
     ## This value should not change, so we compare it with the default, which is `c("v1-v2", "v2-v3")`.
     expect_equal(proj.conf$get.value("ranges"), c("v1-v2", "v2-v3"),
-                 info = "Splitting must mot modify the original ProjectConf.")
+                 info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
     expected.config = list(
