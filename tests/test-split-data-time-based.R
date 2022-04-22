@@ -1063,9 +1063,10 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
                  info = "Splitting must mot modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+
     expected.config = list(
         split.type = "time-based",
-        split.length = "151s (~2.52 minutes)",
+        split.length = "2M 31S",
         split.basis = "commits",
         split.sliding.window = FALSE,
         split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:01:30", "2016-07-12 16:04:01", "2016-07-12 16:06:33"),
@@ -1168,7 +1169,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
-        split.length = "92748111s (~2.94 years)",
+        split.length = "2y 0m 342d 23H 21M 51S",
         split.basis = "mails",
         split.sliding.window = FALSE,
         split.revisions = c("2004-10-09 18:38:13", "2007-09-18 06:00:04", "2010-08-26 17:21:55",
@@ -1276,7 +1277,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
-        split.length = "42984810s (~1.36 years)",
+        split.length = "1y 0m 132d 6H 13M 30S",
         split.basis = "issues",
         split.sliding.window = FALSE,
         split.revisions = c("2013-04-21 23:52:09", "2014-09-01 12:05:39", "2016-01-12 00:19:09", "2017-05-23 12:32:40"),

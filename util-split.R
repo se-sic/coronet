@@ -216,13 +216,17 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## add splitting information to project configuration
     project.conf.new$set.splitting.info(
         type = "time-based",
-        length = if (split.by.bins)
+        length = if (split.by.bins) {
             bins
-        else if (!is.null(number.windows))
-            as.character(get.time.period.by.amount(min(data[[split.basis]][["date"]]),
-                                                   max(data[[split.basis]][["date"]]),
-                                                   number.windows))
-        else time.period,
+        } else {
+            if (!is.null(number.windows)) {
+                as.character(lubridate::as.period(
+                    get.time.period.by.amount(min(data[[split.basis]][["date"]]),
+                                               max(data[[split.basis]][["date"]]),
+                                               number.windows)))
+            }
+            else time.period
+        },
         basis = split.basis,
         sliding.window = sliding.window,
         revisions = bins,
