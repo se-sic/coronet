@@ -14,6 +14,7 @@
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -63,27 +64,29 @@ compare.edge.and.vertex.lists = function(split.author.networks.one = NULL, split
         expect_identical(author.edges.one, author.edges.two)
         expect_identical(author.vertices.one, author.vertices.two)
 
-        bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
-        ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
-                         bipartite.edges.one[["date"]])
-        bipartite.edges.one = bipartite.edges.one[ordering, ]
-        rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
-        bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
-        ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
-                         bipartite.edges.two[["date"]])
-        bipartite.edges.two = bipartite.edges.two[ordering, ]
-        rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
-        bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.one[["name"]])
-        bipartite.vertices.one = bipartite.vertices.one[ordering, ]
-        rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
-        bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
-        ordering = order(bipartite.vertices.two[["name"]])
-        bipartite.vertices.two = bipartite.vertices.two[ordering, ]
-        rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
+        if (!is.null(split.bipartite.networks.one)) {
+            bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
+            ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
+                             bipartite.edges.one[["date"]])
+            bipartite.edges.one = bipartite.edges.one[ordering, ]
+            rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
+            bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
+            ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
+                             bipartite.edges.two[["date"]])
+            bipartite.edges.two = bipartite.edges.two[ordering, ]
+            rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
+            bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
+            ordering = order(bipartite.vertices.one[["name"]])
+            bipartite.vertices.one = bipartite.vertices.one[ordering, ]
+            rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
+            bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
+            ordering = order(bipartite.vertices.two[["name"]])
+            bipartite.vertices.two = bipartite.vertices.two[ordering, ]
+            rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
 
-        expect_identical(bipartite.edges.one, bipartite.edges.two)
-        expect_identical(bipartite.vertices.one, bipartite.vertices.two)
+            expect_identical(bipartite.edges.one, bipartite.edges.two)
+            expect_identical(bipartite.vertices.one, bipartite.vertices.two)
+        }
     }
 }
 
@@ -255,3 +258,56 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     "sliding window: FALSE" = list(test.sliding.window = FALSE),
     "sliding window: TRUE" = list(test.sliding.window = TRUE)
 ))
+
+## Vertex attribute order
+test_that("Compare networks after adding vertex attributes in different order", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    author.network = network.builder$get.author.network()
+    networks = split.network.time.based(author.network, number.windows = 2)
+
+    ## add commit count or email attribute
+    networks.commit.count = add.vertex.attribute.commit.count.author(networks, proj.data, aggregation.level = "range")
+    networks.email = add.vertex.attribute.author.email(networks, proj.data)
+
+    ## add the other attribute
+    networks.both.1 = add.vertex.attribute.author.email(networks.commit.count, proj.data)
+    networks.both.2 = add.vertex.attribute.commit.count.author(networks.email, proj.data, aggregation.level = "range")
+
+    ## Order of attributes is now different, while the content is the same.
+    ## The resulting networks are therefore not equal.
+    expect_false(compare(networks.both.1, networks.both.2)$equal)
+})
+
+## Edge attribute order
+test_that("Compare networks after adding edge attributes in different order", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+    net.conf$clear.edge.attributes()
+
+    ## construct two networks with the edge attributes specified in different orders
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(edge.attributes = c("author.name", "author.email")))
+    author.network = network.builder$get.author.network()
+    networks.1 = split.network.time.based(author.network, number.windows = 2)
+
+    network.builder$update.network.conf(updated.values = list(edge.attributes = c("author.email", "author.name")))
+    author.network = network.builder$get.author.network()
+    networks.2 = split.network.time.based(author.network, number.windows = 2)
+
+    ## edge attributes should be sorted, so the resulting networks should be the same
+    compare.edge.and.vertex.lists(networks.1, networks.2)
+})
