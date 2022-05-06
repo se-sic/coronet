@@ -403,7 +403,8 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
                     "2014-07-12 22:46:15-2016-07-12 16:06:33")
     )
 
-    expect_identical(expected, attributes(net.split[[1]]), info = "Splitting information.")
+    ## R 3.4 fails if this is expect_identical
+    expect_equal(expected, attributes(net.split[[1]]), info = "Splitting information.")
 
     ## check whether this works also with one network in the list (if not, an error will occur)
     net.split = split.networks.time.based(
