@@ -12,7 +12,6 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
