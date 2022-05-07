@@ -15,6 +15,7 @@
 - Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.3.0 in `install.R` and document it in the `README.md` (25fb86277c7cc15b94ca0327bff4bb7e818ca09b, 1bcbca96d6dbaa2d4a28e830da963604682eac70)
 - Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, 1b4072c7ec0e33a595e31d9e9d27bb5c133b1556)
 - Add check to `get.first.activity.data` to look for missing activity types. If no activities are in the RangeData, the function will print a warning and return an empty list (PR #220, #217, 5707517600c5579095c245b63c745d01cde02799, 42a4befb36e7fd9830924dc7fb2e04ecdf86e209,  d6424c03baff05562448df1b6b87828ca9a37b88, ca8a1b4c628261dcb471e1da3603439e75e4cc56, f6553c6106e5fec3837c6edb906a4d0960c5c5fb)
+- Fix setting split.length properly in splitting info of the project configuration when the length is determined by splitting with the number.windows parameter (PR #222, 2bab846be4ca34fdc45047ec2ddb610c7aeaa555, b467a018b1fbd70ba7848196f520a9202dc319b0)
 
 
 ## 4.0
