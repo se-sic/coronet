@@ -14,9 +14,13 @@
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Libraries ---------------------------------------------------------------
+
+requireNamespace("patrick")
 
 #' Construct the 'cross product' of two patrick::cases objects.
-#' Each case of the left object is combined with each case of the right,
+#' Each case of the first object is combined with each case of the second,
 #' test names are joined with a comma.
 #' The variable names in the two cases objects are assumed to be disjoint.
 #'
@@ -30,7 +34,7 @@ cases.cross.product = function (cases.1, cases.2) {
     ## Creating an empty tibble with matching types is not trivial.
     ## Therefore, the tibble is created with the first row of data.
     result = NULL
-    is.first = T
+    is.first = TRUE
 
     for (id.1 in seq_along(cases.1)){
         row.1 = cases.1[id.1,]
@@ -39,11 +43,10 @@ cases.cross.product = function (cases.1, cases.2) {
 
             test.name.1 = row.1[[".test_name"]]
             test.name.2 = row.2[[".test_name"]]
-            ## The new test name should reference both previous names.
-            ## Joining with a comma is an obvious option
+            ## The new test name consists of both previous names, joined with a comma.
             test.name.combined = paste(test.name.1, test.name.2, sep = ", ")
 
-            ## Select everthing from row.1 and everything but '.test_name' from row.2.
+            ## Select everything from 'row.1' and everything but '.test_name' from 'row.2'.
             row.combined = cbind(row.1, subset(row.2, select = -.test_name))
             ## Set the new combined test name
             row.combined[[".test_name"]] = test.name.combined
@@ -52,7 +55,7 @@ cases.cross.product = function (cases.1, cases.2) {
             ## Otherwise, we add a row.
             if (is.first) {
                 result = row.combined
-                is.first = F
+                is.first = FALSE
             } else {
                 result = tibble::add_case(result, row.combined)
             }
