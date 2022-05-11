@@ -24,6 +24,27 @@ requireNamespace("patrick")
 #' test names are joined with a comma.
 #' The variable names in the two cases objects are assumed to be disjoint.
 #'
+#' Example:
+#'
+#' joined.cases = cases.cross.product(patrick::cases(
+#'      "sliding window: FALSE" = list(test.sliding.window = FALSE),
+#'      "sliding window: TRUE" = list(test.sliding.window = TRUE)
+#' ), patrick::cases(
+#'      "PaStA: FALSE" = list(test.pasta = FALSE),
+#'      "PaStA: TRUE" = list(test.pasta = TRUE)
+#' ))
+#'
+#' yields the following tibble:
+#'
+#' .test_name test.sliding.window test.pasta
+#' 1 sliding window: FALSE, PaStA: FALSE               FALSE      FALSE
+#' 2  sliding window: FALSE, PaStA: TRUE               FALSE       TRUE
+#' 3  sliding window: TRUE, PaStA: FALSE                TRUE      FALSE
+#' 4   sliding window: TRUE, PaStA: TRUE                TRUE       TRUE
+#'
+#' Which can be used like this:
+#' patrick::with_parameters_test_that( {...}, joined.cases)
+#'
 #' @param cases.1 a patrick::cases object (or compatible tibble).
 #' @param cases.2 a patrick::cases object (or compatible tibble).
 #'
