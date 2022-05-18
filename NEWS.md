@@ -6,6 +6,7 @@
 
 ### Added
 - Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, 8868ff47900cf804553ec98683b736b07350fc64, bfbe4deb9d14faeed56bdf37f9f732e01c41af57, 0a23862c6308c27fe4f93835c3a4480eac03ca91, a7744b548ac5ab697a4eb3d71987ddedef180d59, 6a50fd15bdd6382fa3d868a21a41a4b0a36ffce7, 413e24c18532d06144ef996184192594a0893ca3, 39db3158e931fa627e974451ae66c57bd0b77b12, 1e4026def1995a23b3f42eac5eb343ee5a518798)
+- Add testing utillity file `tests/testing-utils.R` to make parameterized tests on the cross-product of multiple parameter values possible (d876f776439a52a3d34647d16a49ff39379e6da2, 9a1982051cc9849e07f6337ee8141d69def709db, 4dd5896d743c958bbcd6dda16feb50dc03c3a518)
 
 ### Changed/Improved
 - Add `mode` parameter to `metrics.vertex.degrees` to allow choosing between indegree, outdegree, and total (#219, ae14eb4cb83c6ab8f387886228cdf7ea6f3258c4)
