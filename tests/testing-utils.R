@@ -24,6 +24,8 @@ requireNamespace("patrick")
 #' test names are joined with a comma.
 #' The variable names in the two cases objects are assumed to be disjoint.
 #'
+#' Calls to this function can be nested to generate cross products of more cases.
+#'
 #' Example:
 #'
 #' joined.cases = cases.cross.product(patrick::cases(
@@ -57,9 +59,9 @@ cases.cross.product = function (cases.1, cases.2) {
     result = NULL
     is.first = TRUE
 
-    for (id.1 in seq_along(cases.1)){
+    for (id.1 in seq_len(nrow(cases.1))){
         row.1 = cases.1[id.1,]
-        for (id.2 in seq_along(cases.2)){
+        for (id.2 in seq_len(nrow(cases.2))){
             row.2 = cases.2[id.2,]
 
             test.name.1 = row.1[[".test_name"]]
