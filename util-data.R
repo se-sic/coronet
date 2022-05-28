@@ -24,6 +24,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -532,7 +533,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
 
                     ## remove duplicated revision set ids
-                    private$commits.unfiltered[["revision.set.id"]] = sapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
+                    private$commits.unfiltered[["revision.set.id"]] = lapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
                         return(unique(rev.id))
                     })
                 }
@@ -555,7 +556,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
                     ## remove duplicated revision set ids
-                    private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
+                    private$commits[["revision.set.id"]] = lapply(private$commits[["revision.set.id"]], function(rev.id) {
                         return(unique(rev.id))
                     })
                 }
@@ -587,7 +588,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
 
                     ## remove duplicated revision set ids
-                    private$mails.unfiltered[["revision.set.id"]] = sapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
+                    private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
                         return(unique(rev.id))
                     })
                 }
@@ -611,7 +612,7 @@ ProjectData = R6::R6Class("ProjectData",
                     private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
 
                     ## remove duplicated revision set ids
-                    private$mails[["revision.set.id"]] = sapply(private$mails[["revision.set.id"]], function(rev.id) {
+                    private$mails[["revision.set.id"]] = lapply(private$mails[["revision.set.id"]], function(rev.id) {
                         return(unique(rev.id))
                     })
                 }
@@ -1513,7 +1514,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
-                
+
                 ## if data are not read already, read them
                 if (!self$is.data.source.cached("gender")) {
                     ## get data (no assignment because we just want to trigger anything gender-related)
