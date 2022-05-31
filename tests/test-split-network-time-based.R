@@ -44,7 +44,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Tests for split.network.time.based(..., time.period = ...)
 ##
 
-test_that("Split a network time-based (time.period = ...).", {
+patrick::with_parameters_test_that("Split a network time-based (time.period = ...).", {
 
     ## time period
     time.period = "2 mins"
@@ -52,6 +52,7 @@ test_that("Split a network time-based (time.period = ...).", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -94,7 +95,10 @@ test_that("Split a network time-based (time.period = ...).", {
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ##
 ## Tests for split.networks.time.based(..., time.period = ...)
@@ -108,6 +112,7 @@ patrick::with_parameters_test_that("Split a list of networks time-based, ", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
     project.data = ProjectData$new(proj.conf)
@@ -138,9 +143,15 @@ patrick::with_parameters_test_that("Split a list of networks time-based, ", {
         sliding.window = test.sliding.window
     )
 
-}, patrick::cases(
-    "sliding window: FALSE" = list(test.sliding.window = FALSE),
-    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+}, cases.cross.product(
+    patrick::cases(
+        "sliding window: FALSE" = list(test.sliding.window = FALSE),
+        "sliding window: TRUE" = list(test.sliding.window = TRUE)
+    ),
+    patrick::cases(
+        "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+        "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+    )
 ))
 
 ## * * time period, sliding windows ----------------------------------------
@@ -149,7 +160,7 @@ patrick::with_parameters_test_that("Split a list of networks time-based, ", {
 ## Tests for split.network.time.based(..., time.period = ...) using sliding windows
 ##
 
-test_that("Split a network time-based (time.period = ... , sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a network time-based (time.period = ... , sliding.window = TRUE).", {
 
     ## time period
     time.period = "2 mins"
@@ -157,6 +168,7 @@ test_that("Split a network time-based (time.period = ... , sliding.window = TRUE
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -202,7 +214,10 @@ test_that("Split a network time-based (time.period = ... , sliding.window = TRUE
 
     expect_error(split.network.time.based(author.net, bins = bins, sliding.window = TRUE), info = "Illegal split.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * bins ----------------------------------------------------------------
 
@@ -219,6 +234,7 @@ patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -263,9 +279,15 @@ patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", 
     expect_error(split.network.time.based(author.net, bins = bins, sliding.window = test.sliding.window),
                  info = "Illegal split.")
 
-}, patrick::cases(
-    "sliding window (ignored): FALSE" = list(test.sliding.window = FALSE),
-    "sliding window (ignored): TRUE" = list(test.sliding.window = TRUE)
+}, cases.cross.product(
+    patrick::cases(
+        "sliding window (ignored): FALSE" = list(test.sliding.window = FALSE),
+        "sliding window (ignored): TRUE" = list(test.sliding.window = TRUE)
+    ),
+    patrick::cases(
+        "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+        "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+    )
 ))
 
 ## * * ranges --------------------------------------------------------------------
@@ -274,7 +296,7 @@ patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", 
 ## Test splitting network by ranges.
 ##
 
-test_that("Test splitting network by ranges", {
+patrick::with_parameters_test_that("Test splitting network by ranges", {
 
 
     ## bins
@@ -285,6 +307,7 @@ test_that("Test splitting network by ranges", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -303,7 +326,10 @@ test_that("Test splitting network by ranges", {
         return(igraph::identical_graphs(r, e))
     })
     expect_true(all(check.identical), info = "Network equality (split by ranges).")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * window numbers ---------------------------------------------------------
 
@@ -311,11 +337,12 @@ test_that("Test splitting network by ranges", {
 ## Tests for split.network.time.based(..., number.windows = ...)
 ##
 
-test_that("Split a network time-based with equal-sized windows (number.windows = ...).", {
+patrick::with_parameters_test_that("Split a network time-based with equal-sized windows (number.windows = ...).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -358,7 +385,10 @@ test_that("Split a network time-based with equal-sized windows (number.windows =
 
     expect_error(split.network.time.based(author.net, bins = bins), info = "Illegal split.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ##
 ## Tests for split.networks.time.based(..., number.windows = ...)
@@ -369,6 +399,7 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(simplify = FALSE, author.directed = TRUE))
     project.data = ProjectData$new(proj.conf)
@@ -413,7 +444,13 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
         sliding.window = test.sliding.window
     )
 
-}, patrick::cases(
-    "sliding window: FALSE" = list(test.sliding.window = FALSE),
-    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+}, cases.cross.product(
+    patrick::cases(
+        "sliding window: FALSE" = list(test.sliding.window = FALSE),
+        "sliding window: TRUE" = list(test.sliding.window = TRUE)
+    ),
+    patrick::cases(
+        "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+        "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+    )
 ))
