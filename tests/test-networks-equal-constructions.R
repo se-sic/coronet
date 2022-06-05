@@ -161,6 +161,33 @@ test_that("Compare networks after adding vertex attributes in different order", 
     expect_false(compare(networks.both.1, networks.both.2)$equal)
 })
 
+## Vertex attribute added twice
+test_that("Compare networks after adding vertex attribute once or twice", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    author.network = network.builder$get.author.network()
+    networks = split.network.time.based(author.network, number.windows = 2)
+
+    ## add email attribute
+    networks.email = add.vertex.attribute.author.email(networks, proj.data)
+
+    ## add email attribute again
+    networks.email.twice = add.vertex.attribute.author.email(networks.email, proj.data)
+
+    ## the attribute should only be contained once, so the resulting graphs should be equal
+    compare.edge.and.vertex.lists(networks.email, networks.email.twice)
+
+})
+
 ## Edge attribute order
 test_that("Compare networks after adding edge attributes in different order", {
     ## configuration object for the datapath
