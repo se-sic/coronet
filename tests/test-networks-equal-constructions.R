@@ -69,7 +69,9 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = test.author.relation, artifact.relation = test.artifact.relation))
+    net.conf$update.values(updated.values = list(author.relation = test.author.relation,
+                                                 artifact.relation = test.artifact.relation,
+                                                 author.all.authors = TRUE))
     net.conf$clear.edge.attributes()
 
     ## construct objects
@@ -84,7 +86,9 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
 
     ## split the networks
     split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = test.sliding.window)
+                                               time.period = splitting.period,
+                                               sliding.window = test.sliding.window,
+                                               remove.isolates = FALSE)
 
     ## separate the author and bipartite networks
     split.author.networks.one = split.networks[[1]]
@@ -95,7 +99,8 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
 
     ## split the network
     multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
-                                                   sliding.window = test.sliding.window)
+                                                   sliding.window = test.sliding.window,
+                                                   remove.isolates = FALSE)
 
     split.author.networks.two = list()
     split.bipartite.networks.two = list()
@@ -103,8 +108,8 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
 
     ## extract the author and bipartite networks from the splitted multi networks
     for (i in seq_along(multi.network.split)) {
-        author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
-        bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
+        author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
+        bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
 
         split.author.networks.two[[i]] = author.net
         split.bipartite.networks.two[[i]] = bipartite.net
