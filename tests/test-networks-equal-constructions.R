@@ -124,7 +124,10 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
                  test.splitting.period = '3 min'),
         "with author relation 'mail' and artifact relation 'mail'" =
             list(test.author.relation = 'mail', test.artifact.relation = 'mail',
-                 test.splitting.period = '1 year')
+                 test.splitting.period = '1 year'),
+        "with author relation 'cochange' and artifact relation 'mail'" =
+            list(test.author.relation = 'cochange', test.artifact.relation = 'mail',
+                 test.splitting.period = '3 year')
     ),
     patrick::cases(
         "sliding window: FALSE" = list(test.sliding.window = FALSE),
