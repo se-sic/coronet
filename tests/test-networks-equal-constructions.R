@@ -34,132 +34,49 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 #' Compare the edges and vertices of the corresponding networks constructed in different ways.
 #'
-#' @param split.author.networks.one the first list of split author networks
-#' @param split.author.networks.two the second list of split author networks
-#' @param split.bipartite.networks.one the first list of split bipartite networks
-#' @param split.bipartite.networks.two the second list of split bipartite networks
-compare.edge.and.vertex.lists = function(split.author.networks.one = NULL, split.author.networks.two = NULL,
-                                          split.bipartite.networks.one = NULL, split.bipartite.networks.two = NULL) {
+#' @param split.networks.one the first list of split networks
+#' @param split.networks.two the second list of split networks
+compare.edge.and.vertex.lists = function(split.networks.one, split.networks.two) {
 
-    for (i in seq_along(split.author.networks.one)) {
-        author.edges.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "edges")
-        ordering = order(author.edges.one[["from"]], author.edges.one[["to"]],
-                         author.edges.one[["date"]])
-        author.edges.one = author.edges.one[ordering, ]
-        rownames(author.edges.one) = seq_len(nrow(author.edges.one))
-        author.edges.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "edges")
-        ordering = order(author.edges.two[["from"]], author.edges.two[["to"]],
-                         author.edges.two[["date"]])
-        author.edges.two = author.edges.two[ordering, ]
-        rownames(author.edges.two) = seq_len(nrow(author.edges.two))
-        author.vertices.one = igraph::get.data.frame(split.author.networks.one[[i]], what = "vertices")
-        ordering = order(author.vertices.one[["name"]])
-        author.vertices.one = author.vertices.one[ordering, ]
-        rownames(author.vertices.one) = seq_len(nrow(author.vertices.one))
-        author.vertices.two = igraph::get.data.frame(split.author.networks.two[[i]], what = "vertices")
-        ordering = order(author.vertices.two[["name"]])
-        author.vertices.two = author.vertices.two[ordering, ]
-        rownames(author.vertices.two) = seq_len(nrow(author.vertices.two))
+    for (i in seq_along(split.networks.one)) {
+        edges.one = igraph::get.data.frame(split.networks.one[[i]], what = "edges")
+        ordering = order(edges.one[["from"]], edges.one[["to"]],
+                         edges.one[["date"]])
+        edges.one = edges.one[ordering, ]
+        rownames(edges.one) = seq_len(nrow(edges.one))
+        edges.two = igraph::get.data.frame(split.networks.two[[i]], what = "edges")
+        ordering = order(edges.two[["from"]], edges.two[["to"]],
+                         edges.two[["date"]])
+        edges.two = edges.two[ordering, ]
+        rownames(edges.two) = seq_len(nrow(edges.two))
+        vertices.one = igraph::get.data.frame(split.networks.one[[i]], what = "vertices")
+        ordering = order(vertices.one[["name"]])
+        vertices.one = vertices.one[ordering, ]
+        rownames(vertices.one) = seq_len(nrow(vertices.one))
+        vertices.two = igraph::get.data.frame(split.networks.two[[i]], what = "vertices")
+        ordering = order(vertices.two[["name"]])
+        vertices.two = vertices.two[ordering, ]
+        rownames(vertices.two) = seq_len(nrow(vertices.two))
 
-        expect_identical(author.edges.one, author.edges.two)
-        expect_identical(author.vertices.one, author.vertices.two)
-
-        if (!is.null(split.bipartite.networks.one)) {
-            bipartite.edges.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "edges")
-            ordering = order(bipartite.edges.one[["from"]], bipartite.edges.one[["to"]],
-                             bipartite.edges.one[["date"]])
-            bipartite.edges.one = bipartite.edges.one[ordering, ]
-            rownames(bipartite.edges.one) = seq_len(nrow(bipartite.edges.one))
-            bipartite.edges.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "edges")
-            ordering = order(bipartite.edges.two[["from"]], bipartite.edges.two[["to"]],
-                             bipartite.edges.two[["date"]])
-            bipartite.edges.two = bipartite.edges.two[ordering, ]
-            rownames(bipartite.edges.two) = seq_len(nrow(bipartite.edges.two))
-            bipartite.vertices.one = igraph::get.data.frame(split.bipartite.networks.one[[i]], what = "vertices")
-            ordering = order(bipartite.vertices.one[["name"]])
-            bipartite.vertices.one = bipartite.vertices.one[ordering, ]
-            rownames(bipartite.vertices.one) = seq_len(nrow(bipartite.vertices.one))
-            bipartite.vertices.two = igraph::get.data.frame(split.bipartite.networks.two[[i]], what = "vertices")
-            ordering = order(bipartite.vertices.two[["name"]])
-            bipartite.vertices.two = bipartite.vertices.two[ordering, ]
-            rownames(bipartite.vertices.two) = seq_len(nrow(bipartite.vertices.two))
-
-            expect_identical(bipartite.edges.one, bipartite.edges.two)
-            expect_identical(bipartite.vertices.one, bipartite.vertices.two)
-        }
+        expect_identical(edges.one, edges.two)
+        expect_identical(vertices.one, vertices.two)
     }
 }
 
-patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
-                                    with author/artifact relation 'cochange', ", {
+patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
-
-    ## construct objects
-    proj.data = ProjectData$new(project.conf = proj.conf)
-    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
-
-    splitting.period = "3 min"
-
-    ## network generation 1
-    author.network = network.builder$get.author.network()
-    bipartite.network = network.builder$get.bipartite.network()
-
-    ## split the networks
-    split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = test.sliding.window)
-
-    ## separate the author and bipartite networks
-    split.author.networks.one = split.networks[[1]]
-    split.bipartite.networks.one = split.networks[[2]]
-
-    ## network generation 2
-    multi.network = network.builder$get.multi.network()
-
-    ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
-                                                   sliding.window = test.sliding.window)
-
-    split.author.networks.two = list()
-    split.bipartite.networks.two = list()
-
-    ## extract the author and bipartite networks from the splitted multi networks
-    for (i in seq_along(multi.network.split)) {
-        author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
-        bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
-
-        split.author.networks.two[[i]] = author.net
-        split.bipartite.networks.two[[i]] = bipartite.net
-    }
-
-    ## compare the edges and the vertices of all the author and bipartite networks that were previously
-    ## created with different approaches
-    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
-                                   split.bipartite.networks.one, split.bipartite.networks.two)
-}, patrick::cases(
-    "sliding window: FALSE"  = list(test.sliding.window = FALSE),
-    "sliding window: TRUE" = list(test.sliding.window = TRUE)
-))
-
-patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
-                                    with author relation 'mail' and artifact relation 'cochange', ", {
-
-    ## configuration object for the datapath
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-
-    net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "mail", artifact.relation = "cochange"))
+    net.conf$update.values(updated.values = list(author.relation = test.author.relation, artifact.relation = test.artifact.relation))
     net.conf$clear.edge.attributes()
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
 
-    splitting.period = "3 min"
+    splitting.period = test.splitting.period
 
     ## network generation 1
     author.network = network.builder$get.author.network()
@@ -195,68 +112,24 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
 
     ## compare the edges and the vertices of all the author and bipartite networks that were previously
     ## created with different approaches
-    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
-                                   split.bipartite.networks.one, split.bipartite.networks.two)
-}, patrick::cases(
-    "sliding window: FALSE" = list(test.sliding.window = FALSE),
-    "sliding window: TRUE" = list(test.sliding.window = TRUE)
-))
-
-patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways
-                                    with author and artifact relation 'mail', ", {
-
-    ## configuration object for the datapath
-    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-
-    net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
-    net.conf$clear.edge.attributes()
-
-    ## construct objects
-    proj.data = ProjectData$new(project.conf = proj.conf)
-    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
-
-    splitting.period = "3 year"
-
-    ## network generation 1
-    author.network = network.builder$get.author.network()
-    bipartite.network = network.builder$get.bipartite.network()
-
-    ## split the networks
-    split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period, sliding.window = test.sliding.window)
-
-    ## separate the author and bipartite networks
-    split.author.networks.one = split.networks[[1]]
-    split.bipartite.networks.one = split.networks[[2]]
-
-    ## network generation 2
-    multi.network = network.builder$get.multi.network()
-
-    ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
-                                                   sliding.window = test.sliding.window)
-
-    split.author.networks.two = list()
-    split.bipartite.networks.two = list()
-
-
-    ## extract the author and bipartite networks from the splitted multi networks
-    for (i in seq_along(multi.network.split)) {
-        author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = TRUE)
-        bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]])
-
-        split.author.networks.two[[i]] = author.net
-        split.bipartite.networks.two[[i]] = bipartite.net
-    }
-
-    ## compare the edges and the vertices of all the author and bipartite networks that were previously
-    ## created with different approaches
-    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two,
-                                   split.bipartite.networks.one, split.bipartite.networks.two)
-}, patrick::cases(
-    "sliding window: FALSE" = list(test.sliding.window = FALSE),
-    "sliding window: TRUE" = list(test.sliding.window = TRUE)
+    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two)
+    compare.edge.and.vertex.lists(split.bipartite.networks.one, split.bipartite.networks.two)
+}, cases.cross.product(
+    patrick::cases(
+        "with author relation 'cochange' and artifact relation 'cochange'" =
+            list(test.author.relation = 'cochange', test.artifact.relation = 'cochange',
+                 test.splitting.period = '3 min'),
+        "with author relation 'mail' and artifact relation 'cochange'" =
+            list(test.author.relation = 'mail', test.artifact.relation = 'cochange',
+                 test.splitting.period = '3 min'),
+        "with author relation 'mail' and artifact relation 'mail'" =
+            list(test.author.relation = 'mail', test.artifact.relation = 'mail',
+                 test.splitting.period = '1 year')
+    ),
+    patrick::cases(
+        "sliding window: FALSE" = list(test.sliding.window = FALSE),
+        "sliding window: TRUE" = list(test.sliding.window = TRUE)
+    )
 ))
 
 ## Vertex attribute order
