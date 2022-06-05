@@ -78,7 +78,9 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     proj.data = ProjectData$new(project.conf = proj.conf)
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
 
-    splitting.period = test.splitting.period
+    ## splitting by time.period would require different periods for different network relations
+    ## to produce reasonable results in reasonable time
+    number.windows = 5
 
     ## network generation 1
     author.network = network.builder$get.author.network()
@@ -86,7 +88,7 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
 
     ## split the networks
     split.networks = split.networks.time.based(networks = list(author.network, bipartite.network),
-                                               time.period = splitting.period,
+                                               number.windows = number.windows,
                                                sliding.window = test.sliding.window,
                                                remove.isolates = FALSE)
 
@@ -98,7 +100,7 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     multi.network = network.builder$get.multi.network()
 
     ## split the network
-    multi.network.split = split.network.time.based(network = multi.network, time.period = splitting.period,
+    multi.network.split = split.network.time.based(network = multi.network, number.windows = number.windows,
                                                    sliding.window = test.sliding.window,
                                                    remove.isolates = FALSE)
 
@@ -120,19 +122,17 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two)
     compare.edge.and.vertex.lists(split.bipartite.networks.one, split.bipartite.networks.two)
 }, cases.cross.product(
-    patrick::cases(
-        "with author relation 'cochange' and artifact relation 'cochange'" =
-            list(test.author.relation = 'cochange', test.artifact.relation = 'cochange',
-                 test.splitting.period = '3 min'),
-        "with author relation 'mail' and artifact relation 'cochange'" =
-            list(test.author.relation = 'mail', test.artifact.relation = 'cochange',
-                 test.splitting.period = '3 min'),
-        "with author relation 'mail' and artifact relation 'mail'" =
-            list(test.author.relation = 'mail', test.artifact.relation = 'mail',
-                 test.splitting.period = '1 year'),
-        "with author relation 'cochange' and artifact relation 'mail'" =
-            list(test.author.relation = 'cochange', test.artifact.relation = 'mail',
-                 test.splitting.period = '3 year')
+    cases.cross.product(
+        patrick::cases(
+            "with author relation 'cochange'" = list(test.author.relation = 'cochange'),
+            "with author relation 'mail'" = list(test.author.relation = 'mail'),
+            "with author relation 'issue'" = list(test.author.relation = 'issue')
+        ),
+        patrick::cases(
+            "artifact relation 'cochange'" = list(test.artifact.relation = 'cochange'),
+            "artifact relation 'mail'" = list(test.artifact.relation = 'mail'),
+            "artifact relation 'issue'" = list(test.artifact.relation = 'issue')
+        )
     ),
     patrick::cases(
         "sliding window: FALSE" = list(test.sliding.window = FALSE),
