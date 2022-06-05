@@ -20,6 +20,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1517,9 +1518,10 @@ extract.artifact.network.from.network = function(network, remove.isolates = FALS
 #' **Note**: This function throws an error when the edge attribute \code{type} is missing.
 #'
 #' @param network the (multi) network to reduce
+#' @param remove.isolates whether to remove isolated vertices during extraction [default: TRUE]
 #'
 #' @return the bipartite-edge-induced subgraph of \code{network}
-extract.bipartite.network.from.network = function(network) {
+extract.bipartite.network.from.network = function(network, remove.isolates = TRUE) {
 
     ## check whether there are vertices in the network, otherwise skip the extraction
     if (igraph::vcount(network) == 0) {
@@ -1533,7 +1535,7 @@ extract.bipartite.network.from.network = function(network) {
     }
 
     ## only retain all bipartite edges and induced vertices
-    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
+    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER], delete.vertices = remove.isolates)
 
     return(bip.network)
 }
