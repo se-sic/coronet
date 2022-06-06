@@ -140,6 +140,90 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     )
 ))
 
+patrick::with_parameters_test_that("Compare the author, artifact and bipartite network constructed in two ways", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = test.author.relation,
+                                                 artifact.relation = test.artifact.relation,
+                                                 author.all.authors = TRUE))
+    net.conf$clear.edge.attributes()
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## splitting by time.period would require different periods for different network relations
+    ## to produce reasonable results in reasonable time
+    number.windows = 5
+
+    ## network generation 1
+    bipartite.network = network.builder$get.bipartite.network()
+    artifact.network = network.builder$get.artifact.network()
+    author.network = network.builder$get.author.network()
+
+    ## split the networks
+    split.networks = split.networks.time.based(networks = list(bipartite.network, artifact.network,
+                                                               author.network),
+                                               number.windows = number.windows,
+                                               sliding.window = test.sliding.window,
+                                               remove.isolates = FALSE)
+
+    ## separate the bipartite and artifact networks
+    split.bipartite.networks.one = split.networks[[1]]
+    split.artifact.networks.one = split.networks[[2]]
+    split.author.networks.one = split.networks[[3]]
+
+    ## network generation 2
+    multi.network = network.builder$get.multi.network()
+
+    ## split the network
+    multi.network.split = split.network.time.based(network = multi.network, number.windows = number.windows,
+                                                   sliding.window = test.sliding.window,
+                                                   remove.isolates = FALSE)
+
+    split.bipartite.networks.two = list()
+    split.artifact.networks.two = list()
+    split.author.networks.two = list()
+
+
+    ## extract the bipartite and artifact networks from the splitted multi networks
+    for (i in seq_along(multi.network.split)) {
+        bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
+        artifact.net = extract.artifact.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
+        author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
+
+        split.bipartite.networks.two[[i]] = bipartite.net
+        split.artifact.networks.two[[i]] = artifact.net
+        split.author.networks.two[[i]] = author.net
+    }
+
+    ## compare the edges and the vertices of all the bipartite and artifact networks that were previously
+    ## created with different approaches
+    compare.edge.and.vertex.lists(split.bipartite.networks.one, split.bipartite.networks.two)
+    compare.edge.and.vertex.lists(split.artifact.networks.one, split.artifact.networks.two)
+    compare.edge.and.vertex.lists(split.author.networks.one, split.author.networks.two)
+}, cases.cross.product(
+    cases.cross.product(
+        patrick::cases(
+            "with author relation 'cochange'" = list(test.author.relation = 'cochange'),
+            "with author relation 'mail'" = list(test.author.relation = 'mail'),
+            "with author relation 'issue'" = list(test.author.relation = 'issue')
+        ),
+        patrick::cases(
+            "artifact relation 'cochange'" = list(test.artifact.relation = 'cochange'),
+            "artifact relation 'mail'" = list(test.artifact.relation = 'mail'),
+            "artifact relation 'issue'" = list(test.artifact.relation = 'issue')
+        )
+    ),
+    patrick::cases(
+        "sliding window: FALSE" = list(test.sliding.window = FALSE),
+        "sliding window: TRUE" = list(test.sliding.window = TRUE)
+    )
+))
+
 ## Vertex attribute order
 test_that("Compare networks after adding vertex attributes in different order", {
     ## configuration object for the datapath
