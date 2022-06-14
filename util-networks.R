@@ -1518,10 +1518,10 @@ extract.artifact.network.from.network = function(network, remove.isolates = FALS
 #' **Note**: This function throws an error when the edge attribute \code{type} is missing.
 #'
 #' @param network the (multi) network to reduce
-#' @param remove.isolates whether to remove isolated vertices during extraction [default: TRUE]
+#' @param remove.isolates whether to remove isolated vertices during extraction [default: FALSE]
 #'
 #' @return the bipartite-edge-induced subgraph of \code{network}
-extract.bipartite.network.from.network = function(network, remove.isolates = TRUE) {
+extract.bipartite.network.from.network = function(network, remove.isolates = FALSE) {
 
     ## check whether there are vertices in the network, otherwise skip the extraction
     if (igraph::vcount(network) == 0) {
