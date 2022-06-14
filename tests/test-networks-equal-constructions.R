@@ -63,6 +63,13 @@ compare.edge.and.vertex.lists = function(split.networks.one, split.networks.two)
     }
 }
 
+## Test that splitting a multi network, then extracting networks and
+## extracting networks first, then using split.networks.time.based results in
+## the same networks.
+## Note that this is only the case if both the author and the bipartite network are included,
+## as otherwise, the multi network might cover a different time period and therefore split differently.
+## Including the artifact network is optional, as every edge in the artifact network
+## will have a corresponding edge in the author network.
 patrick::with_parameters_test_that("Compare the bipartite and author network constructed in two ways", {
 
     ## configuration object for the datapath
