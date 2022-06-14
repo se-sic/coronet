@@ -1596,7 +1596,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             private$issues.unfiltered = data
-            private$issues = NULL
+            private$issues = create.empty.issues.list()
         },
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
