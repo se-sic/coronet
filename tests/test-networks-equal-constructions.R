@@ -114,8 +114,7 @@ patrick::with_parameters_test_that("Compare the bipartite and author network con
     split.author.networks.two = list()
     split.bipartite.networks.two = list()
 
-
-    ## extract the author and bipartite networks from the splitted multi networks
+    ## extract the author and bipartite networks from the split multi networks
     for (i in seq_along(multi.network.split)) {
         author.net = extract.author.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
         bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
@@ -196,7 +195,7 @@ patrick::with_parameters_test_that("Compare the author, artifact and bipartite n
     split.author.networks.two = list()
 
 
-    ## extract the bipartite and artifact networks from the splitted multi networks
+    ## extract the bipartite and artifact networks from the split multi networks
     for (i in seq_along(multi.network.split)) {
         bipartite.net = extract.bipartite.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
         artifact.net = extract.artifact.network.from.network(multi.network.split[[i]], remove.isolates = FALSE)
