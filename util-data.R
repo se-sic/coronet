@@ -70,11 +70,12 @@ DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
 )
 ## Yields the getters associated with additional data sources, e.g. author data.
 DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
-    "authors"         = "get.authors",
-    "commit.messages" = "get.commit.messages",
-    "synchronicity"   = "get.synchronicity",
-    "pasta"           = "get.pasta",
-    "gender"          = "get.gender"
+    "authors"                 = "get.authors",
+    "commit.messages"         = "get.commit.messages",
+    "synchronicity"           = "get.synchronicity",
+    "pasta"                   = "get.pasta",
+    "gender"                  = "get.gender",
+    "custom.event.timestamps" = "get.custom.event.timestamps"
 )
 
 #' Applies a function to list keys
@@ -118,7 +119,8 @@ CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                          "synchronicity.time.window",
                                          "commits.locked",
                                          "issues.locked",
-                                         "mails.locked")
+                                         "mails.locked",
+                                         "custom.event.timestamps")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -174,6 +176,8 @@ ProjectData = R6::R6Class("ProjectData",
         pasta.commits = create.empty.pasta.list(), # data.frame
         ## timestamps of mail, issue and commit data
         data.timestamps = data.frame(start = numeric(0), end = numeric(0)), # data.frame
+        ## custom timestamps for splitting
+        custom.event.timestamps = list(),
 
         ## * * commit filtering --------------------------------------------
 
@@ -865,6 +869,10 @@ ProjectData = R6::R6Class("ProjectData",
                         private$update.synchronicity.data()
                     }
                 }
+                ## if the 'custom.event.timestamps.file' parameter has changed, we want to clear them to trigger a re-read.
+                if (entry == "custom.event.timestamps.file") {
+                    self$clear.custom.event.timestamps()
+                }
             }
         },
 
@@ -907,6 +915,10 @@ ProjectData = R6::R6Class("ProjectData",
                     } else {
                         private$update.synchronicity.data()
                     }
+                }
+                ## if the 'custom.event.timestamps.file' parameter has changed, we want to clear them to trigger a re-read.
+                if (c("custom.event.timestamps.file") %in% params) {
+                    self$clear.custom.event.timestamps()
                 }
             }
         },
@@ -1696,7 +1708,8 @@ ProjectData = R6::R6Class("ProjectData",
                     "authors" = "authors",
                     "commit.messages" = "commit.messages",
                     "synchronicity" = "synchronicity",
-                    "pasta" = "pasta"
+                    "pasta" = "pasta",
+                    "custom.event.timestamps" = "custom.event.timestamps"
                 )
             )
             sources = self$get.cached.data.sources.internal(source.type)
@@ -1727,7 +1740,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender","custom.event.timestamps")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
@@ -2087,6 +2100,37 @@ ProjectData = R6::R6Class("ProjectData",
             data = unique(data)
 
             return (data)
+        },
+
+        #' Get the list of custom event timestamps,
+        #' read from a file configured by the 'custom.event.timestamps.file'
+        #' parameter in the project configuration.
+        #'
+        #' @return the list of custom event timestamps.
+        get.custom.event.timestamps = function() {
+            if (!self$is.data.source.cached("custom.event.timestamps")) {
+                file.name = self$get.project.conf.entry("custom.event.timestamps.file")
+                if(is.na(file.name)) {
+                    logging::logwarn("get.custom.event.timestamps: No file configured")
+                    return (list())
+                }
+                timestamps = read.custom.event.timestamps(self$get.data.path(), file.name)
+                self$set.custom.event.timestamps(timestamps)
+            }
+            return (private$custom.event.timestamps)
+        },
+        #' Set the list of custom event timestamps.
+        #' The list will be sorted.
+        #'
+        #' @param  custom.event.timestamps the list of timestamps to set
+        set.custom.event.timestamps = function(custom.event.timestamps) {
+            private$custom.event.timestamps = custom.event.timestamps[
+                order(unlist(get.date.from.string(custom.event.timestamps)))
+            ]
+        },
+        #' Clear existing custom event timestamps, for example to cause them to be re-read from a file.
+        clear.custom.event.timestamps = function() {
+            private$custom.event.timestamps = list()
         }
     )
 )
