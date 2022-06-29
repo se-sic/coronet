@@ -96,7 +96,7 @@ cases.cross.product = function (cases.1, cases.2) {
 #'
 #' @param data a list of dataframes
 #'
-#' @returns the list of dataframes, but without row names
+#' @return the list of dataframes, but without row names
 remove.row.names.from.data = function(data) {
     return(
         lapply(data, function (df) {
@@ -111,7 +111,7 @@ remove.row.names.from.data = function(data) {
 #'
 #' @param list.of.range.data.objects a list of range data objects
 #'
-#' @returns the list of range data objects, but without row names for their data frames
+#' @return the list of range data objects, but without row names for their data frames
 remove.row.names.from.data.for.list.of.range.data.objects = function(list.of.range.data.objects) {
     return(lapply(list.of.range.data.objects, remove.row.names.from.data))
 }
