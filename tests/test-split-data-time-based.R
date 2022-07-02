@@ -143,8 +143,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -261,8 +261,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 }, patrick::cases(
@@ -369,8 +369,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -495,8 +495,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -636,8 +636,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -754,8 +754,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -851,8 +851,8 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... )
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 }, patrick::cases(
@@ -951,8 +951,8 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 }, patrick::cases(
@@ -1074,8 +1074,8 @@ patrick::with_parameters_test_that("Test splitting data by ranges", {
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 }, patrick::cases(
@@ -1184,8 +1184,8 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -1302,8 +1302,8 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 }, patrick::cases(
@@ -1410,8 +1410,8 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 

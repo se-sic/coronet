@@ -106,12 +106,12 @@ remove.row.names.from.data = function(data) {
     )
 }
 
-#' Remove the row names in a list of range data objects, which are lists of dataframes.
+#' Remove the row names of all dataframes in a list of lists of dataframes, for example a list of range data objects.
 #' @seealso remove.row.names.from.data
 #'
-#' @param list.of.range.data.objects a list of range data objects
+#' @param list.of.lists.of.dfs a list of lists of dataframes
 #'
-#' @return the list of range data objects, but without row names for their data frames
-remove.row.names.from.data.for.list.of.range.data.objects = function(list.of.range.data.objects) {
-    return(lapply(list.of.range.data.objects, remove.row.names.from.data))
+#' @return the list of lists of dataframes, but without row names for the data frames
+remove.row.names.from.inner.list.of.dfs = function(list.of.lists.of.dfs) {
+    return(lapply(list.of.lists.of.dfs, remove.row.names.from.data))
 }

@@ -142,8 +142,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
@@ -213,8 +213,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges for too-large activity amount (activity.amount).")
 }, patrick::cases(
@@ -345,8 +345,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -416,8 +416,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 }, patrick::cases(
@@ -540,8 +540,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -611,8 +611,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 }, patrick::cases(
@@ -730,8 +730,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
@@ -801,8 +801,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges for too-large activity amount (activity.amount).")
 }, patrick::cases(
@@ -931,8 +931,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (activity.amount).")
 
@@ -1093,8 +1093,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -1164,8 +1164,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 }, patrick::cases(
@@ -1318,8 +1318,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
@@ -1389,8 +1389,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (too-large activity amount).")
 }, patrick::cases(
@@ -1493,8 +1493,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 
@@ -1620,8 +1620,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 
@@ -1747,8 +1747,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
-    expected.data = remove.row.names.from.data.for.list.of.range.data.objects(expected.data)
-    results.data = remove.row.names.from.data.for.list.of.range.data.objects(results.data)
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
 
     expect_equal(results.data, expected.data, info = "Data for ranges (number.windows).")
 
