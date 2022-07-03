@@ -20,6 +20,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -259,7 +260,7 @@ test_that("Read and parse the gender data.", {
 
     ## read the actual data
     gender.data.read = read.gender(proj.conf$get.value("datapath.gender"))
-    
+
     ## build the expected data.frame
     gender.data.expected = data.frame(author.name = c("Björn", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max", "Olaf", "Thomas", "udo"),
                                       gender = c("male", NA, "male", "male", "male", "male", "female", "male", "female"))
@@ -285,6 +286,25 @@ test_that("Read the raw bot data.", {
 
     ## check the results
     expect_identical(bot.data.read, bot.data.expected, info = "Bot data.")
+})
+
+test_that("Read custom event timestamps.", {
+
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("custom.event.timestamps.file","custom-events.list")
+
+    ## read the actual data
+    timestamps = read.custom.event.timestamps(proj.conf$get.value("datapath"), proj.conf$get.value("custom.event.timestamps.file"))
+
+    timestamps.expected = list(
+        'Test event 1' = "2016-07-12 15:00:00",
+        'Test event 2' = "2016-07-12 16:00:00",
+        'Test event 3' = "2016-07-12 16:05:00",
+        'Test event 4' = "2016-10-05 09:00:00"
+    )
+
+    expect_identical(timestamps, timestamps.expected, "Custom timestamps.")
 })
 
 test_that("Read and parse the pasta data.", {

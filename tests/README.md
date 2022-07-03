@@ -16,6 +16,7 @@ We have two test projects you can use when writing your tests:
      * Commit messages
      * Pasta
      * Synchronicity
+     * Custom event timestamps in `custom-events.list`
 2. - Casestudy: `test_empty`
    - Selection process: `testing`
    - Contains the following data:
