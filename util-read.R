@@ -869,12 +869,16 @@ read.custom.event.timestamps = function(data.path, file.name) {
         logging::logwarn("There are no custom timestamps available at the given path.")
         logging::logwarn("Datapath: %s", data.path)
 
-        # return a dataframe with the correct columns but zero rows
+        ## return a dataframe with the correct columns but zero rows
         return(list())
     }
     timestamps = as.list(custom.event.timestamps.table[[2]])
     names(timestamps) = custom.event.timestamps.table[[1]]
 
+    ## Sort the timestamps
+    timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+
+    logging::logdebug("read.custom.event.timestamps: finished.")
     return (timestamps)
 }
 
