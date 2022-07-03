@@ -55,6 +55,9 @@ requireNamespace("lubridate") # for date conversion
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
+#' @param use.custom.events logical indicating whether custom event timestamps stored in project.data should be used.
+#'                       When used, all other parameters except project.data, split.basis and project.conf.new are ignored.
+#'                       [default: FALSE]
 #' @param project.conf.new the new project config to construct the \code{RangeData} objects.
 #'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
 #'                         [default: NULL]
@@ -62,7 +65,7 @@ requireNamespace("lubridate") # for date conversion
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                 sliding.window = FALSE, project.conf.new = NULL) {
+                                 sliding.window = FALSE, use.custom.events = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
@@ -93,6 +96,11 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     names(additional.data) = additional.data.sources
 
 
+    ## use.custom.events given (ignore all other options)
+    if (use.custom.events) {
+        number.windows = NULL # ignore
+        bins = unlist(project.data$get.custom.event.timestamps())
+    }
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
         ## reset bins for the later algorithm
