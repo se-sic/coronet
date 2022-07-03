@@ -18,6 +18,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -154,7 +155,7 @@ test_that("Compare two ProjectData objects on non-empty data", {
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (issues.filtered).")
 
     ## test 'equals' on gender
-    proj.data.two$get.gender()    
+    proj.data.two$get.gender()
     expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (gender).")
 
     proj.data.one$get.gender()
@@ -418,6 +419,33 @@ test_that("Filter bots from mail data", {
     expect_true(all(filtered.mails[["author.name"]] != "Thomas"))
     ## there are now 15 mails remaining, since 2 mails have been removed during filtering
     expect_equal(nrow(filtered.mails), 15)
+})
+
+test_that("Re-read custom events after config change", {
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data = ProjectData$new(proj.conf)
+
+    expect_identical(proj.data$get.custom.event.timestamps(), list(), "Unconfigured timestamps.")
+
+    proj.data$set.project.conf.entry("custom.event.timestamps.file", "revisions.list")
+    timestamps.revisions = proj.data$get.custom.event.timestamps()
+    timestamps.revisions.expected = list(
+        v1 = "2016-07-12 15:58:08",
+        v2 = "2016-07-12 16:00:45",
+        v3 = "2016-07-12 16:06:32"
+    )
+    expect_identical(timestamps.revisions, timestamps.revisions.expected, "Custom timestamps.")
+
+    proj.data$set.project.conf.entry("custom.event.timestamps.file", "custom-events.list")
+    timestamps.events = proj.data$get.custom.event.timestamps()
+    timestamps.events.expected = list(
+        'Test event 1' = "2016-07-12 15:00:00",
+        'Test event 2' = "2016-07-12 16:00:00",
+        'Test event 3' = "2016-07-12 16:05:00",
+        'Test event 4' = "2016-10-05 09:00:00"
+    )
+
+    expect_identical(timestamps.events, timestamps.events.expected, "Custom timestamps.")
 })
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
