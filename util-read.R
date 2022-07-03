@@ -876,7 +876,9 @@ read.custom.event.timestamps = function(data.path, file.name) {
     names(timestamps) = custom.event.timestamps.table[[1]]
 
     ## Sort the timestamps
-    timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+    if (length(timestamps) != 0) {
+        timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+    }
 
     logging::logdebug("read.custom.event.timestamps: finished.")
     return (timestamps)

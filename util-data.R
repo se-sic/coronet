@@ -2124,9 +2124,14 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param  custom.event.timestamps the list of timestamps to set
         set.custom.event.timestamps = function(custom.event.timestamps) {
-            private$custom.event.timestamps = custom.event.timestamps[
-                order(unlist(get.date.from.string(custom.event.timestamps)))
-            ]
+            if(length(custom.event.timestamps) != 0){
+                private$custom.event.timestamps = custom.event.timestamps[
+                    order(unlist(get.date.from.string(custom.event.timestamps)))
+                ]
+            }
+            else {
+                private$custom.event.timestamps = custom.event.timestamps
+            }
         },
         #' Clear existing custom event timestamps, for example to cause them to be re-read from a file.
         clear.custom.event.timestamps = function() {
