@@ -87,3 +87,31 @@ cases.cross.product = function (cases.1, cases.2) {
 
     return(result)
 }
+
+#' Remove the row names of each data frame in a list of dataframes.
+#' Useful for comparing data where row names are allowed to change.
+#'
+#' Note that removing row names causes them to be set to increasing numbers starting at one,
+#' so this function may have to be called on both lists involved in a comparison.
+#'
+#' @param data a list of dataframes
+#'
+#' @return the list of dataframes, but without row names
+remove.row.names.from.data = function(data) {
+    return(
+        lapply(data, function (df) {
+            row.names(df) = NULL
+            return(df)
+        })
+    )
+}
+
+#' Remove the row names of all dataframes in a list of lists of dataframes, for example a list of range data objects.
+#' @seealso remove.row.names.from.data
+#'
+#' @param list.of.lists.of.dfs a list of lists of dataframes
+#'
+#' @return the list of lists of dataframes, but without row names for the data frames
+remove.row.names.from.inner.list.of.dfs = function(list.of.lists.of.dfs) {
+    return(lapply(list.of.lists.of.dfs, remove.row.names.from.data))
+}

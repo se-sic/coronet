@@ -48,11 +48,12 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Tests for split.data.time.based(..., split.basis = 'commits')
 ##
 
-test_that("Split a data object time-based (split.basis = 'commits').", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -117,9 +118,10 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(23,41,45:46), ]
         ),
         mails = list(
+            ## comments indicate row names when pasta is not configured
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[rownames(data$mails) == 16, ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 17, ]
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[15, ], # rownames(jata$mails) == 16
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[16, ] #rownames(data$mails) == 17
         ),
         pasta = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$pasta,
@@ -141,20 +143,27 @@ test_that("Split a data object time-based (split.basis = 'commits').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., split.basis = 'mails')
 ##
 
-test_that("Split a data object time-based (split.basis = 'mails').", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -224,10 +233,11 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29, 37:40, 43:49), ]
         ),
         mails = list(
-            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
-            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[rownames(data$mails) %in% 3:12, ],
+            ## comments indicate row names when pasta is not configured
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[1:2, ], # rownames(data$mails) %in% 1:2
+            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$mails[0, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
@@ -251,19 +261,26 @@ test_that("Split a data object time-based (split.basis = 'mails').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., split.basis = 'issues')
 ##
 
-test_that("Split a data object time-based (split.basis = 'issues').", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -329,7 +346,7 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
         ),
         mails = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[rownames(data$mails) %in% 14:17, ],
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # when pasta is not configured: rownames(data$mails) %in% 14:17
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         pasta = list(
@@ -352,9 +369,15 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * time period, sliding windows ----------------------------------------
 
@@ -362,11 +385,12 @@ test_that("Split a data object time-based (split.basis = 'issues').", {
 ## Tests for split.data.time.based(..., split.basis = 'commits'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis = 'commits', sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'commits', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -441,11 +465,12 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(23,41,45,46), ]
         ),
         mails = list(
+            ## comments indicate row names when pasta is not configured
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
             "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$mails[0, ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[rownames(data$mails) == 16, ],
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$mails[rownames(data$mails) %in% c(16, 17), ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 17, ]
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[15, ], # rownames(data$mails) == 16
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$mails[15:16, ], # rownames(data$mails) %in% c(16,17)
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[16, ] # rownames(data$mails) == 17
         ),
         pasta = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$pasta,
@@ -470,20 +495,27 @@ test_that("Split a data object time-based (split.basis = 'commits', sliding.wind
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., split.basis = 'mails'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis = 'mails', sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'mails', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -568,13 +600,14 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29, 37:40, 43:49), ]
         ),
         mails = list(
-            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[rownames(data$mails) %in% 1:2, ],
+            ## comments indicate row names when pasta is not configured
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[1:2, ], # rownames(data$mails) %in% 1:2
             "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$mails[0, ],
-            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[rownames(data$mails) %in% 3:12, ],
-            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$mails[rownames(data$mails) %in% 3:12, ],
+            "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
+            "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$mails[0, ],
             "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$mails[0, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
@@ -603,20 +636,27 @@ test_that("Split a data object time-based (split.basis = 'mails', sliding.window
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., split.basis = 'issues'), using sliding windows
 ##
 
-test_that("Split a data object time-based (split.basis = 'issues', sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = 'issues', sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -687,10 +727,11 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:36, 37:49), ]
         ),
         mails = list(
+            ## comments indicate row names when pasta is not configured
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$mails[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[rownames(data$mails) %in% 14:17, ],
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # rownames(data$mails) %in% 14:17
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$mails[13:16, ] # rownames(data$mails) %in% 14:17
         ),
         pasta = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$pasta,
@@ -713,9 +754,15 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * bins ----------------------------------------------------------------
 
@@ -723,11 +770,12 @@ test_that("Split a data object time-based (split.basis = 'issues', sliding.windo
 ## Tests for split.data.time.based(..., bins = ...)
 ##
 
-test_that("Split a data object time-based (bins = ... ).", {
+patrick::with_parameters_test_that("Split a data object time-based (bins = ... ).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -803,18 +851,25 @@ test_that("Split a data object time-based (bins = ... ).", {
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ##
 ## Tests for split.data.time.based(..., bins = ...), sliding windows parameter ignored
 ##
 
-test_that("Split a data object time-based (bins = ... , sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a data object time-based (bins = ... , sliding.window = TRUE).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -896,8 +951,14 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * ranges --------------------------------------------------------------
 
@@ -905,10 +966,11 @@ test_that("Split a data object time-based (bins = ... , sliding.window = TRUE)."
 ## Test splitting data by network names.
 ##
 
-test_that("Test splitting data by networks", {
+patrick::with_parameters_test_that("Test splitting data by networks", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
@@ -965,16 +1027,20 @@ test_that("Test splitting data by networks", {
         })
     }
     lapply(aggregation.level, test.each.network)
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ##
 ## Test splitting data by ranges.
 ##
 
-test_that("Test splitting data by ranges", {
+patrick::with_parameters_test_that("Test splitting data by ranges", {
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
 
@@ -1008,8 +1074,14 @@ test_that("Test splitting data by ranges", {
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * window numbers ---------------------------------------------------------
 
@@ -1017,11 +1089,12 @@ test_that("Test splitting data by ranges", {
 ## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'commits')
 ##
 
-test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'commits').", {
+patrick::with_parameters_test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'commits').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -1089,7 +1162,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$mails[0, ],
             "2016-07-12 16:01:30-2016-07-12 16:04:01" = data$mails[0, ],
-            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$mails[rownames(data$mails) == 16 | rownames(data$mails) == 17, ]
+            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$mails[15:16, ] # when pasta is not configured: rownames(data$mails) %in% 16:17
         ),
         pasta = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$pasta,
@@ -1111,20 +1184,27 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'mails')
 ##
 
-test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'mails').", {
+patrick::with_parameters_test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'mails').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -1194,10 +1274,11 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
             "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(14:15, 20:22, 27:29, 37:40, 43:49), ]
         ),
         mails = list(
-            "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$mails[rownames(data$mails) %in% 1:2, ],
-            "2007-09-18 06:00:04-2010-08-26 17:21:55" = data$mails[rownames(data$mails) %in% 3:12, ],
+            ## comments indicate row names when pasta is not configured
+            "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$mails[1:2, ],
+            "2007-09-18 06:00:04-2010-08-26 17:21:55" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$mails[0, ],
-            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$mails[rownames(data$mails) %in% 13:17, ]
+            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$pasta,
@@ -1221,19 +1302,26 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 
 ##
 ## Tests for split.data.time.based(..., number.windows = ..., split.basis = 'issues')
 ##
 
-test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'issues').", {
+patrick::with_parameters_test_that("Split a data object time-based with equal-sized windows (number.windows = ..., split.basis = 'issues').", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -1300,7 +1388,7 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
         mails = list(
             "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$mails[0, ],
             "2014-09-01 12:05:39-2016-01-12 00:19:09" = data$mails[0, ],
-            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$mails[rownames(data$mails) %in% 14:17, ]
+            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$mails[13:16, ] # when pasta is not configured: rownames(data$mails) %in% 13:17
         ),
         pasta = list(
             "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$pasta,
@@ -1322,6 +1410,12 @@ test_that("Split a data object time-based with equal-sized windows (number.windo
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
 
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
+
     expect_equal(results.data, expected.data, info = "Data for ranges.")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))

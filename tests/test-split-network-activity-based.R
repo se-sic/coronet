@@ -41,11 +41,12 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Tests for split.network.activity.based(...)
 ##
 
-test_that("Split a network activity-based (number.edges, number.windows).", {
+patrick::with_parameters_test_that("Split a network activity-based (number.edges, number.windows).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -125,7 +126,10 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
         info = "Error expected (number.windows (2))."
     )
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * sliding windows
 
@@ -133,11 +137,12 @@ test_that("Split a network activity-based (number.edges, number.windows).", {
 ## Tests for split.network.activity.based(...) using sliding windows
 ##
 
-test_that("Split a network activity-based (number.edges, number.windows, sliding.window = TRUE).", {
+patrick::with_parameters_test_that("Split a network activity-based (number.edges, number.windows, sliding.window = TRUE).", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -222,13 +227,17 @@ test_that("Split a network activity-based (number.edges, number.windows, sliding
         info = "Error expected (number.windows (2))."
     )
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
-test_that("Split a network activity-based (number.edges, number.windows, sliding.window = TRUE), continued.", {
+patrick::with_parameters_test_that("Split a network activity-based (number.edges, number.windows, sliding.window = TRUE), continued.", {
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = "cochange", simplify = FALSE))
     project.data = ProjectData$new(proj.conf)
@@ -265,4 +274,7 @@ test_that("Split a network activity-based (number.edges, number.windows, sliding
     })
     expect_true(all(check.identical), info = "Network equality (number.edges (1)).")
 
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))

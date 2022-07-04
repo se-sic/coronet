@@ -130,7 +130,7 @@ test_that("Extraction of sub-networks", {
     ##
 
     ## construct original bipartite network
-    bip.net.built = extract.bipartite.network.from.network(base.net)
+    bip.net.built = extract.bipartite.network.from.network(base.net, remove.isolates = TRUE)
 
     ## construct expected bipartite network (by removing unipartite edges and isolate vertices)
     bip.net.expected = igraph::delete.edges(base.net, igraph::E(base.net)[1:9])
@@ -169,7 +169,7 @@ test_that("Extraction of sub-networks", {
                  info = "extract bipartite network from edgeless network")
     ## the extracted network should be empty then (but with all attributes!)
     expect_true(igraph::identical_graphs(
-        extract.bipartite.network.from.network(edgeless.net),
+        extract.bipartite.network.from.network(edgeless.net, remove.isolates = TRUE),
         base.net - igraph::vertices(seq_len(igraph::vcount(base.net)))
     ), info = "extracted bipartite network is empty for edgeless base network")
 })

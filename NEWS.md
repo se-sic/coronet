@@ -11,6 +11,7 @@
 ### Changed/Improved
 - Add `mode` parameter to `metrics.vertex.degrees` to allow choosing between indegree, outdegree, and total (#219, ae14eb4cb83c6ab8f387886228cdf7ea6f3258c4)
 - Adjust `.drone.yml` CI config to prevent pipeline fails: `R` version `3.3` is not tested any more as some packages are not available any more for this `R` version (ca6b474d773c045dd88a19aee905283a373df0a6). Also another docker container in the CI pipeline is used as there are problems with the previously used docker instance (937f797ee04b78a087ea84043d075e7ca7558d70)
+- Add `remove.isolates` parameter to `extract.bipartite.network.from.network`. The default value is `FALSE`, chosen to be consistent with `get.bipartite.network` and other network extraction methods. Previously, isolates were always removed (PR #226, b58394bde421e19eab3470f2266dfff9a7a2dca9, 079a256861a7621118b68bf09ba2dc53efc5f70e)
 
 ### Fixed
 - Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.3.0 in `install.R` and document it in the `README.md` (25fb86277c7cc15b94ca0327bff4bb7e818ca09b, 1bcbca96d6dbaa2d4a28e830da963604682eac70)
