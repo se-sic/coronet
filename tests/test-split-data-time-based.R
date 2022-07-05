@@ -966,11 +966,12 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
 ## Tests for split.data.time.based(..., use.custom.events = TRUE)
 ##
 
-test_that("Split a data object time-based ( use.custom.events = TRUE, ... ).", {
+patrick::with_parameters_test_that("Split a data object time-based ( use.custom.events = TRUE, ... ).", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
     net.conf = NetworkConf$new()
 
@@ -1036,9 +1037,10 @@ test_that("Split a data object time-based ( use.custom.events = TRUE, ... ).", {
             "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 30, 41, 42), ]
         ),
         mails = list(
-            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$mails[rownames(data$mails) %in% 14:15, ],
-            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$mails[rownames(data$mails) %in% 16, ],
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$mails[rownames(data$mails) %in% 17, ]
+            ## comments indicate rownames when pasta is not configured
+            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$mails[13:14, ], # rownames(data$mails) %in% 14:15
+            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$mails[15, ], # rownames(data$mails) %in% 16
+            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$mails[16, ] # rownames(data$mails) %in% 17
         ),
         pasta = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$pasta,
@@ -1059,8 +1061,13 @@ test_that("Split a data object time-based ( use.custom.events = TRUE, ... ).", {
         pasta = lapply(results, function(cf.data) cf.data$get.pasta()),
         synchronicity = lapply(results, function(cf.data) cf.data$get.synchronicity())
     )
+    expected.data = remove.row.names.from.inner.list.of.dfs(expected.data)
+    results.data = remove.row.names.from.inner.list.of.dfs(results.data)
     expect_equal(results.data, expected.data, info = "Data for ranges.")
-})
+}, patrick::cases(
+    "pasta, synchronicity: FALSE" = list(test.pasta = FALSE, test.synchronicity = FALSE),
+    "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
+))
 
 ## * * ranges --------------------------------------------------------------
 
