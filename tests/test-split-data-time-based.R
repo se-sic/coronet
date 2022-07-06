@@ -994,7 +994,8 @@ patrick::with_parameters_test_that("Split a data object time-based ( use.custom.
     expected = c(
         "2016-07-12 15:00:00-2016-07-12 16:00:00",
         "2016-07-12 16:00:00-2016-07-12 16:05:00",
-        "2016-07-12 16:05:00-2016-10-05 09:00:00"
+        "2016-07-12 16:05:00-2016-08-08 00:00:00",
+        "2016-08-08 00:00:00-2016-10-05 09:00:00"
     )
     lapply(results, function(res) {
         expect_equal(res$get.project.conf()$get.value("ranges"), expected, info = "Time ranges.")
@@ -1007,10 +1008,10 @@ patrick::with_parameters_test_that("Split a data object time-based ( use.custom.
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
-        split.length = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-10-05 09:00:00"),
+        split.length = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
         split.basis = NULL,
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-10-05 09:00:00"),
+        split.revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
         split.revision.dates = NULL
     )
     lapply(results, function(res) {
@@ -1024,33 +1025,39 @@ patrick::with_parameters_test_that("Split a data object time-based ( use.custom.
         commits = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$commits[1, ],
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$commits[2, ],
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$commits[3:8, ]
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$commits[3:8, ],
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$commits[0, ]
         ),
         commit.messages = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$commit.messages,
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$commit.messages,
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$commit.messages
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$commit.messages,
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$commit.messages
         ),
         issues = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$issues[rownames(data$issues) %in% c(20:22, 27, 28, 37:39), ],
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$issues[rownames(data$issues) %in% c(14, 15, 29, 40, 45:49), ],
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$issues[rownames(data$issues) %in% c(16:19, 23:25, 30, 41, 42), ]
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$issues[rownames(data$issues) %in% c(16:19, 23:24, 41, 42), ],
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$issues[rownames(data$issues) %in% c(25, 30), ]
         ),
         mails = list(
             ## comments indicate rownames when pasta is not configured
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$mails[13:14, ], # rownames(data$mails) %in% 14:15
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$mails[15, ], # rownames(data$mails) %in% 16
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$mails[16, ] # rownames(data$mails) %in% 17
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$mails[16, ], # rownames(data$mails) %in% 17
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$mails[0, ]
         ),
         pasta = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$pasta,
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$pasta,
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$pasta
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$pasta,
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$pasta
         ),
         synchronicity = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$synchronicity,
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$synchronicity,
-            "2016-07-12 16:05:00-2016-10-05 09:00:00" = data$synchronicity
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$synchronicity,
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$synchronicity
         )
     )
     results.data = list(
