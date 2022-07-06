@@ -45,18 +45,18 @@ requireNamespace("lubridate") # for date conversion
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days" [default: "3 months"]
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' and
-#'             'sliding.window' do not make sense then either. [default: NULL]
+#'             *exclusive* manner). If set, the \code{time.period} parameter is ignored; consequently, \code{split.basis} and
+#'             \code{sliding.window} do not make sense then either. [default: NULL]
 #' @param number.windows the number of consecutive data objects to get from this function, implying equally
-#'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
-#'                       consequently, 'split.basis' and 'sliding.window' do not make sense then either.
+#'                       time-sized windows for all ranges. If set, the \code{time.period} and \code{bins} parameters are ignored;
+#'                       consequently, \code{sliding.window} does not make sense then either.
 #'                       [default: NULL]
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
-#' @param use.custom.events logical indicating whether custom event timestamps stored in project.data should be used.
-#'                       When used, all other parameters except project.data, split.basis and project.conf.new are ignored.
+#' @param use.custom.events logical indicating whether custom event timestamps stored in \code{project.data} should be used.
+#'                       When used, all other parameters except \code{project.data} and \code{project.conf}.new are ignored.
 #'                       [default: FALSE]
 #' @param project.conf.new the new project config to construct the \code{RangeData} objects.
 #'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.

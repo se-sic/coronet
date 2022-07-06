@@ -177,7 +177,7 @@ ProjectData = R6::R6Class("ProjectData",
         ## timestamps of mail, issue and commit data
         data.timestamps = data.frame(start = numeric(0), end = numeric(0)), # data.frame
         ## custom timestamps for splitting
-        custom.event.timestamps = list(),
+        custom.event.timestamps = list(), # list
 
         ## * * commit filtering --------------------------------------------
 
@@ -1740,7 +1740,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender","custom.event.timestamps")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender", "custom.event.timestamps")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
@@ -2103,10 +2103,10 @@ ProjectData = R6::R6Class("ProjectData",
         },
 
         #' Get the list of custom event timestamps,
-        #' read from a file configured by the 'custom.event.timestamps.file'
+        #' read from a file configured by the \code{custom.event.timestamps.file}
         #' parameter in the project configuration.
         #'
-        #' @return the list of custom event timestamps.
+        #' @return the list of custom event timestamps
         get.custom.event.timestamps = function() {
             if (!self$is.data.source.cached("custom.event.timestamps")) {
                 file.name = self$get.project.conf.entry("custom.event.timestamps.file")
@@ -2119,6 +2119,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
             return (private$custom.event.timestamps)
         },
+
         #' Set the list of custom event timestamps.
         #' The list will be sorted.
         #'
@@ -2133,6 +2134,7 @@ ProjectData = R6::R6Class("ProjectData",
                 private$custom.event.timestamps = custom.event.timestamps
             }
         },
+
         #' Clear existing custom event timestamps, for example to cause them to be re-read from a file.
         clear.custom.event.timestamps = function() {
             private$custom.event.timestamps = list()

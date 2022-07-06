@@ -120,6 +120,8 @@ Conf = R6::R6Class("Conf",
                         existing = TRUE,
                         updatable = TRUE,
                         type = class(value) %in% attribute[["type"]],
+                        ## if 'allowed' is not defined for this attribute, any
+                        ## value of the correct type should be accepted.
                         allowed = is.null(attribute[["allowed"]]) ||
                             if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
                                 value <= attribute[["allowed"]]

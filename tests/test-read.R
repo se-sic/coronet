@@ -292,16 +292,16 @@ test_that("Read custom event timestamps.", {
 
     ## configuration object for the datapath
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
-    proj.conf$update.value("custom.event.timestamps.file","custom-events.list")
+    proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
 
     ## read the actual data
     timestamps = read.custom.event.timestamps(proj.conf$get.value("datapath"), proj.conf$get.value("custom.event.timestamps.file"))
 
     timestamps.expected = list(
-        'Test event 1' = "2016-07-12 15:00:00",
-        'Test event 2' = "2016-07-12 16:00:00",
-        'Test event 3' = "2016-07-12 16:05:00",
-        'Test event 4' = "2016-10-05 09:00:00"
+        "Test event 1" = "2016-07-12 15:00:00",
+        "Test event 2" = "2016-07-12 16:00:00",
+        "Test event 3" = "2016-07-12 16:05:00",
+        "Test event 4" = "2016-10-05 09:00:00"
     )
 
     expect_identical(timestamps, timestamps.expected, "Custom timestamps.")

@@ -855,6 +855,12 @@ create.empty.synchronicity.list = function() {
 
 ## * Custom timestamps for splitting
 
+#' Read custom event timestamps from a file in \code{.list} format.
+#'
+#' @param data.path the path of the directory containing the file
+#' @param file.name the name of the file
+#'
+#' @return the read timestamps
 read.custom.event.timestamps = function(data.path, file.name) {
     logging::logdebug("read.custom.event.timestamps: starting.")
 
@@ -862,14 +868,14 @@ read.custom.event.timestamps = function(data.path, file.name) {
 
     ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
     custom.event.timestamps.table = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
-                                 encoding = "UTF-8"), silent = TRUE)
+                                        encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
     if (inherits(custom.event.timestamps.table, "try-error")) {
         logging::logwarn("There are no custom timestamps available at the given path.")
         logging::logwarn("Datapath: %s", data.path)
 
-        ## return a dataframe with the correct columns but zero rows
+        ## return an empty list
         return(list())
     }
     timestamps = as.list(custom.event.timestamps.table[[2]])
