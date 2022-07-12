@@ -120,7 +120,8 @@ CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                          "commits.locked",
                                          "issues.locked",
                                          "mails.locked",
-                                         "custom.event.timestamps")
+                                         "custom.event.timestamps",
+                                         "custom.event.timestamps.locked")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -2108,7 +2109,7 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of custom event timestamps
         get.custom.event.timestamps = function() {
-            if (!self$is.data.source.cached("custom.event.timestamps")) {
+            if (!self$is.data.source.cached("custom.event.timestamps") && !private$project.conf$get.value("custom.event.timestamps.locked")) {
                 file.name = self$get.project.conf.entry("custom.event.timestamps.file")
                 if(is.na(file.name)) {
                     logging::logwarn("get.custom.event.timestamps: No file configured")

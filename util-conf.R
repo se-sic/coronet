@@ -457,6 +457,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 default = NA,
                 type = "character",
                 allowed.number = 1
+            ),
+            custom.event.timestamps.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
             )
         ),
 

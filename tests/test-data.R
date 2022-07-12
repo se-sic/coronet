@@ -447,6 +447,24 @@ test_that("Re-read custom events after config change", {
     )
 
     expect_identical(timestamps.events, timestamps.events.expected, "Custom timestamps.")
+
+    proj.data$set.project.conf.entry("custom.event.timestamps.file", "nonexistent.file")
+    expect_identical(proj.data$get.custom.event.timestamps(), list(), "Empty timestamps from invalid file")
+
+    proj.data$set.project.conf.entry("custom.event.timestamps.file", "custom-events.list")
+    timestamps.events = proj.data$get.custom.event.timestamps()
+    timestamps.events.expected = list(
+        "Test event 1" = "2016-07-12 15:00:00",
+        "Test event 2" = "2016-07-12 16:00:00",
+        "Test event 3" = "2016-07-12 16:05:00",
+        "Test event 4" = "2016-08-08",
+        "Test event 5" = "2016-10-05 09:00:00"
+    )
+    expect_identical(timestamps.events, timestamps.events.expected, "Custom timestamps.")
+
+    proj.data$set.project.conf.entry("custom.event.timestamps.locked", TRUE)
+    proj.data$clear.custom.event.timestamps()
+    expect_identical(proj.data$get.custom.event.timestamps(), list(), "cleared and locked timestamps")
 })
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
