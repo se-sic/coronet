@@ -467,7 +467,7 @@ read.authors = function(data.path) {
     ## get file name of commit data
     file = file.path(data.path, "authors.list")
 
-    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    ## read data.frame from disk (as expected from save.list.to.file)
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 

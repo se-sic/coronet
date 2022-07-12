@@ -17,9 +17,12 @@ We have two test projects you can use when writing your tests:
      * Pasta
      * Synchronicity
      * Custom event timestamps in `custom-events.list`
+     * Revisions
 2. - Casestudy: `test_empty`
    - Selection process: `testing`
    - Contains the following data:
      * Authors
+     * Revisions
 
-Please note, that there cannot be a project without author data as in this case, `coronet` stops when reading the data. Everything else can be empty.
+Please note that all projects must have author and revision data as otherwise, `coronet` stops when reading the data.
+Everything else can be empty.
