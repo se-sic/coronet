@@ -197,6 +197,7 @@ There are two distinguishable types of data sources that are both handled by the
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
+    * Custom event timestamps, which have to be specified manually (see also the parameter `custom.event.timestamps.file` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
 
 
  The important difference is that the *main data sources* are used internally to construct artifact vertices in relevant types of networks. Additionally, these data sources can be used as a basis for splitting `ProjectData` in a time-based or activity-based manner – obtaining `RangeData` instances as a result (see file `split.R` and the contained functions). Thus, `RangeData` objects contain only data of a specific period of time.
@@ -589,6 +590,13 @@ There is no way to update the entries, except for the revision-based parameters.
     * The time-window (in days) to use for synchronicity data if enabled by `synchronicity = TRUE`
     * [1, *5*, 10, 15]
     * **Note**: If, at least, one artifact in a commit has been edited by more than one developer within the configured time window, then the whole commit is considered to be synchronous.
+- `custom.event.timestamps.file`:
+    * The file to read custom timestamps from.
+    * **Note** It might make sense to keep several lists of timestamps for different purposes. Therefore, this is the only data source where the file name can be configured.
+    * **Note** This parameter does not have a default value.
+- `custom.event.timestamps.locked`:
+    * Lock custom event timestamps to prevent them from being read if empty or not yet present when calling the getter.
+    * [`TRUE`, *`FALSE`*]
 
 ### NetworkConf
 
