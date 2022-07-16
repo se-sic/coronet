@@ -55,9 +55,6 @@ requireNamespace("lubridate") # for date conversion
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
-#' @param use.custom.events logical indicating whether custom event timestamps stored in \code{project.data} should be used.
-#'                       When used, all other parameters except \code{project.data} and \code{project.conf}.new are ignored.
-#'                       [default: FALSE]
 #' @param project.conf.new the new project config to construct the \code{RangeData} objects.
 #'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
 #'                         [default: NULL]
@@ -65,7 +62,7 @@ requireNamespace("lubridate") # for date conversion
 #' @return the list of RangeData objects, each referring to one time period
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                 sliding.window = FALSE, use.custom.events = FALSE, project.conf.new = NULL) {
+                                 sliding.window = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
@@ -95,12 +92,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     })
     names(additional.data) = additional.data.sources
 
-
-    ## use.custom.events given (ignore all other options)
-    if (use.custom.events) {
-        number.windows = NULL # ignore
-        bins = unlist(project.data$get.custom.event.timestamps())
-    }
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
         ## reset bins for the later algorithm
@@ -250,6 +241,30 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     ## return list of RangeData objects
     return(cf.data)
+}
+
+#' Split project data by timestamps
+#'
+#' Splits project data into ranges, where the first range starts with the first timestamp
+#' and the last range ends with the last timestamp.
+#'
+#' If timestamps are not provided, the custom event timestamps in \code{project.data} are
+#' used instead.
+#'
+#' @param project.data the *Data object from which the data is retrieved
+#' @param bins a vector of timestamps [default: NULL]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
+#'
+#' @return the list of RangeData objects, each referring to one time period
+split.data.time.based.by.timestamps = function(project.data, bins = NULL, project.conf.new = NULL) {
+
+    if (is.null(bins)) { # bins were not provided, use custom timestamps from project
+        bins = unlist(project.data$get.custom.event.timestamps())
+    }
+
+    return (split.data.time.based(project.data, bins = bins, project.conf.new));
 }
 
 #' Split project data in activity-based ranges as specified
