@@ -963,10 +963,10 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
 ## * * custom event timestamps ----------------------------------------------------------------
 
 ##
-## Tests for split.data.time.based(..., use.custom.events = TRUE)
+## Tests for split.data.time.based.by.timestamps
 ##
 
-patrick::with_parameters_test_that("Split a data object time-based ( use.custom.events = TRUE, ... ).", {
+patrick::with_parameters_test_that("Split a data object time-based using custom event timestamps.", {
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
@@ -986,9 +986,8 @@ patrick::with_parameters_test_that("Split a data object time-based ( use.custom.
         synchronicity = project.data$get.synchronicity()
     )
 
-    ## split data
-    results = split.data.time.based(project.data, use.custom.events = TRUE,
-                                    split.basis = "mails")
+    ## split data by custom event timestamps
+    results = split.data.time.based.by.timestamps(project.data)
 
     ## check time ranges
     expected = c(
