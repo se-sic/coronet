@@ -1741,7 +1741,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender", "custom.event.timestamps")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta",
+                                        "gender", "custom.event.timestamps")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
@@ -2109,7 +2110,9 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @return the list of custom event timestamps
         get.custom.event.timestamps = function() {
-            if (!self$is.data.source.cached("custom.event.timestamps") && !private$project.conf$get.value("custom.event.timestamps.locked")) {
+            if (!self$is.data.source.cached("custom.event.timestamps")
+                && !private$project.conf$get.value("custom.event.timestamps.locked")) {
+
                 file.name = self$get.project.conf.entry("custom.event.timestamps.file")
                 if(is.na(file.name)) {
                     logging::logwarn("get.custom.event.timestamps: No file configured")

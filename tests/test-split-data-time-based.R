@@ -1007,10 +1007,12 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
     ## test that the config contains the correct splitting information
     expected.config = list(
         split.type = "time-based",
-        split.length = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
+        split.length = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00",
+                         "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
         split.basis = NULL,
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
+        split.revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00",
+                            "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
         split.revision.dates = NULL
     )
     lapply(results, function(res) {
