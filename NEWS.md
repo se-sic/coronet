@@ -7,7 +7,7 @@
 ### Added
 - Incorporate custom event timestamps, i.e., add a configuration entry to the project configuration that allows specifying a file from which timestamps can be read, as well as an entry that allows locking this data; add corresponding functions `get.custom.event.timestamps`, `set.custom.event.timestamps` and `clear.custom.event.timestamps` (PR #227, 0aa342430ad3b354b9cf954dbe0838b056cf328a, 0f237d03913d2c940a008ea8fe84ba44817e77ea, c1803982357a3272b108f60cb1c976e3c2d9b1e5,
 54e089db0ceea07db94914d02655a7f1f67d3117, 54673f8f88ca276ba06396116d802425093544d4, c5f5403430d55ceff6b6d5acbbca1ae9c5c231e2)
-- Add function `split.data.time.based.by.timestamps` to allow using custom event timestamps for splitting. Alternatively, timestamps can be specified manually (PR #227, 051db9a5b81bf0d77805355611ef9f1a61f15b18, 5b8515f97da4a24f971be453589595d259ab1fa1, c5f5403430d55ceff6b6d5acbbca1ae9c5c231e2, 43f23a83bc66e485fea371f958bbb2ce3ddbd8d0)
+- Add function `split.data.time.based.by.timestamps` to allow using custom event timestamps for splitting. Alternatively, timestamps can be specified manually (PR #227, 5b8515f97da4a24f971be453589595d259ab1fa1, 43f23a83bc66e485fea371f958bbb2ce3ddbd8d0)
 
 ### Changed/Improved
 
