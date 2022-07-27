@@ -22,6 +22,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -71,6 +72,8 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 proj.conf$update.value("commits.filter.base.artifact", TRUE)
+## specify that custom event timestamps should be read from 'custom-events.list'
+proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
 proj.conf$print()
 
 ## initialize network configuration
@@ -128,6 +131,7 @@ x.data$get.data.path()
 x.data$group.artifacts.by.data.column("mails", "author.name")
 x.data$group.artifacts.by.data.column("commits", "hash")
 x.data$filter.bots(x.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE, filter.bots = FALSE))
+x.data$get.custom.event.timestamps()
 
 ## * Network construction --------------------------------------------------
 
@@ -286,6 +290,15 @@ print(run.lapply(cf.data, "get.class.name"))
 
 mybins = c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30")
 cf.data = split.data.time.based(x.data, bins = mybins)
+for (range in names(cf.data)) {
+    y.data = cf.data[[range]]
+    y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+    plot.network(y$get.bipartite.network())
+}
+print(run.lapply(cf.data, "get.class.name"))
+
+## we can also use custom event timestamps for splitting
+cf.data = split.data.time.based.by.timestamps(x.data)
 for (range in names(cf.data)) {
     y.data = cf.data[[range]]
     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)

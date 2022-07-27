@@ -25,6 +25,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -119,7 +120,9 @@ Conf = R6::R6Class("Conf",
                         existing = TRUE,
                         updatable = TRUE,
                         type = class(value) %in% attribute[["type"]],
-                        allowed =
+                        ## if 'allowed' is not defined for this attribute, any
+                        ## value of the correct type should be accepted.
+                        allowed = is.null(attribute[["allowed"]]) ||
                             if (attribute[["type"]] == "numeric" && length(attribute[["allowed"]]) == 1) {
                                 value <= attribute[["allowed"]]
                             } else {
@@ -449,6 +452,17 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
+            ),
+            custom.event.timestamps.file = list(
+                default = NA,
+                type = "character",
+                allowed.number = 1
+            ),
+            custom.event.timestamps.locked = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
             )
         ),
 
@@ -580,7 +594,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ## construct file name for configuration
             conf.file = private$construct.conf.path(data, selection.process, casestudy, tagging)
 
-            ## load case-study confuration from given file
+            ## load case-study configuration from given file
             logging::loginfo("Attempting to load configuration file: %s", conf.file)
             conf = yaml::yaml.load_file(conf.file)
 
@@ -604,7 +618,7 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$datapath.gender = private$get.results.folder(data, selection.process, casestudy, "gender")
             ## store path to issue data
             conf$datapath.issues = private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
-            
+
             ## READ REVISIONS META-DATA
 
             ## read revisions file
