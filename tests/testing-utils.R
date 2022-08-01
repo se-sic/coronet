@@ -18,6 +18,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("patrick")
+requireNamespace("igraph")
 
 #' Construct the 'cross product' of two patrick::cases objects.
 #' Each case of the first object is combined with each case of the second,
@@ -129,6 +130,6 @@ compare.networks = function(network.expected, network.actual) {
     actual.edges = igraph::as_data_frame(network.actual, what = "edges")
     actual.vertices = igraph::as_data_frame(network.actual, what = "vertices")
 
-    expect_identical(expected.edges, actual.edges, info = "Multi network edges")
-    expect_identical(expected.vertices, actual.vertices, info = "Multi network vertices")
+    expect_identical(expected.edges, actual.edges, info = "network edges")
+    expect_identical(expected.vertices, actual.vertices, info = "network vertices")
 }
