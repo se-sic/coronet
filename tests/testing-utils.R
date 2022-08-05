@@ -18,6 +18,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("patrick")
+requireNamespace("igraph")
 
 #' Construct the 'cross product' of two patrick::cases objects.
 #' Each case of the first object is combined with each case of the second,
@@ -114,4 +115,21 @@ remove.row.names.from.data = function(data) {
 #' @return the list of lists of dataframes, but without row names for the data frames
 remove.row.names.from.inner.list.of.dfs = function(list.of.lists.of.dfs) {
     return(lapply(list.of.lists.of.dfs, remove.row.names.from.data))
+}
+
+#' Compare edges and vertices of two networks
+#'
+#' @param network.expected the expected network
+#' @param network.actual the actual network
+compare.networks = function(network.expected, network.actual) {
+    ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
+    # expect_true(igraph::identical_graphs(network.expected, network.actual))
+    expected.edges = igraph::as_data_frame(network.expected, what = "edges")
+    expected.vertices = igraph::as_data_frame(network.expected, what = "vertices")
+
+    actual.edges = igraph::as_data_frame(network.actual, what = "edges")
+    actual.vertices = igraph::as_data_frame(network.actual, what = "vertices")
+
+    expect_identical(expected.edges, actual.edges, info = "network edges")
+    expect_identical(expected.vertices, actual.vertices, info = "network vertices")
 }

@@ -1172,6 +1172,9 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' Merges a list vertex data frame and merges a list of edge
 #' data frames
 #'
+#' Note that identical vertices are merged, whereas identical edges are not.
+#' This will lead to duplicated edges if you merge a network with itself.
+#'
 #' @param vertex.data the list of vertex data frames, may be \code{NULL}
 #' @param edge.data the list of edge data frames, may be \code{NULL}
 #'
@@ -1204,6 +1207,9 @@ merge.network.data = function(vertex.data, edge.data) {
 }
 
 #' Merges a list of networks to one big network
+#'
+#' Note that identical vertices are merged, whereas identical edges are not.
+#' This will lead to duplicated edges if you merge a network with itself.
 #'
 #' @param networks the list of networks
 #'

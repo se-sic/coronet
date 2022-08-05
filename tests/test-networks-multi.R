@@ -14,6 +14,7 @@
 ## Copyright 2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -91,14 +92,6 @@ test_that("Construction of the multi network for the feature artifact with autho
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-              expected.edges = igraph::as_data_frame(network.expected, what = "edges")
-              expected.vertices = igraph::as_data_frame(network.expected, what = "vertices")
-
-              built.edges = igraph::as_data_frame(network.built, what = "edges")
-              built.vertices = igraph::as_data_frame(network.built, what = "vertices")
-
-              expect_identical(expected.edges, built.edges, info = "Multi network edges")
-              expect_identical(expected.vertices, built.vertices, info = "Multi network vertices")
-              ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
-              # expect_true(igraph::identical_graphs(network.expected, network.built))
+              compare.networks(network.expected, network.built)
           })
+

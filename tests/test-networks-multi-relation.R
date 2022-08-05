@@ -18,6 +18,7 @@
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -309,14 +310,410 @@ test_that("Construction of the multi network for the feature artifact with autho
     network.expected = igraph::graph.data.frame(edges, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
-    expected.edges = igraph::as_data_frame(network.expected, what = "edges")
-    expected.vertices = igraph::as_data_frame(network.expected, what = "vertices")
+    compare.networks(network.expected, network.built)
+})
 
-    built.edges = igraph::as_data_frame(network.built, what = "edges")
-    built.vertices = igraph::as_data_frame(network.built, what = "vertices")
+test_that("Construction of the multi-artifact bipartite network with artifact relations 'cochange' and 'issue'", {
 
-    expect_identical(expected.edges, built.edges, info = "Multi network edges")
-    expect_identical(expected.vertices, built.vertices, info = "Multi network vertices")
-    ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
-    # expect_true(igraph::identical_graphs(network.expected, network.built))
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf.cochange = NetworkConf$new()
+    net.conf.cochange$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
+    net.conf.issue = NetworkConf$new()
+    net.conf.issue$update.values(updated.values = list(author.relation = "issue", artifact.relation = "issue"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder.cochange = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.cochange)
+    network.builder.issue = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.issue)
+
+    ## build a multi-artifact network by merging two different artifact networks
+    net.cochange = network.builder.cochange$get.bipartite.network()
+    net.issue = network.builder.issue$get.bipartite.network()
+
+    net.combined = merge.networks(list(net.cochange, net.issue))
+
+    ## build expected network
+    vertices = data.frame(name = c("Björn", "Karl", "Olaf", "Thomas", "A", "Base_Feature",
+                                   "foo", "Max", "<issue-jira-ZEPPELIN-328>",
+                                   "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                                   "<issue-github-1>", "<issue-github-6>", "<issue-github-3>",
+                                   "<issue-github-4>"),
+                          kind = c(rep(TYPE.AUTHOR, 4), rep("Feature", 3), TYPE.AUTHOR, rep("Issue", 7)),
+                          type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3), TYPE.AUTHOR, rep(TYPE.ARTIFACT, 7))
+    )
+    row.names(vertices) = c("Björn", "Karl", "Olaf", "Thomas", "A", "Base_Feature",
+                            "foo", "Max", "<issue-jira-ZEPPELIN-328>",
+                            "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                            "<issue-github-1>", "<issue-github-6>", "<issue-github-3>",
+                            "<issue-github-4>")
+
+    edges = data.frame(
+        from = c("Björn",  "Karl",   "Olaf",   "Olaf",   "Thomas", "Thomas", "Björn",
+                 "Björn",  "Björn",  "Björn",  "Björn",  "Björn",  "Björn",  "Björn",
+                 "Björn",  "Björn",  "Björn",  "Karl",   "Max",    "Max",    "Max",
+                 "Olaf",   "Olaf",   "Olaf",   "Olaf",   "Olaf",   "Olaf",   "Thomas",
+                 "Thomas", "Thomas"),
+        to = c("A",                         "Base_Feature",              "A",
+               "Base_Feature",             "Base_Feature",             "foo",
+               "<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>",
+               "<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>",
+               "<issue-github-2>",         "<issue-jira-ZEPPELIN-332>","<issue-github-1>",
+               "<issue-jira-ZEPPELIN-332>","<issue-github-6>",         "<issue-github-3>",
+               "<issue-jira-ZEPPELIN-332>","<issue-jira-ZEPPELIN-332>","<issue-jira-ZEPPELIN-332>",
+               "<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>","<issue-jira-ZEPPELIN-328>",
+               "<issue-jira-ZEPPELIN-328>","<issue-github-1>",         "<issue-github-4>",
+               "<issue-jira-ZEPPELIN-328>","<issue-github-1>",         "<issue-github-6>"),
+        date = get.date.from.string(c("2016-07-12 15:58:59 UTC", "2016-07-12 16:06:10 UTC",
+                                      "2016-07-12 16:00:45 UTC", "2016-07-12 16:05:41 UTC",
+                                      "2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC",
+                                      "2013-05-05 21:46:30 UTC", "2013-05-05 21:49:21 UTC",
+                                      "2013-05-05 21:49:34 UTC", "2013-05-06 01:04:34 UTC",
+                                      "2013-05-25 03:48:41 UTC", "2013-05-25 04:08:07 UTC",
+                                      "2016-07-12 14:59:25 UTC", "2016-07-12 16:02:30 UTC",
+                                      "2016-07-12 16:06:01 UTC", "2016-07-15 19:55:39 UTC",
+                                      "2017-05-23 12:32:39 UTC", "2016-07-12 15:59:59 UTC",
+                                      "2016-07-15 20:07:47 UTC", "2016-07-27 20:12:08 UTC",
+                                      "2016-07-28 06:27:52 UTC", "2013-05-25 03:25:06 UTC",
+                                      "2013-05-25 06:06:53 UTC", "2013-05-25 06:22:23 UTC",
+                                      "2013-06-01 06:50:26 UTC", "2016-07-12 16:01:01 UTC",
+                                      "2016-07-12 16:02:02 UTC", "2013-04-21 23:52:09 UTC",
+                                      "2016-07-12 15:59:25 UTC", "2016-07-12 16:03:59 UTC")),
+        artifact.type = c(rep("Feature", 6), rep("IssueEvent", 24)),
+        hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
+                 rep(NA, 24)),
+        file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c", rep(NA, 24)),
+        artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", rep(NA, 24)),
+        weight = c(rep(1, 30)),
+        type = c(rep("Bipartite", 30)),
+        relation = c(rep("cochange", 6), rep("issue", 24)),
+        issue.id = c(NA,                          NA,                          NA,
+                     NA,                          NA,                          NA,
+                     "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                     "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                     "<issue-github-2>",          "<issue-jira-ZEPPELIN-332>", "<issue-github-1>",
+                     "<issue-jira-ZEPPELIN-332>", "<issue-github-6>",          "<issue-github-3>",
+                     "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                     "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                     "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",          "<issue-github-4>",
+                     "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",          "<issue-github-6>"),
+        event.name = c(rep(NA, 6), rep("commented", 24))
+    )
+
+    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    compare.networks(net.expected, net.combined)
+
+})
+
+test_that("Construction of the multi-artifact bipartite network with artifact relations 'cochange' and 'mail'", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf.cochange = NetworkConf$new()
+    net.conf.cochange$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
+    net.conf.mail = NetworkConf$new()
+    net.conf.mail$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder.cochange = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.cochange)
+    network.builder.mail = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.mail)
+
+    ## build a multi-artifact network by merging two different artifact networks
+    net.cochange = network.builder.cochange$get.bipartite.network()
+    net.mail = network.builder.mail$get.bipartite.network()
+
+    net.combined = merge.networks(list(net.cochange, net.mail))
+
+    ## build expected network
+    vertices = data.frame(name = c("Björn",                  "Karl",                   "Olaf",
+                                   "Thomas",                 "A",                      "Base_Feature",
+                                   "foo",                    "Fritz fritz@example.org","georg",
+                                   "Hans",                   "udo",                    "<thread-1>",
+                                   "<thread-2>",             "<thread-8>",             "<thread-4>",
+                                   "<thread-5>",             "<thread-6>",             "<thread-7>",
+                                   "<thread-9>",             "<thread-3>"),
+                          kind = c(rep(TYPE.AUTHOR, 4), rep("Feature", 3), rep(TYPE.AUTHOR, 4), rep("MailThread", 9)),
+                          type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3), rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 9))
+    )
+    row.names(vertices) = c("Björn",                  "Karl",                   "Olaf",
+                            "Thomas",                 "A",                      "Base_Feature",
+                            "foo",                    "Fritz fritz@example.org","georg",
+                            "Hans",                   "udo",                    "<thread-1>",
+                            "<thread-2>",             "<thread-8>",             "<thread-4>",
+                            "<thread-5>",             "<thread-6>",             "<thread-7>",
+                            "<thread-9>",             "<thread-3>")
+
+    edges = data.frame(
+           from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Björn", "Björn",
+                    "Björn", "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans",
+                    "Hans", "Hans", "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
+           to = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", "<thread-1>",
+                  "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
+                  "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
+                  "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+           date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
+                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
+                                         "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40",
+                                         "2010-07-12 11:05:35", "2010-07-12 12:05:34", "2010-07-12 12:05:40",
+                                         "2010-07-12 12:05:41", "2010-07-12 12:05:42", "2010-07-12 12:05:43",
+                                         "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2010-07-12 12:05:46",
+                                         "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
+                                         "2010-07-12 10:05:36")),
+           artifact.type = c(rep("Feature", 6), rep("Mail", 16)),
+           hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                    "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                    "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
+                    rep(NA, 16)),
+           file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c", rep(NA, 16)),
+           artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", rep(NA, 16)),
+           weight = rep(1,22),
+           type = rep("Bipartite", 22),
+           relation = c(rep("cochange", 6), rep("mail", 16)),
+           message.id = c(rep(NA, 6), "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>",
+                          "<1107974989.17910.6.camel@jmcmullan>", "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                          "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<dfhglkjdgjkhnwrd@mail.gmail.com>",
+                          "<hans1@mail.gmail.com>", "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
+                          "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>", "<hans6@mail.gmail.com>",
+                          "<hans7@mail.gmail.com>", "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
+                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
+                          "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"
+                          ),
+           thread = c(rep(NA, 6), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
+                      "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
+                      "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
+                      "<thread-9>", "<thread-3>")
+    )
+
+    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    compare.networks(net.expected, net.combined)
+
+})
+
+test_that("Construction of the multi-artifact bipartite network with artifact relations 'issue' and 'mail'", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf.issue = NetworkConf$new()
+    net.conf.issue$update.values(updated.values = list(author.relation = "issue", artifact.relation = "issue"))
+    net.conf.mail = NetworkConf$new()
+    net.conf.mail$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder.issue = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.issue)
+    network.builder.mail = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.mail)
+
+    ## build a multi-artifact network by merging two different artifact networks
+    net.issue = network.builder.issue$get.bipartite.network()
+    net.mail = network.builder.mail$get.bipartite.network()
+
+    net.combined = merge.networks(list(net.issue, net.mail))
+
+    ## build expected network
+    vertices = data.frame(name = c("Björn", "Karl", "Max", "Olaf", "Thomas",
+                                   "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                                   "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>",
+                                   "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-1>",
+                                   "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
+                                   "<thread-7>", "<thread-9>", "<thread-3>"),
+                          kind = c(rep("Author", 5), rep("Issue", 7), rep("Author", 4), rep("MailThread", 9)),
+                          type = c(rep("Author", 5), rep("Artifact", 7), rep("Author", 4), rep("Artifact", 9))
+                          )
+    row.names(vertices) = c("Björn", "Karl", "Max", "Olaf", "Thomas",
+                            "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                            "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>",
+                            "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-1>",
+                            "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
+                            "<thread-7>", "<thread-9>", "<thread-3>")
+
+    edges = data.frame(
+           from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
+                    "Björn", "Björn", "Karl", "Max", "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf",
+                    "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
+                    "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans", "Hans", "Hans",
+                    "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
+           to = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>",
+                  "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                  "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
+                  "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
+                  "<issue-github-6>", "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
+                  "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
+                  "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+           date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                         "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                         "2016-07-12 14:59:25", "2016-07-12 16:02:30", "2016-07-12 16:06:01",
+                                         "2016-07-15 19:55:39", "2017-05-23 12:32:39", "2016-07-12 15:59:59",
+                                         "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52",
+                                         "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
+                                         "2013-06-01 06:50:26", "2016-07-12 16:01:01", "2016-07-12 16:02:02",
+                                         "2013-04-21 23:52:09", "2016-07-12 15:59:25", "2016-07-12 16:03:59",
+                                         "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40",
+                                         "2010-07-12 11:05:35", "2010-07-12 12:05:34", "2010-07-12 12:05:40",
+                                         "2010-07-12 12:05:41", "2010-07-12 12:05:42", "2010-07-12 12:05:43",
+                                         "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2010-07-12 12:05:46",
+                                         "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
+                                         "2010-07-12 10:05:36")),
+           artifact.type = c(rep("IssueEvent", 24), rep("Mail", 16)),
+           issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>",
+                        "<issue-jira-ZEPPELIN-332>", "<issue-github-6>", "<issue-github-3>",
+                        "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-4>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>", rep(NA, 16)),
+           event.name = c(rep("commented", 24), rep(NA, 16)),
+           weight = rep(1, 40),
+           type = rep("Bipartite", 40),
+           relation = c(rep("issue", 24), rep("mail", 16)),
+           message.id = c(rep(NA, 24),
+                          "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<1107974989.17910.6.camel@jmcmullan>",
+                          "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                          "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<dfhglkjdgjkhnwrd@mail.gmail.com>",
+                          "<hans1@mail.gmail.com>", "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
+                          "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>", "<hans6@mail.gmail.com>",
+                          "<hans7@mail.gmail.com>", "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
+                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
+                          "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"
+                          ),
+           thread = c(rep(NA, 24), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>",
+                      "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
+                      "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>")
+    )
+
+    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    compare.networks(net.expected, net.combined)
+
+})
+
+test_that("Construction of the multi-artifact bipartite network with artifact relations 'cochange', 'issue', and 'mail'", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf.cochange = NetworkConf$new()
+    net.conf.cochange$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
+    net.conf.issue = NetworkConf$new()
+    net.conf.issue$update.values(updated.values = list(author.relation = "issue", artifact.relation = "issue"))
+    net.conf.mail = NetworkConf$new()
+    net.conf.mail$update.values(updated.values = list(author.relation = "mail", artifact.relation = "mail"))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder.cochange = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.cochange)
+    network.builder.issue = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.issue)
+    network.builder.mail = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf.mail)
+
+    ## build a multi-artifact network by merging two different artifact networks
+    net.cochange = network.builder.cochange$get.bipartite.network()
+    net.issue = network.builder.issue$get.bipartite.network()
+    net.mail = network.builder.mail$get.bipartite.network()
+
+    net.combined = merge.networks(list(net.cochange, net.issue, net.mail))
+
+    ## build expected network
+    vertices = data.frame(name = c("Björn", "Karl", "Olaf", "Thomas", "A", "Base_Feature", "foo",
+                                   "Max", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>",
+                                   "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-github-6>",
+                                   "<issue-github-3>", "<issue-github-4>", "Fritz fritz@example.org",
+                                   "georg", "Hans", "udo", "<thread-1>", "<thread-2>", "<thread-8>",
+                                   "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>",
+                                   "<thread-3>"),
+                          kind = c(rep("Author", 4), rep("Feature", 3), "Author",
+                                   rep("Issue", 7), rep("Author", 4), rep("MailThread", 9)),
+                          type = c(rep("Author", 4), rep("Artifact", 3), "Author",
+                                   rep("Artifact", 7), rep("Author", 4), rep("Artifact", 9)))
+    row.names(vertices) = c("Björn", "Karl", "Olaf", "Thomas", "A", "Base_Feature", "foo",
+                            "Max", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>",
+                            "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-github-6>",
+                            "<issue-github-3>", "<issue-github-4>", "Fritz fritz@example.org",
+                            "georg", "Hans", "udo", "<thread-1>", "<thread-2>", "<thread-8>",
+                            "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>",
+                            "<thread-3>")
+
+    edges = data.frame(
+           from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Björn", "Björn",
+                    "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
+                    "Björn", "Karl", "Max", "Max", "Max", "Olaf", "Olaf", "Olaf", "Olaf",
+                    "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Björn", "Björn", "Björn",
+                    "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans", "Hans", "Hans",
+                    "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
+           to = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>",
+                  "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>",
+                  "<issue-github-6>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>",
+                  "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>",
+                  "<issue-github-1>", "<issue-github-6>", "<thread-1>", "<thread-2>",
+                  "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>",
+                  "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
+                  "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+           date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
+                                         "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
+                                         "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                         "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                         "2016-07-12 14:59:25", "2016-07-12 16:02:30", "2016-07-12 16:06:01",
+                                         "2016-07-15 19:55:39", "2017-05-23 12:32:39", "2016-07-12 15:59:59",
+                                         "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52",
+                                         "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
+                                         "2013-06-01 06:50:26", "2016-07-12 16:01:01", "2016-07-12 16:02:02",
+                                         "2013-04-21 23:52:09", "2016-07-12 15:59:25", "2016-07-12 16:03:59",
+                                         "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40",
+                                         "2010-07-12 11:05:35", "2010-07-12 12:05:34", "2010-07-12 12:05:40",
+                                         "2010-07-12 12:05:41", "2010-07-12 12:05:42", "2010-07-12 12:05:43",
+                                         "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2010-07-12 12:05:46",
+                                         "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:04:40",
+                                         "2010-07-12 10:05:36")),
+           artifact.type = c(rep("Feature", 6), rep("IssueEvent", 24), rep("Mail", 16)),
+           hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
+                    "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                    "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
+                    rep(NA, 40)),
+           file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c", rep(NA, 40)),
+           artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", rep(NA, 40)),
+           weight = rep(1, 46),
+           type = rep("Bipartite", 46),
+           relation = c(rep("cochange", 6), rep("issue", 24), rep("mail", 16)),
+           issue.id = c(rep(NA, 6), "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
+                        "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>",
+                        "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
+                        "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
+                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
+                        "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
+                        "<issue-github-6>", rep(NA, 16)),
+           event.name = c(rep(NA, 6), rep("commented", 24), rep(NA, 16)),
+           message.id = c(rep(NA, 30), "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>",
+                          "<1107974989.17910.6.camel@jmcmullan>", "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                          "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<dfhglkjdgjkhnwrd@mail.gmail.com>",
+                          "<hans1@mail.gmail.com>", "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
+                          "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>", "<hans6@mail.gmail.com>",
+                          "<hans7@mail.gmail.com>", "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
+                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
+                          "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"),
+           thread = c(rep(NA, 30), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
+                      "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
+                      "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
+                      "<thread-9>", "<thread-3>")
+    )
+
+    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    compare.networks(net.expected, net.combined)
+
 })
