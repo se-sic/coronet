@@ -122,7 +122,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
                                 function(x) get.or.default(x, attrs.by.vertex.name, default.value))
 
             ## simplify the list of attributes to a vector if all its elements are just vectors (not lists)
-            if (length(attributes) > 0 && !any(lapply(attributes, is.list))) {
+            if (length(attributes) > 0 && !any(sapply(attributes, is.list))) {
                 attributes = unlist(attributes)
             }
             ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
@@ -478,7 +478,7 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                             default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
     issue.type = match.arg(issue.type)
 
-    if (name == "issue.count" && identical(issue.type, "pull.requests")) {
+    if (missing(name) && identical(issue.type, "pull.requests")) {
         name = "pull.request.count"
     }
     nets.with.attr = add.vertex.attribute.count.helper(
@@ -514,7 +514,7 @@ add.vertex.attribute.issues.commented.count = function(list.of.networks, project
                                                                                              "issues")) {
     issue.type = match.arg(issue.type)
 
-    if (name == "issues.commented.count" && identical(issue.type, "pull.requests")) {
+    if (missing(name) && identical(issue.type, "pull.requests")) {
         name = "pull.requests.commented.count"
     }
     nets.with.attr = add.vertex.attribute.count.helper(
@@ -551,7 +551,7 @@ add.vertex.attribute.issue.creation.count = function(list.of.networks, project.d
                                                                                              "issues")) {
     issue.type = match.arg(issue.type)
 
-    if (name == "issue.creation.count" && identical(issue.type, "pull.requests")) {
+    if (missing(name) && identical(issue.type, "pull.requests")) {
         name = "pull.request.creation.count"
     }
     nets.with.attr = add.vertex.attribute.count.helper(
@@ -587,7 +587,7 @@ add.vertex.attribute.issue.comment.count = function(list.of.networks, project.da
                                                                                              "issues")) {
     issue.type = match.arg(issue.type)
 
-    if (name == "issue.comment.count" && identical(issue.type, "pull.requests")) {
+    if (missing(name) && identical(issue.type, "pull.requests")) {
         name = "pull.request.comment.count"
     }
     nets.with.attr = add.vertex.attribute.count.helper(
@@ -1006,21 +1006,21 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "thread.contributor.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.mail.thread.contributor.count = function(list.of.networks, project.data,
-                                                              name = "contributor.count",
+                                                              name = "thread.contributor.count",
                                                               aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                     "project.cumulative",
                                                                                     "project.all.ranges", "complete"),
-                                                              default.value = 0L) {
+                                                              default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
     nets.with.attr = split.and.add.vertex.attribute(
@@ -1036,21 +1036,21 @@ add.vertex.attribute.mail.thread.contributor.count = function(list.of.networks, 
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "message.count"]
+#' @param name The attribute name to add [default: "thread.message.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.mail.thread.message.count = function(list.of.networks, project.data, name = "message.count",
+add.vertex.attribute.mail.thread.message.count = function(list.of.networks, project.data, name = "thread.message.count",
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative",
                                                                                 "project.all.ranges",
                                                                                 "complete"),
-                                                          default.value = 0L) {
+                                                          default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
     nets.with.attr = split.and.add.vertex.attribute(
@@ -1066,7 +1066,7 @@ add.vertex.attribute.mail.thread.message.count = function(list.of.networks, proj
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "start.date"]
+#' @param name The attribute name to add [default: "thread.start.date"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1075,7 +1075,7 @@ add.vertex.attribute.mail.thread.message.count = function(list.of.networks, proj
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project.data, name = "start.date",
+add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project.data, name = "thread.start.date",
                                                        aggregation.level = c("range", "cumulative", "all.ranges",
                                                                              "project.cumulative",
                                                                              "project.all.ranges",
@@ -1099,7 +1099,7 @@ add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "end.date"]
+#' @param name The attribute name to add [default: "thread.end.date"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1108,7 +1108,7 @@ add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.data, name = "end.date",
+add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.data, name = "thread.end.date",
                                                      aggregation.level = c("range", "cumulative", "all.ranges",
                                                                            "project.cumulative", "project.all.ranges",
                                                                            "complete"),
@@ -1133,7 +1133,7 @@ add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.d
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "issue.contributor.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1142,17 +1142,21 @@ add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.d
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.contributor.count = function(list.of.networks, project.data, name = "contributor.count",
+add.vertex.attribute.issue.contributor.count = function(list.of.networks, project.data,
+                                                        name = "issue.contributor.count",
                                                         aggregation.level = c("range", "cumulative", "all.ranges",
                                                                               "project.cumulative",
                                                                               "project.all.ranges", "complete"),
                                                         type = c("all", "issues", "pull.requests"),
-                                                        default.value = 0L) {
+                                                        default.value = NA) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.contributor.count"
+    }
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -1167,7 +1171,7 @@ add.vertex.attribute.issue.contributor.count = function(list.of.networks, projec
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "issue.event.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1176,16 +1180,19 @@ add.vertex.attribute.issue.contributor.count = function(list.of.networks, projec
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.event.count = function(list.of.networks, project.data, name = "contributor.count",
+add.vertex.attribute.issue.event.count = function(list.of.networks, project.data, name = "issue.event.count",
                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                         "project.cumulative", "project.all.ranges",
                                                                         "complete"),
-                                                  type = c("all", "issues", "pull.requests"), default.value = 0L) {
+                                                  type = c("all", "issues", "pull.requests"), default.value = NA) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.event.count"
+    }
 
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
@@ -1200,7 +1207,7 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "issue.opened.date"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1209,16 +1216,19 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.opened.date = function(list.of.networks, project.data, name = "contributor.count",
+add.vertex.attribute.issue.opened.date = function(list.of.networks, project.data, name = "issue.opened.date",
                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                         "project.cumulative", "project.all.ranges",
                                                                         "complete"),
                                                   type = c("all", "issues", "pull.requests"), default.value = NA) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.opened.date"
+    }
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
     default.value = get.date.from.string(default.value)
@@ -1236,7 +1246,7 @@ add.vertex.attribute.issue.opened.date = function(list.of.networks, project.data
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "issue.closed.date"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1248,13 +1258,16 @@ add.vertex.attribute.issue.opened.date = function(list.of.networks, project.data
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data, name = "contributor.count",
+add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data, name = "issue.closed.date",
                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                         "project.cumulative", "project.all.ranges",
                                                                         "complete"),
                                                   type = c("all", "issues", "pull.requests"), default.value = NA) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.closed.date"
+    }
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
     default.value = get.date.from.string(default.value)
@@ -1272,7 +1285,7 @@ add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "contributor.count"]
+#' @param name The attribute name to add [default: "issue.last.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1284,7 +1297,7 @@ add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.issue.last.activity.date = function(list.of.networks, project.data, name = "contributor.count",
+add.vertex.attribute.issue.last.activity.date = function(list.of.networks, project.data, name = "issue.last.activity",
                                                          aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                "project.cumulative",
                                                                                "project.all.ranges", "complete"),
@@ -1292,6 +1305,9 @@ add.vertex.attribute.issue.last.activity.date = function(list.of.networks, proje
                                                          default.value = NA) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.last.activity"
+    }
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
     default.value = get.date.from.string(default.value)
