@@ -629,3 +629,42 @@ get.issue.last.activity.date = function(proj.data, type = c("all", "issues", "pu
     logging::logdebug("get.issue.last.activity.date: finished")
     return(issue.id.to.end.date)
 }
+
+#' Get the title of each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.title: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "issue.title"))
+    issue.id.to.title = get.key.to.value.from.df(df, "issue.id", "title")
+    issue.id.to.title.only = lapply(issue.id.to.dates, function(df) {
+        df[[1,"data.vertices"]] # data frames resulting from get.key.to.value.from.df always have at least one row
+    })
+    logging::logdebug("get.issue.title: finished")
+    return(issue.id.to.title.only)
+}
+
+#' Get whether each issue is a pull request, based on the issue data contained in the specified
+#' \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#'
+#' @return a named list of logical values, where the name is the issue ID.
+get.issue.is.pull.request = function(proj.data) {
+    logging::logdebug("get.issue.is.pull.request: starting.")
+    issue.id.to.type = get.key.to.value.from.df(proj.data$get.issues(), "issue.id", "issue.type")
+    issue.id.to.is.pr = lapply(issue.id.to.type, function(df) {
+        "pull request" %in% unlist(df[["data.vertices"]])
+    })
+    logging::logdebug("get.issue.is.pull.request: finished")
+    return(issue.id.to.is.pr)
+}
