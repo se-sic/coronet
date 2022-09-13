@@ -551,14 +551,38 @@ get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pul
 #' @return a named list of event counts, where the name is the issue ID.
 get.issue.event.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
     type = match.arg(type)
-    logging::logdebug("get.issue.mail.count: starting.")
+    logging::logdebug("get.issue.event.count: starting.")
     df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"))
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "author.email")
     issue.id.to.event.count = lapply(issue.id.to.events, function(df) {
         length(df[["data.vertices"]])
     })
-    logging::logdebug("get.issue.mail.count: finished")
+    logging::logdebug("get.issue.event.count: finished")
     return(issue.id.to.event.count)
+}
+
+#' Get the number of 'commented' events for each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of comment counts, where the name is the issue ID.
+get.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.comment.count: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "event.name"))
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
+    issue.id.to.comment.count = lapply(issue.id.to.events, function(df) {
+        event.names = df[["data.vertices"]]
+        return (length(event.names[event.names == "commented"]))
+    })
+    logging::logdebug("get.issue.comment.count: finished")
+    return(issue.id.to.comment.count)
 }
 
 #' Get the date each issue was opened, based on the issue data contained

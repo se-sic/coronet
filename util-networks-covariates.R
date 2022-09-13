@@ -1240,6 +1240,42 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
     return(nets.with.attr)
 }
 
+#' Add the number of comment events for each issue or PR
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "issue.comment.count"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "complete"]
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.issue.comment.event.count = function(list.of.networks, project.data, name = "issue.comment.count",
+                                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                        "project.cumulative", "project.all.ranges",
+                                                                        "complete"),
+                                                  type = c("all", "issues", "pull.requests"), default.value = NA) {
+    type = match.arg(type)
+    aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    if (missing(name) && identical(type, "pull.requests")) {
+        name = "pr.comment.count"
+    }
+
+    nets.with.attr = split.and.add.vertex.attribute(
+        list.of.networks, project.data, name, aggregation.level, default.value,
+        function(range, range.data, net) {
+            return(get.issue.comment.count(range.data, type = type))
+        }
+    )
+    return(nets.with.attr)
+}
+
 #' Add the date each issue or PR was opened
 #'
 #' @param list.of.networks The network list
