@@ -645,8 +645,10 @@ get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")
     type = match.arg(type)
     logging::logdebug("get.issue.title: starting.")
     df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "issue.title"))
-    issue.id.to.title = get.key.to.value.from.df(df, "issue.id", "title")
-    issue.id.to.title.only = lapply(issue.id.to.dates, function(df) {
+    issue.id.to.title = get.key.to.value.from.df(df, "issue.id", "issue.title")
+    issue.id.to.title.only = lapply(issue.id.to.title, function(df) {
+        ## as a result of get.key.to.value.from.df, the "issue.title" column should be duplicated as "data.vertices".
+        ## The title should be the same in every row, so we can just use the first row.
         df[[1,"data.vertices"]] # data frames resulting from get.key.to.value.from.df always have at least one row
     })
     logging::logdebug("get.issue.title: finished")
@@ -661,10 +663,9 @@ get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")
 #' @return a named list of logical values, where the name is the issue ID.
 get.issue.is.pull.request = function(proj.data) {
     logging::logdebug("get.issue.is.pull.request: starting.")
-    issue.id.to.type = get.key.to.value.from.df(proj.data$get.issues(), "issue.id", "issue.type")
-    issue.id.to.is.pr = lapply(issue.id.to.type, function(df) {
-        "pull request" %in% unlist(df[["data.vertices"]])
-    })
+    issue.data = proj.data$get.issues()
+    issue.id.to.is.pr = as.list(mask.pull.requests(issue.data))
+    names(issue.id.to.is.pr) = issue.data[["issue.id"]]
     logging::logdebug("get.issue.is.pull.request: finished")
     return(issue.id.to.is.pr)
 }
