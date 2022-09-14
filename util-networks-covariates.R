@@ -1093,7 +1093,7 @@ add.vertex.attribute.mail.thread.message.count = function(list.of.networks, proj
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.mail.thread.mail.count)
+            return(get.mail.thread.mail.count(range.data))
         }
     )
     return(nets.with.attr)
@@ -1126,7 +1126,7 @@ add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.mail.thread.start.date)
+            return(get.mail.thread.start.date(range.data))
         }
     )
     return(nets.with.attr)
@@ -1158,7 +1158,7 @@ add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.d
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.mail.thread.end.date)
+            return(get.mail.thread.end.date(range.data))
         }
     )
     return(nets.with.attr)

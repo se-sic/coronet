@@ -20,6 +20,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021-2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -59,9 +60,11 @@ myranges.since.2010 = construct.ranges(mybins.since.2010, sliding.window = FALSE
 #' @return Tuple containing project data and list of networks
 get.network.covariates.test.networks = function(network.type = c("author", "artifact"), issues = FALSE,
                                                 author.relation = c("cochange", "issue", "mail"),
+                                                artifact.relation = c("cochange", "issue", "mail"),
                                                 bins = mybins) {
 
     author.relation = match.arg(author.relation)
+    artifact.relation = match.arg(artifact.relation)
     network.type.function = switch(match.arg(network.type),
                                    "author" = "get.author.network",
                                    "artifact" = "get.artifact.network")
@@ -72,7 +75,8 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(list(author.relation = author.relation, simplify = FALSE))
+    net.conf$update.values(list(author.relation = author.relation, artifact.relation = artifact.relation,
+                                simplify = FALSE))
 
     ## retrieve project data
     project.data = ProjectData$new(proj.conf)
@@ -1311,6 +1315,64 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
     })
 })
 
+#' Test the add.vertex.attribute.artifact.last.edited method
+test_that("Test add.vertex.attribute.artifact.last.edited", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact")
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:59 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:59 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 16:00:45 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:59 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 16:00:45 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        ),
+        complete = network.covariates.test.build.expected(
+            c("2016-07-12 16:00:45 UTC"), c("2016-07-12 16:00:45 UTC"),
+            c("2016-07-12 16:06:32 UTC", "2016-07-12 16:06:32 UTC")
+        )
+    )
+
+    ## convert date strings to POSIXct
+    expected.attributes = lapply(expected.attributes, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.artifact.last.edited(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "last.edited")
+
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
 #' Test the add.vertex.attribute.artifact.change.count method
 test_that("Test add.vertex.attribute.artifact.change.count", {
 
@@ -1346,6 +1408,207 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
+
+## Unit tests for mail artifact networks
+
+#' mail thread contributor count
+test_that("Test add.vertex.attribute.mail.thread.contributor.count", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "mail")
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            c(2), c(1), c(1)
+        ),
+        cumulative = network.covariates.test.build.expected(
+            c(2), c(1), c(2)
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            c(2), c(1), c(2)
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        ),
+        complete = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        )
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.contributor.count")
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' mail thread message count
+test_that("Test add.vertex.attribute.mail.thread.message.count", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "mail")
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            c(2), c(1), c(1)
+        ),
+        cumulative = network.covariates.test.build.expected(
+            c(2), c(1), c(2)
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            c(2), c(1), c(2)
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        ),
+        complete = network.covariates.test.build.expected(
+            c(2), c(2), c(2)
+        )
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.message.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.message.count")
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' mail thread start date
+test_that("Test add.vertex.attribute.mail.thread.start.date", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "mail")
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:04:40 UTC")
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:04:40 UTC")
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:04:40 UTC")
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:04:40 UTC")
+        ),
+        complete = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:40 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:04:40 UTC")
+        )
+    )
+
+    ## convert date strings to POSIXct
+    expected.attributes = lapply(expected.attributes, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.start.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.start.date")
+
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+#' mail thread end date
+test_that("Test add.vertex.attribute.mail.thread.end.date", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "mail")
+
+    expected.attributes = list(
+        range = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:05:37 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        project.cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:04:40 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        project.all.ranges = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:05:37 UTC"), c("2016-07-12 16:05:37 UTC")
+        ),
+        complete = network.covariates.test.build.expected(
+            c("2016-07-12 15:58:50 UTC"), c("2016-07-12 16:05:37 UTC"), c("2016-07-12 16:05:37 UTC")
+        )
+    )
+
+    ## convert date strings to POSIXct
+    expected.attributes = lapply(expected.attributes, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.end.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.end.date")
+
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_equal(expected.attributes[[level]], actual.attributes)
+    })
+})
+
+## Unit tests for issue artifact networks
+
+#' issue contributor count
+#' issue event count
+#' issue comment count
+#' issue opened date
+#' issue closed date
+#' issue last activity date
+#' issue title
+#' issue is pull request
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Unit tests for empty attribute data -------------------------------------
