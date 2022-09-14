@@ -1601,7 +1601,83 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
 
 ## Unit tests for issue artifact networks
 
+#' Helper function for add.vertex.attribute.issue.* tests
+merge.expected.attributes = function(expected.attributes.issues.only, expected.attributes.prs.only) {
+    result = lapply(names(expected.attributes.issues.only), function(n) {
+        issue.attr = expected.attributes.issues.only[[n]]
+        pr.attr = expected.attributes.prs.only[[n]]
+        sum.attr = lapply(names(issue.attr), function (n2) {
+            replace(issue.attr[[n2]], is.na(issue.attr[[n2]]), 0L) + replace(pr.attr[[n2]], is.na(pr.attr[[n2]]), 0L)
+        })
+        names(sum.attr) = names(issue.attr)
+        return(sum.attr)
+    })
+    names(result) = names(expected.attributes.issues.only)
+    return(result)
+}
+
 #' issue contributor count
+test_that("Test add.vertex.attribute.issue.contributor.count", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
+
+    expected.attributes.issues.only = list(
+        range = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 1L, NA), c(NA, 2L, 2L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 2L, 2L, 3L)),
+        all.ranges = network.covariates.test.build.expected(c(3L, 2L, NA), c(NA, 2L, NA, 3L, NA), c(NA, 2L, 2L, 3L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 2L, 2L, 3L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L, NA), c(NA, 2L, NA, 3L, NA), c(NA, 2L, 2L, 3L)),
+        complete = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 3L, 2L, 4L))
+    )
+
+    expected.attributes.prs.only = list(
+        range = network.covariates.test.build.expected(c(NA, NA, 1L), c(1L, NA, 2L, NA, 1L), c(2L, NA, NA, NA)),
+        cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 1L), c(3L, NA, NA, NA)),
+        all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 1L), c(3L, NA, NA, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 2L), c(3L, NA, NA, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 2L), c(3L, NA, NA, NA)),
+        complete = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 2L), c(3L, NA, NA, NA))
+    )
+
+    expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+
+        expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.both[[level]], actual.attributes)
+    })
+})
+
 #' issue event count
 #' issue comment count
 #' issue opened date
