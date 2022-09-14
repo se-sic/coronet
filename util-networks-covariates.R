@@ -468,6 +468,7 @@ add.vertex.attribute.mail.thread.count = function(list.of.networks, project.data
 #'                          more details. [default: "range"]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.issue.count = function(list.of.networks, project.data,
@@ -475,15 +476,19 @@ add.vertex.attribute.issue.count = function(list.of.networks, project.data,
                                             aggregation.level = c("range", "cumulative", "all.ranges",
                                                                   "project.cumulative", "project.all.ranges",
                                                                   "complete"),
-                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues")) {
+                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues"),
+                                            use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
         name = "pull.request.count"
     }
     nets.with.attr = add.vertex.attribute.count.helper(
-        list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issue.count(data, type = issue.type))}, "author.name"
+        list.of.networks, project.data, name, aggregation.level, default.value,
+        function(data) {
+            return(get.author.issue.count(data, type = issue.type,use.unfiltered.data = use.unfiltered.data))
+        },
+        "author.name"
     )
 
     return(nets.with.attr)
@@ -1180,6 +1185,7 @@ add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.d
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.issue.contributor.count = function(list.of.networks, project.data,
@@ -1188,7 +1194,7 @@ add.vertex.attribute.issue.contributor.count = function(list.of.networks, projec
                                                                               "project.cumulative",
                                                                               "project.all.ranges", "complete"),
                                                         type = c("all", "issues", "pull.requests"),
-                                                        default.value = NA) {
+                                                        default.value = NA, use.unfiltered.data = FALSE) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     if (missing(name) && identical(type, "pull.requests")) {
@@ -1198,7 +1204,7 @@ add.vertex.attribute.issue.contributor.count = function(list.of.networks, projec
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.issue.contributor.count(range.data, type = type))
+            return(get.issue.contributor.count(range.data, type = type, use.unfiltered.data = use.unfiltered.data))
         }
     )
     return(nets.with.attr)
@@ -1218,13 +1224,15 @@ add.vertex.attribute.issue.contributor.count = function(list.of.networks, projec
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.issue.event.count = function(list.of.networks, project.data, name = "issue.event.count",
                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                         "project.cumulative", "project.all.ranges",
                                                                         "complete"),
-                                                  type = c("all", "issues", "pull.requests"), default.value = NA) {
+                                                  type = c("all", "issues", "pull.requests"), default.value = NA,
+                                                  use.unfiltered.data = FALSE) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     if (missing(name) && identical(type, "pull.requests")) {
@@ -1234,7 +1242,7 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.issue.event.count(range.data, type = type))
+            return(get.issue.event.count(range.data, type = type, use.unfiltered.data = use.unfiltered.data))
         }
     )
     return(nets.with.attr)
@@ -1368,6 +1376,7 @@ add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
 #' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.issue.last.activity.date = function(list.of.networks, project.data, name = "issue.last.activity",
@@ -1375,7 +1384,7 @@ add.vertex.attribute.issue.last.activity.date = function(list.of.networks, proje
                                                                                "project.cumulative",
                                                                                "project.all.ranges", "complete"),
                                                          type = c("all", "issues", "pull.requests"),
-                                                         default.value = NA) {
+                                                         default.value = NA, use.unfiltered.data = FALSE) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     if (missing(name) && identical(type, "pull.requests")) {
@@ -1388,7 +1397,7 @@ add.vertex.attribute.issue.last.activity.date = function(list.of.networks, proje
     nets.with.attr = split.and.add.vertex.attribute(
         list.of.networks, project.data, name, aggregation.level, default.value,
         function(range, range.data, net) {
-            return(get.issue.last.activity.date(range.data, type = type))
+            return(get.issue.last.activity.date(range.data, type = type, use.unfiltered.data = use.unfiltered.data))
         }
     )
     return(nets.with.attr)

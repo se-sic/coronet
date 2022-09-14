@@ -78,12 +78,14 @@ mask.pull.requests = function(issue.data) {
 #' @param type which issue type to consider.
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use the unfiltered issue data, i.e. \code{proj.data$get.issues.unfiltered()}
+#'                            instead of \code{proj.data$get.issues()} [default: FALSE]
 #'
 #' @return a filtered sub-data frame of the unfiltered issue data from \code{proj.data}.
 preprocess.issue.data = function(proj.data, retained.cols = c("author.name", "issue.id", "event.name"),
-                                 type = c("all", "pull.requests", "issues")) {
+                                 type = c("all", "pull.requests", "issues"), use.unfiltered.data = FALSE) {
   type = match.arg(type)
-  df = proj.data$get.issues.unfiltered()
+  df = if (use.unfiltered.data) proj.data$get.issues.unfiltered() else proj.data$get.issues()
 
   ## forall vectors k, if nrow(df) == 0, then df[k, ..] fails
   ## so we abort beforehand
@@ -360,13 +362,14 @@ get.author.mail.thread.count = function(proj.data) {
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.requests"), use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issue.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
@@ -390,7 +393,7 @@ get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.req
 get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
     type = match.arg(type)
     logging::logdebug("get.author.issues.created.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = TRUE)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              WHERE `event.name` = 'created'
@@ -524,12 +527,15 @@ get.mail.thread.end.date = function(proj.data) {
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a named list of contributor counts, where the name is the issue ID.
-get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                       use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.issue.contributor.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"))
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"),
+                               use.unfiltered.data = use.unfiltered.data)
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "author.email")
     issue.id.to.contributor.count = lapply(issue.id.to.events, function(df) {
         length(unique(df[["data.vertices"]]))
@@ -547,12 +553,14 @@ get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pul
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a named list of event counts, where the name is the issue ID.
-get.issue.event.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.issue.event.count = function(proj.data, type = c("all", "issues", "pull.requests"), use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.issue.event.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"))
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"),
+                               use.unfiltered.data = use.unfiltered.data)
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "author.email")
     issue.id.to.event.count = lapply(issue.id.to.events, function(df) {
         length(df[["data.vertices"]])
@@ -640,12 +648,15 @@ get.issue.closed.date = function(proj.data, type = c("all", "issues", "pull.requ
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a named list of dates, where the name is the issue ID.
-get.issue.last.activity.date = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.issue.last.activity.date = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                        use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.issue.last.activity.date: starting.")
-    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "date"))
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "date"),
+                               use.unfiltered.data = use.unfiltered.data)
     issue.id.to.dates = get.key.to.value.from.df(df, "issue.id", "date")
     issue.id.to.end.date = lapply(issue.id.to.dates, function(df) {
         max(df[["data.vertices"]])

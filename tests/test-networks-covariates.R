@@ -61,7 +61,8 @@ myranges.since.2010 = construct.ranges(mybins.since.2010, sliding.window = FALSE
 get.network.covariates.test.networks = function(network.type = c("author", "artifact"), issues = FALSE,
                                                 author.relation = c("cochange", "issue", "mail"),
                                                 artifact.relation = c("cochange", "issue", "mail"),
-                                                bins = mybins) {
+                                                bins = mybins,
+                                                issues.only.comments = FALSE) {
 
     author.relation = match.arg(author.relation)
     artifact.relation = match.arg(artifact.relation)
@@ -73,7 +74,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
-    proj.conf$update.value("issues.only.comments", FALSE)
+    proj.conf$update.value("issues.only.comments", issues.only.comments)
     net.conf = NetworkConf$new()
     net.conf$update.values(list(author.relation = author.relation, artifact.relation = artifact.relation,
                                 simplify = FALSE))
@@ -1670,6 +1671,132 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
     lapply(AGGREGATION.LEVELS, function(level) {
         networks.with.attr = add.vertex.attribute.issue.contributor.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.both[[level]], actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.comments", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue",
+                                                             issues.only.comments = TRUE)
+
+    expected.attributes.issues.only = list(
+        range = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 1L, 1L), c(NA, 2L)),
+        cumulative = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 1L, 1L), c(NA, 2L)),
+        all.ranges = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 2L, 1L), c(NA, 2L)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 1L, 1L), c(NA, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 2L, 1L), c(NA, 2L)),
+        complete = network.covariates.test.build.expected(c(NA, 1L), c(NA, NA, 2L, 2L), c(NA, 2L))
+    )
+
+    expected.attributes.prs.only = list(
+        range = network.covariates.test.build.expected(c(1L, NA), c(1L, 1L, NA, NA), c(1L, NA)),
+        cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 1L, NA, NA), c(3L, NA)),
+        all.ranges = network.covariates.test.build.expected(c(3L, NA), c(3L, 1L, NA, NA), c(3L, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 1L, NA, NA), c(3L, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, NA), c(3L, 1L, NA, NA), c(3L, NA)),
+        complete = network.covariates.test.build.expected(c(3L, NA), c(3L, 1L, NA, NA), c(3L, NA))
+    )
+
+    expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+
+        expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.both[[level]], actual.attributes)
+    })
+})
+
+test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.comments and use.unfiltered.data", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue",
+                                                             issues.only.comments = TRUE)
+
+    expected.attributes.issues.only = list(
+        range = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 1L), c(NA, 2L)),
+        cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
+        all.ranges = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 2L, 3L), c(NA, 2L)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 2L, 3L), c(NA, 2L)),
+        complete = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 2L, 4L), c(NA, 2L))
+    )
+
+    expected.attributes.prs.only = list(
+        range = network.covariates.test.build.expected(c(1L, NA), c(1L, 2L, NA, NA), c(2L, NA)),
+        cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 2L, NA, NA), c(3L, NA)),
+        all.ranges = network.covariates.test.build.expected(c(3L, NA), c(3L, 2L, NA, NA), c(3L, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 2L, NA, NA), c(3L, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, NA), c(3L, 2L, NA, NA), c(3L, NA)),
+        complete = network.covariates.test.build.expected(c(3L, NA), c(3L, 2L, NA, NA), c(3L, NA))
+    )
+
+    expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "issues", use.unfiltered.data = TRUE
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+
+        expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests", use.unfiltered.data = TRUE)
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+
+        expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.contributor.count(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "all", use.unfiltered.data = TRUE
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
