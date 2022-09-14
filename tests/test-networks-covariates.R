@@ -314,7 +314,7 @@ get.expected.first.activity = function() {
     return(expected.attributes)
 }
 
-#' Helper for tests of the function add.vertex.attribute.active.ranges: Returns the expected active ranges per range,
+#' Helper for tests of the function add.vertex.attribute.author.active.ranges: Returns the expected active ranges per range,
 #' author and data source as a nested list.
 #'
 #' @return A list with elements that represent the range (the test data is split to build one network per range), each
@@ -439,8 +439,8 @@ test_that("Test split.and.add.vertex.attribute", {
     })
 })
 
-#' Test the add.vertex.attribute.commit.count.author method
-test_that("Test add.vertex.attribute.commit.count.author", {
+#' Test the add.vertex.attribute.author.commit.count method
+test_that("Test add.vertex.attribute.author.commit.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
 
@@ -456,7 +456,7 @@ test_that("Test add.vertex.attribute.commit.count.author", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.commit.count.author(
+        networks.with.attr = add.vertex.attribute.author.commit.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -466,8 +466,8 @@ test_that("Test add.vertex.attribute.commit.count.author", {
     })
 })
 
-#' Test the add.vertex.attribute.commit.count.committer.and.author method
-test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
+#' Test the add.vertex.attribute.author.commit.count.committer.and.author method
+test_that("Test add.vertex.attribute.author.commit.count.committer.and.author", {
 
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
@@ -484,7 +484,7 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.commit.count.committer.and.author(
+        networks.with.attr = add.vertex.attribute.author.commit.count.committer.and.author(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -494,8 +494,8 @@ test_that("Test add.vertex.attribute.commit.count.committer.and.author", {
     })
 })
 
-#' Test the add.vertex.attribute.commit.count.committer.or.author method
-test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
+#' Test the add.vertex.attribute.author.commit.count.committer.or.author method
+test_that("Test add.vertex.attribute.author.commit.count.committer.or.author", {
 
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
@@ -512,7 +512,7 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.commit.count.committer.or.author(
+        networks.with.attr = add.vertex.attribute.author.commit.count.committer.or.author(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -522,8 +522,8 @@ test_that("Test add.vertex.attribute.commit.count.committer.or.author", {
     })
 })
 
-#' Test the add.vertex.attribute.mail.count method
-test_that("Test add.vertex.attribute.mail.count", {
+#' Test the add.vertex.attribute.author.mail.count method
+test_that("Test add.vertex.attribute.author.mail.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(author.relation = "mail", bins = mybins.since.2010)
 
@@ -539,7 +539,7 @@ test_that("Test add.vertex.attribute.mail.count", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.mail.count(
+        networks.with.attr = add.vertex.attribute.author.mail.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -549,8 +549,8 @@ test_that("Test add.vertex.attribute.mail.count", {
     })
 })
 
-#' Test the add.vertex.attribute.mail.count method
-test_that("Test add.vertex.attribute.mail.thread.count", {
+#' Test the add.vertex.attribute.author.mail.thread.count method
+test_that("Test add.vertex.attribute.author.mail.thread.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(author.relation = "mail", bins = mybins.since.2010)
 
@@ -566,7 +566,7 @@ test_that("Test add.vertex.attribute.mail.thread.count", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.mail.thread.count(
+        networks.with.attr = add.vertex.attribute.author.mail.thread.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -591,8 +591,8 @@ sum.expected.attributes = function(expected.attributes.issues.only, expected.att
     return(result)
 }
 
-#' Test the add.vertex.attribute.issue.count method
-test_that("Test add.vertex.attribute.issue.count", {
+#' Test the add.vertex.attribute.author.issue.count method
+test_that("Test add.vertex.attribute.author.issue.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues=TRUE, author.relation = "issue")
 
@@ -619,7 +619,7 @@ test_that("Test add.vertex.attribute.issue.count", {
     ## Test issues only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.count(
+        networks.with.attr = add.vertex.attribute.author.issue.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
@@ -631,7 +631,7 @@ test_that("Test add.vertex.attribute.issue.count", {
     # Test PRs only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.count(
+        networks.with.attr = add.vertex.attribute.author.issue.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             issue.type = "pull.requests", name = "pull.request.count"
         )
@@ -644,7 +644,7 @@ test_that("Test add.vertex.attribute.issue.count", {
     # Test both
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.count(
+        networks.with.attr = add.vertex.attribute.author.issue.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
@@ -655,8 +655,8 @@ test_that("Test add.vertex.attribute.issue.count", {
 })
 
 
-#' Test the add.vertex.attribute.issues.commented.count method
-test_that("Test add.vertex.attribute.issues.commented.count", {
+#' Test the add.vertex.attribute.author.issues.commented.count method
+test_that("Test add.vertex.attribute.author.issues.commented.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
@@ -683,7 +683,7 @@ test_that("Test add.vertex.attribute.issues.commented.count", {
     ## Test issues only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issues.commented.count(
+        networks.with.attr = add.vertex.attribute.author.issues.commented.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
@@ -695,7 +695,7 @@ test_that("Test add.vertex.attribute.issues.commented.count", {
     # Test PRs only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issues.commented.count(
+        networks.with.attr = add.vertex.attribute.author.issues.commented.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             issue.type = "pull.requests", name = "pull.requests.commented.count"
         )
@@ -708,7 +708,7 @@ test_that("Test add.vertex.attribute.issues.commented.count", {
     # Test both
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issues.commented.count(
+        networks.with.attr = add.vertex.attribute.author.issues.commented.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
@@ -718,8 +718,8 @@ test_that("Test add.vertex.attribute.issues.commented.count", {
     })
 })
 
-#' Test the add.vertex.attribute.issue.creation.count method
-test_that("Test add.vertex.attribute.issue.creation.count", {
+#' Test the add.vertex.attribute.author.issue.creation.count method
+test_that("Test add.vertex.attribute.author.issue.creation.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
@@ -746,7 +746,7 @@ test_that("Test add.vertex.attribute.issue.creation.count", {
     ## Test issues only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.creation.count(
+        networks.with.attr = add.vertex.attribute.author.issue.creation.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
@@ -758,7 +758,7 @@ test_that("Test add.vertex.attribute.issue.creation.count", {
     # Test PRs only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.creation.count(
+        networks.with.attr = add.vertex.attribute.author.issue.creation.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             issue.type = "pull.requests", name = "pull.request.creation.count"
         )
@@ -771,7 +771,7 @@ test_that("Test add.vertex.attribute.issue.creation.count", {
     # Test both
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.creation.count(
+        networks.with.attr = add.vertex.attribute.author.issue.creation.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
@@ -781,8 +781,8 @@ test_that("Test add.vertex.attribute.issue.creation.count", {
     })
 })
 
-#' Test the add.vertex.attribute.issue.comment.count method
-test_that("Test add.vertex.attribute.issue.comment.count", {
+#' Test the add.vertex.attribute.author.issue.comment.count method
+test_that("Test add.vertex.attribute.author.issue.comment.count", {
     ## Test setup
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
@@ -809,7 +809,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
     ## Test issues only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.comment.count(
+        networks.with.attr = add.vertex.attribute.author.issue.comment.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
@@ -821,7 +821,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
     # Test PRs only
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.comment.count(
+        networks.with.attr = add.vertex.attribute.author.issue.comment.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             issue.type = "pull.requests", name = "pull.request.comment.count"
         )
@@ -834,7 +834,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
     # Test both
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.issue.comment.count(
+        networks.with.attr = add.vertex.attribute.author.issue.comment.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
@@ -868,8 +868,8 @@ test_that("Test add.vertex.attribute.author.email", {
     expect_identical(expected.attributes, actual.attributes)
 })
 
-#' Test the add.vertex.attribute.artifact.count method
-test_that("Test add.vertex.attribute.artifact.count", {
+#' Test the add.vertex.attribute.author.artifact.count method
+test_that("Test add.vertex.attribute.author.artifact.count", {
 
     ## Test setup
 
@@ -887,7 +887,7 @@ test_that("Test add.vertex.attribute.artifact.count", {
     ## Test
 
     lapply(AGGREGATION.LEVELS, function(level) {
-        networks.with.attr = add.vertex.attribute.artifact.count(
+        networks.with.attr = add.vertex.attribute.author.artifact.count(
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
@@ -897,8 +897,8 @@ test_that("Test add.vertex.attribute.artifact.count", {
     })
 })
 
-#' Test the add.vertex.attribute.first.activity method with computation over all types.
-test_that("Test add.vertex.attribute.first.activity with multiple types and computation over all types", {
+#' Test the add.vertex.attribute.author.first.activity method with computation over all types.
+test_that("Test add.vertex.attribute.author.first.activity with multiple types and computation over all types", {
 
     ## Test setup
 
@@ -973,7 +973,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
 
     lapply(AGGREGATION.LEVELS, function(level) {
 
-        networks.with.attributes = add.vertex.attribute.first.activity(
+        networks.with.attributes = add.vertex.attribute.author.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = TRUE
@@ -984,8 +984,8 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
     })
 })
 
-#' Test the add.vertex.attribute.first.activity method with multiple activity types and computation per type.
-test_that("Test add.vertex.attribute.first.activity with multiple types and computation per type", {
+#' Test the add.vertex.attribute.author.first.activity method with multiple activity types and computation per type.
+test_that("Test add.vertex.attribute.author.first.activity with multiple types and computation per type", {
 
     ## Test setup
 
@@ -999,7 +999,7 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
 
     lapply(AGGREGATION.LEVELS, function(level) {
 
-        networks.with.attributes = add.vertex.attribute.first.activity(
+        networks.with.attributes = add.vertex.attribute.author.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = FALSE
@@ -1010,8 +1010,8 @@ test_that("Test add.vertex.attribute.first.activity with multiple types and comp
     })
 })
 
-#' Test the add.vertex.attribute.first.activity method with one activity type and computation per type.
-test_that("Test add.vertex.attribute.first.activity with one type and computation per type", {
+#' Test the add.vertex.attribute.author.first.activity method with one activity type and computation per type.
+test_that("Test add.vertex.attribute.author.first.activity with one type and computation per type", {
 
     ## Test setup
 
@@ -1031,7 +1031,7 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
 
     lapply(AGGREGATION.LEVELS, function(level) {
 
-        networks.with.attributes = add.vertex.attribute.first.activity(
+        networks.with.attributes = add.vertex.attribute.author.first.activity(
             list.of.networks = networks.and.data[["networks"]], project.data = networks.and.data[["project.data"]],
             activity.types = c("mails"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = FALSE
@@ -1042,8 +1042,8 @@ test_that("Test add.vertex.attribute.first.activity with one type and computatio
     })
 })
 
-#' Test the add.vertex.attribute.active.ranges method with computation over all types
-test_that("Test add.vertex.attribute.active.ranges with computation over all types", {
+#' Test the add.vertex.attribute.author.active.ranges method with computation over all types
+test_that("Test add.vertex.attribute.author.active.ranges with computation over all types", {
 
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
@@ -1052,7 +1052,7 @@ test_that("Test add.vertex.attribute.active.ranges with computation over all typ
     networks.and.data$project.data$set.project.conf.entry("issues.locked", TRUE)
 
     ## Test
-    networks.with.attr = add.vertex.attribute.active.ranges(
+    networks.with.attr = add.vertex.attribute.author.active.ranges(
         networks.and.data[["networks"]], networks.and.data[["project.data"]],
         combine.activity.types = TRUE
     )
@@ -1069,8 +1069,8 @@ test_that("Test add.vertex.attribute.active.ranges with computation over all typ
     expect_identical(expected.attributes, actual.attributes)
 })
 
-#' Test default values for the add.vertex.attribute.active.ranges method
-test_that("Test default values of add.vertex.attribute.active.ranges", {
+#' Test default values for the add.vertex.attribute.author.active.ranges method
+test_that("Test default values of add.vertex.attribute.author.active.ranges", {
 
     ## Test setup
     networks.and.data = get.network.covariates.test.networks()
@@ -1083,7 +1083,7 @@ test_that("Test default values of add.vertex.attribute.active.ranges", {
     test.data = networks.and.data[["project.data"]]
     test.activity.types = c("mails", "issues")
     test.default.value =  "test.default.value"
-    networks.with.attr = add.vertex.attribute.active.ranges(test.networks, test.data,
+    networks.with.attr = add.vertex.attribute.author.active.ranges(test.networks, test.data,
         activity.types = test.activity.types, default.value = test.default.value)
     actual.attributes = lapply(networks.with.attr, igraph:: get.vertex.attribute, name = "active.ranges")
 
@@ -1833,7 +1833,7 @@ test_that("Test addition of attributes despite of empty data", {
     names(networks) = range
 
     ## add commit-count attribute
-    net.commit.count = add.vertex.attribute.commit.count.author(networks, proj.data.empty, default = 0L)[[1]]
+    net.commit.count = add.vertex.attribute.author.commit.count(networks, proj.data.empty, default = 0L)[[1]]
     expect_true("commit.count" %in% igraph::list.vertex.attributes(net.commit.count))
 
     ## add author-role attribute:
@@ -1865,7 +1865,7 @@ test_that("Test addition of attributes despite of non-captured vertices", {
     names(networks) = range
 
     ## add commit-count attribute
-    net.commit.count = add.vertex.attribute.commit.count.committer.and.author(networks, proj.data.empty, default = 0L)[[1]]
+    net.commit.count = add.vertex.attribute.author.commit.count.committer.and.author(networks, proj.data.empty, default = 0L)[[1]]
 
     ## check existence and proper value
     expect_true("commit.count.committer.and.author" %in% igraph::list.vertex.attributes(net.commit.count))
