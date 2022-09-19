@@ -1252,7 +1252,7 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
 #'
 #' @param list.of.networks The network list
 #' @param project.data The project data
-#' @param name The attribute name to add [default: "issue.comment.count"]
+#' @param name The attribute name to add [default: "issue.comment.event.count"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
@@ -1275,7 +1275,7 @@ add.vertex.attribute.issue.comment.event.count = function(list.of.networks, proj
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     if (missing(name) && identical(type, "pull.requests")) {
-        name = "pr.comment.count"
+        name = "pr.comment.event.count"
     }
 
     nets.with.attr = split.and.add.vertex.attribute(
