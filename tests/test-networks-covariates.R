@@ -1930,9 +1930,426 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
 })
 
 #' issue opened date
+test_that("Test add.vertex.attribute.issue.opened.date", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
+
+    expected.attributes.issues.only = network.covariates.test.build.expected(
+        c("2016-07-12 14:30:13",
+          "2016-07-12 15:59:25",
+          NA),
+        c(NA,
+          "2016-07-12 16:01:30",
+          NA,
+          "2016-07-12 14:30:13",
+          NA),
+        c(NA,
+          "2016-07-12 15:59:25",
+          "2016-07-12 16:01:30",
+          "2016-07-12 14:30:13"))
+
+    expected.attributes.prs.only = network.covariates.test.build.expected(
+        c(NA,
+          NA,
+          "2016-07-14 13:37:00"),
+        c("2016-07-14 13:37:00",
+          NA,
+          "2016-07-12 16:02:02",
+          NA,
+          "2016-07-12 14:59:25"),
+        c("2016-07-14 13:37:00",
+          NA,
+          NA,
+          NA))
+
+    expected.attributes.both = network.covariates.test.build.expected(
+        c("2016-07-12 14:30:13",
+          "2016-07-12 15:59:25",
+          "2016-07-14 13:37:00"),
+        c("2016-07-14 13:37:00",
+          "2016-07-12 16:01:30",
+          "2016-07-12 16:02:02",
+          "2016-07-12 14:30:13",
+          "2016-07-12 14:59:25"),
+        c("2016-07-14 13:37:00",
+          "2016-07-12 15:59:25",
+          "2016-07-12 16:01:30",
+          "2016-07-12 14:30:13"))
+
+    ## convert date strings to POSIXct
+    expected.attributes.issues.only = lapply(expected.attributes.issues.only, function(date.vector) {get.date.from.string(date.vector)})
+
+    expected.attributes.prs.only = lapply(expected.attributes.prs.only, function(date.vector) {get.date.from.string(date.vector)})
+
+    expected.attributes.both = lapply(expected.attributes.both, function(date.vector) {get.date.from.string(date.vector)})
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.opened.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.opened.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.issues.only, actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.opened.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.opened.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.prs.only, actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.opened.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.opened.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.both, actual.attributes)
+    })
+})
+
 #' issue closed date
+test_that("Test add.vertex.attribute.issue.closed.date", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
+
+    expected.attributes.issues.only = network.covariates.test.build.expected(
+        c(NA,
+          "2016-07-12 16:06:30",
+          NA),
+        c(NA,
+          NA,
+          NA,
+          NA,
+          NA),
+        c(NA,
+          "2016-07-12 16:06:30",
+          NA,
+          NA))
+
+    expected.attributes.prs.only = network.covariates.test.build.expected(
+        c(NA,
+          NA,
+          NA),
+        c(NA,
+          NA,
+          NA,
+          NA,
+          "2016-07-12 16:04:59"),
+        c(NA,
+          NA,
+          NA,
+          NA))
+
+    expected.attributes.both = network.covariates.test.build.expected(
+        c(NA,
+          "2016-07-12 16:06:30",
+          NA),
+        c(NA,
+          NA,
+          NA,
+          NA,
+          "2016-07-12 16:04:59"),
+        c(NA,
+          "2016-07-12 16:06:30",
+          NA,
+          NA))
+
+    ## convert date strings to POSIXct
+    expected.attributes.issues.only = lapply(expected.attributes.issues.only, function(date.vector) {get.date.from.string(date.vector)})
+
+    expected.attributes.prs.only = lapply(expected.attributes.prs.only, function(date.vector) {get.date.from.string(date.vector)})
+
+    expected.attributes.both = lapply(expected.attributes.both, function(date.vector) {get.date.from.string(date.vector)})
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.closed.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.closed.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.issues.only, actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.closed.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.closed.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.prs.only, actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.closed.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.closed.date")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.both, actual.attributes)
+    })
+})
+
 #' issue last activity date
+test_that("Test add.vertex.attribute.issue.last.activity.date", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
+
+    expected.attributes.issues.only = list(
+        range = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", NA),
+            c(NA                   , "2016-07-12 16:02:30", NA                   , "2016-07-12 16:03:59", NA),
+            c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", NA),
+            c(NA                   , "2016-07-12 16:02:30", NA                   , "2016-07-12 16:03:59", NA),
+            c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        all.ranges = network.covariates.test.build.expected(
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", NA),
+            c(NA                   , "2016-07-28 06:27:52", NA                   , "2016-08-31 15:30:02", NA),
+            c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        project.cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", NA),
+            c(NA                   , "2016-07-12 16:02:30", NA                   , "2016-07-12 16:03:59", NA),
+            c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        project.all.ranges = network.covariates.test.build.expected(
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", NA),
+            c(NA                   , "2016-07-28 06:27:52", NA                   , "2016-08-31 15:30:02", NA),
+            c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        complete = network.covariates.test.build.expected(
+            c("2017-05-23 12:32:39", "2016-10-05 16:45:09", NA),
+            c(NA                   , "2016-07-28 06:27:52", NA                   , "2017-05-23 12:32:39", NA),
+            c(NA                   , "2016-10-05 16:45:09", "2016-07-28 06:27:52", "2017-05-23 12:32:39")))
+
+    expected.attributes.prs.only = list(
+        range = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)),
+        cumulative = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)),
+        all.ranges = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)),
+        project.cumulative = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)),
+        project.all.ranges = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)),
+        complete = network.covariates.test.build.expected(
+            c(NA                   , NA                   , "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", NA                   , NA                   , NA)))
+
+    expected.attributes.both = list(
+        range = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        all.ranges = network.covariates.test.build.expected(
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        project.cumulative = network.covariates.test.build.expected(
+            c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
+            c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        project.all.ranges = network.covariates.test.build.expected(
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-31 15:30:02")),
+        complete = network.covariates.test.build.expected(
+            c("2017-05-23 12:32:39", "2016-10-05 16:45:09", "2016-07-14 13:37:00"),
+            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2017-05-23 12:32:39", "2016-07-12 16:04:59"),
+            c("2016-07-14 13:37:00", "2016-10-05 16:45:09", "2016-07-28 06:27:52", "2017-05-23 12:32:39")))
+
+    ## convert date strings to POSIXct
+    expected.attributes.issues.only = lapply(expected.attributes.issues.only, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+    expected.attributes.prs.only = lapply(expected.attributes.prs.only, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+    expected.attributes.both = lapply(expected.attributes.both, function(times) {
+        lapply(times, function(date.vector) {
+            get.date.from.string(date.vector)
+        })
+    })
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.last.activity.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.last.activity")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.last.activity.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.last.activity")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.last.activity.date(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.last.activity")
+        ## convert UNIX timestamps to POSIXct
+        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
+
+        expect_identical(expected.attributes.both[[level]], actual.attributes)
+    })
+})
+
 #' issue title
+test_that("Test add.vertex.attribute.issue.title", {
+    ## Test setup
+    networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
+
+    expected.attributes.issues.only = network.covariates.test.build.expected(
+            c("Distinguish directedness of networks and edge-construction algorithm",
+              "Error in construct.networks.from.list for openssl function networks",
+              NA),
+            c(NA,
+              "[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table",
+              NA,
+              "Distinguish directedness of networks and edge-construction algorithm",
+              NA),
+            c(NA,
+              "Error in construct.networks.from.list for openssl function networks",
+              "[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table",
+              "Distinguish directedness of networks and edge-construction algorithm"))
+
+    expected.attributes.prs.only = network.covariates.test.build.expected(
+        c(NA,
+          NA,
+          "Example pull request 1"),
+        c("Example pull request 1",
+          NA,
+          "Example pull request 4",
+          NA,
+          "Example pull request 2"),
+        c("Example pull request 1",
+          NA,
+          NA,
+          NA))
+
+    expected.attributes.both = network.covariates.test.build.expected(
+        c("Distinguish directedness of networks and edge-construction algorithm",
+          "Error in construct.networks.from.list for openssl function networks",
+          "Example pull request 1"),
+        c("Example pull request 1",
+          "[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table",
+          "Example pull request 4",
+          "Distinguish directedness of networks and edge-construction algorithm",
+          "Example pull request 2"),
+        c("Example pull request 1",
+          "Error in construct.networks.from.list for openssl function networks",
+          "[ZEPPELIN-332] CNFE when running SQL query against Cassandra temp table",
+          "Distinguish directedness of networks and edge-construction algorithm"))
+
+    ## Test issues only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.title(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.title")
+
+        expect_identical(expected.attributes.issues.only, actual.attributes)
+    })
+
+    # Test PRs only
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.title(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
+            type = "pull.requests")
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.title")
+
+        expect_identical(expected.attributes.prs.only, actual.attributes)
+    })
+
+    # Test both
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.issue.title(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.title")
+
+        expect_identical(expected.attributes.both, actual.attributes)
+    })
+})
+
 #' issue is pull request
 test_that("Test add.vertex.attribute.issue.is.pull.request", {
 
