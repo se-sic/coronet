@@ -1442,6 +1442,26 @@ add.vertex.attribute.issue.title = function(list.of.networks, project.data, name
     return(nets.with.attr)
 }
 
+#' Add whether each PR is open, has been merged, or was closed without merging.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "pull.request.state"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.pr.open.merged.or.closed = function(list.of.networks, project.data, name = "pull.request.state",
+                                                         default.value = NA) {
+
+    nets.with.attr = split.and.add.vertex.attribute(
+        list.of.networks, project.data, name, aggregation.level = "complete", default.value,
+        function(range, range.data, net) {
+            return(get.pr.open.merged.or.closed(range.data))
+        }
+    )
+    return(nets.with.attr)
+}
+
 #' Add whether an issue is a pull request
 #'
 #' @param list.of.networks The network list

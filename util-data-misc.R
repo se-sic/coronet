@@ -690,6 +690,25 @@ get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")
     return(issue.id.to.title.only)
 }
 
+#' Get whether a PR is open, has been merged, or has been closed without merging.
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.pr.open.merged.or.closed = function(proj.data) {
+    logging::logdebug("get.issue.title: starting.")
+    df = preprocess.issue.data(proj.data, type = "pull.requests", use.unfiltered.data = TRUE,
+                               retained.cols = c("issue.id", "issue.state", "event.name"))
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
+    issue.id.to.state = lapply(issue.id.to.events, function(df) {
+        return (if ("open" %in% df[["issue.state"]]) "open"
+                else if ("merged" %in% df[["event.name"]]) "merged"
+                else "closed")
+    })
+    logging::logdebug("get.issue.title: finished")
+    return(issue.id.to.state)
+}
+
 #' Get whether each issue is a pull request, based on the issue data contained in the specified
 #' \code{ProjectData}.
 #'

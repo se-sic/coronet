@@ -2350,6 +2350,27 @@ test_that("Test add.vertex.attribute.issue.title", {
     })
 })
 
+#' pull request state
+test_that("Test add.vertex.attribute.pr.open.merged.or.closed", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "issue")
+
+    expected.attributes = network.covariates.test.build.expected(
+        c(NA, NA, "closed"), c("closed", NA, "open", NA, "merged"), c("closed", NA, NA, NA)
+    )
+
+    ## Test
+
+    networks.with.attr = add.vertex.attribute.pr.open.merged.or.closed(
+        networks.and.data[["networks"]], networks.and.data[["project.data"]])
+
+    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.state")
+
+    expect_equal(expected.attributes, actual.attributes)
+})
+
 #' issue is pull request
 test_that("Test add.vertex.attribute.issue.is.pull.request", {
 
