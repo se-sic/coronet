@@ -1339,7 +1339,7 @@ add.vertex.attribute.issue.opened.date = function(list.of.networks, project.data
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
-#' @param default.value The default value to add if a vertex has no matching value [default: 0L]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.issue.closed.date = function(list.of.networks, project.data, name = "issue.closed.date",

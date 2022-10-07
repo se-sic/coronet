@@ -1603,12 +1603,30 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
 ## Unit tests for issue artifact networks
 
 #' Helper function for add.vertex.attribute.issue.* tests
+#'
+#' Merges expected data for issue networks, where attributes may be considered for issues only, PRs only, or both.
+#' This function returns the data for both, given the data for issues only and PRs only, where \code{NA} is used for
+#' vertices of the other type.
+#' The data is given as lists of lists of vectors, and merged by replacing the \code{NA}-values of the first list
+#' with the non-\code{NA} values of the second. Therefore, it only works if all vertices have a non-\code{NA} value in
+#' exactly one of the two lists.
+#'
+#' @param expected.attributes.issues.only a list of lists of vectors, containing some value for each issue vertex and
+#'                                        \code{NA} for PR vertices
+#' @param expected.attributes.prs.only a list of lists of vectors, containing some value for each PR vertex and
+#'                                     \code{NA} for issue vertices
+#' @return a list of lists of vectors, containing values for issue and PR vertices
 merge.expected.attributes = function(expected.attributes.issues.only, expected.attributes.prs.only) {
     result = lapply(names(expected.attributes.issues.only), function(n) {
         issue.attr = expected.attributes.issues.only[[n]]
         pr.attr = expected.attributes.prs.only[[n]]
         sum.attr = lapply(names(issue.attr), function (n2) {
-            replace(issue.attr[[n2]], is.na(issue.attr[[n2]]), 0L) + replace(pr.attr[[n2]], is.na(pr.attr[[n2]]), 0L)
+            a = issue.attr[[n2]]
+            b = pr.attr[[n2]]
+            ## assign the non-NA values of b to the previously-NA values of a.
+            ## this only works properly if, at each index, exactly one of the vectors is NA.
+            a[is.na(a)] = b[!is.na(b)]
+            return(a)
         })
         names(sum.attr) = names(issue.attr)
         return(sum.attr)
@@ -1811,21 +1829,21 @@ test_that("Test add.vertex.attribute.issue.event.count", {
     networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(2L, 3L, NA), c(NA, 2L, NA, 1L, NA), c(NA, 3L, 4L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(2L, 3L, NA), c(NA, 2L, NA, 3L, NA), c(NA, 6L, 6L, 4L)),
-        all.ranges = network.covariates.test.build.expected(c(4L, 6L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 6L, 6L, 4L)),
-        project.cumulative = network.covariates.test.build.expected(c(2L, 3L, NA), c(NA, 2L, NA, 3L, NA), c(NA, 6L, 6L, 4L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 6L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 6L, 6L, 4L)),
-        complete = network.covariates.test.build.expected(c(10L, 7L, NA), c(NA, 6L, NA, 10L, NA), c(NA, 7L, 6L, 10L))
+        range = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 1L, NA), c(NA, 3L, 4L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 6L, 6L, 3L)),
+        all.ranges = network.covariates.test.build.expected(c(3L, 6L, NA), c(NA, 6L, NA, 3L, NA), c(NA, 6L, 6L, 3L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 6L, 6L, 3L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 6L, NA), c(NA, 6L, NA, 3L, NA), c(NA, 6L, 6L, 3L)),
+        complete = network.covariates.test.build.expected(c(8L, 7L, NA), c(NA, 6L, NA, 8L, NA), c(NA, 7L, 6L, 8L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(NA, NA, 3L), c(1L, NA, 3L, NA, 2L), c(2L, NA, NA, NA)),
-        cumulative = network.covariates.test.build.expected(c(NA, NA, 3L), c(4L, NA, 3L, NA, 2L), c(6L, NA, NA, NA)),
-        all.ranges = network.covariates.test.build.expected(c(NA, NA, 6L), c(6L, NA, 3L, NA, 2L), c(6L, NA, NA, NA)),
-        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 3L), c(4L, NA, 3L, NA, 4L), c(6L, NA, NA, NA)),
-        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 6L), c(6L, NA, 3L, NA, 4L), c(6L, NA, NA, NA)),
-        complete = network.covariates.test.build.expected(c(NA, NA, 6L), c(6L, NA, 3L, NA, 4L), c(6L, NA, NA, NA))
+        range = network.covariates.test.build.expected(c(NA, NA, 2L), c(1L, NA, 2L, NA, 1L), c(2L, NA, NA, NA)),
+        cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 1L), c(5L, NA, NA, NA)),
+        all.ranges = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 1L), c(5L, NA, NA, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 2L), c(5L, NA, NA, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 2L), c(5L, NA, NA, NA)),
+        complete = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 2L), c(5L, NA, NA, NA))
     )
 
     expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -2358,7 +2376,7 @@ test_that("Test add.vertex.attribute.pr.open.merged.or.closed", {
     networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "issue")
 
     expected.attributes = network.covariates.test.build.expected(
-        c(NA, NA, "closed"), c("closed", NA, "open", NA, "merged"), c("closed", NA, NA, NA)
+        c(NA, NA, "open"), c("open", NA, "open", NA, "merged"), c("open", NA, NA, NA)
     )
 
     ## Test

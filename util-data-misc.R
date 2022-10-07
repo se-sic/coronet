@@ -559,11 +559,13 @@ get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pul
 get.issue.event.count = function(proj.data, type = c("all", "issues", "pull.requests"), use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.issue.event.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"),
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "event.id"),
                                use.unfiltered.data = use.unfiltered.data)
-    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "author.email")
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.id")
     issue.id.to.event.count = lapply(issue.id.to.events, function(df) {
-        length(df[["data.vertices"]])
+        ## one event might show up multiple times (i.e. 'mentioned' also triggers 'subscribed'),
+        ## so we count the number of distinct event IDs
+        length(unique(df[["data.vertices"]]))
     })
     logging::logdebug("get.issue.event.count: finished")
     return(issue.id.to.event.count)
@@ -633,7 +635,7 @@ get.issue.closed.date = function(proj.data, type = c("all", "issues", "pull.requ
     df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "closing.date"))
     issue.id.to.dates = get.key.to.value.from.df(df, "issue.id", "closing.date")
     issue.id.to.closed.date = lapply(issue.id.to.dates, function(df) {
-        min(df[["data.vertices"]])
+        min(df[["data.vertices"]]) # values should all be the same
     })
     logging::logdebug("get.issue.closed.date: finished")
     return(issue.id.to.closed.date)
@@ -696,16 +698,16 @@ get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")
 #'
 #' @return a named list of dates, where the name is the issue ID.
 get.pr.open.merged.or.closed = function(proj.data) {
-    logging::logdebug("get.issue.title: starting.")
+    logging::logdebug("get.pr.open.merged.or.closed: starting.")
     df = preprocess.issue.data(proj.data, type = "pull.requests", use.unfiltered.data = TRUE,
                                retained.cols = c("issue.id", "issue.state", "event.name"))
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
     issue.id.to.state = lapply(issue.id.to.events, function(df) {
-        return (if ("open" %in% df[["issue.state"]]) "open"
+        return (if ("open" %in% df[["issue.state"]] || "reopened" %in% df[["issue.state"]]) "open"
                 else if ("merged" %in% df[["event.name"]]) "merged"
                 else "closed")
     })
-    logging::logdebug("get.issue.title: finished")
+    logging::logdebug("get.pr.open.merged.or.closed: finished")
     return(issue.id.to.state)
 }
 
