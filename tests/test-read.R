@@ -217,7 +217,8 @@ test_that("Read the mail data.", {
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= 2", "Re: busybox 1",
                                               "=?KOI8-R?Q?=EF=D4=D7=C5=D4:_Some_patches?= tab", "Re: Fw: busybox 2 tab",
                                               "Re: Fw: busybox 10"),
-                                    thread = sprintf("<thread-%s>", c(1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 8, 9, 9)),
+                                    thread = sprintf("<thread-%s>", c("13#1", "42#2", "13#3", "42#4", "42#5", "42#6", "42#6", "42#6",
+                                                                      "42#6", "42#6", "42#6", "42#7", "13#8", "13#8", "13#8", "13#9", "13#9")),
                                     artifact.type = "Mail"
                                     )
     ## delete the line with the empty date

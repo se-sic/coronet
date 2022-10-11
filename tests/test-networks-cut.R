@@ -69,7 +69,7 @@ test_that("Cut commit and mail data to same date range.", {
                                     date = get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37")),
                                     date.offset = as.integer(c(100, 200)),
                                     subject = c("Re: Fw: busybox 2 tab", "Re: Fw: busybox 10"),
-                                    thread = sprintf("<thread-%s>", c(9, 9)),
+                                    thread = sprintf("<thread-%s>", c("13#9", "13#9")),
                                     artifact.type = c("Mail", "Mail"))
 
     commit.data = x$get.project.data()$get.commits.unfiltered()

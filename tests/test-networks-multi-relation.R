@@ -86,7 +86,7 @@ test_that("Network construction of the undirected author network with relation =
                                      "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
                                      "<65a1sf31sagd684dfv31@mail.gmail.com>", "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"),
                       thread = c(NA, NA, NA, NA, NA, NA, NA, NA,
-                                 "<thread-8>", "<thread-8>", "<thread-9>", "<thread-9>")
+                                 "<thread-13#8>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>")
     )
 
     ## build expected network
@@ -132,8 +132,8 @@ test_that("Construction of the bipartite network for the feature artifact with a
          type = TYPE.ARTIFACT
     )
     threads = data.frame(
-            name = c("<thread-1>", "<thread-2>", "<thread-8>",
-                     "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>", "<thread-3>"),
+            name = c("<thread-13#1>", "<thread-42#2>", "<thread-13#8>",
+                     "<thread-42#4>", "<thread-42#5>", "<thread-42#6>", "<thread-42#7>", "<thread-13#9>", "<thread-13#3>"),
             kind = "MailThread",
             type = TYPE.ARTIFACT
     )
@@ -150,9 +150,9 @@ test_that("Construction of the bipartite network for the feature artifact with a
                            "<issue-github-3>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>",
                            "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                            "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>", "<issue-github-6>",
-                           "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>", # mail
-                           "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
-                           "<thread-9>", "<thread-3>"),
+                           "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>", "<thread-42#6>", # mail
+                           "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#7>", "<thread-13#8>", "<thread-13#9>",
+                           "<thread-13#9>", "<thread-13#3>"),
                   date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34", # issue
                                                 "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                                 "2016-07-12 14:59:25", "2016-07-12 16:02:30", "2016-07-12 16:06:01",
@@ -178,9 +178,9 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                  "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>", "<65a1sf31sagd684dfv31@mail.gmail.com>",
                                  "<asddghdswqeasdasd@mail.gmail.com>"),
                   thread = c(rep(NA, 24),
-                             "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
-                             "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
-                             "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+                             "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>",
+                             "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#7>",
+                             "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>"),
                   issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", # issue
                                "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                                "<issue-github-2>", "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>",
@@ -296,7 +296,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                                        "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
                                        rep(NA, 29)),
                         thread = c(rep(NA, 8),
-                                   "<thread-8>", "<thread-8>", "<thread-9>", "<thread-9>",
+                                   "<thread-13#8>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>",
                                    rep(NA, 29)),
                         issue.id = c(rep(NA, 20),
                                      "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", # bipartite issue
@@ -434,29 +434,29 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     vertices = data.frame(name = c("Björn",                  "Karl",                   "Olaf",
                                    "Thomas",                 "A",                      "Base_Feature",
                                    "foo",                    "Fritz fritz@example.org","georg",
-                                   "Hans",                   "udo",                    "<thread-1>",
-                                   "<thread-2>",             "<thread-8>",             "<thread-4>",
-                                   "<thread-5>",             "<thread-6>",             "<thread-7>",
-                                   "<thread-9>",             "<thread-3>"),
+                                   "Hans",                   "udo",                    "<thread-13#1>",
+                                   "<thread-42#2>",             "<thread-13#8>",             "<thread-42#4>",
+                                   "<thread-42#5>",             "<thread-42#6>",             "<thread-42#7>",
+                                   "<thread-13#9>",             "<thread-13#3>"),
                           kind = c(rep(TYPE.AUTHOR, 4), rep("Feature", 3), rep(TYPE.AUTHOR, 4), rep("MailThread", 9)),
                           type = c(rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 3), rep(TYPE.AUTHOR, 4), rep(TYPE.ARTIFACT, 9))
     )
     row.names(vertices) = c("Björn",                  "Karl",                   "Olaf",
                             "Thomas",                 "A",                      "Base_Feature",
                             "foo",                    "Fritz fritz@example.org","georg",
-                            "Hans",                   "udo",                    "<thread-1>",
-                            "<thread-2>",             "<thread-8>",             "<thread-4>",
-                            "<thread-5>",             "<thread-6>",             "<thread-7>",
-                            "<thread-9>",             "<thread-3>")
+                            "Hans",                   "udo",                    "<thread-13#1>",
+                            "<thread-42#2>",             "<thread-13#8>",             "<thread-42#4>",
+                            "<thread-42#5>",             "<thread-42#6>",             "<thread-42#7>",
+                            "<thread-13#9>",             "<thread-13#3>")
 
     edges = data.frame(
            from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Björn", "Björn",
                     "Björn", "Fritz fritz@example.org", "georg", "Hans", "Hans", "Hans",
                     "Hans", "Hans", "Hans", "Hans", "Olaf", "Olaf", "Thomas", "udo"),
-           to = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", "<thread-1>",
-                  "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
-                  "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
-                  "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+           to = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", "<thread-13#1>",
+                  "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>",
+                  "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>",
+                  "<thread-42#7>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>"),
            date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
                                          "2004-10-09 18:38:13", "2005-02-09 18:49:49", "2016-07-12 15:58:40",
@@ -484,10 +484,10 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                           "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
                           "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"
                           ),
-           thread = c(rep(NA, 6), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
-                      "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
-                      "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
-                      "<thread-9>", "<thread-3>")
+           thread = c(rep(NA, 6), "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>",
+                      "<thread-42#5>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>",
+                      "<thread-42#6>", "<thread-42#6>", "<thread-42#7>", "<thread-13#8>", "<thread-13#9>",
+                      "<thread-13#9>", "<thread-13#3>")
     )
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
@@ -521,18 +521,18 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     vertices = data.frame(name = c("Björn", "Karl", "Max", "Olaf", "Thomas",
                                    "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
                                    "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>",
-                                   "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-1>",
-                                   "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
-                                   "<thread-7>", "<thread-9>", "<thread-3>"),
+                                   "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-13#1>",
+                                   "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>",
+                                   "<thread-42#7>", "<thread-13#9>", "<thread-13#3>"),
                           kind = c(rep("Author", 5), rep("Issue", 7), rep("Author", 4), rep("MailThread", 9)),
                           type = c(rep("Author", 5), rep("Artifact", 7), rep("Author", 4), rep("Artifact", 9))
                           )
     row.names(vertices) = c("Björn", "Karl", "Max", "Olaf", "Thomas",
                             "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
                             "<issue-github-1>", "<issue-github-6>", "<issue-github-3>", "<issue-github-4>",
-                            "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-1>",
-                            "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>",
-                            "<thread-7>", "<thread-9>", "<thread-3>")
+                            "Fritz fritz@example.org", "georg", "Hans", "udo", "<thread-13#1>",
+                            "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>",
+                            "<thread-42#7>", "<thread-13#9>", "<thread-13#3>")
 
     edges = data.frame(
            from = c("Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn", "Björn",
@@ -547,9 +547,9 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                   "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                   "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
                   "<issue-github-4>", "<issue-jira-ZEPPELIN-328>", "<issue-github-1>",
-                  "<issue-github-6>", "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
-                  "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
-                  "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+                  "<issue-github-6>", "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>",
+                  "<thread-42#5>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>",
+                  "<thread-42#6>", "<thread-42#7>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>"),
            date = get.date.from.string(c("2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
                                          "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
                                          "2016-07-12 14:59:25", "2016-07-12 16:02:30", "2016-07-12 16:06:01",
@@ -587,9 +587,9 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                           "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
                           "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"
                           ),
-           thread = c(rep(NA, 24), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>", "<thread-5>",
-                      "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
-                      "<thread-7>", "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>")
+           thread = c(rep(NA, 24), "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>", "<thread-42#5>",
+                      "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>",
+                      "<thread-42#7>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>")
     )
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
@@ -628,9 +628,9 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                                    "Max", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>",
                                    "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-github-6>",
                                    "<issue-github-3>", "<issue-github-4>", "Fritz fritz@example.org",
-                                   "georg", "Hans", "udo", "<thread-1>", "<thread-2>", "<thread-8>",
-                                   "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>",
-                                   "<thread-3>"),
+                                   "georg", "Hans", "udo", "<thread-13#1>", "<thread-42#2>", "<thread-13#8>",
+                                   "<thread-42#4>", "<thread-42#5>", "<thread-42#6>", "<thread-42#7>", "<thread-13#9>",
+                                   "<thread-13#3>"),
                           kind = c(rep("Author", 4), rep("Feature", 3), "Author",
                                    rep("Issue", 7), rep("Author", 4), rep("MailThread", 9)),
                           type = c(rep("Author", 4), rep("Artifact", 3), "Author",
@@ -639,9 +639,9 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                             "Max", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>",
                             "<issue-jira-ZEPPELIN-332>", "<issue-github-1>", "<issue-github-6>",
                             "<issue-github-3>", "<issue-github-4>", "Fritz fritz@example.org",
-                            "georg", "Hans", "udo", "<thread-1>", "<thread-2>", "<thread-8>",
-                            "<thread-4>", "<thread-5>", "<thread-6>", "<thread-7>", "<thread-9>",
-                            "<thread-3>")
+                            "georg", "Hans", "udo", "<thread-13#1>", "<thread-42#2>", "<thread-13#8>",
+                            "<thread-42#4>", "<thread-42#5>", "<thread-42#6>", "<thread-42#7>", "<thread-13#9>",
+                            "<thread-13#3>")
 
     edges = data.frame(
            from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Björn", "Björn",
@@ -658,10 +658,10 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                   "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-332>", "<issue-jira-ZEPPELIN-328>",
                   "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                   "<issue-github-1>", "<issue-github-4>", "<issue-jira-ZEPPELIN-328>",
-                  "<issue-github-1>", "<issue-github-6>", "<thread-1>", "<thread-2>",
-                  "<thread-8>", "<thread-4>", "<thread-5>", "<thread-6>", "<thread-6>",
-                  "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-7>",
-                  "<thread-8>", "<thread-9>", "<thread-9>", "<thread-3>"),
+                  "<issue-github-1>", "<issue-github-6>", "<thread-13#1>", "<thread-42#2>",
+                  "<thread-13#8>", "<thread-42#4>", "<thread-42#5>", "<thread-42#6>", "<thread-42#6>",
+                  "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#7>",
+                  "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>"),
            date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
                                          "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
                                          "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
@@ -706,10 +706,10 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                           "<hans7@mail.gmail.com>", "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
                           "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
                           "<65a1sf31sagd684dfv31@mail.gmail.com>", "<asddghdswqeasdasd@mail.gmail.com>"),
-           thread = c(rep(NA, 30), "<thread-1>", "<thread-2>", "<thread-8>", "<thread-4>",
-                      "<thread-5>", "<thread-6>", "<thread-6>", "<thread-6>", "<thread-6>",
-                      "<thread-6>", "<thread-6>", "<thread-7>", "<thread-8>", "<thread-9>",
-                      "<thread-9>", "<thread-3>")
+           thread = c(rep(NA, 30), "<thread-13#1>", "<thread-42#2>", "<thread-13#8>", "<thread-42#4>",
+                      "<thread-42#5>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>", "<thread-42#6>",
+                      "<thread-42#6>", "<thread-42#6>", "<thread-42#7>", "<thread-13#8>", "<thread-13#9>",
+                      "<thread-13#9>", "<thread-13#3>")
     )
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
