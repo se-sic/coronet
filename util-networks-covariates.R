@@ -1184,6 +1184,38 @@ add.vertex.attribute.mail.thread.end.date = function(list.of.networks, project.d
     return(nets.with.attr)
 }
 
+#' Add the identifier of the mailing list where a mail thread originates.
+#' See \code{get.mail.thread.originating.mailing.list} for more details.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param name The attribute name to add [default: "thread.originating.mailing.list"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "complete"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.mail.thread.originating.mailing.list = function(list.of.networks, project.data,
+                                                                     name = "thread.originating.mailing.list",
+                                                                     aggregation.level = c("range", "cumulative",
+                                                                                           "all.ranges",
+                                                                                           "project.cumulative",
+                                                                                           "project.all.ranges",
+                                                                                            "complete"),
+                                                                     default.value = NA) {
+    aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
+    nets.with.attr = split.and.add.vertex.attribute(
+        list.of.networks, project.data, name, aggregation.level, default.value,
+        function(range, range.data, net) {
+            return(get.mail.thread.originating.mailing.list(range.data))
+        }
+    )
+    return(nets.with.attr)
+}
+
 ## * Issue metrics ---------------------------------------------------------
 
 #' Add the number of contributors to each issue or PR

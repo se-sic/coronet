@@ -1600,6 +1600,32 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
     })
 })
 
+#' mail thread originating mailing list
+test_that("Test add.vertex.attribute.mail.thread.originating.mailing.list", {
+
+    ## Test setup
+
+    networks.and.data = get.network.covariates.test.networks("artifact", artifact.relation = "mail", bins = mybins.since.2010)
+
+    expected.attributes = network.covariates.test.build.expected.since.2010(
+            c("42", "42", "42"), c("13"), c("13"), c("13")
+    )
+
+    ## Test
+
+    lapply(AGGREGATION.LEVELS, function(level) {
+        networks.with.attr = add.vertex.attribute.mail.thread.originating.mailing.list(
+            networks.and.data[["networks"]], networks.and.data[["project.data"]],
+            aggregation.level = level
+        )
+
+        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute,
+                                   name = "thread.originating.mailing.list")
+
+        expect_equal(expected.attributes, actual.attributes)
+    })
+})
+
 ## Unit tests for issue artifact networks
 
 #' Helper function for add.vertex.attribute.issue.* tests
