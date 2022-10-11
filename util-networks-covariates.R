@@ -507,6 +507,7 @@ add.vertex.attribute.author.issue.count = function(list.of.networks, project.dat
 #'                          more details. [default: "range"]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issues.commented.count = function(list.of.networks, project.data,
@@ -516,7 +517,8 @@ add.vertex.attribute.author.issues.commented.count = function(list.of.networks, 
                                                                                 "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues")) {
+                                                                                             "issues"),
+                                                          use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -524,7 +526,10 @@ add.vertex.attribute.author.issues.commented.count = function(list.of.networks, 
     }
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issues.commented.in.count(data, type = issue.type))},
+        default.value, function(data) {
+            return(get.author.issues.commented.in.count(data, type = issue.type,
+                                                        use.unfiltered.data = use.unfiltered.data))
+            },
         "author.name"
     )
 
@@ -544,6 +549,9 @@ add.vertex.attribute.author.issues.commented.count = function(list.of.networks, 
 #'                          more details. [default: "range"]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}).
+#'                            Note that filtered data may not contain issue creation events.
+#'                            [default: TRUE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issue.creation.count = function(list.of.networks, project.data,
@@ -553,7 +561,8 @@ add.vertex.attribute.author.issue.creation.count = function(list.of.networks, pr
                                                                                 "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues")) {
+                                                                                             "issues"),
+                                                          use.unfiltered.data = TRUE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -561,7 +570,9 @@ add.vertex.attribute.author.issue.creation.count = function(list.of.networks, pr
     }
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issues.created.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {
+            return(get.author.issues.created.count(data, type = issue.type, use.unfiltered.data = use.unfiltered.data))
+            }, "author.name"
     )
 
     return(nets.with.attr)
@@ -580,6 +591,7 @@ add.vertex.attribute.author.issue.creation.count = function(list.of.networks, pr
 #'                          more details. [default: "range"]
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #' @param issue.type The issue kind,see \code{preprocess.issue.data} [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issue.comment.count = function(list.of.networks, project.data,
@@ -589,7 +601,8 @@ add.vertex.attribute.author.issue.comment.count = function(list.of.networks, pro
                                                                                 "project.all.ranges",
                                                                                 "complete"),
                                                           default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues")) {
+                                                                                             "issues"),
+                                                          use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -597,7 +610,9 @@ add.vertex.attribute.author.issue.comment.count = function(list.of.networks, pro
     }
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
-        default.value, function(data) {return(get.author.issue.comment.count(data, type = issue.type))}, "author.name"
+        default.value, function(data) {
+            return(get.author.issue.comment.count(data, type = issue.type, use.unfiltered.data = use.unfiltered.data))
+            }, "author.name"
     )
 
     return(nets.with.attr)

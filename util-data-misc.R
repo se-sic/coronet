@@ -387,13 +387,17 @@ get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.req
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}). Note that the
+#'                            filtered data may not contain issue created events.
+#'                            [default: TRUE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                           use.unfiltered.data = TRUE) {
     type = match.arg(type)
     logging::logdebug("get.author.issues.created.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = TRUE)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              WHERE `event.name` = 'created'
@@ -412,13 +416,15 @@ get.author.issues.created.count = function(proj.data, type = c("all", "issues", 
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.commented.in.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issues.commented.in.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                                use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issues.commented.in.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              WHERE `event.name` = 'commented'
@@ -437,13 +443,15 @@ get.author.issues.commented.in.count = function(proj.data, type = c("all", "issu
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective comment counts
-get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                          use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issue.comment.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     stmt = "SELECT `author.name`, COUNT(*) as `freq` FROM `df`
                              WHERE `event.name` = 'commented'
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
@@ -695,11 +703,12 @@ get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")
 #' Get whether a PR is open, has been merged, or has been closed without merging.
 #'
 #' @param proj.data the \code{ProjectData} containing the issue data
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: TRUE]
 #'
 #' @return a named list of dates, where the name is the issue ID.
-get.pr.open.merged.or.closed = function(proj.data) {
+get.pr.open.merged.or.closed = function(proj.data, use.unfiltered.data = TRUE) {
     logging::logdebug("get.pr.open.merged.or.closed: starting.")
-    df = preprocess.issue.data(proj.data, type = "pull.requests", use.unfiltered.data = TRUE,
+    df = preprocess.issue.data(proj.data, type = "pull.requests", use.unfiltered.data = use.unfiltered.data,
                                retained.cols = c("issue.id", "issue.state", "event.name"))
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
     issue.id.to.state = lapply(issue.id.to.events, function(df) {
