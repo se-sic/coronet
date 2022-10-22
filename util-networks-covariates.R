@@ -259,11 +259,13 @@ add.vertex.attribute.author.commit.count.not.committer = function(list.of.networ
 #' @param default.value The default value to add if a vertex has no matching value [default: 0L]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute.author.commit.count.committer = function(list.of.networks, project.data, name = "commit.count.committer",
-                                                       aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                             "project.cumulative", "project.all.ranges",
-                                                                             "complete"),
-                                                       default.value = 0L) {
+add.vertex.attribute.author.commit.count.committer = function(list.of.networks, project.data,
+                                                              name = "commit.count.committer",
+                                                              aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                    "project.cumulative",
+                                                                                    "project.all.ranges",
+                                                                                    "complete"),
+                                                              default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.commit.count, "committer.name"

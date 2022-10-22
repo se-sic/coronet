@@ -1641,6 +1641,7 @@ test_that("Test add.vertex.attribute.mail.thread.originating.mailing.list", {
 #'                                        \code{NA} for PR vertices
 #' @param expected.attributes.prs.only a list of lists of vectors, containing some value for each PR vertex and
 #'                                     \code{NA} for issue vertices
+#'
 #' @return a list of lists of vectors, containing values for issue and PR vertices
 merge.expected.attributes = function(expected.attributes.issues.only, expected.attributes.prs.only) {
     result = lapply(names(expected.attributes.issues.only), function(n) {

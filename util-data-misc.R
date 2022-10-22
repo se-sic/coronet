@@ -467,6 +467,7 @@ get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "
 #' specified \code{ProjectData}.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
+#'
 #' @return a named list of contributor counts, where the name is the thread.
 get.mail.thread.contributor.count = function(proj.data) {
     logging::logdebug("get.mail.thread.contributor.count: starting.")
@@ -482,6 +483,7 @@ get.mail.thread.contributor.count = function(proj.data) {
 #' specified \code{ProjectData}.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
+#'
 #' @return a named list of message counts, where the name is the thread.
 get.mail.thread.mail.count = function(proj.data) {
     logging::logdebug("get.mail.thread.mail.count: starting.")
@@ -497,6 +499,7 @@ get.mail.thread.mail.count = function(proj.data) {
 #' in the specified \code{ProjectData}.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
+#'
 #' @return a named list of start dates, where the name is the thread.
 get.mail.thread.start.date = function(proj.data) {
     logging::logdebug("get.mail.thread.start.date: starting.")
@@ -512,6 +515,7 @@ get.mail.thread.start.date = function(proj.data) {
 #' in the specified \code{ProjectData}
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
+#'
 #' @return a named list of end dates, where the name is the thread.
 get.mail.thread.end.date = function(proj.data) {
     logging::logdebug("get.mail.thread.end.date: starting.")
@@ -524,19 +528,20 @@ get.mail.thread.end.date = function(proj.data) {
 }
 
 #' Get the identifier of the mailing list from which a threat originates.
-#' This identifier is part of the thread ID as produced by codeface, e.g. if the thread ID is "13#37", then 13 is the ID
-#' of the mailing list.
+#' This identifier is part of the thread ID as produced by codeface, e.g., if the thread ID is "13#37", then 13 is the
+#' ID of the mailing list.
 #'
 #' Older versions of codeface did not include this identifier. If the identifier is not included in the data used, a
 #' warning is produced and the list will contain \code{NA} for each thread.
 #'
 #' @param proj.data the \code{ProjectData} containing the mail data
+#'
 #' @return a named list of mailing list identifiers, where the name is the thread.
 get.mail.thread.originating.mailing.list = function(proj.data) {
     logging::logdebug("get.mail.thread.originating.mailing.list: starting.")
     thread.ids = unique(proj.data$get.mails()[["thread"]])
     thread.to.list = lapply(thread.ids, function(thread.name) {
-        thread.id = substr(thread.name, 9, nchar(thread.name)-1) # remove '<thread-' '>'
+        thread.id = substr(thread.name, 9, nchar(thread.name) - 1) # remove '<thread-' '>'
         if (grepl("#", thread.id, fixed = TRUE)) { # make sure that our data has the shape we expect
             mailing.list = strsplit(thread.id, "#")[[1]][1] # split at '#' and keep only first part
             return(mailing.list)
