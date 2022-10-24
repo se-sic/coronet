@@ -247,12 +247,12 @@ test_that("Compare networks after adding vertex attributes in different order", 
     networks = split.network.time.based(author.network, number.windows = 2)
 
     ## add commit count or email attribute
-    networks.commit.count = add.vertex.attribute.commit.count.author(networks, proj.data, aggregation.level = "range")
+    networks.commit.count = add.vertex.attribute.author.commit.count(networks, proj.data, aggregation.level = "range")
     networks.email = add.vertex.attribute.author.email(networks, proj.data)
 
     ## add the other attribute
     networks.both.1 = add.vertex.attribute.author.email(networks.commit.count, proj.data)
-    networks.both.2 = add.vertex.attribute.commit.count.author(networks.email, proj.data, aggregation.level = "range")
+    networks.both.2 = add.vertex.attribute.author.commit.count(networks.email, proj.data, aggregation.level = "range")
 
     ## Order of attributes is now different, while the content is the same.
     ## The resulting networks are therefore not equal.
