@@ -21,6 +21,7 @@
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -44,11 +45,11 @@ requireNamespace("lubridate") # for date conversion
 #' @param time.period the time period describing the length of the ranges, a character string,
 #'                    e.g., "3 mins" or "15 days" [default: "3 months"]
 #' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner). If set, the 'time.period' parameter is ignored; consequently, 'split.basis' and
-#'             'sliding.window' do not make sense then either. [default: NULL]
+#'             *exclusive* manner). If set, the \code{time.period} parameter is ignored; consequently, \code{split.basis} and
+#'             \code{sliding.window} do not make sense then either. [default: NULL]
 #' @param number.windows the number of consecutive data objects to get from this function, implying equally
-#'                       time-sized windows for all ranges. If set, the 'time.period' and 'bins' parameters are ignored;
-#'                       consequently, 'split.basis' and 'sliding.window' do not make sense then either.
+#'                       time-sized windows for all ranges. If set, the \code{time.period} and \code{bins} parameters are ignored;
+#'                       consequently, \code{sliding.window} does not make sense then either.
 #'                       [default: NULL]
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: "commits"]
@@ -90,7 +91,6 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         return(project.data[[function.name]]())
     })
     names(additional.data) = additional.data.sources
-
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -215,7 +215,21 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     ## add splitting information to project configuration
     project.conf.new$set.splitting.info(
         type = "time-based",
-        length = if (split.by.bins) bins else time.period,
+        length = if (split.by.bins) {
+                    bins
+                 }
+                 else {
+                    if (!is.null(number.windows)) {
+                        as.character(lubridate::as.period(
+                            get.time.period.by.amount(
+                                min(data[[split.basis]][["date"]]),
+                                max(data[[split.basis]][["date"]]),
+                                number.windows
+                            )
+                        ))
+                    }
+                    else time.period
+                 },
         basis = split.basis,
         sliding.window = sliding.window,
         revisions = bins,
@@ -227,6 +241,30 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     ## return list of RangeData objects
     return(cf.data)
+}
+
+#' Split project data by timestamps
+#'
+#' Splits project data into ranges, where the first range starts with the first timestamp
+#' and the last range ends with the last timestamp.
+#'
+#' If timestamps are not provided, the custom event timestamps in \code{project.data} are
+#' used instead.
+#'
+#' @param project.data the *Data object from which the data is retrieved
+#' @param bins a vector of timestamps [default: NULL]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
+#'
+#' @return the list of RangeData objects, each referring to one time period
+split.data.time.based.by.timestamps = function(project.data, bins = NULL, project.conf.new = NULL) {
+
+    if (is.null(bins)) { # bins were not provided, use custom timestamps from project
+        bins = unlist(project.data$get.custom.event.timestamps())
+    }
+
+    return (split.data.time.based(project.data, bins = bins, project.conf.new));
 }
 
 #' Split project data in activity-based ranges as specified

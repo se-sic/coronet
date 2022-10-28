@@ -2,19 +2,65 @@
 
 # coronet – Changelog
 
+## 4.2
+
+### Added
+- Incorporate custom event timestamps, i.e., add a configuration entry to the project configuration that allows specifying a file from which timestamps can be read, as well as an entry that allows locking this data; add corresponding functions `get.custom.event.timestamps`, `set.custom.event.timestamps` and `clear.custom.event.timestamps` (PR #227, 0aa342430ad3b354b9cf954dbe0838b056cf328a, 0f237d03913d2c940a008ea8fe84ba44817e77ea, c1803982357a3272b108f60cb1c976e3c2d9b1e5, 54e089db0ceea07db94914d02655a7f1f67d3117, 54673f8f88ca276ba06396116d802425093544d4, c5f5403430d55ceff6b6d5acbbca1ae9c5c231e2)
+- Add function `split.data.time.based.by.timestamps` to allow using custom event timestamps for splitting. Alternatively, timestamps can be specified manually (PR #227, 5b8515f97da4a24f971be453589595d259ab1fa1, 43f23a83bc66e485fea371f958bbb2ce3ddbd8d0)
+- Add the following vertex attributes for artifact vertices and corresponding helper functions (PR #229, 20728071ca25e1d20cfa05bc15feb3ecc0a1c434, 51b5478ae15598ed3e6115b22e440929f8084660, 56ed57a21cc8004262ebba88429d0649cb238a52, 9b060361b1d1352b5a431df3990e468df7cab572, 52d40ba3657e3c806516653626afd81018a14863, e91161c79b53be7ba8ce3bec65de01ea6be1c575)
+    - `add.vertex.attribute.artifact.last.edited`
+    - `add.vertex.attribute.mail.thread.contributer.count`, `get.mail.thread.contributor.count`
+    - `add.vertex.attribute.mail.thread.message.count`, `get.mail.thread.message.count`
+    - `add.vertex.attribute.mail.thread.start.date`, `get.mail.thread.start.date`
+    - `add.vertex.attribute.mail.thread.end.date`, `get.mail.thread.end.date`
+    - `add.vertex.attribute.mail.thread.originating.mailing.list`, `get.mail.thread.originating.mailing.list`
+    - `add.vertex.attribute.issue.contributor.count`, `get.issue.contributor.count`
+    - `add.vertex.attribute.issue.event.count`, `get.issue.event.count`
+    - `add.vertex.attribute.issue.comment.event.count`, `get.issue.comment.count`
+    - `add.vertex.attribute.issue.opened.date`, `get.issue.opened.date`
+    - `add.vertex.attribute.issue.closed.date`, `get.issue.closed.date`
+    - `add.vertex.attribute.issue.last.activity.date`, `get.issue.last.activity.date`
+    - `add.vertex.attribute.issue.title`, `get.issue.title`
+    - `add.vertex.attribute.pr.open.merged.or.closed`, `get.pr.open.merged.or.closed`
+    - `add.vertex.attribute.issue.is.pull.request`, `get.issue.is.pull.request`
+
+### Changed/Improved
+- **Breaking Change**: Rename existing vertex attributes for author vertices to be distinguishable from attributes for artifact vertices. With this change, the first word after `add.vertex.attribute.` now signifies the type of vertex the attribute applies to (PR #229, 75e8514d1d2f6222d2093679f4418e9171d3abf2)
+    - `add.vertex.attribute.commit.count.author` -> `add.vertex.attribute.author.commit.count`
+    - `add.vertex.attribute.commit.count.author.not.committer` -> `add.vertex.attribute.author.commit.count.not.committer`
+    - `add.vertex.attribute.commit.count.committer` -> `add.vertex.attribute.author.commit.count.committer`
+    - `add.vertex.attribute.commit.count.committer.not.author` -> `add.vertex.attribute.author.commit.count.committer.not.author`
+    - `add.vertex.attribute.commit.count.committer.and.author` -> `add.vertex.attribute.author.commit.count.committer.and.author`
+    - `add.vertex.attribute.commit.count.committer.or.author` -> `add.vertex.attribute.author.commit.count.committer.or.author`
+    - `add.vertex.attribute.artifact.count` -> `add.vertex.attribute.author.artifact.count`
+    - `add.vertex.attribute.mail.count` -> `add.vertex.attribute.author.mail.count`
+    - `add.vertex.attribute.mail.thread.count` -> `add.vertex.attribute.author.mail.thread.count`
+    - `add.vertex.attribute.issue.count` -> `add.vertex.attribute.author.issue.count`
+    - `add.vertex.attribute.issues.commented.count` -> `add.vertex.attribute.author.issues.commented.count`
+    - `add.vertex.attribute.issue.creation.count` -> `add.vertex.attribute.author.issue.creation.count`
+    - `add.vertex.attribute.issue.comment.count` -> `add.vertex.attribute.author.issue.comment.count`
+    - `add.vertex.attribute.first.activity` -> `add.vertex.attribute.author.first.activity`
+    - `add.vertex.attribute.active.ranges` -> `add.vertex.attribute.author.active.ranges`
+- Add parameter `use.unfiltered.data` to `add.vertex.attribute.issue.*`. This allows selecting whether the filtered or unfiltered issue data is used for calculating the attribute (PR #229, b77601dfa1372af5f58fb552cdb015401a344df7, 922258cb743614e0eeffcf38028acfc0a42a0332)
+- Improve handling of issue type in vertex attribute name for `add.vertex.attribute.issue.*`. The default attribute name still adjusts to the issue type, but this no longer happens if the same name is specified manually (PR #229, fe5dc61546b81c7779643c3b2b37c101a55217f8)
+
+
 ## 4.1
 
 ### Added
 - Incorporate gender data, i.e., add a configuration entry to the project configuration, add function `read.gender` for reading gender data, add functions `get.gender` and `set.gender` and corresponding utility functions to automatically merge gender data to the author data (PR #216, 8868ff47900cf804553ec98683b736b07350fc64, bfbe4deb9d14faeed56bdf37f9f732e01c41af57, 0a23862c6308c27fe4f93835c3a4480eac03ca91, a7744b548ac5ab697a4eb3d71987ddedef180d59, 6a50fd15bdd6382fa3d868a21a41a4b0a36ffce7, 413e24c18532d06144ef996184192594a0893ca3, 39db3158e931fa627e974451ae66c57bd0b77b12, 1e4026def1995a23b3f42eac5eb343ee5a518798)
+- Add testing utillity file `tests/testing-utils.R` to make parameterized tests on the cross-product of multiple parameter values possible (d876f776439a52a3d34647d16a49ff39379e6da2, 9a1982051cc9849e07f6337ee8141d69def709db, 4dd5896d743c958bbcd6dda16feb50dc03c3a518)
 
 ### Changed/Improved
 - Add `mode` parameter to `metrics.vertex.degrees` to allow choosing between indegree, outdegree, and total (#219, ae14eb4cb83c6ab8f387886228cdf7ea6f3258c4)
 - Adjust `.drone.yml` CI config to prevent pipeline fails: `R` version `3.3` is not tested any more as some packages are not available any more for this `R` version (ca6b474d773c045dd88a19aee905283a373df0a6). Also another docker container in the CI pipeline is used as there are problems with the previously used docker instance (937f797ee04b78a087ea84043d075e7ca7558d70)
+- Add `remove.isolates` parameter to `extract.bipartite.network.from.network`. The default value is `FALSE`, chosen to be consistent with `get.bipartite.network` and other network extraction methods. Previously, isolates were always removed (PR #226, b58394bde421e19eab3470f2266dfff9a7a2dca9, 079a256861a7621118b68bf09ba2dc53efc5f70e)
 
 ### Fixed
 - Fix values in test for the eigenvector centrality as igraph has changed the calculation of this with version 1.2.7. Also put a warning that we recommend version 1.3.0 in `install.R` and document it in the `README.md` (25fb86277c7cc15b94ca0327bff4bb7e818ca09b, 1bcbca96d6dbaa2d4a28e830da963604682eac70)
 - Fix the filtering of the deleted user in `util-read.R` to always be lowercase as the deleted user can appear with different spellings (#214, 1b4072c7ec0e33a595e31d9e9d27bb5c133b1556)
 - Add check to `get.first.activity.data` to look for missing activity types. If no activities are in the RangeData, the function will print a warning and return an empty list (PR #220, #217, 5707517600c5579095c245b63c745d01cde02799, 42a4befb36e7fd9830924dc7fb2e04ecdf86e209,  d6424c03baff05562448df1b6b87828ca9a37b88, ca8a1b4c628261dcb471e1da3603439e75e4cc56, f6553c6106e5fec3837c6edb906a4d0960c5c5fb)
+- Fix setting split.length properly in splitting info of the project configuration when the length is determined by splitting with the number.windows parameter (PR #222, 2bab846be4ca34fdc45047ec2ddb610c7aeaa555, b467a018b1fbd70ba7848196f520a9202dc319b0)
 
 
 ## 4.0

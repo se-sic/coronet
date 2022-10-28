@@ -37,11 +37,18 @@ steps:
   - apt-get install --assume-yes libxml2
   - apt-get install --assume-yes libxml2-dev
   - apt-get install --assume-yes libglpk-dev
+  - apt-get install --assume-yes libfontconfig1-dev
   - echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >>"/usr/local/lib/R/etc/Rprofile.site"
   # package installation
   - Rscript install.R
   # execute test suite
   - Rscript tests.R
+  depends_on: [clone]
+
+- name: R-4.2
+  pull: if-not-exists
+  image: rocker/r-ver:4.2.1
+  commands: *runTests
   depends_on: [clone]
 
 - name: R-4.1
@@ -96,11 +103,18 @@ steps:
   - apt-get install --assume-yes libxml2
   - apt-get install --assume-yes libxml2-dev
   - apt-get install --assume-yes libglpk-dev
+  - apt-get install --assume-yes libfontconfig1-dev
   - echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >>"/usr/local/lib/R/etc/Rprofile.site"
   # package installation
   - Rscript install.R
   # execute showcase file
   - Rscript showcase.R
+  depends_on: [clone]
+
+- name: R-4.2
+  pull: if-not-exists
+  image: rocker/r-ver:4.2.1
+  commands: *runShowcase
   depends_on: [clone]
 
 - name: R-4.1

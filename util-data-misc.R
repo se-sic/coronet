@@ -19,6 +19,7 @@
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -77,12 +78,14 @@ mask.pull.requests = function(issue.data) {
 #' @param type which issue type to consider.
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use the unfiltered issue data, i.e. \code{proj.data$get.issues.unfiltered()}
+#'                            instead of \code{proj.data$get.issues()} [default: FALSE]
 #'
 #' @return a filtered sub-data frame of the unfiltered issue data from \code{proj.data}.
 preprocess.issue.data = function(proj.data, retained.cols = c("author.name", "issue.id", "event.name"),
-                                 type = c("all", "pull.requests", "issues")) {
+                                 type = c("all", "pull.requests", "issues"), use.unfiltered.data = FALSE) {
   type = match.arg(type)
-  df = proj.data$get.issues.unfiltered()
+  df = if (use.unfiltered.data) proj.data$get.issues.unfiltered() else proj.data$get.issues()
 
   ## forall vectors k, if nrow(df) == 0, then df[k, ..] fails
   ## so we abort beforehand
@@ -359,13 +362,14 @@ get.author.mail.thread.count = function(proj.data) {
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.requests"), use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issue.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
@@ -383,13 +387,17 @@ get.author.issue.count = function(proj.data, type = c("all", "issues", "pull.req
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}). Note that the
+#'                            filtered data may not contain issue created events.
+#'                            [default: TRUE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issues.created.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                           use.unfiltered.data = TRUE) {
     type = match.arg(type)
     logging::logdebug("get.author.issues.created.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              WHERE `event.name` = 'created'
@@ -408,13 +416,15 @@ get.author.issues.created.count = function(proj.data, type = c("all", "issues", 
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective issue counts
-get.author.issues.commented.in.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issues.commented.in.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                                use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issues.commented.in.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     ## count distinct since an author may appear in the same issue multiple times
     stmt = "SELECT `author.name`, COUNT( DISTINCT `issue.id`) as `freq` FROM `df`
                              WHERE `event.name` = 'commented'
@@ -433,17 +443,327 @@ get.author.issues.commented.in.count = function(proj.data, type = c("all", "issu
 #' @param type which issue type to consider (see \code{preprocess.issue.data}).
 #'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
 #'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
 #'
 #' @return a dataframe consisting of two columns, the first of which holding the authors' names and the second holding
 #'         their respective comment counts
-get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+get.author.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                          use.unfiltered.data = FALSE) {
     type = match.arg(type)
     logging::logdebug("get.author.issue.comment.count: starting.")
-    df = preprocess.issue.data(proj.data, type = type)
+    df = preprocess.issue.data(proj.data, type = type, use.unfiltered.data = use.unfiltered.data)
     stmt = "SELECT `author.name`, COUNT(*) as `freq` FROM `df`
                              WHERE `event.name` = 'commented'
                              GROUP BY `author.name` ORDER BY `freq` DESC, `author.name` ASC"
     res = sqldf::sqldf(stmt)
     logging::logdebug("get.author.issue.comment.count: finished")
     return(res)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Mail Thread Statistics --------------------------------------------------
+
+#' Get the number of contributors to each mail thread based on the mail data contained in the
+#' specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a named list of contributor counts, where the name is the thread.
+get.mail.thread.contributor.count = function(proj.data) {
+    logging::logdebug("get.mail.thread.contributor.count: starting.")
+    thread.to.mails = get.key.to.value.from.df(proj.data$get.mails(), "thread", "author.email")
+    thread.to.contributor.count = lapply(thread.to.mails, function(df) {
+        length(unique(df[["data.vertices"]]))
+    })
+    logging::logdebug("get.mail.thread.contributor.count: finished")
+    return(thread.to.contributor.count)
+}
+
+#' Get the number of messages in each mail thread based on the mail data contained in the
+#' specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a named list of message counts, where the name is the thread.
+get.mail.thread.mail.count = function(proj.data) {
+    logging::logdebug("get.mail.thread.mail.count: starting.")
+    thread.to.mails = get.key.to.value.from.df(proj.data$get.mails(), "thread", "author.email")
+    thread.to.mail.count = lapply(thread.to.mails, function(df) {
+        length(df[["data.vertices"]])
+    })
+    logging::logdebug("get.mail.thread.mail.count: finished")
+    return(thread.to.mail.count)
+}
+
+#' Get the date of the first message in each mail thread based on the mail data contained
+#' in the specified \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a named list of start dates, where the name is the thread.
+get.mail.thread.start.date = function(proj.data) {
+    logging::logdebug("get.mail.thread.start.date: starting.")
+    thread.to.dates = get.key.to.value.from.df(proj.data$get.mails(), "thread", "date")
+    thread.to.start.date = lapply(thread.to.dates, function(df) {
+        min(df[["data.vertices"]])
+    })
+    logging::logdebug("get.mail.thread.start.date: finished")
+    return(thread.to.start.date)
+}
+
+#' Get the date of the last message in each mail thread based on the mail data contained
+#' in the specified \code{ProjectData}
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a named list of end dates, where the name is the thread.
+get.mail.thread.end.date = function(proj.data) {
+    logging::logdebug("get.mail.thread.end.date: starting.")
+    thread.to.dates = get.key.to.value.from.df(proj.data$get.mails(), "thread", "date")
+    thread.to.end.date = lapply(thread.to.dates, function(df) {
+        max(df[["data.vertices"]])
+    })
+    logging::logdebug("get.mail.thread.end.date: finished")
+    return(thread.to.end.date)
+}
+
+#' Get the identifier of the mailing list from which a threat originates.
+#' This identifier is part of the thread ID as produced by codeface, e.g., if the thread ID is "13#37", then 13 is the
+#' ID of the mailing list.
+#'
+#' Older versions of codeface did not include this identifier. If the identifier is not included in the data used, a
+#' warning is produced and the list will contain \code{NA} for each thread.
+#'
+#' @param proj.data the \code{ProjectData} containing the mail data
+#'
+#' @return a named list of mailing list identifiers, where the name is the thread.
+get.mail.thread.originating.mailing.list = function(proj.data) {
+    logging::logdebug("get.mail.thread.originating.mailing.list: starting.")
+    thread.ids = unique(proj.data$get.mails()[["thread"]])
+    thread.to.list = lapply(thread.ids, function(thread.name) {
+        thread.id = substr(thread.name, 9, nchar(thread.name) - 1) # remove '<thread-' '>'
+        if (grepl("#", thread.id, fixed = TRUE)) { # make sure that our data has the shape we expect
+            mailing.list = strsplit(thread.id, "#")[[1]][1] # split at '#' and keep only first part
+            return(mailing.list)
+        }
+        else {
+            logging::logwarn("get.mail.thread.originating.mailing.list called on incompatible data")
+            return(NA)
+        }
+    })
+    names(thread.to.list) = thread.ids
+    logging::logdebug("get.mail.thread.originating.mailing.list: finished")
+    return(thread.to.list)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Issue Statistics --------------------------------------------------------
+
+#' Get the number of contributors to each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
+#'
+#' @return a named list of contributor counts, where the name is the issue ID.
+get.issue.contributor.count = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                       use.unfiltered.data = FALSE) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.contributor.count: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "author.email"),
+                               use.unfiltered.data = use.unfiltered.data)
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "author.email")
+    issue.id.to.contributor.count = lapply(issue.id.to.events, function(df) {
+        length(unique(df[["data.vertices"]]))
+    })
+    logging::logdebug("get.issue.contributor.count: finished")
+    return(issue.id.to.contributor.count)
+}
+
+#' Get the number of events for each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
+#'
+#' @return a named list of event counts, where the name is the issue ID.
+get.issue.event.count = function(proj.data, type = c("all", "issues", "pull.requests"), use.unfiltered.data = FALSE) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.event.count: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "event.id"),
+                               use.unfiltered.data = use.unfiltered.data)
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.id")
+    issue.id.to.event.count = lapply(issue.id.to.events, function(df) {
+        ## one event might show up multiple times (i.e. 'mentioned' also triggers 'subscribed'),
+        ## so we count the number of distinct event IDs
+        length(unique(df[["data.vertices"]]))
+    })
+    logging::logdebug("get.issue.event.count: finished")
+    return(issue.id.to.event.count)
+}
+
+#' Get the number of 'commented' events for each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of comment counts, where the name is the issue ID.
+get.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.comment.count: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "event.name"))
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
+    issue.id.to.comment.count = lapply(issue.id.to.events, function(df) {
+        event.names = df[["data.vertices"]]
+        return (length(event.names[event.names == "commented"]))
+    })
+    logging::logdebug("get.issue.comment.count: finished")
+    return(issue.id.to.comment.count)
+}
+
+#' Get the date each issue was opened, based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.issue.opened.date = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.opened.date: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "creation.date"))
+    issue.id.to.dates = get.key.to.value.from.df(df, "issue.id", "creation.date")
+    issue.id.to.start.date = lapply(issue.id.to.dates, function(df) {
+        min(df[["data.vertices"]]) # values should all be the same
+    })
+    logging::logdebug("get.issue.opened.date: finished")
+    return(issue.id.to.start.date)
+}
+
+#' Get the date each issue was closed, based on the issue data contained
+#' in the specified \code{ProjectData}, or \code{NA} if the issue is still open.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.issue.closed.date = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.closed.date: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "closing.date"))
+    issue.id.to.dates = get.key.to.value.from.df(df, "issue.id", "closing.date")
+    issue.id.to.closed.date = lapply(issue.id.to.dates, function(df) {
+        min(df[["data.vertices"]]) # values should all be the same
+    })
+    logging::logdebug("get.issue.closed.date: finished")
+    return(issue.id.to.closed.date)
+}
+
+#' Get the date of the last activity in each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: FALSE]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.issue.last.activity.date = function(proj.data, type = c("all", "issues", "pull.requests"),
+                                        use.unfiltered.data = FALSE) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.last.activity.date: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "date"),
+                               use.unfiltered.data = use.unfiltered.data)
+    issue.id.to.dates = get.key.to.value.from.df(df, "issue.id", "date")
+    issue.id.to.end.date = lapply(issue.id.to.dates, function(df) {
+        max(df[["data.vertices"]])
+    })
+    logging::logdebug("get.issue.last.activity.date: finished")
+    return(issue.id.to.end.date)
+}
+
+#' Get the title of each issue based on the issue data contained
+#' in the specified \code{ProjectData}.
+#'
+#' The type argument specifies whether we count PRs alone, issues alone, or both (\code{"all"}).
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param type which issue type to consider (see \code{preprocess.issue.data}).
+#'             One of \code{"issues"}, \code{"pull.requests"} or \code{"all"}
+#'             [default: "all"]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.issue.title = function(proj.data, type = c("all", "issues", "pull.requests")) {
+    type = match.arg(type)
+    logging::logdebug("get.issue.title: starting.")
+    df = preprocess.issue.data(proj.data, type = type, retained.cols = c("issue.id", "issue.title"))
+    issue.id.to.title = get.key.to.value.from.df(df, "issue.id", "issue.title")
+    issue.id.to.title.only = lapply(issue.id.to.title, function(df) {
+        ## as a result of get.key.to.value.from.df, the "issue.title" column should be duplicated as "data.vertices".
+        ## The title should be the same in every row, so we can just use the first row.
+        df[[1,"data.vertices"]] # data frames resulting from get.key.to.value.from.df always have at least one row
+    })
+    logging::logdebug("get.issue.title: finished")
+    return(issue.id.to.title.only)
+}
+
+#' Get whether a PR is open, has been merged, or has been closed without merging.
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#' @param use.unfiltered.data whether to use unfiltered issue data (see \code{preprocess.issue.data}) [default: TRUE]
+#'
+#' @return a named list of dates, where the name is the issue ID.
+get.pr.open.merged.or.closed = function(proj.data, use.unfiltered.data = TRUE) {
+    logging::logdebug("get.pr.open.merged.or.closed: starting.")
+    df = preprocess.issue.data(proj.data, type = "pull.requests", use.unfiltered.data = use.unfiltered.data,
+                               retained.cols = c("issue.id", "issue.state", "event.name"))
+    issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
+    issue.id.to.state = lapply(issue.id.to.events, function(df) {
+        return (if ("open" %in% df[["issue.state"]] || "reopened" %in% df[["issue.state"]]) "open"
+                else if ("merged" %in% df[["event.name"]]) "merged"
+                else "closed")
+    })
+    logging::logdebug("get.pr.open.merged.or.closed: finished")
+    return(issue.id.to.state)
+}
+
+#' Get whether each issue is a pull request, based on the issue data contained in the specified
+#' \code{ProjectData}.
+#'
+#' @param proj.data the \code{ProjectData} containing the issue data
+#'
+#' @return a named list of logical values, where the name is the issue ID.
+get.issue.is.pull.request = function(proj.data) {
+    logging::logdebug("get.issue.is.pull.request: starting.")
+    issue.data = proj.data$get.issues()
+    issue.id.to.is.pr = as.list(mask.pull.requests(issue.data))
+    names(issue.id.to.is.pr) = issue.data[["issue.id"]]
+    logging::logdebug("get.issue.is.pull.request: finished")
+    return(issue.id.to.is.pr)
 }

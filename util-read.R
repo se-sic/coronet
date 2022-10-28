@@ -22,6 +22,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -466,7 +467,7 @@ read.authors = function(data.path) {
     ## get file name of commit data
     file = file.path(data.path, "authors.list")
 
-    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    ## read data.frame from disk (as expected from save.list.to.file)
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 
@@ -851,6 +852,43 @@ create.empty.synchronicity.list = function() {
     return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
 
+
+## * Custom timestamps for splitting
+
+#' Read custom event timestamps from a file in \code{.list} format.
+#'
+#' @param data.path the path of the directory containing the file
+#' @param file.name the name of the file
+#'
+#' @return the read timestamps
+read.custom.event.timestamps = function(data.path, file.name) {
+    logging::logdebug("read.custom.event.timestamps: starting.")
+
+    file = file.path(data.path, file.name)
+
+    ## read data.frame from disk (as expected from save.list.to.file) [can be empty]
+    custom.event.timestamps.table = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
+                                        encoding = "UTF-8"), silent = TRUE)
+
+    ## handle the case that the list of commits is empty
+    if (inherits(custom.event.timestamps.table, "try-error")) {
+        logging::logwarn("There are no custom timestamps available at the given path.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        ## return an empty list
+        return(list())
+    }
+    timestamps = as.list(custom.event.timestamps.table[[2]])
+    names(timestamps) = custom.event.timestamps.table[[1]]
+
+    ## Sort the timestamps
+    if (length(timestamps) != 0) {
+        timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+    }
+
+    logging::logdebug("read.custom.event.timestamps: finished.")
+    return (timestamps)
+}
 
 ## Helper functions --------------------------------------------------------
 

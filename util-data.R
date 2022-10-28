@@ -24,6 +24,7 @@
 ## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -69,11 +70,12 @@ DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION = list(
 )
 ## Yields the getters associated with additional data sources, e.g. author data.
 DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
-    "authors"         = "get.authors",
-    "commit.messages" = "get.commit.messages",
-    "synchronicity"   = "get.synchronicity",
-    "pasta"           = "get.pasta",
-    "gender"          = "get.gender"
+    "authors"                 = "get.authors",
+    "commit.messages"         = "get.commit.messages",
+    "synchronicity"           = "get.synchronicity",
+    "pasta"                   = "get.pasta",
+    "gender"                  = "get.gender",
+    "custom.event.timestamps" = "get.custom.event.timestamps"
 )
 
 #' Applies a function to list keys
@@ -117,7 +119,9 @@ CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
                                          "synchronicity.time.window",
                                          "commits.locked",
                                          "issues.locked",
-                                         "mails.locked")
+                                         "mails.locked",
+                                         "custom.event.timestamps",
+                                         "custom.event.timestamps.locked")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -173,6 +177,8 @@ ProjectData = R6::R6Class("ProjectData",
         pasta.commits = create.empty.pasta.list(), # data.frame
         ## timestamps of mail, issue and commit data
         data.timestamps = data.frame(start = numeric(0), end = numeric(0)), # data.frame
+        ## custom timestamps for splitting
+        custom.event.timestamps = list(), # list
 
         ## * * commit filtering --------------------------------------------
 
@@ -514,51 +520,44 @@ ProjectData = R6::R6Class("ProjectData",
         update.pasta.commit.data = function() {
             logging::logdebug("update.pasta.commit.data: starting.")
 
-            ## return immediately if no commits available
-            if (self$is.data.source.cached("commits.unfiltered")) {
+            ## remove previous PaStA data
+            private$commits.unfiltered["pasta"] = NULL
+            private$commits.unfiltered["revision.set.id"] = NULL
 
-                ## remove previous PaStA data
-                private$commits.unfiltered["pasta"] = NULL
-                private$commits.unfiltered["revision.set.id"] = NULL
+            ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+            ## we want to just remove the columns above)
+            if (private$project.conf$get.value("pasta")) {
+                ## merge PaStA data
+                private$commits.unfiltered = merge(private$commits.unfiltered, private$pasta.commits,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
-                ## we want to just remove the columns above)
-                if (private$project.conf$get.value("pasta")) {
-                    ## merge PaStA data
-                    private$commits.unfiltered = merge(private$commits.unfiltered, private$pasta.commits,
-                                        by = "hash", all.x = TRUE, sort = FALSE)
+                ## sort by date again because 'merge' disturbs the order
+                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
 
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
-
-                    ## remove duplicated revision set ids
-                    private$commits.unfiltered[["revision.set.id"]] = sapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
-                        return(unique(rev.id))
-                    })
-                }
+                ## remove duplicated revision set ids
+                private$commits.unfiltered[["revision.set.id"]] = lapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
-            if (self$is.data.source.cached("commits")) {
+            ## remove previous PaStA data
+            private$commits["pasta"] = NULL
+            private$commits["revision.set.id"] = NULL
 
-                ## remove previous PaStA data
-                private$commits["pasta"] = NULL
-                private$commits["revision.set.id"] = NULL
+            ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+            ## we want to just remove the columns above)
+            if (private$project.conf$get.value("pasta")) {
+                ## merge PaStA data
+                private$commits = merge(private$commits, private$pasta.commits,
+                                        by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
-                ## we want to just remove the columns above)
-                if (private$project.conf$get.value("pasta")) {
-                    ## merge PaStA data
-                    private$commits = merge(private$commits, private$pasta.commits,
-                                            by = "hash", all.x = TRUE, sort = FALSE)
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
 
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
-
-                    ## remove duplicated revision set ids
-                    private$commits[["revision.set.id"]] = sapply(private$commits[["revision.set.id"]], function(rev.id) {
-                        return(unique(rev.id))
-                    })
-                }
+                ## remove duplicated revision set ids
+                private$commits[["revision.set.id"]] = lapply(private$commits[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
             logging::logdebug("update.pasta.commit.data: finished.")
@@ -569,52 +568,44 @@ ProjectData = R6::R6Class("ProjectData",
         update.pasta.mail.data = function() {
             logging::logdebug("update.pasta.mail.data: starting.")
 
-            ## return immediately if no mails available
-            if (self$is.data.source.cached("mails.unfiltered")) {
+            ## remove previous PaStA data
+            private$mails.unfiltered["pasta"] = NULL
+            private$mails.unfiltered["revision.set.id"] = NULL
 
-                ## remove previous PaStA data
-                private$mails.unfiltered["pasta"] = NULL
-                private$mails.unfiltered["revision.set.id"] = NULL
+            ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+            ## we want to just remove the columns above)
+            if (private$project.conf$get.value("pasta")) {
+                ## merge PaStA data
+                private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
+                                      by = "message.id", all.x = TRUE, sort = FALSE)
 
-                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
-                ## we want to just remove the columns above)
-                if (private$project.conf$get.value("pasta")) {
-                    ## merge PaStA data
-                    private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
-                                          by = "message.id", all.x = TRUE, sort = FALSE)
+                ## sort by date again because 'merge' disturbs the order
+                private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
 
-                    ## sort by date again because 'merge' disturbs the order
-                    private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
-
-                    ## remove duplicated revision set ids
-                    private$mails.unfiltered[["revision.set.id"]] = sapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
-                        return(unique(rev.id))
-                    })
-                }
+                ## remove duplicated revision set ids
+                private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
-            ## the same block as above, but now for filtered mails
-            if (self$is.data.source.cached("mails")) {
+            ## remove previous PaStA data
+            private$mails["pasta"] = NULL
+            private$mails["revision.set.id"] = NULL
 
-                ## remove previous PaStA data
-                private$mails["pasta"] = NULL
-                private$mails["revision.set.id"] = NULL
+            ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
+            ## we want to just remove the columns above)
+            if (private$project.conf$get.value("pasta")) {
+                ## merge PaStA data
+                private$mails = merge(private$mails, private$pasta.mails,
+                                      by = "message.id", all.x = TRUE, sort = FALSE)
 
-                ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
-                ## we want to just remove the columns above)
-                if (private$project.conf$get.value("pasta")) {
-                    ## merge PaStA data
-                    private$mails = merge(private$mails, private$pasta.mails,
-                                          by = "message.id", all.x = TRUE, sort = FALSE)
+                ## sort by date again because 'merge' disturbs the order
+                private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
 
-                    ## sort by date again because 'merge' disturbs the order
-                    private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
-
-                    ## remove duplicated revision set ids
-                    private$mails[["revision.set.id"]] = sapply(private$mails[["revision.set.id"]], function(rev.id) {
-                        return(unique(rev.id))
-                    })
-                }
+                ## remove duplicated revision set ids
+                private$mails[["revision.set.id"]] = lapply(private$mails[["revision.set.id"]], function(rev.id) {
+                    return(unique(rev.id))
+                })
             }
 
             logging::logdebug("update.pasta.mail.data: finished.")
@@ -637,14 +628,10 @@ ProjectData = R6::R6Class("ProjectData",
             private$aggregate.pasta.data()
 
             ## update mail data by attaching PaStA data
-            if (self$is.data.source.cached("mails.unfiltered")) {
-                private$update.pasta.mail.data()
-            }
+            private$update.pasta.mail.data()
 
             ## update commit data by attaching PaStA data
-            if (self$is.data.source.cached("commits.unfiltered") ) {
-                private$update.pasta.commit.data()
-            }
+            private$update.pasta.commit.data()
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
@@ -672,36 +659,32 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## update commit data by attaching synchronicity data
             ## do not check whether synchronicity is available in order to remove the columns if it is not
-            if (self$is.data.source.cached("commits.unfiltered")) {
-                ## remove previous synchronicity data
-                private$commits.unfiltered["synchronicity"] = NULL
+            ## remove previous synchronicity data
+            private$commits.unfiltered["synchronicity"] = NULL
 
-                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
-                ## which case we want to just remove the columns above)
-                if (private$project.conf$get.value("synchronicity")) {
-                    ## merge synchronicity data
-                    private$commits.unfiltered = merge(private$commits.unfiltered, private$synchronicity,
+            ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
+            ## which case we want to just remove the columns above)
+            if (private$project.conf$get.value("synchronicity")) {
+                ## merge synchronicity data
+                private$commits.unfiltered = merge(private$commits.unfiltered, private$synchronicity,
+                                    by = "hash", all.x = TRUE, sort = FALSE)
+
+                ## sort by date again because 'merge' disturbs the order
+                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
+            }
+            ## remove previous synchronicity data
+            private$commits["synchronicity"] = NULL
+
+            ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
+            ## which case we want to just remove the columns above)
+            if (private$project.conf$get.value("synchronicity")) {
+                ## merge synchronicity data
+                private$commits = merge(private$commits, private$synchronicity,
                                         by = "hash", all.x = TRUE, sort = FALSE)
 
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
-                }
-            }
-            if (self$is.data.source.cached("commits")) {
-                ## remove previous synchronicity data
-                private$commits["synchronicity"] = NULL
-
-                ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
-                ## which case we want to just remove the columns above)
-                if (private$project.conf$get.value("synchronicity")) {
-                    ## merge synchronicity data
-                    private$commits = merge(private$commits, private$synchronicity,
-                                            by = "hash", all.x = TRUE, sort = FALSE)
-
-                    ## sort by date again because 'merge' disturbs the order
-                    private$commits = private$commits[order(private$commits[["date"]],
-                                                                              decreasing = FALSE), ]
-                }
+                ## sort by date again because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["date"]],
+                                                                          decreasing = FALSE), ]
             }
 
             ## get the caller function as a string
@@ -887,6 +870,10 @@ ProjectData = R6::R6Class("ProjectData",
                         private$update.synchronicity.data()
                     }
                 }
+                ## if the 'custom.event.timestamps.file' parameter has changed, we want to clear them to trigger a re-read.
+                if (entry == "custom.event.timestamps.file") {
+                    self$clear.custom.event.timestamps()
+                }
             }
         },
 
@@ -929,6 +916,10 @@ ProjectData = R6::R6Class("ProjectData",
                     } else {
                         private$update.synchronicity.data()
                     }
+                }
+                ## if the 'custom.event.timestamps.file' parameter has changed, we want to clear them to trigger a re-read.
+                if (c("custom.event.timestamps.file") %in% params) {
+                    self$clear.custom.event.timestamps()
                 }
             }
         },
@@ -1115,7 +1106,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## remove cached data for filtered commits as these need to be re-computed after
             ## changing the data
-            private$commits = NULL
+            private$commits = create.empty.commits.list()
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -1513,7 +1504,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
-                
+
                 ## if data are not read already, read them
                 if (!self$is.data.source.cached("gender")) {
                     ## get data (no assignment because we just want to trigger anything gender-related)
@@ -1618,7 +1609,7 @@ ProjectData = R6::R6Class("ProjectData",
             }
 
             private$issues.unfiltered = data
-            private$issues = NULL
+            private$issues = create.empty.issues.list()
         },
 
         #' Get the list of artifacts from the given \code{data.source} of the project.
@@ -1718,7 +1709,8 @@ ProjectData = R6::R6Class("ProjectData",
                     "authors" = "authors",
                     "commit.messages" = "commit.messages",
                     "synchronicity" = "synchronicity",
-                    "pasta" = "pasta"
+                    "pasta" = "pasta",
+                    "custom.event.timestamps" = "custom.event.timestamps"
                 )
             )
             sources = self$get.cached.data.sources.internal(source.type)
@@ -1749,7 +1741,8 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
-            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta", "gender")
+            additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta",
+                                        "gender", "custom.event.timestamps")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
@@ -2109,6 +2102,46 @@ ProjectData = R6::R6Class("ProjectData",
             data = unique(data)
 
             return (data)
+        },
+
+        #' Get the list of custom event timestamps,
+        #' read from a file configured by the \code{custom.event.timestamps.file}
+        #' parameter in the project configuration.
+        #'
+        #' @return the list of custom event timestamps
+        get.custom.event.timestamps = function() {
+            if (!self$is.data.source.cached("custom.event.timestamps")
+                && !private$project.conf$get.value("custom.event.timestamps.locked")) {
+
+                file.name = self$get.project.conf.entry("custom.event.timestamps.file")
+                if(is.na(file.name)) {
+                    logging::logwarn("get.custom.event.timestamps: No file configured")
+                    return (list())
+                }
+                timestamps = read.custom.event.timestamps(self$get.data.path(), file.name)
+                self$set.custom.event.timestamps(timestamps)
+            }
+            return (private$custom.event.timestamps)
+        },
+
+        #' Set the list of custom event timestamps.
+        #' The list will be sorted.
+        #'
+        #' @param  custom.event.timestamps the list of timestamps to set
+        set.custom.event.timestamps = function(custom.event.timestamps) {
+            if(length(custom.event.timestamps) != 0){
+                private$custom.event.timestamps = custom.event.timestamps[
+                    order(unlist(get.date.from.string(custom.event.timestamps)))
+                ]
+            }
+            else {
+                private$custom.event.timestamps = custom.event.timestamps
+            }
+        },
+
+        #' Clear existing custom event timestamps, for example to cause them to be re-read from a file.
+        clear.custom.event.timestamps = function() {
+            private$custom.event.timestamps = list()
         }
     )
 )

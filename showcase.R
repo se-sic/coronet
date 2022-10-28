@@ -22,6 +22,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -71,6 +72,8 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 proj.conf$update.value("commits.filter.base.artifact", TRUE)
+## specify that custom event timestamps should be read from 'custom-events.list'
+proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
 proj.conf$print()
 
 ## initialize network configuration
@@ -128,6 +131,7 @@ x.data$get.data.path()
 x.data$group.artifacts.by.data.column("mails", "author.name")
 x.data$group.artifacts.by.data.column("commits", "hash")
 x.data$filter.bots(x.data$get.commits.uncached(remove.untracked.files = TRUE, remove.base.artifact = FALSE, filter.bots = FALSE))
+x.data$get.custom.event.timestamps()
 
 ## * Network construction --------------------------------------------------
 
@@ -217,16 +221,16 @@ my.networks = lapply(cf.data, function(range.data) {
     return (y$get.author.network())
 })
 ## add commit-count vertex attributes
-sample = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "range")
-sample.cumulative = add.vertex.attribute.commit.count.author(my.networks, x.data, aggregation.level = "cumulative")
+sample = add.vertex.attribute.author.commit.count(my.networks, x.data, aggregation.level = "range")
+sample.cumulative = add.vertex.attribute.author.commit.count(my.networks, x.data, aggregation.level = "cumulative")
 ## add email-address vertex attribute
 sample.mail = add.vertex.attribute.author.email(my.networks, x.data, "author.email")
-sample.mail.thread = add.vertex.attribute.mail.thread.count(my.networks, x.data)
-sample.issues.created = add.vertex.attribute.issue.creation.count(my.networks, x.data)
-sample.pull.requests = add.vertex.attribute.issue.count(my.networks, x.data, issue.type = "pull.requests")
+sample.mail.thread = add.vertex.attribute.author.mail.thread.count(my.networks, x.data)
+sample.issues.created = add.vertex.attribute.author.issue.creation.count(my.networks, x.data)
+sample.pull.requests = add.vertex.attribute.author.issue.count(my.networks, x.data, issue.type = "pull.requests")
 ## add vertex attributes for the project-level network
 x.net.as.list = list("1970-01-01 00:00:00-2030-01-01 00:00:00" = x$get.author.network())
-sample.entire = add.vertex.attribute.commit.count.author(x.net.as.list, x.data, aggregation.level = "complete")
+sample.entire = add.vertex.attribute.author.commit.count(x.net.as.list, x.data, aggregation.level = "complete")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -286,6 +290,15 @@ print(run.lapply(cf.data, "get.class.name"))
 
 mybins = c("2012-07-10 15:58:00", "2012-07-15 16:02:00", "2012-07-20 16:04:00", "2012-07-25 16:06:30")
 cf.data = split.data.time.based(x.data, bins = mybins)
+for (range in names(cf.data)) {
+    y.data = cf.data[[range]]
+    y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+    plot.network(y$get.bipartite.network())
+}
+print(run.lapply(cf.data, "get.class.name"))
+
+## we can also use custom event timestamps for splitting
+cf.data = split.data.time.based.by.timestamps(x.data)
 for (range in names(cf.data)) {
     y.data = cf.data[[range]]
     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
@@ -430,7 +443,7 @@ get.author.class.by.type(network = empty.network, type = "network.eigen")
 get.author.class.by.type(proj.data = empty.range.data, type = "commit.count")
 get.author.class.by.type(proj.data = empty.range.data, type = "loc.count")
 
-## test function for mutliple ranges (evolution)
+## test function for multiple ranges (evolution)
 author.class.overview = get.author.class.overview(network.list = network.list, type = "network.degree")
 get.author.class.overview(network.list = network.list, type = "network.eigen")
 get.author.class.overview(range.data.list = range.list, type = "commit.count")
@@ -449,3 +462,4 @@ calculate.cohens.kappa(author.classification.list = author.class.overview,
 
 get.class.turnover.overview(author.class.overview = author.class.overview)
 get.unstable.authors.overview(author.class.overview = author.class.overview, saturation = 2)
+

@@ -13,12 +13,14 @@
 ##
 ## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Initialization ----------------------------------------------------------
 
 source("util-init.R")
+source("tests/testing-utils.R")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

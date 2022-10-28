@@ -20,6 +20,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1171,6 +1172,9 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' Merges a list vertex data frame and merges a list of edge
 #' data frames
 #'
+#' Note that identical vertices are merged, whereas identical edges are not.
+#' This will lead to duplicated edges if you merge a network with itself.
+#'
 #' @param vertex.data the list of vertex data frames, may be \code{NULL}
 #' @param edge.data the list of edge data frames, may be \code{NULL}
 #'
@@ -1203,6 +1207,9 @@ merge.network.data = function(vertex.data, edge.data) {
 }
 
 #' Merges a list of networks to one big network
+#'
+#' Note that identical vertices are merged, whereas identical edges are not.
+#' This will lead to duplicated edges if you merge a network with itself.
 #'
 #' @param networks the list of networks
 #'
@@ -1517,9 +1524,10 @@ extract.artifact.network.from.network = function(network, remove.isolates = FALS
 #' **Note**: This function throws an error when the edge attribute \code{type} is missing.
 #'
 #' @param network the (multi) network to reduce
+#' @param remove.isolates whether to remove isolated vertices during extraction [default: FALSE]
 #'
 #' @return the bipartite-edge-induced subgraph of \code{network}
-extract.bipartite.network.from.network = function(network) {
+extract.bipartite.network.from.network = function(network, remove.isolates = FALSE) {
 
     ## check whether there are vertices in the network, otherwise skip the extraction
     if (igraph::vcount(network) == 0) {
@@ -1533,7 +1541,7 @@ extract.bipartite.network.from.network = function(network) {
     }
 
     ## only retain all bipartite edges and induced vertices
-    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER])
+    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER], delete.vertices = remove.isolates)
 
     return(bip.network)
 }
