@@ -107,6 +107,73 @@ test_that("Match argument or take default.", {
     expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, two choices")
 })
 
+##
+## Check presence and datatype of column.
+##
+
+test_that("Check presence and datatype of column.", {
+
+    user.names = c("John", "Peter", "Maria", "Susanne")
+
+    ## contains NaN to verify functionality does not break
+    age = c(42, 50, NaN, 66)
+
+    ## contains NA to verify functionality does not break
+    is.male = c(TRUE, TRUE, FALSE, NA)
+
+    ## construct simple testing dataframe
+    data.frame = data.frame(user.names, age, is.male)
+
+    ## 1) Check base functionality (benign use-case)
+    expect_no_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("character", "numeric", "logical")),
+        message = "All columns present and well-typed.")
+
+    ## 2) Base test with reordered columns
+    expect_no_error(verify.data.frame.columns(
+        data.frame, c("is.male", "age", "user.names"), c("logical", "numeric", "character")),
+        message = "Order of columns does not matter.")
+
+    ## 3) Specify less columns than present (Allow optional columns)
+    expect_no_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age"), c("character", "numeric")),
+        message = "Optional columns are allowed.")
+
+    ## 4) Unequal amount of column names and datatypes
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("character", "numeric")),
+        message = "More coloumn names specified than datatypes.")
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age"), c("character", "numeric", "logical")),
+        message = "More coloumn names specified than datatypes.")
+
+    ## 5) Datatypes do not match column names
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("logical", "character", "numeric")),
+        message = "Column names do not match datatypes.")
+
+    ## 6) Invalid column / Column not present in dataframe (Typo)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.name"), c("character")),
+        message = "Column names do not match datatypes.")
+
+    ## 7) No datatypes specified and column names are present
+    expect_no_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male")),
+        message = "Column names do not match datatypes.")
+
+    ## 8) No datatypes specified but column names are not present (Typo)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.name")),
+        message = "Column names do not match datatypes.")
+
+    ## 9) To many column names and no datatypes specified
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male", "job.orientation")),
+        message = "Column names do not match datatypes.")
+
+})
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------
 
