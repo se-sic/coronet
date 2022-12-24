@@ -181,6 +181,9 @@ read.commits = function(data.path, artifact) {
     commit.data[["commit.id"]] = format.commit.ids(commit.data[["commit.id"]])
     row.names(commit.data) = seq_len(nrow(commit.data))
 
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(commit.data, COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES)
+
     ## store the commit data
     logging::logdebug("read.commits: finished.")
     return(commit.data)
@@ -263,6 +266,9 @@ read.mails = function(data.path) {
         )
     }
     mail.data = remove.deleted.and.empty.user(mail.data) # filter deleted user
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(mail.data, MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES)
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")
@@ -384,6 +390,9 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
 
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(issue.data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
+
     logging::logdebug("read.issues: finished.")
     return(issue.data)
 }
@@ -438,6 +447,10 @@ read.bot.info = function(data.path) {
     ## set column names for new data frame
     colnames(bot.data) = BOT.LIST.COLUMNS
     bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(bot.data, BOT.LIST.COLUMNS)
+
     logging::logdebug("read.bot.info: finished.")
     return(bot.data)
 }
@@ -498,6 +511,9 @@ read.authors = function(data.path) {
     ## re-order the columns
     authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
     authors.df = remove.deleted.and.empty.user(authors.df)
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(authors.df, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -582,6 +598,9 @@ read.gender = function(data.path) {
 
     ## remove rownames
     rownames(gender.data) = NULL
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(gender.data, GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES)
 
     logging::logdebug("read.gender: finished.")
     return(gender.data)
@@ -691,8 +710,10 @@ read.commit.messages = function(data.path) {
     commit.message.data[["commit.id"]] = format.commit.ids(commit.message.data[["commit.id"]])
     row.names(commit.message.data) = seq_len(nrow(commit.message.data))
 
-    logging::logdebug("read.commit.messages: finished.")
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(commit.message.data, COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES)
 
+    logging::logdebug("read.commit.messages: finished.")
     return(commit.message.data)
 }
 
@@ -775,6 +796,10 @@ read.pasta = function(data.path) {
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(result.df, PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES)
+
     logging::logdebug("read.pasta: finished.")
     return(result.df)
 }
@@ -837,6 +862,9 @@ read.synchronicity = function(data.path, artifact, time.window) {
 
     ## ensure proper column names
     colnames(synchronicity) = SYNCHRONICITY.LIST.COLUMNS
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(synchronicity, SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES)
 
     ## store the synchronicity data
     logging::logdebug("read.synchronicity: finished.")
