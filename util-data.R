@@ -1522,7 +1522,7 @@ ProjectData = R6::R6Class("ProjectData",
             private$authors = data
 
             if (is.null(data)) {
-                data = create.empty.authors.list(
+                data = create.empty.authors.list()
             } else {
                 ## check that dataframe is of correct shape
                 verify.data.frame.columns(data, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)

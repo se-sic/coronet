@@ -72,8 +72,8 @@ COMMITS.LIST.DATA.TYPES = c(
     "character",
     "POSIXct", "character", "character",
     "POSIXct", "character", "character",
-    "character", "numeric", "numeric", "numeric", "numeric",
-    "character", "character", "character", "numeric"
+    "character", "integer", "integer", "integer", "integer",
+    "character", "character", "character", "integer"
 )
 
 #' Read the commits from the 'commits.list' file.
@@ -92,7 +92,7 @@ read.commits = function(data.path, artifact) {
                                  encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.data, "try-error")) {
+    if (inherits(commit.data, "try-error") || nrow(commit.data) < 1) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -136,7 +136,7 @@ read.commits = function(data.path, artifact) {
                                     ORDER BY `date`, `author.name`, `commit.id`, `file`, `artifact`")
 
         ## fix column class for diffsum
-        commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
+        commit.data["diffsum"] = as.integer(commit.data[["diffsum"]])
 
         ## copy columns to match proper layout for further analyses
         commit.data["artifact"] = commit.data[["file"]]
@@ -210,7 +210,7 @@ MAILS.LIST.COLUMNS = c(
 ## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
 MAILS.LIST.DATA.TYPES = c(
     "character", "character",
-    "character", "POSIXct", "numeric", "character",
+    "character", "POSIXct", "integer", "character",
     "character",
     "character"
 )
@@ -231,7 +231,7 @@ read.mails = function(data.path) {
                                encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
-    if (inherits(mail.data, "try-error")) {
+    if (inherits(mail.data, "try-error") || nrow(mail.data) < 1) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.mails.list())
@@ -332,7 +332,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
                                     encoding = "UTF-8"), silent = TRUE)
 
         ## handle the case that the list of issues is empty
-        if (inherits(source.data, "try-error")) {
+        if (inherits(source.data, "try-error") || nrow(source.data) < 1) {
             logging::logwarn("There are no %s issue data available for the current environment.", issue.source)
             logging::logwarn("Datapath: %s", data.path)
             return(create.empty.issues.list())
@@ -351,11 +351,22 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         ## set proper column names
         colnames(source.data) = ISSUES.LIST.COLUMNS
 
+        ## add present flag to data
+        ## (this information can be used to early exit later)
+        source.data["present"] = TRUE
         return(source.data)
     })
 
     ## combine issue data from all sources
     issue.data = do.call(rbind, issue.data)
+
+    ## if no chosen source is present exit early by returning the (combined) empty issues list
+    ## else remove the present flag again
+    if (!"present" %in% colnames(issue.data)) {
+        return(issue.data)
+    } else {
+        issue.data <- subset(issue.data, select = -present)
+    }
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
@@ -440,7 +451,8 @@ read.bot.info = function(data.path) {
         logging::logwarn("There is no bot information available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
-        ## return a data frame with the correct columns but zero rows
+        ## return NULL. Creating an empty dataframe is not possible
+        ## because no type information about bot information is present
         return(NULL)
     }
 
@@ -486,15 +498,15 @@ read.authors = function(data.path) {
 
 
     ## break if the list of authors is empty
-    if (inherits(authors.df, "try-error")) {
+    if (inherits(authors.df, "try-error") || nrow(authors.df) < 1) {
         logging::logerror("There are no authors available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         stop("Stopped due to missing authors.")
     }
 
-    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    ## if there is no third column, we need to add e-mail-address dummy data
     if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS.WITHOUT.BOTS)) {
-        authors.df[3] = NA
+        authors.df[3] = ""
     }
     colnames(authors.df) = AUTHORS.LIST.COLUMNS.WITHOUT.BOTS
 
@@ -511,6 +523,9 @@ read.authors = function(data.path) {
     ## re-order the columns
     authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
     authors.df = remove.deleted.and.empty.user(authors.df)
+
+    ## assure type correctness
+    authors.df[["author.id"]] = as.character(authors.df[["author.id"]])
 
     ## check that dataframe is of correct shape
     verify.data.frame.columns(authors.df, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
@@ -566,7 +581,7 @@ read.gender = function(data.path) {
 
 
     ## handle the case if the list of items is empty
-    if (inherits(gender.data, "try-error")) {
+    if (inherits(gender.data, "try-error") || nrow(gender.data) < 1) {
         logging::logwarn("There are no gender data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.gender.list())
@@ -656,7 +671,7 @@ read.commit.messages = function(data.path) {
                                          encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.message.data, "try-error")) {
+    if (inherits(commit.message.data, "try-error") || nrow(commit.message.data) < 1) {
         logging::logwarn("There are no commit messages available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -758,7 +773,7 @@ read.pasta = function(data.path) {
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of PaStA items is empty
-    if (inherits(lines, "try-error")) {
+    if (inherits(lines, "try-error") || length(lines) < 1) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.pasta.list())
@@ -899,7 +914,7 @@ read.custom.event.timestamps = function(data.path, file.name) {
                                         encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(custom.event.timestamps.table, "try-error")) {
+    if (inherits(custom.event.timestamps.table, "try-error") || nrow(custom.event.timestamps.table) < 1) {
         logging::logwarn("There are no custom timestamps available at the given path.")
         logging::logwarn("Datapath: %s", data.path)
 

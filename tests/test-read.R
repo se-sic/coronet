@@ -129,7 +129,7 @@ test_that("Read the raw commit data with the file artifact.", {
                                       artifact = c("test.c", "test.c", "test2.c", "test3.c", UNTRACKED.FILE, UNTRACKED.FILE, "test2.c"),
                                       artifact.type = c("File", "File", "File", "File", UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                                         UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE, "File"),
-                                      artifact.diff.size = c(1, 1, 1, 1, 0, 0, 1))
+                                      artifact.diff.size = as.integer(c(1, 1, 1, 1, 0, 0, 1)))
 
     ## check the results
     expect_identical(commit.data.read, commit.data.expected, info = "Raw commit data.")
@@ -243,7 +243,7 @@ test_that("Read the author data.", {
 
     ## build the expected data.frame
     author.data.expected = data.frame(
-        author.id = as.integer(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
+        author.id = as.character(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
         author.name = c("Thomas", "Olaf", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max"),
         author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
                          "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org"),
