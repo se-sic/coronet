@@ -14,7 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -109,10 +109,10 @@ test_that("Match argument or take default.", {
 })
 
 ##
-## Check presence and datatype of column.
+## Check presence and datatype of data frame columns.
 ##
 
-test_that("Check presence and datatype of column.", {
+test_that("Check presence and datatype of data frame columns.", {
 
     user.names = c("John", "Peter", "Maria", "Susanne")
 
@@ -143,10 +143,10 @@ test_that("Check presence and datatype of column.", {
     ## 4) Unequal amount of column names and datatypes
     expect_error(verify.data.frame.columns(
         data.frame, c("user.names", "age", "is.male"), c("character", "numeric")),
-        message = "More coloumn names specified than datatypes.")
+        message = "More column names specified than datatypes.")
     expect_error(verify.data.frame.columns(
         data.frame, c("user.names", "age"), c("character", "numeric", "logical")),
-        message = "More coloumn names specified than datatypes.")
+        message = "More column names specified than datatypes.")
 
     ## 5) Datatypes do not match column names
     expect_error(verify.data.frame.columns(
@@ -156,22 +156,22 @@ test_that("Check presence and datatype of column.", {
     ## 6) Invalid column / Column not present in dataframe (Typo)
     expect_error(verify.data.frame.columns(
         data.frame, c("user.name"), c("character")),
-        message = "Column names do not match datatypes.")
+        message = "Column name 'user.name' should not be in dataframe.")
 
     ## 7) No datatypes specified and column names are present
     expect_no_error(verify.data.frame.columns(
         data.frame, c("user.names", "age", "is.male")),
         message = "Column names do not match datatypes.")
 
-    ## 8) No datatypes specified but column names are not present (Typo)
+    ## 8) No datatypes specified and column names are not specified correctly (Typo)
     expect_error(verify.data.frame.columns(
         data.frame, c("user.name")),
-        message = "Column names do not match datatypes.")
+        message = "Column name 'user.name' should not be in dataframe.")
 
-    ## 9) To many column names and no datatypes specified
+    ## 9) Too many column names and no datatypes specified
     expect_error(verify.data.frame.columns(
         data.frame, c("user.names", "age", "is.male", "job.orientation")),
-        message = "Column names do not match datatypes.")
+        message = "More column names specififed than present in the dataframe.")
 
 })
 

@@ -25,7 +25,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -2159,6 +2159,11 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param  custom.event.timestamps the list of timestamps to set
         set.custom.event.timestamps = function(custom.event.timestamps) {
+            if (!is.list(custom.event.timestamps)) {
+                error.message = sprintf("set.custom.event.timestamps: Input is expected to be a list.")
+                logging::logerror(error.message)
+                stop(error.message)
+            }
             if(length(custom.event.timestamps) != 0){
                 private$custom.event.timestamps = custom.event.timestamps[
                     order(unlist(get.date.from.string(custom.event.timestamps)))

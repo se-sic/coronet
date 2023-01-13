@@ -23,7 +23,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -351,10 +351,6 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
 
         ## set proper column names
         colnames(source.data) = ISSUES.LIST.COLUMNS
-
-        ## add present flag to data
-        ## (this information can be used to early exit later)
-        source.data["present"] = TRUE
         return(source.data)
     })
 
@@ -362,11 +358,8 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data = do.call(rbind, issue.data)
 
     ## if no chosen source is present exit early by returning the (combined) empty issues list
-    ## else remove the present flag again
-    if (!"present" %in% colnames(issue.data)) {
+    if (nrow(issue.data) < 1) {
         return(issue.data)
-    } else {
-        issue.data <- subset(issue.data, select = -present)
     }
 
     ## set pattern for issue ID for better recognition
@@ -924,6 +917,25 @@ read.custom.event.timestamps = function(data.path, file.name) {
     }
     timestamps = as.list(custom.event.timestamps.table[[2]])
     names(timestamps) = custom.event.timestamps.table[[1]]
+
+    ## check if first column of input has type character
+    if (class(names(timestamps)) != "character") {
+        error.message = sprintf(
+            "The first column of custom event timestamps should be of type character but is '%s'",
+            class(names(timestamps)))
+        logging::logerror(error.message)
+        stop(error.message)
+    }
+
+    ## check if second column of input is in POSIXct format by converting 
+    ## all elements to POSIXct and catch possible errors
+    tryCatch(sapply(timestamps, function(time) as.POSIXct(time)),
+            error = function(e) {
+                error.message = sprintf("The second column of custom event timestamps should be in POSIXct format")
+                logging::logerror(error.message)
+                stop(error.message)
+            })
+
 
     ## Sort the timestamps
     if (length(timestamps) != 0) {
