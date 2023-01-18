@@ -157,7 +157,7 @@ verify.data.frame.columns = function(data, columns, data.types = NULL) {
     ## been provided in \code{columns} we can stop here already
     if (!is.null(data.types) && length(columns) != length(data.types)) {
         error.message = sprintf(paste("If specified, the length of the two given vectors",
-        "'columns' and 'data.types' must match."))
+                                "'columns' and 'data.types' must match."))
         logging::logerror(error.message)
         stop(error.message)
     }
