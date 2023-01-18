@@ -25,6 +25,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1064,6 +1065,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(commit.data)) {
                 commit.data = create.empty.commits.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(commit.data, COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES)
             }
 
             ## store commit data
@@ -1145,6 +1149,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.commit.message.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1214,6 +1221,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.synchronicity.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1287,6 +1297,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.pasta.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1368,6 +1381,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.gender.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1444,6 +1460,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(mail.data)) {
                 mail.data = create.empty.mails.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(mail.data, MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES)
             }
 
             ## store mail data
@@ -1502,6 +1521,14 @@ ProjectData = R6::R6Class("ProjectData",
         set.authors = function(data) {
             logging::loginfo("Setting author data.")
             private$authors = data
+
+            if (is.null(data)) {
+                data = create.empty.authors.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
+            }
+
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
 
@@ -1606,6 +1633,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.issues.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
             }
 
             private$issues.unfiltered = data
@@ -2129,6 +2159,11 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param  custom.event.timestamps the list of timestamps to set
         set.custom.event.timestamps = function(custom.event.timestamps) {
+            if (!is.list(custom.event.timestamps)) {
+                error.message = sprintf("set.custom.event.timestamps: Input is expected to be a list.")
+                logging::logerror(error.message)
+                stop(error.message)
+            }
             if(length(custom.event.timestamps) != 0){
                 private$custom.event.timestamps = custom.event.timestamps[
                     order(unlist(get.date.from.string(custom.event.timestamps)))

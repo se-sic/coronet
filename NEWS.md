@@ -2,6 +2,20 @@
 
 # coronet – Changelog
 
+## 4.3
+
+### Added
+
+- Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d).
+
+### Changed/Improved
+
+- Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f).
+
+### Fixed
+
+- Fix check for empty input-files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f).
+
 ## 4.2
 
 ### Added
