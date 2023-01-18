@@ -918,28 +918,19 @@ read.custom.event.timestamps = function(data.path, file.name) {
     timestamps = as.list(custom.event.timestamps.table[[2]])
     names(timestamps) = custom.event.timestamps.table[[1]]
 
-    ## check if first column of input has type character
-    if (class(names(timestamps)) != "character") {
-        error.message = sprintf(
-            "The first column of custom event timestamps should be of type character but is '%s'",
-            class(names(timestamps)))
+    ## convert all timestamps to POSIXct format
+    posix.timestamps = get.date.from.string(timestamps)
+
+    ## if a timestamp is malformatted get.date.from.string returns a NA
+    if (any(is.na(posix.timestamps))) {
+        error.message = sprintf("Input timestamps are not in POSIXct format (YYYY-mm-DD HH:MM:SS).")
         logging::logerror(error.message)
         stop(error.message)
     }
 
-    ## check if second column of input is in POSIXct format by converting 
-    ## all elements to POSIXct and catch possible errors
-    tryCatch(sapply(timestamps, function(time) as.POSIXct(time)),
-            error = function(e) {
-                error.message = sprintf("The second column of custom event timestamps should be in POSIXct format")
-                logging::logerror(error.message)
-                stop(error.message)
-            })
-
-
     ## Sort the timestamps
     if (length(timestamps) != 0) {
-        timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+        timestamps = timestamps[order(unlist(posix.timestamps))]
     }
 
     logging::logdebug("read.custom.event.timestamps: finished.")
