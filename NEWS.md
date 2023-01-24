@@ -11,6 +11,7 @@
 ### Changed/Improved
 
 - Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f).
+- Include removal of empty and deleted users in the setters of mails, commits, issues, and authors (PR #235, 08fbd3e11e33d060f42cbc6f729eaf60b48a6de7)
 
 ### Fixed
 
