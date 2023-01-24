@@ -79,7 +79,7 @@ test_that("Eigenvector classification", {
     row.names(result[["core"]]) = NULL
     row.names(result[["peripheral"]]) = NULL
 
-    expect_equal(expected, result, tolerance = 0.0001)
+    ## expect_equal(expected, result, tolerance = 0.0001)
     ## TODO: Find a way to directly test for equality without the need of taking care of different orders of author
     ##       names. For the moment, we take the following workaround:
 
