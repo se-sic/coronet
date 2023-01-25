@@ -47,14 +47,20 @@ requireNamespace("data.table") # for faster data.frame processing
 
 #' Remove the "deleted user" or the author with empty name "" from a data frame.
 #'
-#' @param data the data from which to remove the "deleted user" and author with empty name
+#' @param data the data from which to remove the "deleted user" and author with empty name.
 #' @param columns the columns in which to search for the "deleted user" and author with empty name.
-#'        The default value is \code{c("author.name")}.
+#'                [default: c("author.name")]
 #' 
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
 remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
+    if (!all(columns %in% names(data))) {
+        logging::logerror("The given columns are not present in the data.frame.")
+        stop("Stopped due to invalid column names.")    
+    }
+    
     ## create a copy of the original data frame
     df = data.frame(data)
+
     ## loop over the given columns and remove all rows in which the author name is "deleted user" or ""
     for (column in columns) {
         df = df[tolower(data[, column]) != "deleted user" & data[column] != "", ]
