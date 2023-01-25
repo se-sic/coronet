@@ -53,19 +53,16 @@ requireNamespace("data.table") # for faster data.frame processing
 #' 
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
 remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
-    if (!all(columns %in% names(data))) {
+    if (!all(columns %in% colnames(data))) {
         logging::logerror("The given columns are not present in the data.frame.")
         stop("Stopped due to invalid column names.")    
     }
-    
-    ## create a copy of the original data frame
-    df = data.frame(data)
 
     ## loop over the given columns and remove all rows in which the author name is "deleted user" or ""
     for (column in columns) {
-        df = df[tolower(data[, column]) != "deleted user" & data[column] != "", ]
+        data = data[tolower(data[, column]) != "deleted user" & data[column] != "", ]
     }   
-    return(df)
+    return(data)
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
