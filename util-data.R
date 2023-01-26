@@ -1647,7 +1647,8 @@ ProjectData = R6::R6Class("ProjectData",
                 verify.data.frame.columns(data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
             }
 
-            ## remove deleted and empty users
+            ## remove deleted user from the "author.name" column,
+            ## however, keep events where the user in the "event.info.1" column is empty or deleted
             data = remove.deleted.and.empty.user(data)
 
             private$issues.unfiltered = data

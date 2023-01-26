@@ -396,7 +396,9 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
-        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
+        ## filter deleted user from the "author.name" column,
+        ## however, keep events where the user in the "event.info.1" column is empty or deleted
+        issue.data = remove.deleted.and.empty.user(issue.data) 
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 
