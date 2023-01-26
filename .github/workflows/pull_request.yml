@@ -14,10 +14,14 @@
 ## Copyright 2023 by Maximilian Löffler <s8maloef@cs.uni-saarland.de>
 ## All Rights Reserved.
 
+name: Build Status
+
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ master, dev ]
     types: [ opened, reopened, synchronize ]
+  push:
+    branches: [ master, dev ]
 
 permissions:
   contents: read
@@ -45,23 +49,15 @@ jobs:
           sudo apt-get install --assume-yes libxml2-dev
           sudo apt-get install --assume-yes libglpk-dev
           sudo apt-get install --assume-yes libfontconfig1-dev
-          sudo su -c "echo 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' >> /etc/apt/sources.list"
+          sudo su -c "echo 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' >> /etc/apt/sources.list"
           wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 
       - name: Set up R ${{ matrix.r-version }}
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r-version }}
-
-      - name: Cache dependencies
-        id: cache-dependencies
-        uses: pat-s/always-upload-cache@v3.0.11
-        with:
-          path: packrat
-          key: ${{ runner.os }}-deps-${{ hashFiles('**/install.R') }}
       
-      - if: ${{ steps.cache-dependencies.outputs.cache-hit != 'true' }}
-        name: Install dependencies
+      - name: Install dependencies
         run: Rscript install.R
 
       - name: Run Tests
