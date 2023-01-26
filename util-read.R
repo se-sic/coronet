@@ -19,7 +19,7 @@
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
-## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
@@ -43,15 +43,26 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Helper functions ---------------------------------------------------------------
+## Helper functions --------------------------------------------------------
 
 #' Remove the "deleted user" or the author with empty name "" from a data frame.
 #'
-#' @param data the data from which to remove the "deleted user" and author with empty name
-#'
+#' @param data the data from which to remove the "deleted user" and author with empty name.
+#' @param columns the columns in which to search for the "deleted user" and author with empty name.
+#'                [default: c("author.name")]
+#' 
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
-remove.deleted.and.empty.user = function(data) {
-    return(data[tolower(data[, "author.name"]) != "deleted user" & data["author.name"] != "", ])
+remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
+    if (!all(columns %in% colnames(data))) {
+        logging::logerror("The given columns are not present in the data.frame.")
+        stop("Stopped due to invalid column names.")    
+    }
+
+    ## loop over the given columns and remove all rows in which the author name is "deleted user" or ""
+    for (column in columns) {
+        data = data[tolower(data[, column]) != "deleted user" & data[column] != "", ]
+    }   
+    return(data)
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -171,7 +182,7 @@ read.commits = function(data.path, artifact) {
                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                           commit.data[["artifact.type"]])
 
-    commit.data = remove.deleted.and.empty.user(commit.data) # filter deleted user
+    commit.data = remove.deleted.and.empty.user(commit.data, c("author.name", "committer.name")) # filter deleted user
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
@@ -385,7 +396,9 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
-        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
+        ## filter deleted user from the "author.name" column,
+        ## however, keep events where the user in the "event.info.1" column is empty or deleted
+        issue.data = remove.deleted.and.empty.user(issue.data) 
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 

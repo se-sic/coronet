@@ -21,7 +21,7 @@
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
-## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
@@ -1070,6 +1070,9 @@ ProjectData = R6::R6Class("ProjectData",
                 verify.data.frame.columns(commit.data, COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES)
             }
 
+            ## remove commits that have no author or commiter
+            commit.data = remove.deleted.and.empty.user(commit.data, c("author.name", "committer.name"))
+
             ## store commit data
             private$commits.unfiltered = commit.data
 
@@ -1465,6 +1468,9 @@ ProjectData = R6::R6Class("ProjectData",
                 verify.data.frame.columns(mail.data, MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES)
             }
 
+            ## remove deleted and empty users
+            mail.data = remove.deleted.and.empty.user(mail.data)
+
             ## store mail data
             private$mails.unfiltered = mail.data
             private$mails = mail.data
@@ -1528,6 +1534,9 @@ ProjectData = R6::R6Class("ProjectData",
                 ## check that dataframe is of correct shape
                 verify.data.frame.columns(data, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
             }
+
+            ## remove deleted and empty users
+            data = remove.deleted.and.empty.user(data)
 
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
@@ -1637,6 +1646,10 @@ ProjectData = R6::R6Class("ProjectData",
                 ## check that dataframe is of correct shape
                 verify.data.frame.columns(data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
             }
+
+            ## remove deleted user from the "author.name" column,
+            ## however, keep events where the user in the "event.info.1" column is empty or deleted
+            data = remove.deleted.and.empty.user(data)
 
             private$issues.unfiltered = data
             private$issues = create.empty.issues.list()
