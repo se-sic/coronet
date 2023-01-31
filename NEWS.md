@@ -7,6 +7,7 @@
 ### Added
 
 - Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d).
+- Add CI support for GitHub Actions (PR #234, fa1fc4af65751402ae6b23298dd4ed821930c6d2).
 
 ### Changed/Improved
 
