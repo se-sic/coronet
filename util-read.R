@@ -17,6 +17,7 @@
 ## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
@@ -50,18 +51,18 @@ requireNamespace("data.table") # for faster data.frame processing
 #' @param data the data from which to remove the "deleted user" and author with empty name.
 #' @param columns the columns in which to search for the "deleted user" and author with empty name.
 #'                [default: c("author.name")]
-#' 
+#'
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
 remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
     if (!all(columns %in% colnames(data))) {
         logging::logerror("The given columns are not present in the data.frame.")
-        stop("Stopped due to invalid column names.")    
+        stop("Stopped due to invalid column names.")
     }
 
     ## loop over the given columns and remove all rows in which the author name is "deleted user" or ""
     for (column in columns) {
-        data = data[tolower(data[, column]) != "deleted user" & data[column] != "", ]
-    }   
+        data = data[tolower(data[, column]) != "deleted user" & data[, column] != "", ]
+    }
     return(data)
 }
 
@@ -398,7 +399,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
         ## filter deleted user from the "author.name" column,
         ## however, keep events where the user in the "event.info.1" column is empty or deleted
-        issue.data = remove.deleted.and.empty.user(issue.data) 
+        issue.data = remove.deleted.and.empty.user(issue.data)
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 

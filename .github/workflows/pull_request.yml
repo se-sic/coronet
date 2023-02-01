@@ -1,0 +1,68 @@
+## This file is part of coronet, which is free software: you
+## can redistribute it and/or modify it under the terms of the GNU General
+## Public License as published by  the Free Software Foundation, version 2.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with this program; if not, write to the Free Software Foundation, Inc.,
+## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+##
+## Copyright 2023 by Maximilian Löffler <s8maloef@cs.uni-saarland.de>
+## All Rights Reserved.
+
+name: Build Status
+
+on:
+  pull_request:
+    branches: [ master, dev ]
+    types: [ opened, reopened, synchronize ]
+  push:
+    branches: [ master, dev ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    
+    # change to 'runs-on: self-hosted' to run on self-hosted runners (https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job)
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        r-version: ['3.6', '4.0', '4.1', '4.2', 'latest']
+
+    steps:
+      - name: Checkout Repo 
+        uses: actions/checkout@v3
+
+      - name: Update system
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install --assume-yes libxml2
+          sudo apt-get install --assume-yes libxml2-dev
+          sudo apt-get install --assume-yes libglpk-dev
+          sudo apt-get install --assume-yes libfontconfig1-dev
+          sudo su -c "echo 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' >> /etc/apt/sources.list"
+          wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+
+      - name: Set up R ${{ matrix.r-version }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r-version }}
+      
+      - name: Install dependencies
+        run: Rscript install.R
+
+      - name: Run Tests
+        run: Rscript tests.R
+
+      - name: Run Showcase
+        run: Rscript showcase.R
+        if: always()
