@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
@@ -292,6 +292,17 @@ get.second.last.element = function(v) {
     } else {
         return(NA)
     }
+}
+
+#' Check if a value is a single \code{NA} value.
+#' (The function \code{is.na} is not capable of doing that, as it does the \code{NA} check for each element of a vector
+#' instead of checking whether vector itself is just a single \code{NA} element.)
+#'
+#' @param x an R object to be tested: atomic vectors, lists, pairlists, or ‘NULL’
+#'
+#' @return \code{TRUE} if \code{x} is of length 1 and \code{x} is \code{NA}; \code{FALSE} otherwise
+is.single.na = function(x) {
+    return(length(x) == 1 && is.na(x))
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
