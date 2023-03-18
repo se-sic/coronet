@@ -1023,7 +1023,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 item.edge.attrs = item[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
-                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = default.stringsAsFactors())
+                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
                 if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
                 }
