@@ -20,6 +20,7 @@
 
 - Fix check for empty input files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f)
 - Fix various problems regarding the default classes of edge attributes and vertex attributes, and also make sure that the edge attributes for bipartite edges are chosen correctly (PR #240, 4275b93867c78d20d0bd116749c1e7603cd9d473, 98a6deb1b178a1fcf799c741906e99770c46a8d0, b8232c09b91df3412f703dd26c21c685bacd0321, a9535550d93207f466b315f33ea263a50e6c8924, 820a7631093d03ac5ccb7bf9923bd498f669120a)
+- Add argument to `construct.edge.list.from.key.value.list` function which differentiates if constructed edges are supposed to be artifact edges, in which case we check if the `artifact` attribute is present for edges and replace it by `author.name`. (PR #238, d83cfa2086b24abf467d09251c9dc9729bbf431c)
 - Prevent R warnings `'length(x) = 2 > 1' in coercion to 'logical(1)'` in `if` conditions for updating configuration values (PR #237, ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca)
 - Prevent R warnings `In xtfrm.data.frame(x) : cannot xtfrm data frames` (PR #237, c24aee7d8f0b6ff4b641c8922e6ee1dce6f5999c)
 - Replace deprecated R function calls (PR #237, ed433821c04711a96501887b315d1b0ea8681f5a)
