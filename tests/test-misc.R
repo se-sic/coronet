@@ -14,6 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -182,6 +183,34 @@ test_that("Check presence and datatype of data frame columns.", {
         message = "More column names specififed than present in the dataframe.")
 
 })
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vector misc--------------------------------------------------------------
+
+##
+## Check if a value is a single NA value.
+##
+
+test_that("Check if a value is a single NA value", {
+
+    ## 1) Tests for single NA
+    expect_true(is.single.na(NA))
+    expect_true(is.single.na(list(NA)))
+    expect_true(is.single.na(data.frame(NA)))
+
+    ## 2) Tests for values other than a single NA
+    expect_false(is.single.na(0))
+    expect_false(is.single.na("na"))
+    expect_false(is.single.na(NULL))
+    expect_false(is.single.na(logical(0)))
+    expect_false(is.single.na(FALSE))
+    expect_false(is.single.na(c(NA, NA)))
+    expect_false(is.single.na(c(3, NA)))
+    expect_false(is.single.na(list(NA, NA)))
+    expect_false(is.single.na(data.frame(NA, NA)))
+})
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------
