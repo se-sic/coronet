@@ -283,7 +283,7 @@ test_that("Construction of the multi network for the feature artifact with autho
                         artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", # author cochange
                                      "Base_Feature",
                                      rep(NA, 4),
-                                     NA, # bipartite cochange
+                                     NA, # artifact cochange
                                      "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", # bipartite cochange
                                      rep(NA, 21)),
                         weight = 1,

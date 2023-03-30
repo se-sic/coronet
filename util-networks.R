@@ -975,12 +975,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'                               [default: directed]
 #' @param artifact.edges whether the key value data represents edges in an artifact network based
 #'                       on the cochange relation
-#'                       [default: \code{FALSE}]
+#'                       [default: FALSE]
 #'
 #' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
 #'         of \code{igraph::as.data.frame})
 construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE,
-                                        respect.temporal.order = directed, artifact.edges = FALSE) {
+                                                   respect.temporal.order = directed, artifact.edges = FALSE) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
@@ -997,7 +997,20 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     keys = names(list)
     keys.number = length(list)
 
-    if (respect.temporal.order || artifact.edges) {
+
+    ## if edges in an artifact network contain the \code{artifact} attribute 
+    ## replace it with the \code{author.name} attribute as artifacts cannot cause 
+    ## edges in artifact networks, authors can
+    edge.attributes = network.conf$get.value("edge.attributes")
+    if (artifact.edges) {
+        artifact.index = match("artifact", edge.attributes, nomatch = NA)
+        if (!is.na(artifact.index)) {
+            edge.attributes = edge.attributes[-artifact.index]
+            edge.attributes = c(edge.attributes, c("author.name"))
+        }
+    }
+
+    if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, function(set) {
@@ -1023,18 +1036,6 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                 ## get vertex data
                 item.vertex = item[["data.vertices"]]
-
-                ## if edges in an artifact network contain the \code{artifact} attribute 
-                ## replace it with the \code{author.name} attribute as artifacts cannot cause 
-                ## edges in artifact networks, authors can
-                edge.attributes = network.conf$get.value("edge.attributes")
-                if (artifact.edges) {
-                    artifact.index = match("artifact", edge.attributes, nomatch = NA)
-                    if (!is.na(artifact.index)) {
-                        edge.attributes = edge.attributes[-artifact.index]
-                        edge.attributes = c(edge.attributes, c("author.name"))
-                    }
-                }
 
                 ## get edge attributes
                 cols.which = edge.attributes %in% colnames(item)
@@ -1107,8 +1108,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                     ## get edge attibutes
                     edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
-                    cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                    edge.attrs = edge.attrs[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                    cols.which = edge.attributes %in% colnames(edge.attrs)
+                    edge.attrs = edge.attrs[ , edge.attributes[cols.which], drop = FALSE]
 
                     # add edge attributes to edge list
                     edgelist = cbind(edge, edge.attrs)

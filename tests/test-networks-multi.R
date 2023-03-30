@@ -57,7 +57,6 @@ test_that("Construction of the multi network for the feature artifact with autho
                                     )
               row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")
-
               edges = data.frame(
                   from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", 
                             "Base_Feature", "Björn", "Olaf", "Olaf", "Karl", "Thomas",
