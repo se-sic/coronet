@@ -1367,11 +1367,15 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
     ## get type
     type = match.arg(type, several.ok = FALSE)
 
-    ## get corresponding attribute function
+    ## get corresponding attribute functions
     if (type == "vertex") {
-        attribute.function = igraph::set.vertex.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.set.function = igraph::set.vertex.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::get.vertex.attribute # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::remove.vertex.attribute # sprintf("igraph::remove.%s.attribute", type)
     } else {
-        attribute.function = igraph::set.edge.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.set.function = igraph::set.edge.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::get.edge.attribute # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::remove.edge.attribute # sprintf("igraph::remove.%s.attribute", type)
     }
 
     ## iterate over all wanted attribute names and add the attribute with the wanted class
@@ -1385,6 +1389,16 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
         if (lubridate::is.POSIXct(default.value)) {
             attr(default.value, "tzone") = TIMEZONE
         }
+
+        ## check if the attribute is already present. If so, remove it and re-add it (to keep the intended order).
+        ## only exception from this: the name attribute is not removed and re-added, as this would lead to problems.
+        if (!is.null(attribute.get.function(network, attr.name)) && attr.name != "name") {
+            logging::logwarn("Attribute %s has already been present, but is re-added now.", attr.name)
+            present.value = attribute.get.function(network, attr.name)
+            network = attribute.remove.function(network, attr.name)
+            default.value = present.value
+        }
+
         ## add the new attribute to the network with the proper class
         network = attribute.set.function(network, attr.name, value = default.value)
     }
