@@ -915,6 +915,23 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks:
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
+
+            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0 and 1.4.1
+            ## (see https://github.com/igraph/rigraph/issues/761), we need to adjust the type of the date attribute
+            ## of the outcome of 'igraph::disjoint_union'.
+            ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
+            ## affect several other attributes, whose classes are not adjusted in our temporary fix.
+            ## The following code block should be redundant as soon as igraph has fixed their bug.
+            u.actual.edge.attribute.date = igraph::get.edge.attribute(u, "date")
+            if (!is.null(u.actual.edge.attribute.date)) {
+                if (is.list(u.actual.edge.attribute.date)) {
+                    u.expected.edge.attribute.date = lapply(u.actual.edge.attribute.date, get.date.from.unix.timestamp)
+                } else {
+                    u.expected.edge.attribute.date = get.date.from.unix.timestamp(u.actual.edge.attribute.date)
+                }
+                u = igraph::set.edge.attribute(u, "date", value = u.expected.edge.attribute.date)
+            }
+
             ## 2) add the bipartite edges
             u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
