@@ -901,11 +901,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
-                logging::logwarn("Author network is directed, but artifact network is not. Converting artifact network...")
+                logging::logwarn(paste0("Author network is directed, but artifact network is not.",
+                                        "Converting artifact network..."))
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
-                logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                artifacts.net = igraph::as.undirected(artifacts.net, mode = "each", edge.attr.comb = EDGE.ATTR.HANDLING)
+                logging::logwarn(paste0("Author network is undirected, but artifact network is not.",
+                                        "Converting artifact network..."))
+                artifacts.net = igraph::as.undirected(artifacts.net, mode = "each",
+                                                      edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
             ## reduce memory consumption by removing temporary data
@@ -1017,7 +1020,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                 ## get edge attributes
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                item.edge.attrs = item[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -1087,7 +1090,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                     ## get edge attibutes
                     edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
                     cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                    edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                    edge.attrs = edge.attrs[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                     # add edge attributes to edge list
                     edgelist = cbind(edge, edge.attrs)
@@ -1304,13 +1307,11 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 
         ## initialize edge attributes
         allowed.edge.attributes = network.conf$get.value("edge.attributes")
-        available.edge.attributes = available.edge.attributes[names(available.edge.attributes) %in% allowed.edge.attributes]
+        available.edge.attributes = available.edge.attributes[names(available.edge.attributes)
+                                                              %in% allowed.edge.attributes]
         net = add.attributes.to.network(net, "edge", allowed.edge.attributes)
 
         ## get extra edge attributes
-        extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
-            cols.which = allowed.edge.attributes %in% colnames(a.df)
-            return(a.df[, allowed.edge.attributes[cols.which], drop = FALSE])
         extra.edge.attributes.df = parallel::mcmapply(vertex.sequence = vertex.sequence.for.edges, a.df = net1.to.net2,
                                                       SIMPLIFY = FALSE, function(vertex.sequence, a.df) {
 
