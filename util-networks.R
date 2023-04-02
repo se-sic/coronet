@@ -1300,7 +1300,7 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
                 igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
             })
             return(new.edges)
-        }, names(net1.to.net2), net1.to.net2)
+        }, names(net1.to.net2), net1.to.net2, SIMPLIFY = FALSE)
 
         ## initialize edge attributes
         allowed.edge.attributes = network.conf$get.value("edge.attributes")
@@ -1311,6 +1311,31 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
             cols.which = allowed.edge.attributes %in% colnames(a.df)
             return(a.df[, allowed.edge.attributes[cols.which], drop = FALSE])
+        extra.edge.attributes.df = parallel::mcmapply(vertex.sequence = vertex.sequence.for.edges, a.df = net1.to.net2,
+                                                      SIMPLIFY = FALSE, function(vertex.sequence, a.df) {
+
+            ## return empty data.frame if vertex sequence is empty
+            if (length(unlist(vertex.sequence)) == 0){
+                return(data.frame())
+            }
+
+            ## get the artifacts from the vertex sequence (which are the even elements of the sequence vector)
+            vertex.names.in.sequence = names(unlist(vertex.sequence))
+            artifacts.in.sequence = vertex.names.in.sequence[seq(2, length(vertex.names.in.sequence), 2)]
+
+            ## get the edges that will be constructed from the artifacts,
+            ## to get only the edge attributes for edges that will be present in the final network
+            ## (i.e., ignore edges to removed artifacts, such as the empty artifact that has been removed above)
+            constructed.edges = a.df[a.df[["data.vertices"]] %in% artifacts.in.sequence, , drop = FALSE]
+
+            ## return empty data.frame if there will be no edges in the end
+            if (nrow(constructed.edges) < 1) {
+                return(data.frame())
+            }
+
+            ## select the allowed attributes from the edge data.frame's columns
+            cols.which = allowed.edge.attributes %in% colnames(constructed.edges)
+            return(constructed.edges[ , allowed.edge.attributes[cols.which], drop = FALSE])
         })
         extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
         extra.edge.attributes = as.list(extra.edge.attributes.df)
