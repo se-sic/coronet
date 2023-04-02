@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -32,6 +32,7 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr") # for dlply function
 requireNamespace("igraph") # networks
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -1352,7 +1353,7 @@ create.empty.edge.list = function() {
 
 #' Add the given list of \code{type} attributes to the given network.
 #'
-#' All added attributes are set to the value \code{NA}.
+#' All added attributes are set to the default value of the respective class.
 #'
 #' @param network the network to which the attributes are to be added
 #' @param type the type of attribute to add; either \code{"vertex"} or \code{"edge"}
@@ -1379,10 +1380,13 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
         default.value = 0
         ## set the right class for the default value
         class(default.value) = attributes[[attr.name]]
+
+        ## make sure that the default value contains a tzone attribute if the attribute is of class 'POSIXct'
+        if (lubridate::is.POSIXct(default.value)) {
+            attr(default.value, "tzone") = TIMEZONE
+        }
         ## add the new attribute to the network with the proper class
-        network = attribute.function(network, attr.name, value = default.value)
-        ## fill the new attribute with NA values
-        network = attribute.function(network, attr.name, value = NA)
+        network = attribute.set.function(network, attr.name, value = default.value)
     }
 
     return(network)
