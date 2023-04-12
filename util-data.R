@@ -269,7 +269,7 @@ ProjectData = R6::R6Class("ProjectData",
             result = parallel::mclapply(thread.data, function(thread) {
 
                 ## ensure that all mails within the thread are ordered correctly
-                thread = thread[order(thread["date"]), ]
+                thread = thread[order(thread[["date"]]), ]
 
                 running = TRUE
                 i = 1
