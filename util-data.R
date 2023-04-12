@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs-uni-saarland.de>
+## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -35,6 +35,7 @@
 requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

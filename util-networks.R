@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -32,6 +32,7 @@ requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
 requireNamespace("plyr") # for dlply function
 requireNamespace("igraph") # networks
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -900,11 +901,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
-                logging::logwarn("Author network is directed, but artifact network is not. Converting artifact network...")
+                logging::logwarn(paste0("Author network is directed, but artifact network is not.",
+                                        "Converting artifact network..."))
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
-                logging::logwarn("Author network is undirected, but artifact network is not. Converting artifact network...")
-                artifacts.net = igraph::as.undirected(artifacts.net, mode = "each", edge.attr.comb = EDGE.ATTR.HANDLING)
+                logging::logwarn(paste0("Author network is undirected, but artifact network is not.",
+                                        "Converting artifact network..."))
+                artifacts.net = igraph::as.undirected(artifacts.net, mode = "each",
+                                                      edge.attr.comb = EDGE.ATTR.HANDLING)
             }
 
             ## reduce memory consumption by removing temporary data
@@ -914,6 +918,23 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks:
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
+
+            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0 and 1.4.1
+            ## (see https://github.com/igraph/rigraph/issues/761), we need to adjust the type of the date attribute
+            ## of the outcome of 'igraph::disjoint_union'.
+            ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
+            ## affect several other attributes, whose classes are not adjusted in our temporary fix.
+            ## The following code block should be redundant as soon as igraph has fixed their bug.
+            u.actual.edge.attribute.date = igraph::get.edge.attribute(u, "date")
+            if (!is.null(u.actual.edge.attribute.date)) {
+                if (is.list(u.actual.edge.attribute.date)) {
+                    u.expected.edge.attribute.date = lapply(u.actual.edge.attribute.date, get.date.from.unix.timestamp)
+                } else {
+                    u.expected.edge.attribute.date = get.date.from.unix.timestamp(u.actual.edge.attribute.date)
+                }
+                u = igraph::set.edge.attribute(u, "date", value = u.expected.edge.attribute.date)
+            }
+
             ## 2) add the bipartite edges
             u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
@@ -999,7 +1020,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                 ## get edge attributes
                 cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                item.edge.attrs = item[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = default.stringsAsFactors())
@@ -1069,7 +1090,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                     ## get edge attibutes
                     edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
                     cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                    edge.attrs = edge.attrs[, network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                    edge.attrs = edge.attrs[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                     # add edge attributes to edge list
                     edgelist = cbind(edge, edge.attrs)
@@ -1282,17 +1303,40 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
                 igraph::V(net)[d, vert] # get two vertices from source network:  c(author, artifact)
             })
             return(new.edges)
-        }, names(net1.to.net2), net1.to.net2)
+        }, names(net1.to.net2), net1.to.net2, SIMPLIFY = FALSE)
 
         ## initialize edge attributes
         allowed.edge.attributes = network.conf$get.value("edge.attributes")
-        available.edge.attributes = available.edge.attributes[names(available.edge.attributes) %in% allowed.edge.attributes]
+        available.edge.attributes = available.edge.attributes[names(available.edge.attributes)
+                                                              %in% allowed.edge.attributes]
         net = add.attributes.to.network(net, "edge", allowed.edge.attributes)
 
         ## get extra edge attributes
-        extra.edge.attributes.df = parallel::mclapply(net1.to.net2, function(a.df) {
-            cols.which = allowed.edge.attributes %in% colnames(a.df)
-            return(a.df[, allowed.edge.attributes[cols.which], drop = FALSE])
+        extra.edge.attributes.df = parallel::mcmapply(vertex.sequence = vertex.sequence.for.edges, a.df = net1.to.net2,
+                                                      SIMPLIFY = FALSE, function(vertex.sequence, a.df) {
+
+            ## return empty data.frame if vertex sequence is empty
+            if (length(unlist(vertex.sequence)) == 0){
+                return(data.frame())
+            }
+
+            ## get the artifacts from the vertex sequence (which are the even elements of the sequence vector)
+            vertex.names.in.sequence = names(unlist(vertex.sequence))
+            artifacts.in.sequence = vertex.names.in.sequence[seq(2, length(vertex.names.in.sequence), 2)]
+
+            ## get the edges that will be constructed from the artifacts,
+            ## to get only the edge attributes for edges that will be present in the final network
+            ## (i.e., ignore edges to removed artifacts, such as the empty artifact that has been removed above)
+            constructed.edges = a.df[a.df[["data.vertices"]] %in% artifacts.in.sequence, , drop = FALSE]
+
+            ## return empty data.frame if there will be no edges in the end
+            if (nrow(constructed.edges) < 1) {
+                return(data.frame())
+            }
+
+            ## select the allowed attributes from the edge data.frame's columns
+            cols.which = allowed.edge.attributes %in% colnames(constructed.edges)
+            return(constructed.edges[ , allowed.edge.attributes[cols.which], drop = FALSE])
         })
         extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
         extra.edge.attributes = as.list(extra.edge.attributes.df)
@@ -1352,7 +1396,7 @@ create.empty.edge.list = function() {
 
 #' Add the given list of \code{type} attributes to the given network.
 #'
-#' All added attributes are set to the value \code{NA}.
+#' All added attributes are set to the default value of the respective class.
 #'
 #' @param network the network to which the attributes are to be added
 #' @param type the type of attribute to add; either \code{"vertex"} or \code{"edge"}
@@ -1366,11 +1410,15 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
     ## get type
     type = match.arg(type, several.ok = FALSE)
 
-    ## get corresponding attribute function
+    ## get corresponding attribute functions
     if (type == "vertex") {
-        attribute.function = igraph::set.vertex.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.set.function = igraph::set.vertex.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::get.vertex.attribute # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::remove.vertex.attribute # sprintf("igraph::remove.%s.attribute", type)
     } else {
-        attribute.function = igraph::set.edge.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.set.function = igraph::set.edge.attribute # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::get.edge.attribute # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::remove.edge.attribute # sprintf("igraph::remove.%s.attribute", type)
     }
 
     ## iterate over all wanted attribute names and add the attribute with the wanted class
@@ -1379,10 +1427,23 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
         default.value = 0
         ## set the right class for the default value
         class(default.value) = attributes[[attr.name]]
+
+        ## make sure that the default value contains a tzone attribute if the attribute is of class 'POSIXct'
+        if (lubridate::is.POSIXct(default.value)) {
+            attr(default.value, "tzone") = TIMEZONE
+        }
+
+        ## check if the attribute is already present. If so, remove it and re-add it (to keep the intended order).
+        ## only exception from this: the name attribute is not removed and re-added, as this would lead to problems.
+        if (!is.null(attribute.get.function(network, attr.name)) && attr.name != "name") {
+            logging::logwarn("Attribute %s has already been present, but is re-added now.", attr.name)
+            present.value = attribute.get.function(network, attr.name)
+            network = attribute.remove.function(network, attr.name)
+            default.value = present.value
+        }
+
         ## add the new attribute to the network with the proper class
-        network = attribute.function(network, attr.name, value = default.value)
-        ## fill the new attribute with NA values
-        network = attribute.function(network, attr.name, value = NA)
+        network = attribute.set.function(network, attr.name, value = default.value)
     }
 
     return(network)

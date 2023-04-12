@@ -13,9 +13,11 @@
 ##
 ## Copyright 2017, 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2023 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
@@ -421,12 +423,19 @@ test_that("Network construction of the undirected simplified author-cochange net
                          kind = TYPE.AUTHOR,
                          type = TYPE.AUTHOR)
 
+    ## make test independent of igraph version
+    date.attr = igraph::get.edge.attribute(network.built, "date")
+    date.conversion.function = ifelse(all(sapply(date.attr, lubridate::is.POSIXct)),
+                                      get.date.from.unix.timestamp, identity)
+
     ## edge attributes
     data = data.frame(
         from = c("Björn", "Olaf", "Olaf", "Karl"),
         to = c("Olaf", "Karl", "Thomas", "Thomas"),
-        date = I(list(c(1468339139, 1468339245), c(1468339541, 1468339570), c(1468339541, 1468339592),
-                      c(1468339570, 1468339592))),
+        date = I(list(date.conversion.function(c(1468339139, 1468339245)),
+                      date.conversion.function(c(1468339541, 1468339570)),
+                      date.conversion.function(c(1468339541, 1468339592)),
+                      date.conversion.function(c(1468339570, 1468339592)))),
         artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"),
                                c("Feature", "Feature"))),
         hash = I(list(
@@ -441,6 +450,13 @@ test_that("Network construction of the undirected simplified author-cochange net
         type = TYPE.EDGES.INTRA,
         relation = "cochange"
     )
+
+    ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
+    data[["date"]] = unclass(data[["date"]])
+    data[["artifact.type"]] = unclass(data[["artifact.type"]])
+    data[["hash"]] = unclass(data[["hash"]])
+    data[["file"]] = unclass(data[["file"]])
+    data[["artifact"]] = unclass(data[["artifact"]])
 
     ## build expected network
     network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)

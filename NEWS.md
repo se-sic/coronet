@@ -17,6 +17,8 @@
 ### Fixed
 
 - Fix check for empty input-files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f).
+- Fix various problems regarding the default classes of edge attributes and vertex attributes, and also make sure that the edge attributes for bipartite edges are chosen correctly (PR #240, 4275b93867c78d20d0bd116749c1e7603cd9d473, 98a6deb1b178a1fcf799c741906e99770c46a8d0, b8232c09b91df3412f703dd26c21c685bacd0321, a9535550d93207f466b315f33ea263a50e6c8924, 820a7631093d03ac5ccb7bf9923bd498f669120a)
+
 
 ## 4.2
 
