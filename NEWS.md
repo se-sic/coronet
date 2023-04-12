@@ -6,18 +6,22 @@
 
 ### Added
 
-- Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d).
-- Add CI support for GitHub Actions (PR #234, fa1fc4af65751402ae6b23298dd4ed821930c6d2).
+- Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d)
+- Add helper function `is.single.na` to check whether an element is of length 1 and is `NA` (ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca, ccfc2d12a68dfa412f05159e8e3b03118694e748)
+- Add CI support for GitHub Actions (PR #234, fa1fc4af65751402ae6b23298dd4ed821930c6d2)
 
 ### Changed/Improved
 
-- Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f).
-- Include removal of empty and deleted users in the setters of mails, commits, issues, and authors.For commits, also the "committer.name" column is now checked for deleted or empty users. (PR #235, 08fbd3e11e33d060f42cbc6f729eaf60b48a6de7)
+- Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f)
+- Include removal of empty and deleted users in the setters of mails, commits, issues, and authors. For commits, also the `committer.name` column is now checked for deleted or empty users (PR #235, 08fbd3e11e33d060f42cbc6f729eaf60b48a6de7)
 
 ### Fixed
 
-- Fix check for empty input-files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f).
+- Fix check for empty input files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f)
 - Fix various problems regarding the default classes of edge attributes and vertex attributes, and also make sure that the edge attributes for bipartite edges are chosen correctly (PR #240, 4275b93867c78d20d0bd116749c1e7603cd9d473, 98a6deb1b178a1fcf799c741906e99770c46a8d0, b8232c09b91df3412f703dd26c21c685bacd0321, a9535550d93207f466b315f33ea263a50e6c8924, 820a7631093d03ac5ccb7bf9923bd498f669120a)
+- Prevent R warnings `'length(x) = 2 > 1' in coercion to 'logical(1)'` in `if` conditions for updating configuration values (PR #237, ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca)
+- Prevent R warnings `In xtfrm.data.frame(x) : cannot xtfrm data frames` (PR #237, c24aee7d8f0b6ff4b641c8922e6ee1dce6f5999c)
+- Replace deprecated R function calls (PR #237, ed433821c04711a96501887b315d1b0ea8681f5a)
 
 
 ## 4.2
