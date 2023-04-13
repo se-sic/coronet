@@ -100,6 +100,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @return a named vector of logical values, named:
         #'         - existing,
+        #'         - value.not.empty,
         #'         - type,
         #'         - allowed,
         #'         - allowed.number, and
@@ -109,15 +110,18 @@ Conf = R6::R6Class("Conf",
         check.value = function(value, name) {
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
+            } else if (length(value) < 1){
+                result = c(existing = TRUE, value.not.empty = FALSE)
             } else {
                 ## check all other properties
                 attribute = private[["attributes"]][[name]]
                 ## if non-updatable field, return early
                 if (!is.null(attribute[["updatable"]]) && !attribute[["updatable"]]) {
-                    result = c(existing = TRUE, updatable = FALSE)
+                    result = c(existing = TRUE, value.not.empty = TRUE, updatable = FALSE)
                 } else {
                     result = c(
                         existing = TRUE,
+                        value.not.empty = TRUE,
                         updatable = TRUE,
                         type = class(value) %in% attribute[["type"]],
                         ## if 'allowed' is not defined for this attribute, any
@@ -219,22 +223,31 @@ Conf = R6::R6Class("Conf",
                     if (!check[["existing"]]) {
 
                         message = paste(
-                            "Updating network-configuration attribute '%s' failed:",
-                            "A network-configuraton attribute with this name does not exist."
+                            "Updating configuration attribute '%s' failed:",
+                            "A configuraton attribute with this name does not exist."
+                        )
+                        error.function(sprintf(message, name))
+
+                    } else if (!check[["value.not.empty"]]) {
+
+                        message = paste(
+                            "Updating configuration attribute '%s' failed:",
+                            "The provided value is empty!"
                         )
                         error.function(sprintf(message, name))
 
                     } else if (!check[["updatable"]]) {
 
                         message = paste(
-                            "Updating network-configuration attribute '%s' failed:",
+                            "Updating configuration attribute '%s' failed:",
                             "The value is not updatable!"
                         )
                         error.function(message, name)
 
                     } else {
+
                         message = paste0(
-                            "Updating network-configuration attribute '%s' failed.\n",
+                            "Updating configuration attribute '%s' failed.\n",
                             "Allowed values (%s of type '%s'): %s\n",
                             "Given value (of type '%s'): %s"
                         )
