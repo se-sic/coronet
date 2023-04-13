@@ -26,6 +26,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("igraph")
+requireNamespace("logging")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -103,8 +104,9 @@ metrics.density = function(network) {
 #' @param directed whether to consider directed paths in directed networks [default: TRUE]
 #' @param unconnected whether there are subnetworks in the network that are not connected.
 #'                    If \code{TRUE} only the lengths of the existing paths are considered and averaged;
-#'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)}, one longer than
-#'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
+#'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)},
+#'                    one longer than the longest possible geodesic in the network (from igraph documentation)
+#'                    [default: TRUE]
 #'
 #' @return The average path length of the given network.
 metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) {
@@ -131,7 +133,8 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 #'
 #' @param network the network to be examined
 #' @param community.detection.algorithm the algorithm to be used for the detection of communities
-#'            which is required for the calculation of the clustering coefficient [default: igraph::cluster_walktrap]
+#'                                      which is required for the calculation of the clustering coefficient
+#'                                      [default: igraph::cluster_walktrap]
 #'
 #' @return The modularity value for the given network.
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
@@ -212,7 +215,7 @@ metrics.is.smallworld = function(network) {
 #'
 #' @param network the network to be examined
 #' @param minimum.number.vertices the minimum number of vertices with which
-#'  a network can be scale free [default: 30]
+#'                                a network can be scale free [default: 30]
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
@@ -257,7 +260,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
 #'
 #' @param network the network to be examined
 #' @param minimum.number.vertices the minimum number of vertices with which
-#'  a network can be scale free [default: 30]
+#'                                a network can be scale free [default: 30]
 #'
 #' @return \code{TRUE}, if the network is scale free,
 #'         \code{FALSE}, otherwise.
@@ -306,7 +309,7 @@ VERTEX.CENTRALITIES.COLUMN.NAMES = c("vertex.name", "centrality")
 #'              - "network.degree"
 #'              - "network.eigen"
 #'              - "network.hierarchy"
-#'             [defalt: "network.degree"]
+#'             [default: "network.degree"]
 #' @param restrict.classification.to.vertices a vector of vertex names. Only vertices that are contained within this
 #'                                            vector are to be classified. Vertices that appear in the vector but are
 #'                                            not part of the classification result (i.e., they are not present in the
