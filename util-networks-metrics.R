@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -36,7 +36,8 @@ requireNamespace("igraph")
 #' @param network the network to be examined
 #' @param mode the mode to be used for determining the degrees [default: "total"]
 #'
-#' @return A data frame containing the name of the vertex with with maximum degree its degree.
+#' @return If the network is empty (i.e., has no vertices), \code{NA}.
+#'         Otherwise, a data frame containing the name of the vertex/vertices with maximum degree and its/their degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
     ## check whether the network is empty, i.e., if it has no vertices
     if (igraph::vcount(network) == 0) {
