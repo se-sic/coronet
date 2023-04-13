@@ -919,7 +919,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
 
-            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0 and 1.4.1
+            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0, 1.4.1, and 1.4.2
             ## (see https://github.com/igraph/rigraph/issues/761), we need to adjust the type of the date attribute
             ## of the outcome of 'igraph::disjoint_union'.
             ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
@@ -1023,7 +1023,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 item.edge.attrs = item[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
 
                 ## construct edges
-                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = default.stringsAsFactors())
+                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
                 if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
                     combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
                 }

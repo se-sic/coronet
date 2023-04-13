@@ -18,7 +18,7 @@
 ## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
@@ -100,6 +100,7 @@ Conf = R6::R6Class("Conf",
         #'
         #' @return a named vector of logical values, named:
         #'         - existing,
+        #'         - value.not.empty,
         #'         - type,
         #'         - allowed,
         #'         - allowed.number, and
@@ -109,15 +110,18 @@ Conf = R6::R6Class("Conf",
         check.value = function(value, name) {
             if (!exists(name, where = private[["attributes"]])) {
                 result = c(existing = FALSE)
+            } else if (length(value) < 1){
+                result = c(existing = TRUE, value.not.empty = FALSE)
             } else {
                 ## check all other properties
                 attribute = private[["attributes"]][[name]]
                 ## if non-updatable field, return early
                 if (!is.null(attribute[["updatable"]]) && !attribute[["updatable"]]) {
-                    result = c(existing = TRUE, updatable = FALSE)
+                    result = c(existing = TRUE, value.not.empty = TRUE, updatable = FALSE)
                 } else {
                     result = c(
                         existing = TRUE,
+                        value.not.empty = TRUE,
                         updatable = TRUE,
                         type = class(value) %in% attribute[["type"]],
                         ## if 'allowed' is not defined for this attribute, any
@@ -219,22 +223,31 @@ Conf = R6::R6Class("Conf",
                     if (!check[["existing"]]) {
 
                         message = paste(
-                            "Updating network-configuration attribute '%s' failed:",
-                            "A network-configuraton attribute with this name does not exist."
+                            "Updating configuration attribute '%s' failed:",
+                            "A configuraton attribute with this name does not exist."
+                        )
+                        error.function(sprintf(message, name))
+
+                    } else if (!check[["value.not.empty"]]) {
+
+                        message = paste(
+                            "Updating configuration attribute '%s' failed:",
+                            "The provided value is empty!"
                         )
                         error.function(sprintf(message, name))
 
                     } else if (!check[["updatable"]]) {
 
                         message = paste(
-                            "Updating network-configuration attribute '%s' failed:",
+                            "Updating configuration attribute '%s' failed:",
                             "The value is not updatable!"
                         )
                         error.function(message, name)
 
                     } else {
+
                         message = paste0(
-                            "Updating network-configuration attribute '%s' failed.\n",
+                            "Updating configuration attribute '%s' failed.\n",
                             "Allowed values (%s of type '%s'): %s\n",
                             "Given value (of type '%s'): %s"
                         )
@@ -264,22 +277,24 @@ Conf = R6::R6Class("Conf",
                     paste(names.to.update, collapse = ", ")
                 )
                 for (name in names.to.update) {
+                    default.value = private[["attributes"]][[name]][["default"]]
+                    new.value = updated.values[[name]]
+
                     ## check if the default value or the given new value are NA
                     ## if only one of both is NA that means that the value has to be changed
-                    if (is.na(private[["attributes"]][[name]][["default"]]) && !is.na(updated.values[[name]]) ||
-                        !is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]])) {
-                        private[["attributes"]][[name]][["value"]] = updated.values[[name]]
+                    if (is.single.na(default.value) && !is.single.na(new.value) ||
+                        !is.single.na(default.value) && is.single.na(new.value)) {
+                        private[["attributes"]][[name]][["value"]] = new.value
                     } ## if the default value and the given value are the same and if the 'value' field is present
                       ## then reset the 'value' field
-                    else if (is.na(private[["attributes"]][[name]][["default"]]) && is.na(updated.values[[name]]) ||
-                               identical(sort(updated.values[[name]]),
-                                         sort(private[["attributes"]][[name]][["default"]]))) {
+                    else if (is.single.na(default.value) && is.single.na(new.value) ||
+                             identical(sort(new.value), sort(default.value))) {
                         if ("value" %in% names(private[["attributes"]][[name]])) {
                             private[["attributes"]][[name]][["value"]] = NULL
                         }
                     } ## otherwise proceed with updating the value
                     else {
-                        private[["attributes"]][[name]][["value"]] = sort(updated.values[[name]])
+                        private[["attributes"]][[name]][["value"]] = sort(new.value)
                     }
                 }
             } else {

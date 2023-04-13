@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -26,6 +26,7 @@
 ## Libraries ---------------------------------------------------------------
 
 requireNamespace("igraph")
+requireNamespace("logging")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -36,7 +37,8 @@ requireNamespace("igraph")
 #' @param network the network to be examined
 #' @param mode the mode to be used for determining the degrees [default: "total"]
 #'
-#' @return A data frame containing the name of the vertex with with maximum degree its degree.
+#' @return If the network is empty (i.e., has no vertices), \code{NA}.
+#'         Otherwise, a data frame containing the name of the vertex/vertices with maximum degree and its/their degree.
 metrics.hub.degree = function(network, mode = c("total", "in", "out")) {
     ## check whether the network is empty, i.e., if it has no vertices
     if (igraph::vcount(network) == 0) {
@@ -102,8 +104,9 @@ metrics.density = function(network) {
 #' @param directed whether to consider directed paths in directed networks [default: TRUE]
 #' @param unconnected whether there are subnetworks in the network that are not connected.
 #'                    If \code{TRUE} only the lengths of the existing paths are considered and averaged;
-#'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)}, one longer than
-#'                    the longest possible geodesic in the network (from igraph documentation) [default: TRUE]
+#'                    if \code{FALSE} the length of the missing paths are counted having length \code{vcount(graph)},
+#'                    one longer than the longest possible geodesic in the network (from igraph documentation)
+#'                    [default: TRUE]
 #'
 #' @return The average path length of the given network.
 metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) {
@@ -130,7 +133,8 @@ metrics.clustering.coeff = function(network, cc.type = c("global", "local", "bar
 #'
 #' @param network the network to be examined
 #' @param community.detection.algorithm the algorithm to be used for the detection of communities
-#'            which is required for the calculation of the clustering coefficient [default: igraph::cluster_walktrap]
+#'                                      which is required for the calculation of the clustering coefficient
+#'                                      [default: igraph::cluster_walktrap]
 #'
 #' @return The modularity value for the given network.
 metrics.modularity = function(network, community.detection.algorithm = igraph::cluster_walktrap) {
@@ -211,7 +215,7 @@ metrics.is.smallworld = function(network) {
 #'
 #' @param network the network to be examined
 #' @param minimum.number.vertices the minimum number of vertices with which
-#'  a network can be scale free [default: 30]
+#'                                a network can be scale free [default: 30]
 #'
 #' @return A dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
@@ -256,7 +260,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
 #'
 #' @param network the network to be examined
 #' @param minimum.number.vertices the minimum number of vertices with which
-#'  a network can be scale free [default: 30]
+#'                                a network can be scale free [default: 30]
 #'
 #' @return \code{TRUE}, if the network is scale free,
 #'         \code{FALSE}, otherwise.
@@ -305,7 +309,7 @@ VERTEX.CENTRALITIES.COLUMN.NAMES = c("vertex.name", "centrality")
 #'              - "network.degree"
 #'              - "network.eigen"
 #'              - "network.hierarchy"
-#'             [defalt: "network.degree"]
+#'             [default: "network.degree"]
 #' @param restrict.classification.to.vertices a vector of vertex names. Only vertices that are contained within this
 #'                                            vector are to be classified. Vertices that appear in the vector but are
 #'                                            not part of the classification result (i.e., they are not present in the
