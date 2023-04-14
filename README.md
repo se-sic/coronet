@@ -256,7 +256,7 @@ Relations determine which information is used to construct edges among the verti
 
 - `issue`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to the same issue are connected with an edge.
-    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), issues are connected when they reference each other.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), issues are connected when they reference each other. (**Note:** There are no edges available right now.)
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all issues they have contributed to.
 
 - `callgraph`

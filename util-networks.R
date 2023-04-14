@@ -21,6 +21,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -316,7 +317,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net.data = construct.edge.list.from.key.value.list(
                 artifacts.net.data.raw,
                 network.conf = private$network.conf,
-                directed = FALSE
+                directed = FALSE,
+                respect.temporal.order = TRUE,
+                artifact.edges = TRUE
             )
 
             ## construct network from obtained data
@@ -970,11 +973,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'                               i.e., whether to only add edges from the later event to the previous one.
 #'                               If \code{NA} is passed, the default value is taken.
 #'                               [default: directed]
+#' @param artifact.edges whether the key value data represents edges in an artifact network based
+#'                       on the cochange relation
+#'                       [default: FALSE]
 #'
 #' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
 #'         of \code{igraph::as.data.frame})
 construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE,
-                                                   respect.temporal.order = directed) {
+                                                   respect.temporal.order = directed, artifact.edges = FALSE) {
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
@@ -990,6 +996,19 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
     keys = names(list)
     keys.number = length(list)
+
+
+    ## if edges in an artifact network contain the \code{artifact} attribute 
+    ## replace it with the \code{author.name} attribute as artifacts cannot cause 
+    ## edges in artifact networks, authors can
+    edge.attributes = network.conf$get.value("edge.attributes")
+    if (artifact.edges) {
+        artifact.index = match("artifact", edge.attributes, nomatch = NA)
+        if (!is.na(artifact.index)) {
+            edge.attributes = edge.attributes[-artifact.index]
+            edge.attributes = c(edge.attributes, c("author.name"))
+        }
+    }
 
     if (respect.temporal.order) {
 
@@ -1019,8 +1038,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
                 item.vertex = item[["data.vertices"]]
 
                 ## get edge attributes
-                cols.which = network.conf$get.value("edge.attributes") %in% colnames(item)
-                item.edge.attrs = item[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                cols.which = edge.attributes %in% colnames(item)
+                item.edge.attrs = item[ , edge.attributes[cols.which], drop = FALSE]
 
                 ## construct edges
                 combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
@@ -1089,8 +1108,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 
                     ## get edge attibutes
                     edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
-                    cols.which = network.conf$get.value("edge.attributes") %in% colnames(edge.attrs)
-                    edge.attrs = edge.attrs[ , network.conf$get.value("edge.attributes")[cols.which], drop = FALSE]
+                    cols.which = edge.attributes %in% colnames(edge.attrs)
+                    edge.attrs = edge.attrs[ , edge.attributes[cols.which], drop = FALSE]
 
                     # add edge attributes to edge list
                     edgelist = cbind(edge, edge.attrs)
@@ -1367,9 +1386,7 @@ create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
             date = c("POSIXct", "POSIXt"), artifact.type = "character", weight = "numeric",
             type = "character", relation = "character"
         )
-        mandatory.edge.attributes = names(mandatory.edge.attributes.classes)
         mandatory.vertex.attributes.classes = list(name = "character", kind = "character", type = "character")
-        mandatory.vertex.attributes = names(mandatory.vertex.attributes.classes)
 
         net = add.attributes.to.network(net, "vertex", mandatory.vertex.attributes.classes)
         net = add.attributes.to.network(net, "edge", mandatory.edge.attributes.classes)
