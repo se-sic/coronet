@@ -14,7 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -1594,7 +1594,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
     ## check for keys whose member lists are empty or NA
     ## first, get a logical vector indicating all missing keys
     missing.keys = sapply(activity.types, function(x) {
-        is.na(activity.by.type[[x]]) || length(activity.by.type[[x]]) == 0
+        all(is.na(activity.by.type[[x]])) || length(activity.by.type[[x]]) == 0
     })
     ## then apply this vector to the 'activity.types' vector in order to pick the actual keys
     missing.keys = activity.types[missing.keys]
@@ -1604,7 +1604,7 @@ get.first.activity.data = function(range.data, activity.types = c("commits", "ma
 
     ## if there are no keys left that are present, again, print a warning and return an empty list as there is no data
     ## for the configured activity types
-    if (length(present.keys) == 0 || is.na(present.keys) || is.null(present.keys)) {
+    if (length(present.keys) == 0 || all(is.na(present.keys)) || is.null(present.keys)) {
         logging::logwarn("There were no activities in the given RangeData that were configured")
         return(list())
     }
