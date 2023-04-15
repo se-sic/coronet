@@ -71,6 +71,11 @@ if (length(p) > 0) {
 
     Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
     if (compareVersion(Matrix.version, "1.3.0") == -1) {
-        print("WARNING: Matrix version 1.3.0 or higher is necessary for using coronet.")
+        print("WARNING: Matrix version 1.3.0 or higher is necessary for using coronet. Re-install package Matrix...")
+        install.packages("Matrix", dependencies = NA, verbose = TRUE, quiet = TRUE)
+        Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
+        if (compareVersion(Matrix.version, "1.3.0") == -1) {
+            print("WARNING: Re-installation of package Matrix did not end up in the necessary packge version.")
+        }
     }
 }
