@@ -402,7 +402,7 @@ p = p +
         plot.title = ggplot2::element_text(hjust = 0.5, size = 15),
         plot.margin = ggplot2::unit(c(0.5, 0.5, 0.5, 0.5), "cm")
     )
-ggplot2::ggsave("plot-multi.png", plot = p, width = 6.57, height = 4.114)
+ggplot2::ggsave("plot-multi.png", plot = p, bg = "white", width = 6.57, height = 4.114)
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
