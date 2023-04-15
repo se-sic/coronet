@@ -14,7 +14,7 @@
 ## Copyright 2016-2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2016-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Angelika Schmid <schmidang@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
@@ -104,7 +104,7 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Adjacency matrices ----------------------------------------------------
 
-#' Get a sparse expanded adjacency matrix for network.
+#' Get a sparse expanded adjacency matrix (in triplet format) for a given network.
 #'
 #' The adjacency matrix is expanded as it may contain rows and columns for authors which are not part of the network
 #' but given in the \code{authors} parameter. However, this also means that authors present in the network
@@ -117,9 +117,10 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
 #' @return the sparse adjacency matrix of the network
 get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 
-    ## create an empty sparse matrix with the right size
-    matrix = Matrix::sparseMatrix(i = c(), j = c(), dims = c(length(authors), length(authors)), giveCsparse = FALSE)
-    matrix = as(matrix, "dgTMatrix")
+    ## create an empty sparse matrix using the triplet form with the right size.
+    ## x = 0 indicates that the matrix should contain numeric values (i.e., it is a 'dgTMatrix';
+    ## without setting x = 0 it would be a binary 'ngTMatrix')
+    matrix = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors), length(authors)), repr = "T")
 
     ## add row and column names
     rownames(matrix) = authors
@@ -225,11 +226,11 @@ convert.adjacency.matrix.list.to.array = function(adjacency.list){
     colnames(array) = colnames(adjacency.list[[1]])
 
     ## copy the activity values from the adjacency matrices in the list to the corresponding array slices
-    for (i in seq_along(adjacency.list)){
+    for (i in seq_along(adjacency.list)) {
         adjacency = adjacency.list[[i]]
-        activity.indices = which(adjacency != 0, arr.ind = TRUE)
+        activity.indices = Matrix::which(adjacency != 0, arr.ind = TRUE)
 
-        for (j in 1:nrow(activity.indices)){
+        for (j in seq_len(nrow(activity.indices))) {
             array[as.vector(activity.indices[j, 1]), as.vector(activity.indices[j, 2]), i] =
                 adjacency[as.vector(activity.indices[j, 1]), as.vector(activity.indices[j, 2])]
         }
