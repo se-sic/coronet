@@ -23,8 +23,10 @@
 - Add argument to `construct.edge.list.from.key.value.list` function which differentiates if constructed edges are supposed to be artifact edges, in which case we check if the `artifact` attribute is present for edges and replace it by `author.name`. (PR #238, e2c9d6c39fb757c566ef4c4b18780cca247477cb)
 - Change edge construction algorithm for cochange-based artifact networks to respect the temporal order of data. This avoids duplicate edges. (PR #238, e2c9d6c39fb757c566ef4c4b18780cca247477cb)
 - Clarify that edges is issue-based artifact-networks are not available yet in `README.md`. (PR #238, 18a54f0241a28675dba4cdcbd433e88ec68d515a)
-- Prevent R warnings `'length(x) = 2 > 1' in coercion to 'logical(1)'` in `if` conditions for updating configuration values (PR #237, ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca)
+- Fix bugs related to expanded adjacency matrices and update the initiation of sparse matrices to the most recent version of package Matrix, to replace deprecated and disfunct function calls. Due to this update, package versions prior to 1.3.0 of the Matrix package cannot be used any more. If the 'install.R' detects that a version prior to 1.3.0 is installed, it now automatically tries to re-install package Matrix once (PR #241, 573fab22a290e826e2bdd6e1f063cd2e87ed2167, 2f06252750354e4ed53b768bd212aacf1a350217)
+- Prevent R warnings `'length(x) = 2 > 1' in coercion to 'logical(1)'` in `if` conditions for updating configuration values, in update functions of additional data sources, and in `get.first.activity.data()` (PR #237, PR #241, ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca, e1579cab9bf8cdfee4105426c144350d092fffbd)
 - Prevent R warnings `In xtfrm.data.frame(x) : cannot xtfrm data frames` (PR #237, c24aee7d8f0b6ff4b641c8922e6ee1dce6f5999c)
+- Fix wrong bracket in pasted logging message (PR #241, 50c68cb60114b49c32dc5be15014745cb8d42ded)
 - Replace deprecated R function calls (PR #237, ed433821c04711a96501887b315d1b0ea8681f5a)
 
 
