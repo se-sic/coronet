@@ -2,6 +2,34 @@
 
 # coronet – Changelog
 
+## 4.3
+
+### Added
+
+- Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d)
+- Add helper function `is.single.na` to check whether an element is of length 1 and is `NA` (ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca, ccfc2d12a68dfa412f05159e8e3b03118694e748)
+- Add CI support for GitHub Actions (PR #234, fa1fc4af65751402ae6b23298dd4ed821930c6d2)
+
+### Changed/Improved
+
+- Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f)
+- Include removal of empty and deleted users in the setters of mails, commits, issues, and authors. For commits, also the `committer.name` column is now checked for deleted or empty users (PR #235, 08fbd3e11e33d060f42cbc6f729eaf60b48a6de7)
+- Check for empty values (i.e., values of length < 1) when updating configuration attributes and throw an error if a value is empty (9f36c544637ab4f4173408152d223b9b5098ce5a)
+
+### Fixed
+
+- Fix check for empty input files in utility read functions. Compared to unpresent files, empty files do not throw an error when reading them, a check for `nrow(commit.data) < 1` is therefore required (PR #231, ecfa643cbc15975c3062af95c50ead02730b580f)
+- Fix various problems regarding the default classes of edge attributes and vertex attributes, and also make sure that the edge attributes for bipartite edges are chosen correctly (PR #240, 4275b93867c78d20d0bd116749c1e7603cd9d473, 98a6deb1b178a1fcf799c741906e99770c46a8d0, b8232c09b91df3412f703dd26c21c685bacd0321, a9535550d93207f466b315f33ea263a50e6c8924, 820a7631093d03ac5ccb7bf9923bd498f669120a)
+- Add argument to `construct.edge.list.from.key.value.list` function which differentiates if constructed edges are supposed to be artifact edges, in which case we check if the `artifact` attribute is present for edges and replace it by `author.name`. (PR #238, e2c9d6c39fb757c566ef4c4b18780cca247477cb, 7f42a91d4aa84e8c28c048925190637051e358a9)
+- Change edge construction algorithm for cochange-based artifact networks to respect the temporal order of data. This avoids duplicate edges. (PR #238, e2c9d6c39fb757c566ef4c4b18780cca247477cb)
+- Clarify that edges in issue-based artifact-networks are not available yet in `README.md`. (PR #238, 18a54f0241a28675dba4cdcbd433e88ec68d515a)
+- Fix bugs related to expanded adjacency matrices and update the initiation of sparse matrices to the most recent version of package Matrix, to replace deprecated and disfunct function calls. Due to this update, package versions prior to 1.3.0 of the Matrix package cannot be used any more. If the 'install.R' detects that a version prior to 1.3.0 is installed, it now automatically tries to re-install package Matrix once (PR #241, 573fab22a290e826e2bdd6e1f063cd2e87ed2167, 2f06252750354e4ed53b768bd212aacf1a350217)
+- Prevent R warnings `'length(x) = 2 > 1' in coercion to 'logical(1)'` in `if` conditions for updating configuration values, in update functions of additional data sources, and in `get.first.activity.data()` (PR #237, PR #241, ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca, e1579cab9bf8cdfee4105426c144350d092fffbd)
+- Prevent R warnings `In xtfrm.data.frame(x) : cannot xtfrm data frames` (PR #237, c24aee7d8f0b6ff4b641c8922e6ee1dce6f5999c)
+- Fix wrong bracket in pasted logging message (PR #241, 50c68cb60114b49c32dc5be15014745cb8d42ded)
+- Replace deprecated R function calls (PR #237, ed433821c04711a96501887b315d1b0ea8681f5a)
+
+
 ## 4.2
 
 ### Added

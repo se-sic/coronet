@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs-uni-saarland.de>
+## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -21,10 +21,11 @@
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
-## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -34,6 +35,7 @@
 requireNamespace("R6") # for R6 classes
 requireNamespace("logging") # for logging
 requireNamespace("parallel") # for parallel computation
+requireNamespace("lubridate") # for date conversion
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -267,7 +269,7 @@ ProjectData = R6::R6Class("ProjectData",
             result = parallel::mclapply(thread.data, function(thread) {
 
                 ## ensure that all mails within the thread are ordered correctly
-                thread = thread[order(thread["date"]), ]
+                thread = thread[order(thread[["date"]]), ]
 
                 running = TRUE
                 i = 1
@@ -397,7 +399,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.commit.message.data' including the
             ## case that it is called manually, i.e. the stack is too short.
-            if (is.na(caller) || caller != "cleanup.commit.message.data()") {
+            if (is.na(caller) || paste(caller, collapse = " ") != "cleanup.commit.message.data()") {
                 logging::logwarn("There might be commit message data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
@@ -639,7 +641,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.pasta.data' including the case
             ## that it is called manually, i.e. the stack is too short.
-            if (is.na(caller) || caller != "cleanup.pasta.data()") {
+            if (all(is.na(caller)) || paste(caller, collapse = " ") != "cleanup.pasta.data()") {
                 logging::logwarn("There might be PaStA data that does not appear in the mail or commit data.
                                   To clean this up you can call the function 'cleanup.pasta.data()'.")
             }
@@ -693,7 +695,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
             ## that it is called manually, i.e. the stack is too short.
-            if (is.na(caller) || caller != "cleanup.synchronicity.data()") {
+            if (all(is.na(caller)) || paste(caller, collapse = " ") != "cleanup.synchronicity.data()") {
                 logging::logwarn("There might be synchronicity data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.synchronicity.data()'.")
             }
@@ -1064,7 +1066,13 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(commit.data)) {
                 commit.data = create.empty.commits.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(commit.data, COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES)
             }
+
+            ## remove commits that have no author or commiter
+            commit.data = remove.deleted.and.empty.user(commit.data, c("author.name", "committer.name"))
 
             ## store commit data
             private$commits.unfiltered = commit.data
@@ -1145,6 +1153,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.commit.message.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1214,6 +1225,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.synchronicity.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1287,6 +1301,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.pasta.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1368,6 +1385,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.gender.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES)
             }
 
             ## set the actual data
@@ -1444,7 +1464,13 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(mail.data)) {
                 mail.data = create.empty.mails.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(mail.data, MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES)
             }
+
+            ## remove deleted and empty users
+            mail.data = remove.deleted.and.empty.user(mail.data)
 
             ## store mail data
             private$mails.unfiltered = mail.data
@@ -1502,6 +1528,17 @@ ProjectData = R6::R6Class("ProjectData",
         set.authors = function(data) {
             logging::loginfo("Setting author data.")
             private$authors = data
+
+            if (is.null(data)) {
+                data = create.empty.authors.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
+            }
+
+            ## remove deleted and empty users
+            data = remove.deleted.and.empty.user(data)
+
             ## add gender data if wanted
             if (private$project.conf$get.value("gender")) {
 
@@ -1606,7 +1643,14 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.issues.list()
+            } else {
+                ## check that dataframe is of correct shape
+                verify.data.frame.columns(data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
             }
+
+            ## remove deleted user from the "author.name" column,
+            ## however, keep events where the user in the "event.info.1" column is empty or deleted
+            data = remove.deleted.and.empty.user(data)
 
             private$issues.unfiltered = data
             private$issues = create.empty.issues.list()
@@ -2129,6 +2173,11 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param  custom.event.timestamps the list of timestamps to set
         set.custom.event.timestamps = function(custom.event.timestamps) {
+            if (!is.list(custom.event.timestamps)) {
+                error.message = sprintf("set.custom.event.timestamps: Input is expected to be a list.")
+                logging::logerror(error.message)
+                stop(error.message)
+            }
             if(length(custom.event.timestamps) != 0){
                 private$custom.event.timestamps = custom.event.timestamps[
                     order(unlist(get.date.from.string(custom.event.timestamps)))

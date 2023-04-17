@@ -17,12 +17,14 @@
 ## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
-## Copyright 2020-2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -42,15 +44,26 @@ requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
-## Helper functions ---------------------------------------------------------------
+## Helper functions --------------------------------------------------------
 
 #' Remove the "deleted user" or the author with empty name "" from a data frame.
 #'
-#' @param data the data from which to remove the "deleted user" and author with empty name
+#' @param data the data from which to remove the "deleted user" and author with empty name.
+#' @param columns the columns in which to search for the "deleted user" and author with empty name.
+#'                [default: c("author.name")]
 #'
 #' @return the data frame without the rows in which the author name is "deleted user" or ""
-remove.deleted.and.empty.user = function(data) {
-    return(data[tolower(data[, "author.name"]) != "deleted user" & data["author.name"] != "", ])
+remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
+    if (!all(columns %in% colnames(data))) {
+        logging::logerror("The given columns are not present in the data.frame.")
+        stop("Stopped due to invalid column names.")
+    }
+
+    ## loop over the given columns and remove all rows in which the author name is "deleted user" or ""
+    for (column in columns) {
+        data = data[tolower(data[, column]) != "deleted user" & data[, column] != "", ]
+    }
+    return(data)
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -72,8 +85,8 @@ COMMITS.LIST.DATA.TYPES = c(
     "character",
     "POSIXct", "character", "character",
     "POSIXct", "character", "character",
-    "character", "numeric", "numeric", "numeric", "numeric",
-    "character", "character", "character", "numeric"
+    "character", "integer", "integer", "integer", "integer",
+    "character", "character", "character", "integer"
 )
 
 #' Read the commits from the 'commits.list' file.
@@ -92,7 +105,7 @@ read.commits = function(data.path, artifact) {
                                  encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.data, "try-error")) {
+    if (inherits(commit.data, "try-error") || nrow(commit.data) < 1) {
         logging::logwarn("There are no commits available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -136,7 +149,7 @@ read.commits = function(data.path, artifact) {
                                     ORDER BY `date`, `author.name`, `commit.id`, `file`, `artifact`")
 
         ## fix column class for diffsum
-        commit.data["diffsum"] = as.numeric(commit.data[["diffsum"]])
+        commit.data["diffsum"] = as.integer(commit.data[["diffsum"]])
 
         ## copy columns to match proper layout for further analyses
         commit.data["artifact"] = commit.data[["file"]]
@@ -170,7 +183,7 @@ read.commits = function(data.path, artifact) {
                                           UNTRACKED.FILE.EMPTY.ARTIFACT.TYPE,
                                           commit.data[["artifact.type"]])
 
-    commit.data = remove.deleted.and.empty.user(commit.data) # filter deleted user
+    commit.data = remove.deleted.and.empty.user(commit.data, c("author.name", "committer.name")) # filter deleted user
 
     ## convert dates and sort by them
     commit.data[["date"]] = get.date.from.string(commit.data[["date"]])
@@ -180,6 +193,9 @@ read.commits = function(data.path, artifact) {
     ## set pattern for commit ID for better recognition
     commit.data[["commit.id"]] = format.commit.ids(commit.data[["commit.id"]])
     row.names(commit.data) = seq_len(nrow(commit.data))
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(commit.data, COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES)
 
     ## store the commit data
     logging::logdebug("read.commits: finished.")
@@ -207,7 +223,7 @@ MAILS.LIST.COLUMNS = c(
 ## declare the datatype for each column in the constant 'MAILS.LIST.COLUMNS'
 MAILS.LIST.DATA.TYPES = c(
     "character", "character",
-    "character", "POSIXct", "numeric", "character",
+    "character", "POSIXct", "integer", "character",
     "character",
     "character"
 )
@@ -228,7 +244,7 @@ read.mails = function(data.path) {
                                encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of mails is empty
-    if (inherits(mail.data, "try-error")) {
+    if (inherits(mail.data, "try-error") || nrow(mail.data) < 1) {
         logging::logwarn("There are no mails available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.mails.list())
@@ -263,6 +279,9 @@ read.mails = function(data.path) {
         )
     }
     mail.data = remove.deleted.and.empty.user(mail.data) # filter deleted user
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(mail.data, MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES)
 
     ## store the mail data
     logging::logdebug("read.mails: finished.")
@@ -326,7 +345,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
                                     encoding = "UTF-8"), silent = TRUE)
 
         ## handle the case that the list of issues is empty
-        if (inherits(source.data, "try-error")) {
+        if (inherits(source.data, "try-error") || nrow(source.data) < 1) {
             logging::logwarn("There are no %s issue data available for the current environment.", issue.source)
             logging::logwarn("Datapath: %s", data.path)
             return(create.empty.issues.list())
@@ -344,12 +363,16 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
 
         ## set proper column names
         colnames(source.data) = ISSUES.LIST.COLUMNS
-
         return(source.data)
     })
 
     ## combine issue data from all sources
     issue.data = do.call(rbind, issue.data)
+
+    ## if no chosen source is present exit early by returning the (combined) empty issues list
+    if (nrow(issue.data) < 1) {
+        return(issue.data)
+    }
 
     ## set pattern for issue ID for better recognition
     issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
@@ -374,7 +397,9 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         commit.added.events.before.creation = commit.added.events &
             !is.na(issue.data["creation.date"]) & (issue.data["date"] < issue.data["creation.date"])
         issue.data[commit.added.events.before.creation, "date"] = issue.data[commit.added.events.before.creation, "creation.date"]
-        issue.data = remove.deleted.and.empty.user(issue.data) # filter deleted user
+        ## filter deleted user from the "author.name" column,
+        ## however, keep events where the user in the "event.info.1" column is empty or deleted
+        issue.data = remove.deleted.and.empty.user(issue.data)
         issue.data = issue.data[order(issue.data[["date"]], decreasing = FALSE), ] # sort!
     }
 
@@ -383,6 +408,9 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
         paste(issue.data[["issue.id"]], issue.data[["author.name"]], issue.data[["date"]], sep = "_"),
         function(event) { digest::digest(event, algo="sha1", serialize = FALSE) }
     )
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(issue.data, ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES)
 
     logging::logdebug("read.issues: finished.")
     return(issue.data)
@@ -431,13 +459,18 @@ read.bot.info = function(data.path) {
         logging::logwarn("There is no bot information available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
-        ## return a data frame with the correct columns but zero rows
+        ## return NULL. Creating an empty dataframe is not possible
+        ## because no type information about bot information is present
         return(NULL)
     }
 
     ## set column names for new data frame
     colnames(bot.data) = BOT.LIST.COLUMNS
     bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(bot.data, BOT.LIST.COLUMNS)
+
     logging::logdebug("read.bot.info: finished.")
     return(bot.data)
 }
@@ -473,15 +506,15 @@ read.authors = function(data.path) {
 
 
     ## break if the list of authors is empty
-    if (inherits(authors.df, "try-error")) {
+    if (inherits(authors.df, "try-error") || nrow(authors.df) < 1) {
         logging::logerror("There are no authors available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         stop("Stopped due to missing authors.")
     }
 
-    ## if there is no third column, we need to add e-mail-address dummy data (NAs)
+    ## if there is no third column, we need to add e-mail-address dummy data
     if (ncol(authors.df) != length(AUTHORS.LIST.COLUMNS.WITHOUT.BOTS)) {
-        authors.df[3] = NA
+        authors.df[3] = ""
     }
     colnames(authors.df) = AUTHORS.LIST.COLUMNS.WITHOUT.BOTS
 
@@ -498,6 +531,12 @@ read.authors = function(data.path) {
     ## re-order the columns
     authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
     authors.df = remove.deleted.and.empty.user(authors.df)
+
+    ## assure type correctness
+    authors.df[["author.id"]] = as.character(authors.df[["author.id"]])
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(authors.df, AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES)
 
     ## store the ID--author mapping
     logging::logdebug("read.authors: finished.")
@@ -550,7 +589,7 @@ read.gender = function(data.path) {
 
 
     ## handle the case if the list of items is empty
-    if (inherits(gender.data, "try-error")) {
+    if (inherits(gender.data, "try-error") || nrow(gender.data) < 1) {
         logging::logwarn("There are no gender data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.gender.list())
@@ -582,6 +621,9 @@ read.gender = function(data.path) {
 
     ## remove rownames
     rownames(gender.data) = NULL
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(gender.data, GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES)
 
     logging::logdebug("read.gender: finished.")
     return(gender.data)
@@ -637,7 +679,7 @@ read.commit.messages = function(data.path) {
                                          encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(commit.message.data, "try-error")) {
+    if (inherits(commit.message.data, "try-error") || nrow(commit.message.data) < 1) {
         logging::logwarn("There are no commit messages available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -691,8 +733,10 @@ read.commit.messages = function(data.path) {
     commit.message.data[["commit.id"]] = format.commit.ids(commit.message.data[["commit.id"]])
     row.names(commit.message.data) = seq_len(nrow(commit.message.data))
 
-    logging::logdebug("read.commit.messages: finished.")
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(commit.message.data, COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES)
 
+    logging::logdebug("read.commit.messages: finished.")
     return(commit.message.data)
 }
 
@@ -737,7 +781,7 @@ read.pasta = function(data.path) {
     lines = suppressWarnings(try(readLines(filepath), silent = TRUE))
 
     ## handle the case if the list of PaStA items is empty
-    if (inherits(lines, "try-error")) {
+    if (inherits(lines, "try-error") || length(lines) < 1) {
         logging::logwarn("There are no PaStA data available for the current environment.")
         logging::logwarn("Datapath: %s", data.path)
         return(create.empty.pasta.list())
@@ -775,6 +819,10 @@ read.pasta = function(data.path) {
         return(df)
     })
     result.df = plyr::rbind.fill(result.list)
+
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(result.df, PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES)
+
     logging::logdebug("read.pasta: finished.")
     return(result.df)
 }
@@ -838,6 +886,9 @@ read.synchronicity = function(data.path, artifact, time.window) {
     ## ensure proper column names
     colnames(synchronicity) = SYNCHRONICITY.LIST.COLUMNS
 
+    ## check that dataframe is of correct shape
+    verify.data.frame.columns(synchronicity, SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES)
+
     ## store the synchronicity data
     logging::logdebug("read.synchronicity: finished.")
     return(synchronicity)
@@ -871,7 +922,7 @@ read.custom.event.timestamps = function(data.path, file.name) {
                                         encoding = "UTF-8"), silent = TRUE)
 
     ## handle the case that the list of commits is empty
-    if (inherits(custom.event.timestamps.table, "try-error")) {
+    if (inherits(custom.event.timestamps.table, "try-error") || nrow(custom.event.timestamps.table) < 1) {
         logging::logwarn("There are no custom timestamps available at the given path.")
         logging::logwarn("Datapath: %s", data.path)
 
@@ -881,9 +932,19 @@ read.custom.event.timestamps = function(data.path, file.name) {
     timestamps = as.list(custom.event.timestamps.table[[2]])
     names(timestamps) = custom.event.timestamps.table[[1]]
 
+    ## convert all timestamps to POSIXct format
+    posix.timestamps = get.date.from.string(timestamps)
+
+    ## if a timestamp is malformatted get.date.from.string returns a NA
+    if (any(is.na(posix.timestamps))) {
+        error.message = sprintf("Input timestamps are not in POSIXct format (YYYY-mm-DD HH:MM:SS).")
+        logging::logerror(error.message)
+        stop(error.message)
+    }
+
     ## Sort the timestamps
     if (length(timestamps) != 0) {
-        timestamps = timestamps[order(unlist(get.date.from.string(timestamps)))]
+        timestamps = timestamps[order(unlist(posix.timestamps))]
     }
 
     logging::logdebug("read.custom.event.timestamps: finished.")

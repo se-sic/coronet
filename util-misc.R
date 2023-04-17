@@ -16,10 +16,11 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -139,6 +140,79 @@ match.arg.or.default = function(arg, choices, default = NULL, several.ok = FALSE
     }
 }
 
+#' Check if a dataframe matches a given structure. This includes the dataframe to contain columns
+#' which must match the column names in \code{columns} and the datatypes in \code{data.types}.
+#'
+#' @param data the data frame under investigation for structural conformity
+#' @param columns a character vector containing the column names the data frame should include
+#' @param data.types an ordered vector containing the data types corresponding to the columns.
+#'                   If this parameter is \code{NULL} only the existence of \code{columns} is checked
+#'                   without regarding column types. Otherwise this vector must be of the
+#'                   same length as the vector of \code{columns}
+#'                   [default: NULL]
+verify.data.frame.columns = function(data, columns, data.types = NULL) {
+
+    ## every column of the data frame must be one to one mapped to a datatype expected in the column
+    ## therefore if there aren't as many datatypes provided in \code{data.types} as column names have
+    ## been provided in \code{columns} we can stop here already
+    if (!is.null(data.types) && length(columns) != length(data.types)) {
+        error.message = sprintf(paste("If specified, the length of the two given vectors",
+                                "'columns' and 'data.types' must match."))
+        logging::logerror(error.message)
+        stop(error.message)
+    }
+
+    ## obtain vector of all column names included in the data frame to ease further checks
+    data.frame.columns = colnames(data)
+
+    ## iterate over all columns in \code{columns}
+    for (i in seq_along(columns)) {
+
+        ## obtain the column.
+        column = columns[i]
+
+        ## stop verification process early if column is not present in the data frame
+        if (!(column %in% data.frame.columns)) {
+            error.message = sprintf("Column '%s' is missing from the dataframe", column)
+            logging::logerror(error.message)
+            stop(error.message)
+        }
+
+        if (!is.null(data.types)) {
+
+            ## obtain the datatype that should be present in the data frame column
+            ## which is currently under investigation
+            expected.type = data.types[i]
+
+            ## necessary case distinction for special case list where calling \code{base::class}
+            ## removes the information whether or not \code{data[[column]]} is a list
+            if (expected.type == "list()") {
+
+                ## column is not a list
+                if (!is.list(data[[column]])) {
+                    error.message = sprintf("Column '%s' is expected to be a list but is '%s'",
+                                            column, class(received.type))
+                    logging::logerror(error.message)
+                    stop(error.message)
+                }
+
+            } else {
+                ## obtain the datatype that elements of the current column hold in the data frame
+                received.type = class(data[[column]])
+
+                ## stop verification process early if column type in the data frame is not matching
+                ## the expected datatype
+                if (!(expected.type %in% received.type)) {
+                    error.message = sprintf("Column '%s' has type '%s' in dataframe, expected '%s'",
+                                            column, received.type, expected.type)
+                    logging::logerror(error.message)
+                    stop(error.message)
+                }
+            }
+        }
+    }
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Empty dataframe creation-------------------------------------------------
@@ -218,6 +292,17 @@ get.second.last.element = function(v) {
     } else {
         return(NA)
     }
+}
+
+#' Check if a value is a single \code{NA} value.
+#' (The function \code{is.na} is not capable of doing that, as it does the \code{NA} check for each element of a vector
+#' instead of checking whether vector itself is just a single \code{NA} element.)
+#'
+#' @param x an R object to be tested: atomic vectors, lists, pairlists, or ‘NULL’
+#'
+#' @return \code{TRUE} if \code{x} is of length 1 and \code{x} is \code{NA}; \code{FALSE} otherwise
+is.single.na = function(x) {
+    return(length(x) == 1 && is.na(x))
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /

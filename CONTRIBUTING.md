@@ -114,8 +114,8 @@ In our development process, we pursue the following idea:
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
-- `master`: [![Build Status](https://cloud.drone.io/api/badges/se-sic/coronet/status.svg)](https://cloud.drone.io/se-sic/coronet)
-- `dev`: [![Build Status](https://cloud.drone.io/api/badges/se-sic/coronet/status.svg?ref=refs/heads/dev)](https://cloud.drone.io/se-sic/coronet)
+- `master`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=master)
+- `dev`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=dev)
 
 ### Pull Requests
 

@@ -15,6 +15,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -42,13 +43,13 @@ test_that("Network construction of the undirected artifact-cochange network", {
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = c("Base_Feature", "Base_Feature"),
-        to = c("foo", "foo"),
-        date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-        artifact.type = c("Feature", "Feature"),
-        hash = c("0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-        file = c("test2.c", "test2.c"),
-        artifact = c("Base_Feature", "foo"),
+        from = "Base_Feature",
+        to = "foo",
+        date = get.date.from.string("2016-07-12 16:06:32"),
+        artifact.type = "Feature",
+        hash = "0a1a5c523d835459c42f33e863623138555e2526",
+        file = "test2.c",
+        author.name = "Thomas",
         weight = 1,
         type = TYPE.EDGES.INTRA,
         relation = "cochange"

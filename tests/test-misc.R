@@ -14,6 +14,8 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -106,6 +108,109 @@ test_that("Match argument or take default.", {
     expected.result = c("choice3", "choice1")
     expect_equal(actual.result, expected.result, info = "Multiple choices with ignored default, two choices")
 })
+
+##
+## Check presence and datatype of data frame columns.
+##
+
+test_that("Check presence and datatype of data frame columns.", {
+
+    user.names = c("John", "Peter", "Maria", "Susanne")
+
+    ## contains NaN to verify functionality does not break
+    age = c(42, 50, NaN, 66)
+
+    ## contains NA to verify functionality does not break
+    is.male = c(TRUE, TRUE, FALSE, NA)
+
+    ## construct simple testing dataframe
+    data.frame = data.frame(user.names, age, is.male)
+
+    ## 1) Check base functionality (benign use-case)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("character", "numeric", "logical")),
+        NA,
+        message = "All columns present and well-typed.")
+    ## Expect no error
+
+    ## 2) Base test with reordered columns
+    expect_error(verify.data.frame.columns(
+        data.frame, c("is.male", "age", "user.names"), c("logical", "numeric", "character")),
+        NA,
+        message = "Order of columns does not matter.")
+    ## Expect no error
+
+    ## 3) Specify less columns than present (Allow optional columns)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age"), c("character", "numeric")),
+        NA,
+        message = "Optional columns are allowed.")
+    ## Expect no error
+
+    ## 4) Unequal amount of column names and datatypes
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("character", "numeric")),
+        message = "More column names specified than datatypes.")
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age"), c("character", "numeric", "logical")),
+        message = "More column names specified than datatypes.")
+
+    ## 5) Datatypes do not match column names
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male"), c("logical", "character", "numeric")),
+        message = "Column names do not match datatypes.")
+
+    ## 6) Invalid column / Column not present in dataframe (Typo)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.name"), c("character")),
+        message = "Column name 'user.name' should not be in dataframe.")
+
+    ## 7) No datatypes specified and column names are present
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male")),
+        NA,
+        message = "Column names do not match datatypes.")
+    ## Expect no error
+
+    ## 8) No datatypes specified and column names are not specified correctly (Typo)
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.name")),
+        message = "Column name 'user.name' should not be in dataframe.")
+
+    ## 9) Too many column names and no datatypes specified
+    expect_error(verify.data.frame.columns(
+        data.frame, c("user.names", "age", "is.male", "job.orientation")),
+        message = "More column names specififed than present in the dataframe.")
+
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Vector misc--------------------------------------------------------------
+
+##
+## Check if a value is a single NA value.
+##
+
+test_that("Check if a value is a single NA value", {
+
+    ## 1) Tests for single NA
+    expect_true(is.single.na(NA))
+    expect_true(is.single.na(list(NA)))
+    expect_true(is.single.na(data.frame(NA)))
+
+    ## 2) Tests for values other than a single NA
+    expect_false(is.single.na(0))
+    expect_false(is.single.na("na"))
+    expect_false(is.single.na(NULL))
+    expect_false(is.single.na(logical(0)))
+    expect_false(is.single.na(FALSE))
+    expect_false(is.single.na(c(NA, NA)))
+    expect_false(is.single.na(c(3, NA)))
+    expect_false(is.single.na(list(NA, NA)))
+    expect_false(is.single.na(data.frame(NA, NA)))
+})
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Date handling -----------------------------------------------------------

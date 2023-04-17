@@ -15,6 +15,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -56,38 +57,37 @@ test_that("Construction of the multi network for the feature artifact with autho
                                     )
               row.names(vertices) = c("Björn", "Olaf", "Karl", "Thomas",
                                       "Base_Feature", "foo", "A")
-
               edges = data.frame(
-                  from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl",
-                           "Base_Feature", "Base_Feature", "Björn", "Olaf", "Olaf", "Karl", "Thomas",
+                  from = c("Björn", "Björn", "Olaf", "Olaf", "Olaf", "Olaf", "Karl", "Karl", 
+                            "Base_Feature", "Björn", "Olaf", "Olaf", "Karl", "Thomas",
                            "Thomas"),
-                  to = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas", "foo",
+                  to = c("Olaf", "Olaf", "Karl", "Karl", "Thomas", "Thomas", "Thomas", "Thomas",
                          "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "foo"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
                                                 "2016-07-12 16:06:10", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
-                                                "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
-                                                "2016-07-12 16:06:32", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:32",
-                                                "2016-07-12 16:06:32")),
+                                                "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32", 
+                                                "2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41", 
+                                                "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
                   artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature",
                                     "Feature", "Feature", "Feature", "Feature", "Feature", "Feature", "Feature",
-                                    "Feature", "Feature"),
+                                    "Feature"),
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
                            "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526",
-                           "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
-                           "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338",
-                           "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61",
-                           "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+                           "0a1a5c523d835459c42f33e863623138555e2526", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", 
+                           "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774", 
+                           "1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526", 
+                           "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c",
-                           "test2.c", "test2.c", "test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+                           "test2.c", "test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c"),
                   artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
-                               "Base_Feature", "Base_Feature", "foo", "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
+                               "Base_Feature", NA, "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
                                "foo"),
                   weight = 1,
-                  type = c(rep(TYPE.EDGES.INTRA, 10), rep(TYPE.EDGES.INTER, 6)),
-                  relation = "cochange"
+                  type = c(rep(TYPE.EDGES.INTRA, 9), rep(TYPE.EDGES.INTER, 6)),
+                  relation = "cochange",
+                  author.name = c(NA, NA, NA, NA, NA, NA, NA, NA, "Thomas", NA, NA, NA, NA, NA, NA)
               )
 
               network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
