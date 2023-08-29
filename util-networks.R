@@ -475,17 +475,73 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.issue)
             }
 
-            ## log warning as we do not have relations among issues right now
-            logging::logwarn(paste(
-                "There exist no actual artifact network with the relation 'issue'.",
-                "Return an edge-less network now."
-            ))
+            if (private$proj.data$get.project.conf()$get.entry("issues.only.comments")) {
+                logging::logwarn(paste(
+                    "Create an edge-less artifact network as 'issues.only.comments' is set.",
+                    "Comments in issues cannot create issue edges."
+                ))
+            }
 
-            ## construct edgeless network with mandatory edge and vertex attributes
-            directed = private$network.conf$get.value("artifact.directed")
-            artifacts = private$proj.data$get.artifacts("issues") # issue IDs
-            artifacts.net = create.empty.network(directed = directed, add.attributes = TRUE) +
-                igraph::vertices(artifacts)
+            ## construct edge list based on issue-artifact data
+            artifacts.net.data.raw = private$proj.data[[DATASOURCE.TO.ARTIFACT.FUNCTION[["issues"]]]]()
+
+            ## obtain issue-connecting events
+            add.links = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "add_link" & 
+                                               artifacts.net.data.raw$event.info.2 == "issue", ]
+            referenced.bys = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "referenced_by" & 
+                                               artifacts.net.data.raw$event.info.2 == "issue", ]
+
+            if (nrow(add.links) != nrow(referenced.bys)) {
+                logging::logwarn("Inconsistent issue data. Unequally many 'add_link' and 'referenced_by' issue-events.")
+            }
+
+            vertices = unique(artifacts.net.data.raw["issue.id"])
+            edge.list = data.frame()
+
+            # edges in artifact networks can not have the 'artifact' attribute but should instead have
+            # the 'author.name' attribute as events caused by authors connect issues
+            edge.attributes = private$network.conf$get.value("edge.attributes")
+            artifact.index = match("artifact", edge.attributes, nomatch = NA)
+            if (!is.na(artifact.index)) {
+                edge.attributes = edge.attributes[-artifact.index]
+                edge.attributes = c(edge.attributes, c("author.name"))
+            }
+
+            ## connect the current item to all previous ones
+            for (issue.no in seq_len(nrow(add.links))) {
+                from = add.links[issue.no, ]
+
+                ## get edge attributes
+                cols.which = edge.attributes %in% colnames(from)
+                edge.attrs = from[ , edge.attributes[cols.which], drop = FALSE]
+
+                ## construct edge
+                to = subset(referenced.bys,
+                            event.info.1 == from[["issue.id"]] & 
+                            author.name == from[["author.name"]] & 
+                            date == from[["date"]])
+                if (!all(is.na(to))) {
+                    combination = list("Var1" = from[["issue.id"]], "Var2" = to[["issue.id"]])
+                    combination = cbind(combination, edge.attrs, row.names = NULL) # add edge attributes
+                    edge.list = rbind(edge.list, combination) # add to edge list
+                }
+            }
+
+            artifacts.net.data = list(
+                vertices = data.frame(
+                    name = vertices
+                ),
+                edges = edge.list
+            )
+
+            ## construct network from obtained data
+            artifacts.net = construct.network.from.edge.list(
+                artifacts.net.data[["vertices"]],
+                artifacts.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = FALSE,
+                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
+            )
 
             ## store network
             private$artifacts.network.issue = artifacts.net
