@@ -955,6 +955,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.to.add.kind = artifacts.all[
                 artifacts.all[["data.vertices"]] %in% artifacts.to.add, "artifact.type"
             ]
+
+            ## Adjust vertex attribute to 'Issue' in multi networks
+            ## to be consistent with bipartite networks
+            artifacts.to.add.kind[artifacts.to.add.kind == "IssueEvent"] = "Issue"
+
             artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
                                                              kind = artifacts.to.add.kind)
 
