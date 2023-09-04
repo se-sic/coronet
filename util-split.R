@@ -22,6 +22,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -63,6 +64,52 @@ requireNamespace("lubridate") # for date conversion
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
+    split = split.data.by.time.or.bins(project.data, splitting.length = time.period, bins, split.by.time = TRUE,
+                                        number.windows, split.basis, sliding.window, project.conf.new)
+    return(split)
+}
+
+#' Split project data in activity-bin-based ranges as specified
+#'
+#' @param project.data the *Data object from which the data is retrieved
+#' @param activity.amount the amount of data elements with unique ids to be considered in a bin, an integer.
+#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
+#'             *exclusive* manner), augmented with a bin vector mapping unique ids to bins.
+#'             [default: NULL]
+#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#'                    [default: "commits"]
+#' @param sliding.window logical indicating whether a sliding-window approach was used when obtaining the \code{bins}.
+#'
+#' @return the list of RangeData objects, each referring to one bin
+split.data.by.bins.vector = function(project.data, activity.amount, bins, split.basis = c("commits", "mails", "issues"),
+                                     sliding.window) {
+    split = split.data.by.time.or.bins(project.data, activity.amount, bins, split.by.time = FALSE,
+                                        sliding.window = sliding.window, split.basis = split.basis)
+    return(split)
+}
+
+#' Split project data in time-based or activity-bin-based ranges as specified
+#'
+#' @param project.data the *Data object from which the data is retrieved
+#' @param splitting.length either \code{time.period} from \code{split.data.time.based}
+#'                         or \code{splitting.length} from\code{split.data.by.bins.vector}
+#' @param bins either \code{bins} from \code{split.data.time.based}
+#'             or \code{bins} from\code{split.data.by.bins.vector}
+#' @param split.by.time logical indicating whether splitting is done time-based or by activity-bins-based,
+#' @param number.windows see \code{number.windows} from \code{split.data.time.by.bins.vector}
+#'                       [default: NULL]
+#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#'                    [default: "commits"]
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
+#'
+#' @return the list of RangeData objects, each referring to one time period
+split.data.by.time.or.bins = function(project.data, splitting.length, bins, split.by.time,
+                                      number.windows = NULL, split.basis = c("commits", "mails", "issues"),
+                                      sliding.window = FALSE, project.conf.new = NULL) {
 
     ## get basis for splitting process
     split.basis = match.arg(split.basis)
@@ -99,26 +146,32 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## remove sliding windows
         sliding.window = FALSE
     }
+
+    ## initiate variable
+    split.by.bins = FALSE
+
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
         ## get bins based on split.basis
-        bins = split.get.bins.time.based(data[[split.basis]][["date"]], time.period, number.windows)$bins
+        bins = split.get.bins.time.based(data[[split.basis]][["date"]], splitting.length, number.windows)$bins
         bins.labels = head(bins, -1)
-        split.by.bins = FALSE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
-                         project.data$get.class.name(), time.period, split.basis)
+                         project.data$get.class.name(), splitting.length, split.basis)
     }
-    ## when bins are given explicitly
+    ## when bins are given explicitly, get bins based on parameter
     else {
-        ## remove sliding windows
-        sliding.window = FALSE
-        ## get bins based on parameter
-        split.basis = NULL
-        bins = get.date.from.string(bins)
-        bins = get.date.string(bins)
+        if (split.by.time) {
+            split.basis = NULL
+            split.by.bins = TRUE
+            sliding.window = FALSE
+            bins = get.date.from.string(bins)
+            bins = get.date.string(bins)
+        } else {
+            bins.vector = bins[["vector"]]
+            bins = bins[["bins"]]
+        }
         bins.labels = head(bins, -1)
-        split.by.bins = TRUE
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges [%s].",
                          project.data$get.class.name(), paste(bins, collapse = ", "))
@@ -129,7 +182,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
     bins.ranges = construct.ranges(bins)
     names(bins.ranges) = bins.ranges
 
-    if ((length(bins.ranges) <= 1) && sliding.window) {
+    if (split.by.time && (length(bins.ranges) <= 1) && sliding.window) {
         logging::logwarn("Sliding-window approach does not apply for one range or less.")
         sliding.window = FALSE
     }
@@ -140,13 +193,16 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         project.conf.new = project.data$get.project.conf()$clone()
     }
 
-    if (!sliding.window) {
+    if (!sliding.window || !split.by.time) {
         ## split data
         data.split = parallel::mclapply(data.to.split, function(df.name) {
             logging::logdebug("Splitting %s.", df.name)
             ## identify bins for data
             df = data[[df.name]]
-            df.bins = findInterval(df[["date"]], bins.date, all.inside = FALSE)
+            df.bins = if (!split.by.time && (df.name == split.basis))
+                        bins.vector
+                      else
+                        findInterval(df[["date"]], bins.date, all.inside = FALSE)
             ## split data according to df.bins
             df.split = split(df, df.bins)
             ## add proper labels/names
@@ -192,10 +248,10 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
         ## perform different steps for sliding-window approach
 
         ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
-                                              time.period = time.period, overlap = 0.5, raw = FALSE,
+                                              time.period = splitting.length, overlap = 0.5, raw = FALSE,
                                               include.end.date = FALSE) # bins have already been prepared correctly
         bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
-                                                 time.period = time.period, overlap = 0.5, raw = TRUE,
+                                                 time.period = splitting.length, overlap = 0.5, raw = TRUE,
                                                  include.end.date = FALSE) # bins have already been prepared correctly
         bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
         bins = get.date.string(bins.date)
@@ -214,7 +270,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     ## add splitting information to project configuration
     project.conf.new$set.splitting.info(
-        type = "time-based",
+        type = if (split.by.time) "time-based" else "activity-based",
         length = if (split.by.bins) {
                     bins
                  }
@@ -228,8 +284,8 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                             )
                         ))
                     }
-                    else time.period
-                 },
+                    else splitting.length
+                },
         basis = split.basis,
         sliding.window = sliding.window,
         revisions = bins,
@@ -363,14 +419,14 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     ## get bins based on split.basis
     logging::logdebug("Getting activity-based bins.")
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
-                                              activity.amount, remove.duplicate.bins = TRUE)
+                                              activity.amount, remove.duplicate.bins = TRUE, include.duplicate.ids = TRUE)
     bins = bins.data[["bins"]]
     bins.date = get.date.from.string(bins)
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
-    cf.data = split.data.time.based(project.data, bins = bins.date, split.basis = activity.type,
-                                    project.conf.new = project.conf.new)
+    cf.data = split.data.by.bins.vector(project.data, bins = bins.data, activity.amount = activity.amount, 
+                                     sliding.window = sliding.window, split.basis = activity.type)
 
     ## perform additional steps for sliding-window approach:
     ## for activity-based sliding-window bins to work, we need to crop the data appropriately and,
@@ -387,6 +443,13 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## offsets used for cropping (half the first/last bin)
         offset.start = floor(activity.amount / 2)
         offset.end = (items.unique.count - offset.start) %% activity.amount
+
+        # make sure that end offset does not go above one window
+        last.window = cf.data[[length(cf.data)]][[DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]]]()
+        length.of.last.window = length(unique(last.window[[ id.column[[activity.type]] ]]))
+
+        offset.end = max(c(length.of.last.window - offset.start, 0))
+
         ## cut the data appropriately
         if (offset.end > 0) {
             items.cut = c(
@@ -435,7 +498,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## and the data of the last regular range is contained in the last sliding-window range, then:
         ## remove the last regular range as it is not complete and we don't loose data when removing it
         last.regular.range = cf.data[[length(cf.data)]]
-        last.sliding.range = cf.data[[length(cf.data) - 1]]
+        last.sliding.range = cf.data.sliding[[length(cf.data.sliding) - 1]]
         get.activity.data = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
 
         last.regular.range.ids = (last.regular.range[[get.activity.data]]())[[ id.column[[activity.type]] ]]
@@ -1102,13 +1165,18 @@ split.get.bins.time.based = function(dates, time.period, number.windows = NULL) 
 #' @param activity.amount the amount of activity denoting the number of unique items
 #'                        in each split bin [default: 5000]
 #' @param remove.duplicate.bins remove duplicate bin borders? [default: FALSE]
+#' @param include.duplicate.ids include entries of the \code{df} with non-unique ids
+#'                              in the creation of the bins. This should! not change bin borders
+#'                              as entries with the same id should! share the same \code{date} attribute.
+#'                              [default: FALSE]
 #'
 #' @return a list,
-#'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),
+#'         the item 'vector': the bins each row in 'df' belongs to (increasing integers),q
 #'         the item 'bins': the bin labels,  described by dates, each bin containing
-#'         'acitivity.amount' many unique items; each item in the vector indicates
+#'         'activity.amount' many unique items; each item in the vector indicates
 #'         the start of a bin, although the last item indicates the end of the last bin
-split.get.bins.activity.based = function(df, id, activity.amount, remove.duplicate.bins = FALSE) {
+split.get.bins.activity.based = function(df, id, activity.amount, remove.duplicate.bins = FALSE,
+                                         include.duplicate.ids = FALSE) {
     logging::logdebug("split.get.bins.activity.based: starting")
     ## get the unique integer IDs for each item in 'id' column
     ids = df[[id]]
@@ -1120,11 +1188,23 @@ split.get.bins.activity.based = function(df, id, activity.amount, remove.duplica
         if (bins.number.complete != 0) rep(seq_len(bins.number.complete), each = activity.amount),
         rep(bins.number.complete + 1, bins.number.incomplete)
     )
+
+    ## pad bins with entries for all duplicate ids
+    if (include.duplicate.ids) {
+        bins.activity.padded = c()
+        for (i in seq_along(ids)) {
+            ## create an extra entry for every duplicate id in the same bin as
+            ## the first occurance of the id
+            current.bin = bins.activity[ which(ids.unique == ids[i]) ]
+            bins.activity.padded = c(bins.activity.padded, current.bin)
+        }
+        bins.activity = bins.activity.padded
+    }
     bins.number = max(bins.activity)
 
     ## join ids and bin numbers
     bins.mapping = data.frame(
-        id = ids.unique,
+        id = if (include.duplicate.ids) ids else ids.unique,
         bin = bins.activity
     )
 
