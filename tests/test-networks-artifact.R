@@ -178,7 +178,7 @@ test_that("Network construction of an empty 'comments-only' issue-based artifact
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = character(), to = character(), date = as.POSIXct(character(0), tz = "UTC"), artifact.type = character(),
+        from = character(), to = character(), date = get.date.from.string(character(0)), artifact.type = character(),
         issue.id = character(), event.name = character(), weight = numeric(), type = character(),
         relation = character()
     )

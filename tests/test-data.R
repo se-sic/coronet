@@ -404,7 +404,7 @@ test_that("Filter bots from issue data", {
 
     expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
     ## there are now 42 issue events remaining, since 11 issue events have been removed during filtering
-    expect_equal(nrow(filtered.issues), 42)
+    expect_equal(nrow(filtered.issues), 43)
 })
 
 test_that("Filter bots from mail data", {

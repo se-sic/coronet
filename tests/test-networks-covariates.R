@@ -1862,7 +1862,7 @@ test_that("Test add.vertex.attribute.issue.event.count", {
         all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 7L, 6L, NA, 4L)),
         project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 3L, NA, 2L, NA), c(NA, 7L, 7L, NA, 4L)),
         project.all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 7L, NA, 4L, NA), c(NA, 7L, 7L, NA, 4L)),
-        complete = network.covariates.test.build.expected(c(8L, 8L, NA), c(NA, 7L, NA, 8L, NA), c(NA, 8L, 7L, NA, 8L))
+        complete = network.covariates.test.build.expected(c(9L, 8L, NA), c(NA, 7L, NA, 9L, NA), c(NA, 8L, 7L, NA, 9L))
     )
 
     expected.attributes.prs.only = list(
