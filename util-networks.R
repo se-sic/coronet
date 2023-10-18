@@ -507,13 +507,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 edge.attributes = c(edge.attributes, c("author.name"))
             }
 
-            ## connect the current item to all previous ones
-            for (issue.no in seq_len(nrow(add.links))) {
-                from = add.links[issue.no, ]
-
+            ## connect corresponding add_link and referenced_by issue-events
+            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_along(add.links)), function(from) {
                 ## get edge attributes
                 cols.which = edge.attributes %in% colnames(from)
-                edge.attrs = from[ , edge.attributes[cols.which], drop = FALSE]
+                edge.attrs = from[, edge.attributes[cols.which], drop = FALSE]
 
                 ## construct edge
                 to = subset(referenced.bys,
@@ -521,11 +519,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                             author.name == from[["author.name"]] & 
                             date == from[["date"]])
                 if (!all(is.na(to))) {
-                    combination = list("Var1" = from[["issue.id"]], "Var2" = to[["issue.id"]])
+                    combination = list("from" = from[["issue.id"]], "to" = to[["issue.id"]])
                     combination = cbind(combination, edge.attrs, row.names = NULL) # add edge attributes
-                    edge.list = rbind(edge.list, combination) # add to edge list
+                    return(combination) # return the combination for this row
                 }
-            }
+            }))
 
             artifacts.net.data = list(
                 vertices = data.frame(
@@ -539,7 +537,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 artifacts.net.data[["vertices"]],
                 artifacts.net.data[["edges"]],
                 network.conf = private$network.conf,
-                directed = FALSE,
+                directed = private$network.conf$get.value("artifact.directed"),
                 available.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
             )
 
