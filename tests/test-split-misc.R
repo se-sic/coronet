@@ -42,10 +42,10 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 ## Split raw data (data and networks by bins) ------------------------------
 
 ##
-## Tests for split.data.by.bins and split.network.by.bins
+## Tests for split.dataframe.by.bins and split.network.by.bins
 ##
 
-test_that("Split network and data on low level (split.data.by.bins, split.network.by.bins).", {
+test_that("Split network and data on low level (split.dataframe.by.bins, split.network.by.bins).", {
 
     length.dates = 15
     length.bins = 5
@@ -69,7 +69,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
     ## sprintf("c(\"%s\")", paste( sample(bins, size = length.dates, replace = TRUE), collapse = "', '") )
 
     ##
-    ## split.data.by.bins
+    ## split.dataframe.by.bins
     ##
 
     ## generate data frame with dates and IDs
@@ -86,7 +86,7 @@ test_that("Split network and data on low level (split.data.by.bins, split.networ
         "4" = df[ c(4, 11, 13), ],
         "5" = df[ c(3, 10, 15), ]
     )
-    results = split.data.by.bins(df, bins.vector)
+    results = split.dataframe.by.bins(df, bins.vector)
 
     ## check result
     expect_equal(results, expected, info = "Split data by bins.")

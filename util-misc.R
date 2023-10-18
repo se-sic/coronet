@@ -998,7 +998,7 @@ get.data.from.range = function(range, data) {
 
     ## split data by this bin; this gives a list of three data frames, "0" contains the data before the range, "1" the
     ## data within the range and "2" the holds the data after the range
-    split.data = split.data.by.bins(data, df.bins)
+    split.data = split.dataframe.by.bins(data, df.bins)
 
     ## look for the element with name "1", as we are interested in the data within the range
     ## if there is no data, return an empty data frame corresponding to the data we want to cut

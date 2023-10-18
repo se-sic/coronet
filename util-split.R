@@ -83,7 +83,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @return the list of RangeData objects, each referring to one bin
 #'
 #' @seealso split.get.bins.activity.based
-split.data.by.bins.vector = function(project.data, activity.amount, bins, split.basis = c("commits", "mails", "issues"),
+split.data.by.bins = function(project.data, activity.amount, bins, split.basis = c("commits", "mails", "issues"),
                                      sliding.window) {
     split = split.data.by.time.or.bins(project.data, activity.amount, bins, split.by.time = FALSE,
                                         sliding.window = sliding.window, split.basis = split.basis)
@@ -94,9 +94,9 @@ split.data.by.bins.vector = function(project.data, activity.amount, bins, split.
 #'
 #' @param project.data the *Data object from which the data is retrieved
 #' @param splitting.length either \code{time.period} from \code{split.data.time.based}
-#'                         or \code{activity.amount} from\code{split.data.by.bins.vector}
+#'                         or \code{activity.amount} from\code{split.data.by.bins}
 #' @param bins either formatted as the \code{bins} parameter of \code{split.data.time.based}
-#'             or as the \code{bins} parameter of \code{split.data.by.bins.vector}
+#'             or as the \code{bins} parameter of \code{split.data.by.bins}
 #' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
 #' @param number.windows see \code{number.windows} from \code{split.data.time.by.bins.vector}
 #'                       [default: NULL]
@@ -111,7 +111,7 @@ split.data.by.bins.vector = function(project.data, activity.amount, bins, split.
 #' @return the list of RangeData objects, each referring to one time period
 #'
 #' @seealso split.data.time.based
-#' @seealso split.data.by.bins.vector
+#' @seealso split.data.by.bins
 split.data.by.time.or.bins = function(project.data, splitting.length, bins, split.by.time,
                                       number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                       sliding.window = FALSE, project.conf.new = NULL) {
@@ -435,7 +435,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
     ## split the data based on the extracted timestamps
     logging::logdebug("Splitting data based on time windows arising from activity bins.")
-    cf.data = split.data.by.bins.vector(project.data, bins = bins.data, activity.amount = activity.amount,
+    cf.data = split.data.by.bins(project.data, bins = bins.data, activity.amount = activity.amount,
                                      sliding.window = sliding.window, split.basis = activity.type)
 
     ## perform additional steps for sliding-window approach:
@@ -1015,16 +1015,16 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split raw data ----------------------------------------------------------
 
-#' Split the given data by the given bins.
+#' Split the given datafame by the given bins.
 #'
 #' @param df a data.frame to be split
 #' @param bins a vector with the length of 'nrow(df)' assigning a bin for each row of 'df'
 #'
 #' @return a list of data.frames, with the length of 'unique(bins)'
-split.data.by.bins = function(df, bins) {
-    logging::logdebug("split.data.by.bins: starting.")
+split.dataframe.by.bins = function(df, bins) {
+    logging::logdebug("split.dataframe.by.bins: starting.")
     df.split = split(df, bins)
-    logging::logdebug("split.data.by.bins: finished.")
+    logging::logdebug("split.dataframe.by.bins: finished.")
     return(df.split)
 }
 
