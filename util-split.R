@@ -73,9 +73,11 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'
 #' @param project.data the project data object from which the data is retrieved
 #' @param activity.amount the amount of data elements with unique ids to be considered in a bin, an integer.
-#' @param bins the date objects defining the start of ranges (the last date defines the end of the last range, in an
-#'             *exclusive* manner), including a vector which maps elements of the \code{split.basis} column of
-#'             \code{project.data} to bins, as produced by \code{split.get.bins.activity.based}.
+#' @param bins the bins by which data should be split. Comprises of two components:
+#'             \code{vector}: Assigns elements of the \code{split.basis} column of \code{project.data} to bins.
+#'             \code{bins}: Dates defining the start of bins (the last date defines the end of the last bin, in an
+#'             *exclusive* manner).
+#'             The expected format of \code{bins} is produced by \code{split.get.bins.activity.based}.
 #' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether a sliding-window approach was used when obtaining the \code{bins}.
@@ -94,11 +96,11 @@ split.data.by.bins = function(project.data, activity.amount, bins, split.basis =
 #'
 #' @param project.data the *Data object from which the data is retrieved
 #' @param splitting.length either \code{time.period} from \code{split.data.time.based}
-#'                         or \code{activity.amount} from\code{split.data.by.bins}
+#'                         or \code{activity.amount} from \code{split.data.by.bins}
 #' @param bins either formatted as the \code{bins} parameter of \code{split.data.time.based}
 #'             or as the \code{bins} parameter of \code{split.data.by.bins}
 #' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
-#' @param number.windows see \code{number.windows} from \code{split.data.time.by.bins.vector}
+#' @param number.windows see \code{number.windows} from \code{split.data.time.based}
 #'                       [default: NULL]
 #' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', or 'issues'
 #'                    [default: "commits"]
@@ -424,9 +426,9 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     logging::loginfo("Splitting data '%s' into activity ranges of %s %s (%s windows).",
                      project.data$get.class.name(), activity.amount, activity.type, number.windows)
 
-    ## get bins based on split.basis. Here the include.duplicate.ids parameter flag must be set, to
+    ## get bins based on 'split.basis'. Here the 'include.duplicate.ids' parameter flag must be set, to
     ## retrieve bins which map every event to a bin including events with non-unique ids. This is important
-    ## to ensure that every range really has activity.amount many entries after splitting
+    ## to ensure that every range really has 'activity.amount' many entries after splitting
     logging::logdebug("Getting activity-based bins.")
     bins.data = split.get.bins.activity.based(data[[activity.type]], id.column[[activity.type]],
                                               activity.amount, remove.duplicate.bins = TRUE, include.duplicate.ids = TRUE)
@@ -485,7 +487,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## will be a sliding range (which started at the half of the last regular range) which
         ## contains only items also included in the last regular range, which makes the sliding
         ## range obsolete.
-        if (((items.unique.count - 1) %% (activity.amount)) >= (offset.start)) {
+        if ((items.unique.count %% activity.amount) > offset.start) {
             cf.data.sliding = cf.data.sliding[-length(cf.data.sliding)]
             bins.date.middle = bins.date.middle[-length(bins.date.middle)]
         } else {
