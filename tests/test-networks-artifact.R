@@ -102,7 +102,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
 
-test_that("Network construction of an issue-based artifact-network", {
+patrick::with_parameters_test_that("Network construction of an issue-based artifact-network", {
     ## build expected network:
     ## 1) vertices
     vertices = data.frame(name = c("<issue-jira-ZEPPELIN-328>",
@@ -132,23 +132,26 @@ test_that("Network construction of an issue-based artifact-network", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(artifact.relation = "issue"))
+    net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
     ## build network
     network.built = network.builder$get.artifact.network()
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
-})
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
 
-test_that("Network construction of an empty 'comments-only' issue-based artifact-network", {
+patrick::with_parameters_test_that("Network construction of an empty 'comments-only' issue-based artifact-network", {
 
     ##
     ## 'issues.only.comments' (by default), this should not create any edges
@@ -157,7 +160,7 @@ test_that("Network construction of an empty 'comments-only' issue-based artifact
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(artifact.relation = "issue"))
+    net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
@@ -184,8 +187,11 @@ test_that("Network construction of an empty 'comments-only' issue-based artifact
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
     ## test
     compare.networks(network.built, network.expected)
-})
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
