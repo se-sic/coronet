@@ -64,6 +64,16 @@ requireNamespace("lubridate") # for date conversion
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
+
+    # validate type of the 'bins' parameter
+    if (!is.null(bins) && !lubridate::is.POSIXct(bins)) {
+        dates = parallel::mclapply(bins, function(bin) lubridate::ymd_hms(bin, truncated = 3))
+        if (any(is.na(dates))) {
+            logging::logerror("The bins parameter, if present, needs to be a character representing a date")
+            stop("Stopped due to incorrect parameter types")
+        }
+    }
+
     split = split.data.by.time.or.bins(project.data, splitting.length = time.period, bins, split.by.time = TRUE,
                                         number.windows, split.basis, sliding.window, project.conf.new)
     return(split)
@@ -87,226 +97,29 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @seealso split.get.bins.activity.based
 split.data.by.bins = function(project.data, activity.amount, bins, split.basis = c("commits", "mails", "issues"),
                                      sliding.window) {
+
+    # validate type of the 'bins' parameter
+    if (is.null(bins) || !is.list(bins)) {
+        logging::logerror("The bins parameter needs to be of type list, (is %s)", class(bins))
+        stop("Stopped due to incorrect parameter types")
+    }
+
+    # validate type of the 'bins' component of the 'bins' parameter
+    dates = parallel::mclapply(bins[["bins"]], function(bin) lubridate::ymd_hms(bin, truncated = 3))
+    if (any(is.na(dates))) {
+        logging::logerror("The 'bins' component of the bins parameter needs to be a character representing a date")
+        stop("Stopped due to incorrect parameter types")
+    }
+
+    # validate type of the 'vector' component of the 'bins' parameter
+    if (class(bins[["vector"]]) != "numeric") {
+        logging::logerror("The 'vector' component of the bins parameter needs to be a numeric vector")
+        stop("Stopped due to incorrect parameter types")
+    }
+
     split = split.data.by.time.or.bins(project.data, activity.amount, bins, split.by.time = FALSE,
                                         sliding.window = sliding.window, split.basis = split.basis)
     return(split)
-}
-
-#' Split project data in time-based or activity-bin-based ranges as specified
-#'
-#' @param project.data the *Data object from which the data is retrieved
-#' @param splitting.length either \code{time.period} from \code{split.data.time.based}
-#'                         or \code{activity.amount} from \code{split.data.by.bins}
-#' @param bins either formatted as the \code{bins} parameter of \code{split.data.time.based}
-#'             or as the \code{bins} parameter of \code{split.data.by.bins}
-#' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
-#' @param number.windows see \code{number.windows} from \code{split.data.time.based}
-#'                       [default: NULL]
-#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', or 'issues'
-#'                    [default: "commits"]
-#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
-#'                       [default: FALSE]
-#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
-#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
-#'                         [default: NULL]
-#'
-#' @return the list of RangeData objects, each referring to one time period
-#'
-#' @seealso split.data.time.based
-#' @seealso split.data.by.bins
-split.data.by.time.or.bins = function(project.data, splitting.length, bins, split.by.time,
-                                      number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                      sliding.window = FALSE, project.conf.new = NULL) {
-
-    ## get basis for splitting process
-    split.basis = match.arg(split.basis)
-
-    ## if the data used by the split basis is not present, load it automatically
-    if (!(split.basis %in% project.data$get.cached.data.sources("only.unfiltered"))) {
-        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
-        project.data[[function.name]]()
-    }
-
-    ## get actual raw data
-    data.to.split = project.data$get.cached.data.sources("only.unfiltered")
-
-    data = lapply(data.to.split, function(ds) {
-        ## build the name of the respective getter and call it
-        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
-        return(project.data[[function.name]]())
-    })
-    names(data) = data.to.split
-
-    ## load available additional data sources
-    additional.data.sources = project.data$get.cached.data.sources("only.additional")
-    additional.data = lapply(additional.data.sources, function(ds) {
-        ## build the name of the respective getter and call it
-        function.name = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[ds]]
-        return(project.data[[function.name]]())
-    })
-    names(additional.data) = additional.data.sources
-
-    ## number of windows given (ignoring time period and bins)
-    if (!is.null(number.windows)) {
-        ## reset bins for the later algorithm
-        bins = NULL
-        ## remove sliding windows
-        sliding.window = FALSE
-    }
-
-    ## indicates if time-based splitting is performed using bins
-    split.time.based.with.bins = FALSE
-
-    ## if bins are NOT given explicitly
-    if (is.null(bins)) {
-        ## get bins based on split.basis
-        bins = split.get.bins.time.based(data[[split.basis]][["date"]], splitting.length, number.windows)$bins
-        bins.labels = head(bins, -1)
-        ## logging
-        logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
-                         project.data$get.class.name(), splitting.length, split.basis)
-    }
-    ## when bins are given explicitly, get bins based on parameter
-    else {
-        if (split.by.time) {
-            split.time.based.with.bins = TRUE
-            split.basis = NULL
-            bins = get.date.from.string(bins)
-            bins = get.date.string(bins)
-            ## remove sliding windows
-            sliding.window = FALSE
-        } else {
-            ## sliding windows do not need to be removed here, as sliding windows and bins
-            ## are not contradicting in activity-based splitting
-            bins.vector = bins[["vector"]]
-            bins = bins[["bins"]]
-        }
-        bins.labels = head(bins, -1)
-        ## logging
-        logging::loginfo("Splitting data '%s' into time ranges [%s].",
-                         project.data$get.class.name(), paste(bins, collapse = ", "))
-    }
-    bins.date = get.date.from.string(bins)
-
-    ## construct ranges
-    bins.ranges = construct.ranges(bins)
-    names(bins.ranges) = bins.ranges
-
-    if ((length(bins.ranges) <= 1) && sliding.window) {
-        logging::logwarn("Sliding-window approach does not apply for one range or less.")
-        sliding.window = FALSE
-    }
-
-    if (is.null(project.conf.new)) {
-        ## Clone the project configuration, so that splitting repeatedly does not interfere
-        ## with the same configuration.
-        project.conf.new = project.data$get.project.conf()$clone()
-    }
-
-    if (!sliding.window || !split.by.time) {
-        ## split data
-        data.split = parallel::mclapply(data.to.split, function(df.name) {
-            logging::logdebug("Splitting %s.", df.name)
-            ## identify bins for data
-            df = data[[df.name]]
-            df.bins = if (!split.by.time && (df.name == split.basis))
-                        bins.vector
-                      else
-                        findInterval(df[["date"]], bins.date, all.inside = FALSE)
-            ## split data according to df.bins
-            df.split = split(df, df.bins)
-            ## add proper labels/names
-            names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
-            return(df.split)
-        })
-        ## set the names to the data sources obtained earlier
-        names(data.split) = data.to.split
-
-        ## re-arrange data to get the proper list of data per range
-        logging::logdebug("Re-arranging data.")
-        data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
-        names(data.split) = bins.ranges
-
-        ## adapt project configuration
-        project.conf.new$set.revisions(bins, bins.date)
-
-        ## construct RangeData objects
-        logging::logdebug("Constructing RangeData objects.")
-
-        cf.data = parallel::mclapply(bins.ranges, function(range) {
-            logging::logdebug("Constructing data for range %s.", range)
-            ## construct object for current range
-            cf.range.data = RangeData$new(project.conf.new, range)
-            ## get data for current range
-            df.list = data.split[[range]]
-
-            ## set main data sources: commits, mails, issues
-            for (data.source in data.to.split) {
-                setter.name = sprintf("set.%s", data.source)
-                cf.range.data[[setter.name]](df.list[[data.source]])
-            }
-            ## set additional data sources: authors, commit.messages, pasta, synchronicity
-            for (data.source in additional.data.sources) {
-                setter.name = sprintf("set.%s", data.source)
-                cf.range.data[[setter.name]](additional.data[[data.source]])
-            }
-
-            return(cf.range.data)
-        })
-
-    } else {
-        ## perform different steps for sliding-window approach of time-based splitting
-
-        ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
-                                              time.period = splitting.length, overlap = 0.5, raw = FALSE,
-                                              include.end.date = FALSE) # bins have already been prepared correctly
-        bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
-                                                 time.period = splitting.length, overlap = 0.5, raw = TRUE,
-                                                 include.end.date = FALSE) # bins have already been prepared correctly
-        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
-        bins = get.date.string(bins.date)
-
-        logging::loginfo("Splitting data '%s' into time ranges using sliding windows [%s].",
-                         project.data$get.class.name(), ranges)
-        cf.data = split.data.time.based.by.ranges(project.data, ranges)
-
-        ## update project configuration
-        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
-        for (cf in cf.data) {
-            ## re-set project configuration due to object duplication
-            cf.conf = cf$set.project.conf(project.conf.new)
-        }
-    }
-
-    ## add splitting information to project configuration
-    project.conf.new$set.splitting.info(
-        type = if (split.by.time) "time-based" else "activity-based",
-        length = if (split.time.based.with.bins) {
-                    bins
-                 }
-                 else {
-                    if (!is.null(number.windows)) {
-                        as.character(lubridate::as.period(
-                            get.time.period.by.amount(
-                                min(data[[split.basis]][["date"]]),
-                                max(data[[split.basis]][["date"]]),
-                                number.windows
-                            )
-                        ))
-                    }
-                    else splitting.length
-                },
-        basis = split.basis,
-        sliding.window = sliding.window,
-        revisions = bins,
-        revisions.dates = bins.date
-    )
-
-    ## set bin attribute
-    attr(cf.data, "bins") = bins.date
-
-    ## return list of RangeData objects
-    return(cf.data)
 }
 
 #' Split project data by timestamps
@@ -1051,6 +864,227 @@ split.network.by.bins = function(network, bins, bins.vector, remove.isolates = T
     })
     logging::logdebug("split.network.by.bins: finished.")
     return(nets)
+}
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Internal helper functions for data splitting ----------------------------
+
+#' Split project data in time-based or activity-bin-based ranges as specified
+#'
+#' @param project.data the *Data object from which the data is retrieved
+#' @param splitting.length either \code{time.period} from \code{split.data.time.based}
+#'                         or \code{activity.amount} from \code{split.data.by.bins}
+#' @param bins either formatted as the \code{bins} parameter of \code{split.data.time.based}
+#'             or as the \code{bins} parameter of \code{split.data.by.bins}
+#' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
+#' @param number.windows see \code{number.windows} from \code{split.data.time.based}
+#'                       [default: NULL]
+#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#'                    [default: "commits"]
+#' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
+#'                       [default: FALSE]
+#' @param project.conf.new the new project config to construct the \code{RangeData} objects.
+#'                         If \code{NULL}, a clone of \code{project.data$get.project.conf()} will be used.
+#'                         [default: NULL]
+#'
+#' @return the list of RangeData objects, each referring to one time period
+#'
+#' @seealso split.data.time.based
+#' @seealso split.data.by.bins
+split.data.by.time.or.bins = function(project.data, splitting.length, bins, split.by.time,
+                                      number.windows = NULL, split.basis = c("commits", "mails", "issues"),
+                                      sliding.window = FALSE, project.conf.new = NULL) {
+
+    ## get basis for splitting process
+    split.basis = match.arg(split.basis)
+
+    ## if the data used by the split basis is not present, load it automatically
+    if (!(split.basis %in% project.data$get.cached.data.sources("only.unfiltered"))) {
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
+        project.data[[function.name]]()
+    }
+
+    ## get actual raw data
+    data.to.split = project.data$get.cached.data.sources("only.unfiltered")
+
+    data = lapply(data.to.split, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[ds]]
+        return(project.data[[function.name]]())
+    })
+    names(data) = data.to.split
+
+    ## load available additional data sources
+    additional.data.sources = project.data$get.cached.data.sources("only.additional")
+    additional.data = lapply(additional.data.sources, function(ds) {
+        ## build the name of the respective getter and call it
+        function.name = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[ds]]
+        return(project.data[[function.name]]())
+    })
+    names(additional.data) = additional.data.sources
+
+    ## number of windows given (ignoring time period and bins)
+    if (!is.null(number.windows)) {
+        ## reset bins for the later algorithm
+        bins = NULL
+        ## remove sliding windows
+        sliding.window = FALSE
+    }
+
+    ## indicates if time-based splitting is performed using bins
+    split.time.based.with.bins = FALSE
+
+    ## if bins are NOT given explicitly
+    if (is.null(bins)) {
+        ## get bins based on split.basis
+        bins = split.get.bins.time.based(data[[split.basis]][["date"]], splitting.length, number.windows)$bins
+        bins.labels = head(bins, -1)
+        ## logging
+        logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
+                         project.data$get.class.name(), splitting.length, split.basis)
+    }
+    ## when bins are given explicitly, get bins based on parameter
+    else {
+        if (split.by.time) {
+            split.time.based.with.bins = TRUE
+            split.basis = NULL
+            bins = get.date.from.string(bins)
+            bins = get.date.string(bins)
+            ## remove sliding windows
+            sliding.window = FALSE
+        } else {
+            ## sliding windows do not need to be removed here, as sliding windows and bins
+            ## are not contradicting in activity-based splitting
+            bins.vector = bins[["vector"]]
+            bins = bins[["bins"]]
+        }
+        bins.labels = head(bins, -1)
+        ## logging
+        logging::loginfo("Splitting data '%s' into time ranges [%s].",
+                         project.data$get.class.name(), paste(bins, collapse = ", "))
+    }
+    bins.date = get.date.from.string(bins)
+
+    ## construct ranges
+    bins.ranges = construct.ranges(bins)
+    names(bins.ranges) = bins.ranges
+
+    if ((length(bins.ranges) <= 1) && sliding.window) {
+        logging::logwarn("Sliding-window approach does not apply for one range or less.")
+        sliding.window = FALSE
+    }
+
+    if (is.null(project.conf.new)) {
+        ## Clone the project configuration, so that splitting repeatedly does not interfere
+        ## with the same configuration.
+        project.conf.new = project.data$get.project.conf()$clone()
+    }
+
+    if (!sliding.window || !split.by.time) {
+        ## split data
+        data.split = parallel::mclapply(data.to.split, function(df.name) {
+            logging::logdebug("Splitting %s.", df.name)
+            ## identify bins for data
+            df = data[[df.name]]
+            df.bins = if (!split.by.time && (df.name == split.basis))
+                        bins.vector
+                      else
+                        findInterval(df[["date"]], bins.date, all.inside = FALSE)
+            ## split data according to df.bins
+            df.split = split(df, df.bins)
+            ## add proper labels/names
+            names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
+            return(df.split)
+        })
+        ## set the names to the data sources obtained earlier
+        names(data.split) = data.to.split
+
+        ## re-arrange data to get the proper list of data per range
+        logging::logdebug("Re-arranging data.")
+        data.split = parallel::mclapply(bins.labels, function(bin) lapply(data.split, `[[`, bin))
+        names(data.split) = bins.ranges
+
+        ## adapt project configuration
+        project.conf.new$set.revisions(bins, bins.date)
+
+        ## construct RangeData objects
+        logging::logdebug("Constructing RangeData objects.")
+
+        cf.data = parallel::mclapply(bins.ranges, function(range) {
+            logging::logdebug("Constructing data for range %s.", range)
+            ## construct object for current range
+            cf.range.data = RangeData$new(project.conf.new, range)
+            ## get data for current range
+            df.list = data.split[[range]]
+
+            ## set main data sources: commits, mails, issues
+            for (data.source in data.to.split) {
+                setter.name = sprintf("set.%s", data.source)
+                cf.range.data[[setter.name]](df.list[[data.source]])
+            }
+            ## set additional data sources: authors, commit.messages, pasta, synchronicity
+            for (data.source in additional.data.sources) {
+                setter.name = sprintf("set.%s", data.source)
+                cf.range.data[[setter.name]](additional.data[[data.source]])
+            }
+
+            return(cf.range.data)
+        })
+
+    } else {
+        ## perform different steps for sliding-window approach of time-based splitting
+
+        ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                              time.period = splitting.length, overlap = 0.5, raw = FALSE,
+                                              include.end.date = FALSE) # bins have already been prepared correctly
+        bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
+                                                 time.period = splitting.length, overlap = 0.5, raw = TRUE,
+                                                 include.end.date = FALSE) # bins have already been prepared correctly
+        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
+        bins = get.date.string(bins.date)
+
+        logging::loginfo("Splitting data '%s' into time ranges using sliding windows [%s].",
+                         project.data$get.class.name(), ranges)
+        cf.data = split.data.time.based.by.ranges(project.data, ranges)
+
+        ## update project configuration
+        project.conf.new$set.revisions(bins, bins.date, sliding.window = TRUE)
+        for (cf in cf.data) {
+            ## re-set project configuration due to object duplication
+            cf.conf = cf$set.project.conf(project.conf.new)
+        }
+    }
+
+    ## add splitting information to project configuration
+    project.conf.new$set.splitting.info(
+        type = if (split.by.time) "time-based" else "activity-based",
+        length = if (split.time.based.with.bins) {
+                    bins
+                 }
+                 else {
+                    if (!is.null(number.windows)) {
+                        as.character(lubridate::as.period(
+                            get.time.period.by.amount(
+                                min(data[[split.basis]][["date"]]),
+                                max(data[[split.basis]][["date"]]),
+                                number.windows
+                            )
+                        ))
+                    }
+                    else splitting.length
+                },
+        basis = split.basis,
+        sliding.window = sliding.window,
+        revisions = bins,
+        revisions.dates = bins.date
+    )
+
+    ## set bin attribute
+    attr(cf.data, "bins") = bins.date
+
+    ## return list of RangeData objects
+    return(cf.data)
 }
 
 
