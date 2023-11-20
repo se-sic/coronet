@@ -65,11 +65,12 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
 
-    # validate type of the 'bins' parameter
+    # validate existence and type of the 'bins' parameter
     if (!is.null(bins) && !lubridate::is.POSIXct(bins)) {
-        dates = parallel::mclapply(bins, function(bin) lubridate::ymd_hms(bin, truncated = 3))
+        dates = parallel::mclapply(unlist(bins), get.date.from.string)
         if (any(is.na(dates))) {
-            logging::logerror("The bins parameter, if present, needs to be a character representing a date")
+            logging::logerror(paste("The bins parameter, if present, needs to be a vector",
+                                    "whose elements represent dates"))
             stop("Stopped due to incorrect parameter types")
         }
     }
@@ -104,21 +105,27 @@ split.data.by.bins = function(project.data, activity.amount, bins, split.basis =
         stop("Stopped due to incorrect parameter types")
     }
 
-    # validate type of the 'bins' component of the 'bins' parameter
-    dates = parallel::mclapply(bins[["bins"]], function(bin) lubridate::ymd_hms(bin, truncated = 3))
-    if (any(is.na(dates))) {
-        logging::logerror("The 'bins' component of the bins parameter needs to be a character representing a date")
+    # validate existence and type of the 'bins' component of the 'bins' parameter
+    if (!("bins" %in% names(bins))) {
+        logging::logerror("The 'bins' parameter needs to include a component 'bins'")
         stop("Stopped due to incorrect parameter types")
     }
 
-    # validate type of the 'vector' component of the 'bins' parameter
-    if (class(bins[["vector"]]) != "numeric") {
+    dates = parallel::mclapply(bins[["bins"]], get.date.from.string)
+    if (any(is.na(dates))) {
+        logging::logerror(paste("The 'bins' component of the 'bins' parameter, needs to be a vector",
+                                "whose elements represent dates"))
+        stop("Stopped due to incorrect parameter types")
+    }
+
+    # validate existence and type of the 'vector' component of the 'bins' parameter
+    if (!inherits(bins[["vector"]], "numeric")) {
         logging::logerror("The 'vector' component of the bins parameter needs to be a numeric vector")
         stop("Stopped due to incorrect parameter types")
     }
 
     split = split.data.by.time.or.bins(project.data, activity.amount, bins, split.by.time = FALSE,
-                                        sliding.window = sliding.window, split.basis = split.basis)
+                                       sliding.window = sliding.window, split.basis = split.basis)
     return(split)
 }
 
