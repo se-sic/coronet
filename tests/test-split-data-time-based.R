@@ -961,6 +961,44 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
     "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
 ))
 
+##
+## Verify that split.data.time.based does not accept an invalid bins parameter
+##
+
+test_that("Split a data object time-based with invalid bins parameter.", {
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
+        issues = project.data$get.issues(),
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+
+    ## define invalid bins
+    invalid.bins.not.a.date = c("These", "bins", "are", "invalid")
+    invalid.bins.contains.NA = c("2016-01-01 00:00:00", NA, "2016-12-31 23:59:59", "2017-06-03 03:03:03")
+    invalid.bins.not.a.list = "2016-01-01 00:00:00 2016-12-31 23:59:59"
+    invalid.bins.format.of.split.by.bins = list(bins = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"), vector = replicate(24, 1))
+
+    invalid.bins = list(invalid.bins.not.a.date, invalid.bins.contains.NA, invalid.bins.not.a.list,
+                   invalid.bins.format.of.split.by.bins)
+
+    ## test that all invalid bins produce an error
+    for (invalid.bin in invalid.bins) {
+        expect_error(split.data.time.based(project.data, bins = invalid.bin, split.basis = "issues"),
+                     regexp = "Stopped due to incorrect parameter types",
+                     info = "Bins need to be a list of characters representing dates.")
+    }
+})
+
+
 ## * * custom event timestamps ----------------------------------------------------------------
 
 ##

@@ -14,6 +14,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -122,6 +123,50 @@ test_that("Split network and data on low level (split.dataframe.by.bins, split.n
     })
     expect_true(all(check.identical), info = "Split network by bins (network equality).")
 
+})
+
+##
+## Verify that split.data.by.bins does not accept an invalid bins parameter
+##
+
+test_that("Split a data object by activity-based bins with invalid bins parameter.", {
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+    data = list(
+        commits = project.data$get.commits.unfiltered(),
+        commit.messages = project.data$get.commit.messages(),
+        issues = project.data$get.issues(),
+        mails = project.data$get.mails(),
+        pasta = project.data$get.pasta(),
+        synchronicity = project.data$get.synchronicity()
+    )
+
+    ## define invalid bins
+    invalid.bins.not.a.date = list(bins = c("These", "bins", "are", "invalid"), vector = replicate(24, 1))
+    invalid.bins.not.a.number = list(bins = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"), vector = replicate(24, "NaN"))
+    invalid.bins.contains.NA = list(bins = c("2013-04-21 23:52:09", "2017-05-23 12:32:40", NA), vector = replicate(24, 1))
+    invalid.bins.missing.bins = list(vector = replicate(24, 1))
+    invalid.bins.missing.vector = list(bins = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"))
+    invalid.bins.format.of.split.time.based = list("2013-04-21 23:52:09", "2017-05-23 12:32:40")
+
+    invalid.bins = list(invalid.bins.not.a.date, invalid.bins.contains.NA, invalid.bins.missing.bins,
+                        invalid.bins.missing.vector, invalid.bins.format.of.split.time.based)
+
+    ## test that all invalid bins produce an error
+    for (invalid.bin in invalid.bins) {
+        expect_error(split.data.by.bins(project.data,
+                                        bins = invalid.bin,
+                                        split.basis = "issues",
+                                        activity.amount = 3000,
+                                        sliding.window = FALSE),
+                     regexp = "Stopped due to incorrect parameter types",
+                     info = "Bins need to be a named list with a 'bins' component including characters representing dates"
+                            + " and a 'vector' including numerics.")
+    }
 })
 
 
