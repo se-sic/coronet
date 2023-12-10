@@ -1011,3 +1011,14 @@ get.data.from.range = function(range, data) {
         return(data.between)
     }
 }
+
+#' Obtain the start and end dates from given ranges.
+#'
+#' @param ranges the ranges to get the dates from
+#'
+#' @return a sorted vector of all the start the end dates of the given ranges
+get.bin.dates.from.ranges = function(ranges) {
+    dates = sort(unname(unique(get.date.from.unix.timestamp(unlist(ranges)))))
+    return(dates)
+}
+
