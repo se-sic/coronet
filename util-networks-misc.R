@@ -82,15 +82,15 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
 
     ## for each range, get the authors who have been active on at least one data source in this range
     active.authors.list = lapply(data.ranges, function(range.data) {
-
+        
         active.authors = range.data$get.authors.by.data.source(data.sources)
-
-        active.authors.names = active.authors[["author.name"]]
+    
+        active.authors.names = sort(active.authors[["author.name"]])
 
         return(active.authors.names)
 
     })
-
+    
     if (globally) {
         ## flatten the list of lists to one list of authors
         active.authors = unlist(active.authors.list, recursive = FALSE)
@@ -101,8 +101,13 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
         ## remove duplicates and order alphabetically ascending
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
-        return(active.authors)
+        ## return as a list
+        return(as.list(active.authors))
     } else {
+        ## convert from a list of vectors to a list of lists
+        active.authors.list = lapply(active.authors.list, function(v) {
+            return (as.list(v))
+        })
         return(active.authors.list)
     }
 }
