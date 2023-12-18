@@ -36,7 +36,7 @@ requireNamespace("Matrix") # for sparse matrices
 #' @param networks the list of networks from which the author names are wanted
 #' @param globally decides if all author names are in one list or in separate lists for each network [default: TRUE]
 #'
-#' @return the list of author names
+#' @return the list of author names as a list of vectors
 get.author.names.from.networks = function(networks, globally = TRUE) {
     
     ## for each network, get a list of authors that are in this network
@@ -49,7 +49,7 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
     if (globally) {
         ## flatten the list of lists to one list of authors
         active.authors = unlist(active.authors.list, recursive = FALSE)
-
+        
         ## remove distracting named list members
         names(active.authors) = NULL
 
@@ -57,12 +57,8 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
         ## return as a list
-        return(as.list(active.authors))
+        return(list(active.authors))
     } else {
-        ## convert from a list of vectors to a list of lists
-        active.authors.list = lapply(active.authors.list, function(v) {
-            return (as.list(v))
-        })
         return(active.authors.list)
     }
 }
@@ -75,7 +71,7 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
 #'                    or any combination of them [default: c("commits", "mails", "issues")]
 #' @param globally decides if all author names are in one list or in separate for each network [default: TRUE]
 #'
-#' @return the list of author names
+#' @return the list of author names as a list of vectors
 get.author.names.from.data = function(data.ranges, data.sources = c("commits", "mails", "issues"), globally = TRUE) {
 
     data.sources = match.arg.or.default(data.sources, several.ok = TRUE)
@@ -102,12 +98,8 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
         ## return as a list
-        return(as.list(active.authors))
+        return(list(active.authors))
     } else {
-        ## convert from a list of vectors to a list of lists
-        active.authors.list = lapply(active.authors.list, function(v) {
-            return (as.list(v))
-        })
         return(active.authors.list)
     }
 }
