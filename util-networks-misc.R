@@ -38,10 +38,11 @@ requireNamespace("Matrix") # for sparse matrices
 #'
 #' @return the list of author names
 get.author.names.from.networks = function(networks, globally = TRUE) {
-
+    
     ## for each network, get a list of authors that are in this network
     active.authors.list = lapply(networks, function(network) {
         active.authors = igraph::V(network)$name
+        active.authors = sort(active.authors)
         return(active.authors)
     })
 
@@ -55,8 +56,13 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
         ## remove duplicates and order alphabetically ascending
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
-        return(active.authors)
+        ## return as a list
+        return(as.list(active.authors))
     } else {
+        ## convert from a list of vectors to a list of lists
+        active.authors.list = lapply(active.authors.list, function(v) {
+            return (as.list(v))
+        })
         return(active.authors.list)
     }
 }
