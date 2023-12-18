@@ -73,20 +73,94 @@ test_that("getting all authors of a list of networks, list length 1", {
 
 })
 
-test_that("getting all authors of a list of networks, list length 2", {
+test_that("getting all authors of a list of networks, list length 1, not global", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
     ## Act
-   
+    result = get.author.names.from.networks(networks = list(network), globally = FALSE)
 
     ## Assert
+    expected = list(c("Dieter", "Heinz", "Klaus"))
     
+    ## This currently does not work, since the list of authors is not sorted if 
+    ## globally is FALSE. TODO Should that be changed?
+    expect_equal(expected, result)
+
+})
+
+test_that("getting all authors of a list of networks, list length 2", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    first.network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    second.vertices = data.frame(
+        name = c("Detlef", "Dieter"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    second.edges = data.frame(
+        from = "Detlef",
+        to = "Dieter"
+        )
+    second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
+    ## Act
+    result = get.author.names.from.networks(networks = list(first.network, second.network))
+
+    ## Assert
+    expected = c("Detlef", "Dieter", "Heinz", "Klaus")
+    
+    expect_equal(expected, result)
 })
 
 test_that("getting all authors of a list of networks, list length 2, not global", {
 
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    first.network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    second.vertices = data.frame(
+        name = c("Detlef", "Dieter"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    second.edges = data.frame(
+        from = "Detlef",
+        to = "Dieter"
+        )
+    second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
     ## Act
-   
+    result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
 
     ## Assert
-    
+    expected = list(c("Dieter", "Heinz", "Klaus"), c("Detlef", "Dieter"))
+    browser()
+    expect_equal(expected, result)
 })
