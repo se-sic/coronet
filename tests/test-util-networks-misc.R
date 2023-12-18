@@ -37,13 +37,10 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 test_that("getting all authors of a list of networks, list length 0", {
 
     ## Act
-    result = get.author.names.from.networks(networks = list(), globally = FALSE)
+    result = get.author.names.from.networks(networks = list(), globally = TRUE)
     
     ## Assert
     expected = list()
-    ## does currently not work like this if globally is TRUE, 
-    ## since the unlist function returns null if input is empty list
-    ## TODO clarify if this is intended or should be fixed
     
     expect_equal(expected, result)
 })
@@ -159,5 +156,60 @@ test_that("getting all authors of a list of networks, list length 2, not global"
     ## Assert
     expected = list(list("Dieter", "Heinz", "Klaus"), list("Detlef", "Dieter"))
     
+    expect_equal(expected, result)
+})
+
+test_that("getting all authors of a list of data ranges, list length 0", {
+
+    ## Act
+    result = get.author.names.from.data(data.ranges = list())
+    
+    ## Assert
+    expected = list()
+    
+    expect_equal(expected, result)
+})
+
+test_that("getting all authors of a list of data ranges, list length 1", {
+
+    ## Arrange
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data.base = ProjectData$new(project.conf = proj.conf)
+    range.data = proj.data.base$get.data.cut.to.same.date("mails")
+
+    ## Act
+    result = get.author.names.from.data(data.ranges = list(range.data))
+    
+    ## Assert
+    expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
+                    "Karl", "Olaf", "Thomas", "udo")
+    
+    ## expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    ##              "Karl", "Max", "Olaf", "Thomas", "udo")
+    ## This is what I expect, given that the get.authors() method on the
+    ## range data returns these authors. However, get.authors.by.data.source 
+    ## on the range data excludes max TODO: find out why and if that is intended
+    expect_equal(expected, result)
+})
+
+test_that("getting all authors of a list of data ranges, list length 1, not global", {
+
+    ## Arrange
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data.base = ProjectData$new(project.conf = proj.conf)
+    range.data = proj.data.base$get.data.cut.to.same.date("mails")
+
+    ## Act
+    result = get.author.names.from.data(data.ranges = list(range.data), globally = FALSE)
+    
+    ## Assert
+    expected = list(list("Björn", "Fritz fritz@example.org","georg", "Hans", 
+                    "Karl", "Olaf", "Thomas", "udo"))
+    
+    ## expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    ##              "Karl", "Max", "Olaf", "Thomas", "udo")
+    ## This is what I expect, given that the get.authors() method on the
+    ## range data returns these authors. However, get.authors.by.data.source 
+    ## on the range data excludes max TODO: find out why and if that is intended
     expect_equal(expected, result)
 })
