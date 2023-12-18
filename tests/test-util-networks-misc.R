@@ -40,7 +40,7 @@ test_that("getting all authors of a list of networks, list length 0", {
     result = get.author.names.from.networks(networks = list(), globally = TRUE)
     
     ## Assert
-    expected = list()
+    expected = list(c())
     
     expect_equal(expected, result)
 })
@@ -63,7 +63,7 @@ test_that("getting all authors of a list of networks, list length 1", {
     result = get.author.names.from.networks(networks = list(network))
 
     ## Assert
-    expected = list("Dieter", "Heinz", "Klaus")
+    expected = list(c("Dieter", "Heinz", "Klaus"))
     
     expect_equal(expected, result)
 
@@ -87,7 +87,7 @@ test_that("getting all authors of a list of networks, list length 1, not global"
     result = get.author.names.from.networks(networks = list(network), globally = FALSE)
 
     ## Assert
-    expected = list(list("Dieter", "Heinz", "Klaus"))
+    expected = list(c("Dieter", "Heinz", "Klaus"))
     
     expect_equal(expected, result)
 
@@ -121,7 +121,7 @@ test_that("getting all authors of a list of networks, list length 2", {
     result = get.author.names.from.networks(networks = list(first.network, second.network))
 
     ## Assert
-    expected = list("Detlef", "Dieter", "Heinz", "Klaus")
+    expected = list(c("Detlef", "Dieter", "Heinz", "Klaus"))
     
     expect_equal(expected, result)
 })
@@ -154,7 +154,7 @@ test_that("getting all authors of a list of networks, list length 2, not global"
     result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
 
     ## Assert
-    expected = list(list("Dieter", "Heinz", "Klaus"), list("Detlef", "Dieter"))
+    expected = list(c("Dieter", "Heinz", "Klaus"), c("Detlef", "Dieter"))
     
     expect_equal(expected, result)
 })
@@ -165,7 +165,7 @@ test_that("getting all authors of a list of data ranges, list length 0", {
     result = get.author.names.from.data(data.ranges = list())
     
     ## Assert
-    expected = list()
+    expected = list(c())
     
     expect_equal(expected, result)
 })
@@ -181,14 +181,9 @@ test_that("getting all authors of a list of data ranges, list length 1", {
     result = get.author.names.from.data(data.ranges = list(range.data))
     
     ## Assert
-    expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
-                    "Karl", "Olaf", "Thomas", "udo")
+    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
+                    "Karl", "Olaf", "Thomas", "udo"))
     
-    ## expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
-    ##              "Karl", "Max", "Olaf", "Thomas", "udo")
-    ## This is what I expect, given that the get.authors() method on the
-    ## range data returns these authors. However, get.authors.by.data.source 
-    ## on the range data excludes max TODO: find out why and if that is intended
     expect_equal(expected, result)
 })
 
@@ -203,13 +198,8 @@ test_that("getting all authors of a list of data ranges, list length 1, not glob
     result = get.author.names.from.data(data.ranges = list(range.data), globally = FALSE)
     
     ## Assert
-    expected = list(list("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
                     "Karl", "Olaf", "Thomas", "udo"))
     
-    ## expected = list("Björn", "Fritz fritz@example.org","georg", "Hans", 
-    ##              "Karl", "Max", "Olaf", "Thomas", "udo")
-    ## This is what I expect, given that the get.authors() method on the
-    ## range data returns these authors. However, get.authors.by.data.source 
-    ## on the range data excludes max TODO: find out why and if that is intended
     expect_equal(expected, result)
 })
