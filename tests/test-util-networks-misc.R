@@ -66,9 +66,8 @@ test_that("getting all authors of a list of networks, list length 1", {
     result = get.author.names.from.networks(networks = list(network))
 
     ## Assert
-    expected = c("Dieter", "Heinz", "Klaus")
-    ## in contrast to the description of the method, it does not return a list. 
-    ## Instead it returns this c() construct. TODO Should that be changed?
+    expected = list("Dieter", "Heinz", "Klaus")
+    
     expect_equal(expected, result)
 
 })
@@ -91,10 +90,8 @@ test_that("getting all authors of a list of networks, list length 1, not global"
     result = get.author.names.from.networks(networks = list(network), globally = FALSE)
 
     ## Assert
-    expected = list(c("Dieter", "Heinz", "Klaus"))
+    expected = list(list("Dieter", "Heinz", "Klaus"))
     
-    ## This currently does not work, since the list of authors is not sorted if 
-    ## globally is FALSE. TODO Should that be changed?
     expect_equal(expected, result)
 
 })
@@ -127,7 +124,7 @@ test_that("getting all authors of a list of networks, list length 2", {
     result = get.author.names.from.networks(networks = list(first.network, second.network))
 
     ## Assert
-    expected = c("Detlef", "Dieter", "Heinz", "Klaus")
+    expected = list("Detlef", "Dieter", "Heinz", "Klaus")
     
     expect_equal(expected, result)
 })
@@ -160,7 +157,7 @@ test_that("getting all authors of a list of networks, list length 2, not global"
     result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
 
     ## Assert
-    expected = list(c("Dieter", "Heinz", "Klaus"), c("Detlef", "Dieter"))
-    browser()
+    expected = list(list("Dieter", "Heinz", "Klaus"), list("Detlef", "Dieter"))
+    
     expect_equal(expected, result)
 })
