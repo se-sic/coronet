@@ -403,7 +403,7 @@ test_that("Filter bots from issue data", {
     filtered.issues = proj.data$get.issues()
 
     expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
-    ## there are now 42 issue events remaining, since 11 issue events have been removed during filtering
+    ## there are now 43 issue events remaining, since 10 issue events have been removed during filtering
     expect_equal(nrow(filtered.issues), 43)
 })
 

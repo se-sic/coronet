@@ -770,7 +770,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         split.type = "activity-based",
         split.length = 18,
         split.basis = "commits",
-        split.sliding.window = FALSE,
+        split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
         split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
         split.revision.dates = NULL
     )
@@ -1133,7 +1133,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         split.type = "activity-based",
         split.length = 26,
         split.basis = "mails",
-        split.sliding.window = FALSE,
+        split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
         split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
         split.revision.dates = NULL
     )
@@ -1365,7 +1365,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         split.type = "activity-based",
         split.length = 65,
         split.basis = "issues",
-        split.sliding.window = FALSE,
+        split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
         split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
         split.revision.dates = NULL
     )
