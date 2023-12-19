@@ -296,3 +296,36 @@ test_that("getting all authors of a list of data ranges by data source 'commits'
     
     expect_equal(expected, result)
 })
+
+test_that("getting a sparse adjacencyy matrix for a network", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in = c("Heinz", "Dieter", "Klaus")
+
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in), length(authors.in)),
+                                            repr = "T")
+    rownames(matrix.out) = sort(authors.in)
+    colnames(matrix.out) = sort(authors.in)
+    matrix.out["Dieter", "Heinz"] = 1
+    matrix.out["Heinz", "Dieter"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    ## currently the method does not order the adjacency matrix (even though it says it does)
+    ## TODO fix this or remove this
+    ## Assert
+    
+    expect_equal(matrix.out, result)
+
+})
