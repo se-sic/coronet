@@ -106,23 +106,23 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
     ## build expected network:
     ## 1) vertices
     vertices = data.frame(name = c("<issue-jira-ZEPPELIN-328>",
-                                   "<issue-jira-ZEPPELIN-332>" ,
                                    "<issue-github-2>",
                                    "<issue-github-6>",
                                    "<issue-github-3>",
                                    "<issue-github-1>",
+                                   "<issue-jira-ZEPPELIN-332>" ,
                                    "<issue-github-4>"),
                           kind = "Issue",
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = c("<issue-jira-ZEPPELIN-328>", "<issue-github-3>", "<issue-github-3>"),
-        to = c("<issue-jira-ZEPPELIN-332>", "<issue-github-2>", "<issue-github-6>"),
-        date = get.date.from.string(c("2013-06-01 06:54:00", "2016-08-07 15:30:00", "2016-08-07 15:37:02")),
+        from = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>"),
+        to = c("<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-328>"),
+        date = get.date.from.string(c("2016-08-07 15:30:00", "2016-08-07 15:37:02", "2017-05-21 12:00:00")),
         artifact.type = c("IssueEvent", "IssueEvent", "IssueEvent"),
-        issue.id = c("<issue-jira-ZEPPELIN-328>", "<issue-github-3>", "<issue-github-3>"),
+        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>"),
         event.name = c("add_link", "add_link", "add_link"),
-        author.name = c("Thomas", "Thomas", "Karl"),
+        author.name = c("Thomas", "Karl", "Thomas"),
         weight = c(1, 1, 1),
         type = TYPE.EDGES.INTRA,
         relation = "issue"

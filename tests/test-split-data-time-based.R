@@ -230,7 +230,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         issues = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$issues[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
         ),
         mails = list(
@@ -238,7 +238,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[1:2, ], # rownames(data$mails) %in% 1:2
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$mails[0, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:16
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
@@ -341,13 +341,13 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(16:38, 41:55), ],
-            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 39:40, ]
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:15, 39:40), ]
         ),
         mails = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # when pasta is not configured: rownames(data$mails) %in% 14:17
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # when pasta is not configured: rownames(data$mails) %in% 13:16
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$mails[0, ]
         ),
         pasta = list(
@@ -469,9 +469,9 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             ## comments indicate row names when pasta is not configured
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$mails[0, ],
             "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$mails[0, ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[15, ], # rownames(data$mails) == 16
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$mails[15:16, ], # rownames(data$mails) %in% c(16,17)
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[16, ] # rownames(data$mails) == 17
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$mails[15, ], # rownames(data$mails) == 15
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$mails[15:16, ], # rownames(data$mails) %in% c(15,16)
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$mails[16, ] # rownames(data$mails) == 16
         ),
         pasta = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$pasta,
@@ -596,19 +596,19 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$issues[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
             "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$issues[0, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:15, ],
-            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
-            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[1:2, ], # rownames(data$mails) %in% 1:2
+            "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$mails[1:2, ],  # rownames(data$mails) %in% 1:2
             "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$mails[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$mails[0, ],
             "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$mails[0, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:16
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$pasta,
@@ -722,17 +722,17 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$issues[0, ],
             "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(16:38, 41:55), ],
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(16:55), ]
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:55), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$mails[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # rownames(data$mails) %in% 14:17
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$mails[13:16, ] # rownames(data$mails) %in% 14:17
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$mails[13:16, ], # rownames(data$mails) %in% 13:17
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$mails[13:16, ]  # rownames(data$mails) %in% 13:17
         ),
         pasta = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$pasta,
@@ -929,7 +929,7 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
         ),
         issues = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(16:38, 41:55), ],
-            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% 39:40, ]
+            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% c(14:15, 39:40), ]
         ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ],
@@ -1082,9 +1082,9 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
         ),
         mails = list(
             ## comments indicate rownames when pasta is not configured
-            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$mails[13:14, ], # rownames(data$mails) %in% 14:15
-            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$mails[15, ], # rownames(data$mails) %in% 16
-            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$mails[16, ], # rownames(data$mails) %in% 17
+            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$mails[13:14, ], # rownames(data$mails) %in% 13:14
+            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$mails[15, ],    # rownames(data$mails) %in% 15
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$mails[16, ],    # rownames(data$mails) %in% 16
             "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$mails[0, ]
         ),
         pasta = list(
@@ -1318,7 +1318,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$mails[0, ],
             "2016-07-12 16:01:30-2016-07-12 16:04:01" = data$mails[0, ],
-            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$mails[15:16, ] # when pasta is not configured: rownames(data$mails) %in% 16:17
+            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$mails[15:16, ] # when pasta is not configured: rownames(data$mails) %in% 15:16
         ),
         pasta = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$pasta,
@@ -1426,7 +1426,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         issues = list(
             "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$issues[0, ],
             "2007-09-18 06:00:04-2010-08-26 17:21:55" = data$issues[0, ],
-            "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
         ),
         mails = list(
@@ -1434,7 +1434,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
             "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$mails[1:2, ],
             "2007-09-18 06:00:04-2010-08-26 17:21:55" = data$mails[3:12, ], # rownames(data$mails) %in% 3:12
             "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$mails[0, ],
-            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:17
+            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$mails[13:16, ] # rownames(data$mails) %in% 13:16
         ),
         pasta = list(
             "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$pasta,
@@ -1537,14 +1537,14 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
             "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$issues[rownames(data$issues) %in% 1:15, ],
+            "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$issues[rownames(data$issues) %in% 1:13, ],
             "2014-09-01 12:05:39-2016-01-12 00:19:09" = data$issues[0, ],
-            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 16:55, ]
+            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 14:55, ]
         ),
         mails = list(
             "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$mails[0, ],
             "2014-09-01 12:05:39-2016-01-12 00:19:09" = data$mails[0, ],
-            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$mails[13:16, ] # when pasta is not configured: rownames(data$mails) %in% 13:17
+            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$mails[13:16, ] # when pasta is not configured: rownames(data$mails) %in% 13:16
         ),
         pasta = list(
             "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$pasta,

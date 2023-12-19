@@ -601,8 +601,8 @@ test_that("Test add.vertex.attribute.author.issue.count", {
         range = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(0L, 1L, 1L), c(2L, 1L, 1L, 2L, 1L)),
         cumulative = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(1L, 1L, 1L), c(2L, 1L, 2L, 2L, 1L)),
         all.ranges = network.covariates.test.build.expected(c(2L, 2L, 1L, 1L), c(1L, 2L, 2L), c(2L, 1L, 2L, 2L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(c(2L, 1L, 2L, 1L), c(2L, 2L, 3L), c(3L, 2L, 4L, 2L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 2L, 2L, 1L), c(2L, 3L, 4L), c(3L, 2L, 4L, 2L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 2L, 1L), c(2L, 2L, 2L), c(3L, 2L, 3L, 2L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L, 2L, 1L), c(2L, 3L, 3L), c(3L, 2L, 3L, 2L, 1L)),
         complete = network.covariates.test.build.expected(c(4L, 2L, 3L, 1L), c(3L, 3L, 4L), c(3L, 3L, 4L, 2L, 1L))
     )
 
@@ -1672,8 +1672,8 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
         range = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 1L, NA), c(NA, 3L, 2L, NA, 2L)),
         cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 3L, 2L, NA, 4L)),
         all.ranges = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 3L, 2L, NA, 4L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 3L, 3L, NA, 4L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 3L, NA, 4L, NA), c(NA, 3L, 3L, NA, 4L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 3L, 2L, NA, 4L)),
+        project.all.ranges = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 3L, 2L, NA, 4L)),
         complete = network.covariates.test.build.expected(c(5L, 3L, NA), c(NA, 3L, NA, 5L, NA), c(NA, 3L, 3L, NA, 5L))
     )
 
@@ -1796,8 +1796,8 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
         range = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 1L), c(NA, 2L)),
         cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
         all.ranges = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 2L, 4L), c(NA, 2L)),
-        project.cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 2L, 2L), c(NA, 3L)),
-        project.all.ranges = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 3L, 4L), c(NA, 3L)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 2L, 4L), c(NA, 2L)),
         complete = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 3L, 5L), c(NA, 3L))
     )
 
@@ -1860,8 +1860,8 @@ test_that("Test add.vertex.attribute.issue.event.count", {
         range = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 1L, NA), c(NA, 4L, 4L, NA, 2L)),
         cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 7L, 6L, NA, 4L)),
         all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 7L, 6L, NA, 4L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 3L, NA, 2L, NA), c(NA, 7L, 7L, NA, 4L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 7L, NA, 4L, NA), c(NA, 7L, 7L, NA, 4L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 7L, 6L, NA, 4L)),
+        project.all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 7L, 6L, NA, 4L)),
         complete = network.covariates.test.build.expected(c(9L, 8L, NA), c(NA, 7L, NA, 9L, NA), c(NA, 8L, 7L, NA, 9L))
     )
 
@@ -2203,8 +2203,8 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             c(NA                   , "2016-08-31 16:45:09", "2016-07-28 06:27:52", NA                   , "2016-08-31 15:30:02")),
         complete = network.covariates.test.build.expected(
             c("2017-05-23 12:32:39", "2016-10-05 16:45:09", NA),
-            c(NA                   , "2016-07-28 06:27:52", NA                   , "2017-05-23 12:32:39", NA),
-            c(NA                   , "2016-10-05 16:45:09", "2016-07-28 06:27:52", NA                   , "2017-05-23 12:32:39")))
+            c(NA                   , "2017-05-21 12:00:00", NA                   , "2017-05-23 12:32:39", NA),
+            c(NA                   , "2016-10-05 16:45:09", "2017-05-21 12:00:00", NA                   , "2017-05-23 12:32:39")))
 
     expected.attributes.prs.only = list(
         range = network.covariates.test.build.expected(
@@ -2255,8 +2255,8 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
         complete = network.covariates.test.build.expected(
             c("2017-05-23 12:32:39", "2016-10-05 16:45:09", "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2017-05-23 12:32:39", "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", "2016-10-05 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2017-05-23 12:32:39")))
+            c("2016-07-14 13:37:00", "2017-05-21 12:00:00", "2016-07-12 16:02:02", "2017-05-23 12:32:39", "2016-08-07 15:30:00"),
+            c("2016-07-14 13:37:00", "2016-10-05 16:45:09", "2017-05-21 12:00:00", "2016-08-07 15:30:00", "2017-05-23 12:32:39")))
 
     ## convert date strings to POSIXct
     expected.attributes.issues.only = lapply(expected.attributes.issues.only, function(times) {
