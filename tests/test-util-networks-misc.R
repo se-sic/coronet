@@ -297,7 +297,7 @@ test_that("getting all authors of a list of data ranges by data source 'commits'
     expect_equal(expected, result)
 })
 
-test_that("getting a sparse adjacencyy matrix for a network", {
+test_that("getting a sparse adjacencyy matrix for a network, single edge, matching author list", {
 
     ## Arrange
     vertices = data.frame(
@@ -315,15 +315,114 @@ test_that("getting a sparse adjacencyy matrix for a network", {
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
                                             dims = c(length(authors.in), length(authors.in)),
                                             repr = "T")
-    rownames(matrix.out) = sort(authors.in)
-    colnames(matrix.out) = sort(authors.in)
-    matrix.out["Dieter", "Heinz"] = 1
+    rownames(matrix.out) = authors.in
+    colnames(matrix.out) = authors.in
+    
     matrix.out["Heinz", "Dieter"] = 1
+    matrix.out["Dieter", "Heinz"] = 1
     
     ## Act
     result = get.expanded.adjacency(network =network.in, authors = authors.in)
-    ## currently the method does not order the adjacency matrix (even though it says it does)
-    ## TODO fix this or remove this
+    
+    ## Assert
+    
+    expect_equal(matrix.out, result)
+
+})
+
+test_that("getting a sparse adjacencyy matrix for a network, single edge, fewer authors than network", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in = c("Dieter", "Heinz")
+
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in), length(authors.in)),
+                                            repr = "T")
+    rownames(matrix.out) = authors.in
+    colnames(matrix.out) = authors.in
+
+    matrix.out["Heinz", "Dieter"] = 1
+    matrix.out["Dieter", "Heinz"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    
+    ## Assert
+    
+    expect_equal(matrix.out, result)
+
+})
+
+test_that("getting a sparse adjacencyy matrix for a network, single edge, more authors than network", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz", "Klaus")
+
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in), length(authors.in)),
+                                            repr = "T")
+    rownames(matrix.out) = authors.in
+    colnames(matrix.out) = authors.in
+
+    matrix.out["Heinz", "Dieter"] = 1
+    matrix.out["Dieter", "Heinz"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    
+    ## Assert
+    
+    expect_equal(matrix.out, result)
+
+})
+
+test_that("getting a sparse adjacencyy matrix for a network, single edge, no matching author list", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = "Heinz",
+        to = "Dieter"
+        )
+    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz")
+
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in), length(authors.in)),
+                                            repr = "T")
+    rownames(matrix.out) = authors.in
+    colnames(matrix.out) = authors.in
+
+    matrix.out["Heinz", "Dieter"] = 1
+    matrix.out["Dieter", "Heinz"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    
     ## Assert
     
     expect_equal(matrix.out, result)
