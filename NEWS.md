@@ -2,6 +2,27 @@
 
 # coronet – Changelog
 
+## unversioned
+
+### Added
+
+- Add issue-based artifact-networks (PR #244, 98a93ee721a293410623aafe46890cfba9d81e72, 771bcc8d961d419b53a1e891e9dc536371f1143b)
+- Add a new `split.data.by.bins` function (not to be confused with a previously existing function that had the same name and was renamed in this context), which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+
+### Changed/Improved
+
+- Enhance testing data by adding `add_link` and `referenced_by` issue events which connect issues to form edges in issue-based artifact-networks (PR #244, 9f840c040d552e8639aa82c3dd537c189679b348, ea4fe8d3c84f948af6147cf0137e80181ebb7a1e)
+- Add input validation for the `bins` parameter in `split.data.time.based` and `split.data.by.bins` (PR #244, ed0a5302ea8c8934d7200b95be7ac1446305af07, 5e5ecbac44d07927b953ae9d4330a616f8224ba7)
+- Rename `split.data.by.bins` into `split.dataframe.by.bins` as this it what it does (PR #244, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+
+### Fixed
+
+- Reformat `event.info.1` column of issue data according to the <issue-%source-%id> format, if the content of the `event.info.1` field references another issue (PR #244, 62ff9d0f31adbefb3381936237dc4ab984e33acb)
+- Fix an issue in activity-based splitting where elements close to the border of bins might be assigned to the wrong bin. The issue was caused by the usage of `split.data.time.based` inside `split.data.activity.based` to split data into the previously derived bins, when elements close to bin borders share the same timestamps. It is fixed by replacing `split.data.time.based` by `split.data.by.bins` (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698)
+- Remove the last range when using a sliding-window approach and the last range's elements are fully contained in the second last range (PR #244, 48ef4fa685adf6e5d85281e5b90a8ed8f6aeb197)
+- Rename vertex attribute `IssueEvent` to `Issue` in multi-networks, to be consistent with bipartite-networks (PR #244, 26d7b7e9fd6d33d1c0a8a08f19c5c2e30346a3d9)
+
+
 ## 4.3
 
 ### Added

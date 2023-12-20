@@ -375,7 +375,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     }
 
     ## set pattern for issue ID for better recognition
-    issue.data[["issue.id"]] = sprintf("<issue-%s-%s>", issue.data[["issue.source"]], issue.data[["issue.id"]])
+    issue.data[["issue.id"]] = sprintf(ISSUE.ID.FORMAT, issue.data[["issue.source"]], issue.data[["issue.id"]])
 
     ## properly parse and store data in list-type columns
     issue.data[["issue.type"]] = I(unname(lapply(issue.data[["issue.type"]], jsonlite::fromJSON, simplifyVector = FALSE)))
@@ -387,6 +387,13 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
+
+    ## if other issues are referenced, convert names to ID format
+    matches = issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by") &
+                         issue.data[["event.info.2"]] == "issue", ]
+    formatted.matches = sprintf(ISSUE.ID.FORMAT, matches[["issue.source"]], matches[["event.info.1"]])
+    issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by") &
+               issue.data[["event.info.2"]] == "issue", ][["event.info.1"]] = formatted.matches
 
     if (nrow(issue.data) > 0) {
         ## fix all dates to be after the creation date
@@ -964,5 +971,8 @@ COMMIT.ID.FORMAT = "<commit-%s>"
 format.commit.ids = function(commit.ids) {
     return (sprintf(COMMIT.ID.FORMAT, commit.ids))
 }
+
+## declare a global format for issue.ids in several data frame columns
+ISSUE.ID.FORMAT = "<issue-%s-%s>"
 
 
