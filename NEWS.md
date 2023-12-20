@@ -9,12 +9,17 @@
 - Add function `verify.data.frame.columns` to check that a dataframe includes all required columns, optionally with a specified datatype (PR #231, d1d9a039f50480ec5b442dc7e8b518648d1f9d9d)
 - Add helper function `is.single.na` to check whether an element is of length 1 and is `NA` (ddff2b8bbca6405f5c7c1cf4e7e97374fb1426ca, ccfc2d12a68dfa412f05159e8e3b03118694e748)
 - Add CI support for GitHub Actions (PR #234, fa1fc4af65751402ae6b23298dd4ed821930c6d2)
+- Add issue-based artifact-networks (PR #244, 98a93ee721a293410623aafe46890cfba9d81e72)
+- (Re)add 'split.data.by.bins' function which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698)
 
 ### Changed/Improved
 
 - Include structural verification to almost all functions that read dataframes from files or set a dataframe (setter-functions) (PR #231, b7a95881da72ccaa548c6cd5d94bd558a25caa6f)
 - Include removal of empty and deleted users in the setters of mails, commits, issues, and authors. For commits, also the `committer.name` column is now checked for deleted or empty users (PR #235, 08fbd3e11e33d060f42cbc6f729eaf60b48a6de7)
 - Check for empty values (i.e., values of length < 1) when updating configuration attributes and throw an error if a value is empty (9f36c544637ab4f4173408152d223b9b5098ce5a)
+- Enhance testing data by adding 'add_link' and 'referenced_by' issue events which connect issues to form edges in issue-based artifact-networks (PR #244, 9f840c040d552e8639aa82c3dd537c189679b348)
+- Add input validation for the 'bins' parameter in time-, and bin-based splitting (PR #244, ed0a5302ea8c8934d7200b95be7ac1446305af07)
+- Rename 'split.data.by.bins' into 'split.dataframe.by.bins' as this it what it does (PR #244, ed5feb214a123b605c9513262f187cfd72b9e1f4)
 
 ### Fixed
 
@@ -28,6 +33,10 @@
 - Prevent R warnings `In xtfrm.data.frame(x) : cannot xtfrm data frames` (PR #237, c24aee7d8f0b6ff4b641c8922e6ee1dce6f5999c)
 - Fix wrong bracket in pasted logging message (PR #241, 50c68cb60114b49c32dc5be15014745cb8d42ded)
 - Replace deprecated R function calls (PR #237, ed433821c04711a96501887b315d1b0ea8681f5a)
+- Reformat 'event.info.1' column of issue data according to the <issue-%source-%id> format, if the content of the 'event.info.1' field references another issue (PR #244, 62ff9d0f31adbefb3381936237dc4ab984e33acb)
+- Replace time-based splitting as a helper inside activity-based splitting, because of its imprecision, by pure bin-based splitting (see 'split.data.by.bins'). Previously activity-based splitting partitioned data into bins, obtained the timestamps of the elements at the bin borders and did time based splitting. However, elements crossing bin borders can have equal timestamps which causes issues (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698)
+- Remove last range when using a sliding-window approach and the last ranges elements are fully contained in the second last range (PR #244, 48ef4fa685adf6e5d85281e5b90a8ed8f6aeb197)
+- Rename vertex attribute from 'IssueEvent' to 'Issue' in multi-networks to be consistent with bipartite-networks (PR #244, 26d7b7e9fd6d33d1c0a8a08f19c5c2e30346a3d9)
 
 
 ## 4.2
