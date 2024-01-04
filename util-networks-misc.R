@@ -213,13 +213,14 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 
                 ## search for a non-zero entry and set them to an arbitray number (e.g., 42)
                 ## to force that all non-zero entries are correctly set to 1 afterwards
-                if(length(matrices.cumulated[[m]]@i) > 0)
+                if(length(matrices.cumulated[[m]]@i) > 0) {
+                
+                    row = matrices.cumulated[[m]]@i[1]
+                    col = matrices.cumulated[[m]]@j[1]
 
-                row = matrices.cumulated[[m]]@i[1]
-                col = matrices.cumulated[[m]]@j[1]
-
-                matrices.cumulated[[m]][row][col] = 42
-                matrices.cumulated[[m]]@x = rep(1, length(matrices.cumulated[[m]]@i))
+                    matrices.cumulated[[m]][row][col] = 42
+                    matrices.cumulated[[m]]@x = rep(1, length(matrices.cumulated[[m]]@i))
+                }
             }
         }
     }
