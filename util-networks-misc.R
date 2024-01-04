@@ -176,9 +176,11 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 #' @return the list of adjacency matrices
 get.expanded.adjacency.matrices = function(networks, weighted = FALSE){
 
-    authors = get.author.names.from.networks(networks)
-
-    adjacency.matrices = parallel::mclapply(networks, get.expanded.adjacency, authors, weighted)
+    adjacency.matrices = parallel::mclapply(networks, function(network) {
+        active.authors = igraph::V(network)$name
+        active.authors = sort(active.authors)
+        return (get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
+    })
 
     return(adjacency.matrices)
 }
