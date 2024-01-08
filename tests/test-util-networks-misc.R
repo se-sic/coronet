@@ -481,6 +481,7 @@ test_that("getting a sparse adjacency matrix for a network, two edges, more auth
     colnames(matrix.out) = authors.in
 
     # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Klaus", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
@@ -517,6 +518,7 @@ test_that("getting a sparse adjacency matrix for a network, three edges, more au
     colnames(matrix.out) = authors.in
 
     # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
     matrix.out["Heinz", "Dieter"] = 5
     matrix.out["Klaus", "Dieter"] = 3
     matrix.out["Dieter", "Heinz"] = 5
@@ -559,6 +561,7 @@ test_that("getting a sparse adjacency matrix per network, one network", {
     colnames(matrix.out) = authors.in
 
     # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Klaus", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
@@ -593,6 +596,7 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
     colnames(matrix.out.one) = authors.in.one
 
     # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
     matrix.out.one["Heinz", "Dieter"] = 1
     matrix.out.one["Klaus", "Dieter"] = 1
     matrix.out.one["Dieter", "Heinz"] = 1
@@ -616,7 +620,8 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
 
-    # order these statements so that the second arguments are ordered alphabetically
+    # order these statements so that the second arguments are ordered alphabetically 
+    # or use the helper function as used below
     matrix.out.two["Tobias", "Klaus"] = 1
     matrix.out.two["Klaus", "Tobias"] = 1
     
@@ -648,7 +653,6 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     rownames(matrix.out.one) = authors.in.one
     colnames(matrix.out.one) = authors.in.one
 
-    # order these statements so that the second arguments are ordered alphabetically
     matrix.out.one["Heinz", "Dieter"] = 1
     matrix.out.one["Klaus", "Dieter"] = 1
     matrix.out.one["Dieter", "Heinz"] = 1
@@ -667,7 +671,6 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
 
-    # order these statements so that the second arguments are ordered alphabetically
     matrix.out.two["Heinz", "Dieter"] = 1
     matrix.out.two["Klaus", "Dieter"] = 1
     matrix.out.two["Dieter", "Heinz"] = 1
@@ -677,7 +680,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two))
     
     ## Assert
-    expect_equal(list(matrix.out.one, matrix.out.two), result)
+    compare.sparse.matrices(matrix.out.one, result[[1]])
+    compare.sparse.matrices(matrix.out.two, result[[2]])
 })
 
 test_that("getting cumulative sums of adjacency matrices generated from networks, two networks, weighted", {
@@ -702,7 +706,6 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     rownames(matrix.out.one) = authors.in.one
     colnames(matrix.out.one) = authors.in.one
 
-    # order these statements so that the second arguments are ordered alphabetically
     matrix.out.one["Heinz", "Dieter"] = 2
     matrix.out.one["Klaus", "Dieter"] = 2
     matrix.out.one["Dieter", "Heinz"] = 2
@@ -721,18 +724,16 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
                                             repr = "T")
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
-
-    # order these statements so that the second arguments are ordered alphabetically
+    
     matrix.out.two["Heinz", "Dieter"] = 2
-    matrix.out.two["Klaus", "Dieter"] = 2
+    matrix.out.two["Klaus", "Dieter"] = 3
     matrix.out.two["Dieter", "Heinz"] = 2
-    matrix.out.two["Dieter", "Klaus"] = 2
-    matrix.out.two["Klaus", "Dieter"] = 1
-    matrix.out.two["Dieter", "Klaus"] = 1
+    matrix.out.two["Dieter", "Klaus"] = 3
     
     ## Act
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two), weighted = TRUE)
-    browser()
+    
     ## Assert
-    expect_equal(list(matrix.out.one, matrix.out.two), result)
+    compare.sparse.matrices(matrix.out.one, result[[1]])
+    compare.sparse.matrices(matrix.out.two, result[[2]])
 })
