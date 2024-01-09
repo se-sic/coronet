@@ -530,3 +530,104 @@ test_that("getting a sparse adjacency matrix for a network, three edges, more au
     ## Assert
     expect_equal(matrix.out, result)
 })
+
+test_that("getting a sparse adjacency matrix per network, zero networks", {
+    ## Act
+    result = get.expanded.adjacency.matrices(networks = list())
+
+    ## Assert
+    expect_equal(list(), result)
+})
+
+test_that("getting a sparse adjacency matrix per network, one network", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Heinz", "Dieter", "Dieter"),
+        to = c("Dieter", "Klaus", "Heinz")
+        )
+    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in), length(authors.in)),
+                                            repr = "T")
+    rownames(matrix.out) = authors.in
+    colnames(matrix.out) = authors.in
+
+    # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
+    matrix.out["Heinz", "Dieter"] = 1
+    matrix.out["Klaus", "Dieter"] = 1
+    matrix.out["Dieter", "Heinz"] = 1
+    matrix.out["Dieter", "Klaus"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency.matrices(networks = list(network.in))
+
+    ## Assert
+    expect_equal(list(matrix.out), result)
+})
+
+test_that("getting a sparse adjacency matrix per network, two networks", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Heinz", "Dieter", "Dieter"),
+        to = c("Dieter", "Klaus", "Heinz")
+        )
+    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.one), length(authors.in.one)),
+                                            repr = "T")
+    rownames(matrix.out.one) = authors.in.one
+    colnames(matrix.out.one) = authors.in.one
+
+    # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
+    matrix.out.one["Heinz", "Dieter"] = 1
+    matrix.out.one["Klaus", "Dieter"] = 1
+    matrix.out.one["Dieter", "Heinz"] = 1
+    matrix.out.one["Dieter", "Klaus"] = 1
+
+    vertices = data.frame(
+        name = c("Klaus", "Tobias"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Klaus"),
+        to = c("Tobias")
+        )
+    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.two = sort(c("Klaus", "Tobias"))
+
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.two), length(authors.in.two)),
+                                            repr = "T")
+    rownames(matrix.out.two) = authors.in.two
+    colnames(matrix.out.two) = authors.in.two
+
+    # order these statements so that the second arguments are ordered alphabetically 
+    # or use the helper function as used below
+    matrix.out.two["Tobias", "Klaus"] = 1
+    matrix.out.two["Klaus", "Tobias"] = 1
+    
+    ## Act
+    result = get.expanded.adjacency.matrices(networks = list(network.in.one, network.in.two))
+    
+    ## Assert
+    expect_equal(list(matrix.out.one, matrix.out.two), result)
+})
