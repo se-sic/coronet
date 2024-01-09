@@ -229,16 +229,30 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 }
 
 #' Converts a list of adjacency matrices to an array.
+#' Expects matrices of equal dimension with equal colomn- and rownames.
 #'
 #' @param adjacency.list the list of adjacency matrices
 #'
 #' @return the converted array
 convert.adjacency.matrix.list.to.array = function(adjacency.list){
 
+    ## Check if all matrices have equal colomn- and rownames
+    rownames = rownames(adjacency.list[[1]])
+    colnames = colnames(adjacency.list[[1]])
+    
+    if (length(adjacency.list) > 1) {
+        for(i in 2 : length(adjacency.list)) {
+            if (!identical(rownames, rownames(adjacency.list[[i]])) || !identical(colnames, colnames(adjacency.list[[i]]))) {
+                warning.string = sprintf("The matrix at position %d has a different col or rownames from the first!", i)
+                warning(warning.string)
+            }
+        }
+    }
+
     ## create a 3-dimensional array representing the adjacency matrices (SIENA data format) as result
     array = array(data = 0, dim = c(nrow(adjacency.list[[1]]), nrow(adjacency.list[[1]]), length(adjacency.list)))
-    rownames(array) = rownames(adjacency.list[[1]])
-    colnames(array) = colnames(adjacency.list[[1]])
+    rownames(array) = rownames
+    colnames(array) = colnames
 
     ## copy the activity values from the adjacency matrices in the list to the corresponding array slices
     for (i in seq_along(adjacency.list)) {
