@@ -208,16 +208,17 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
             matrices.cumulated[[m]] = matrices.cumulated[[m - 1]] + matrices[[m]]
             rownames(matrices.cumulated[[m]]) = rownames(matrices.cumulated[[m - 1]])
             colnames(matrices.cumulated[[m]]) = colnames(matrices.cumulated[[m - 1]])
-
+            
             if (!weighted) {
 
                 ## search for a non-zero entry and set them to an arbitray number (e.g., 42)
                 ## to force that all non-zero entries are correctly set to 1 afterwards
-                not.zero.idxs = which(matrices.cumulated[[m]] >= 1, arr.ind = TRUE)
-                if (nrow(not.zero.idxs) > 0) {
-                    first.not.zero.idx = not.zero.idxs[1, ]
-                    names(first.not.zero.idx) = c("row", "col")
-                    matrices.cumulated[[m]][first.not.zero.idx[["row"]], first.not.zero.idx[["col"]]] = 42
+                if(length(matrices.cumulated[[m]]@i) > 0) {
+                
+                    row = matrices.cumulated[[m]]@i[[1]] + 1
+                    col = matrices.cumulated[[m]]@j[[1]] + 1
+
+                    matrices.cumulated[[m]][row][col] = 42
                     matrices.cumulated[[m]]@x = rep(1, length(matrices.cumulated[[m]]@i))
                 }
             }
