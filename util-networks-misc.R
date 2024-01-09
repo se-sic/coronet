@@ -215,8 +215,8 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
                 ## to force that all non-zero entries are correctly set to 1 afterwards
                 if(length(matrices.cumulated[[m]]@i) > 0) {
                 
-                    row = matrices.cumulated[[m]]@i[1]
-                    col = matrices.cumulated[[m]]@j[1]
+                    row = matrices.cumulated[[m]]@i[[1]] + 1
+                    col = matrices.cumulated[[m]]@j[[1]] + 1
 
                     matrices.cumulated[[m]][row][col] = 42
                     matrices.cumulated[[m]]@x = rep(1, length(matrices.cumulated[[m]]@i))
