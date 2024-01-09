@@ -133,3 +133,20 @@ compare.networks = function(network.expected, network.actual) {
     expect_identical(expected.edges, actual.edges, info = "network edges")
     expect_identical(expected.vertices, actual.vertices, info = "network vertices")
 }
+
+#' Compare two sparse matrices
+#' 
+#' @param matrix.expected the expected matrix
+#' @param matrix.actual the actual matrix
+compare.sparse.matrices = function(matrix.expected, matrix.actual) {
+    # check if colnames and rownames are equal
+    expect_equal(colnames(matrix.expected), colnames(matrix.actual))
+    expect_equal(rownames(matrix.expected), rownames(matrix.actual))
+    # check if matrices have the same size
+    expected.size = length(matrix.expected)
+    expect_equal(expected.size, length(matrix.actual))
+    # check if contents are the same
+    for(i in 1 : expected.size) {
+        expect_equal(matrix.expected[i], matrix.actual[i])
+    }
+}
