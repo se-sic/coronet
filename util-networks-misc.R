@@ -135,13 +135,22 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
             ## get the weighted adjacency matrix for the current network
             matrix.data = igraph::get.adjacency(network, attr = "weight")
         } else {
-            ## get the unweighted adjacency matrix for the current network
+            ## get the unweighted sparse adjacency matrix for the current network
             matrix.data = igraph::get.adjacency(network)
         }
-
-        ## order the adjacency matrix
+        
+        network.authors.num = nrow(matrix.data)
+        ## order the adjacency matrix and filter out authors that were not in authors list
         if (nrow(matrix.data) > 1) { # for a 1x1 matrix ordering does not work
-            matrix.data = matrix.data[order(rownames(matrix.data)), order(colnames(matrix.data))]
+            matrix.data = matrix.data[order((rownames(matrix.data)[rownames(matrix.data) %in% authors])), 
+                            order((rownames(matrix.data)[rownames(matrix.data) %in% authors]))]
+        }
+
+        if(network.authors.num > nrow(matrix.data)) { 
+            # write a warning with the number of authors from the network that we ignore
+            warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
+                                        network.authors.num - nrow(matrix.data))
+            warning(warning.string)
         }
 
         ## save the activity data per author
