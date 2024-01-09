@@ -737,3 +737,139 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     compare.sparse.matrices(matrix.out.one, result[[1]])
     compare.sparse.matrices(matrix.out.two, result[[2]])
 })
+
+test_that("getting cumulative sums of adjacency matrices generated from networks, 
+                    two networks, then convert to array", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Heinz", "Dieter", "Dieter"),
+        to = c("Dieter", "Klaus", "Heinz")
+        )
+    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.one), length(authors.in.one)),
+                                            repr = "T")
+    rownames(matrix.out.one) = authors.in.one
+    colnames(matrix.out.one) = authors.in.one
+
+    matrix.out.one["Heinz", "Dieter"] = 1
+    matrix.out.one["Klaus", "Dieter"] = 1
+    matrix.out.one["Dieter", "Heinz"] = 1
+    matrix.out.one["Dieter", "Klaus"] = 1
+
+    edges = data.frame(
+        from = c("Klaus"),
+        to = c("Dieter")
+        )
+    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.two), length(authors.in.two)),
+                                            repr = "T")
+    rownames(matrix.out.two) = authors.in.two
+    colnames(matrix.out.two) = authors.in.two
+
+    matrix.out.two["Heinz", "Dieter"] = 1
+    matrix.out.two["Klaus", "Dieter"] = 1
+    matrix.out.two["Dieter", "Heinz"] = 1
+    matrix.out.two["Dieter", "Klaus"] = 1
+
+    expected.array = array(data = 0, dim = c(3, 3, 2))
+    rownames(expected.array) = authors.in.one
+    colnames(expected.array) = authors.in.one
+
+    expected.array[1, 2, 1] = 1
+    expected.array[1, 3, 1] = 1
+    expected.array[2, 1, 1] = 1
+    expected.array[3, 1, 1] = 1
+
+    expected.array[1, 2, 2] = 1
+    expected.array[1, 3, 2] = 1
+    expected.array[2, 1, 2] = 1
+    expected.array[3, 1, 2] = 1
+
+    ## Act
+    result.adjacency = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two))
+    result.array = convert.adjacency.matrix.list.to.array(result.adjacency)
+    
+    ## Assert
+    expect_equal(expected.array, result.array)
+})
+
+test_that("getting cumulative sums of adjacency matrices generated from networks, 
+                    two networks, weighted, then convert to array", {
+
+    ## Arrange
+    vertices = data.frame(
+        name = c("Heinz", "Dieter", "Klaus"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Heinz", "Dieter", "Dieter"),
+        to = c("Dieter", "Klaus", "Heinz"),
+        weight = c(1, 2, 1)
+        )
+    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.one), length(authors.in.one)),
+                                            repr = "T")
+    rownames(matrix.out.one) = authors.in.one
+    colnames(matrix.out.one) = authors.in.one
+
+    matrix.out.one["Heinz", "Dieter"] = 2
+    matrix.out.one["Klaus", "Dieter"] = 2
+    matrix.out.one["Dieter", "Heinz"] = 2
+    matrix.out.one["Dieter", "Klaus"] = 2
+
+    edges = data.frame(
+        from = c("Klaus"),
+        to = c("Dieter"),
+        weight = c(1)
+        )
+    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
+
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
+                                            dims = c(length(authors.in.two), length(authors.in.two)),
+                                            repr = "T")
+    rownames(matrix.out.two) = authors.in.two
+    colnames(matrix.out.two) = authors.in.two
+    
+    matrix.out.two["Heinz", "Dieter"] = 2
+    matrix.out.two["Klaus", "Dieter"] = 3
+    matrix.out.two["Dieter", "Heinz"] = 2
+    matrix.out.two["Dieter", "Klaus"] = 3
+
+    expected.array = array(data = 0, dim = c(3, 3, 2))
+    rownames(expected.array) = authors.in.one
+    colnames(expected.array) = authors.in.one
+
+    expected.array[1, 2, 1] = 2
+    expected.array[1, 3, 1] = 2
+    expected.array[2, 1, 1] = 2
+    expected.array[3, 1, 1] = 2
+
+    expected.array[1, 2, 2] = 2
+    expected.array[1, 3, 2] = 3
+    expected.array[2, 1, 2] = 2
+    expected.array[3, 1, 2] = 3
+
+    ## Act
+    result.adjacency = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two), weighted = TRUE)
+    result.array = convert.adjacency.matrix.list.to.array(result.adjacency)
+    
+    ## Assert
+    expect_equal(expected.array, result.array)
+})
