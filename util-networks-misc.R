@@ -71,22 +71,22 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
 #'                    or any combination of them [default: c("commits", "mails", "issues")]
 #' @param globally decides if all author names are in one list or in separate for each network [default: TRUE]
 #'
-#' @return the list of author names
+#' @return the list of author names as a list of vectors
 get.author.names.from.data = function(data.ranges, data.sources = c("commits", "mails", "issues"), globally = TRUE) {
 
     data.sources = match.arg.or.default(data.sources, several.ok = TRUE)
 
     ## for each range, get the authors who have been active on at least one data source in this range
     active.authors.list = lapply(data.ranges, function(range.data) {
-
+        
         active.authors = range.data$get.authors.by.data.source(data.sources)
-
-        active.authors.names = active.authors[["author.name"]]
+    
+        active.authors.names = sort(active.authors[["author.name"]])
 
         return(active.authors.names)
 
     })
-
+    
     if (globally) {
         ## flatten the list of lists to one list of authors
         active.authors = unlist(active.authors.list, recursive = FALSE)
@@ -97,7 +97,8 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
         ## remove duplicates and order alphabetically ascending
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
-        return(active.authors)
+        ## return as a list
+        return(list(active.authors))
     } else {
         return(active.authors.list)
     }
