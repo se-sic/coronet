@@ -11,12 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
-## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
-## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
