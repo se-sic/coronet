@@ -56,8 +56,7 @@ FourthOrderTensor = R6::R6Class("FourthOrderTensor",
         build.tensor.from.networks = function(networks, weighted = FALSE) {
 
             ## get adjacency matrices from networks
-            adjacency.matrices = parallel::mclapply(networks, get.expanded.adjacency, private$authors, weighted)
-
+            adjacency.matrices = get.expanded.adjacency.matrices(networks, weighted)
             ## create an array with the size of the fourth-order tensor that only contains zeros
             array = array(0, dim = private$dim)
 
@@ -93,7 +92,7 @@ FourthOrderTensor = R6::R6Class("FourthOrderTensor",
         initialize = function(networks, weighted = FALSE) {
 
             private$relations = names(networks)
-            private$authors = get.author.names.from.networks(networks)
+            private$authors = get.author.names.from.networks(networks)[[1]]
             private$dim = c(length(private$authors), length(private$relations), length(private$authors), length(private$relations))
             private$tensor = private$build.tensor.from.networks(networks, weighted)
 
