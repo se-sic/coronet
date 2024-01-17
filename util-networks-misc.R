@@ -237,6 +237,10 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 #' @return the converted array
 convert.adjacency.matrix.list.to.array = function(adjacency.list){
 
+    if (length(adjacency.list) < 1) {
+        logging::logerror("The method convert.adjacency.matrix.list.to.array received an empty list!")
+        stop("The method convert.adjacency.matrix.list.to.array received an empty list!")
+    }
     ## Check if all matrices have equal colomn- and rownames
     rownames = rownames(adjacency.list[[1]])
     colnames = colnames(adjacency.list[[1]])
@@ -244,12 +248,13 @@ convert.adjacency.matrix.list.to.array = function(adjacency.list){
     if (length(adjacency.list) > 1) {
         for(i in 2 : length(adjacency.list)) {
             if (!identical(rownames, rownames(adjacency.list[[i]])) || !identical(colnames, colnames(adjacency.list[[i]]))) {
-                warning.string = sprintf("The matrix at position %d has a different col or rownames from the first!", i)
-                warning(warning.string)
+                error.string = sprintf("The matrix at position %d has a different col or rownames from the first!", i)
+                logging::logerror(error.string)
+                stop(error.string)
             }
         }
     }
-
+    
     ## create a 3-dimensional array representing the adjacency matrices (SIENA data format) as result
     array = array(data = 0, dim = c(nrow(adjacency.list[[1]]), nrow(adjacency.list[[1]]), length(adjacency.list)))
     rownames(array) = rownames
