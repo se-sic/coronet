@@ -8,12 +8,16 @@
 
 - Add issue-based artifact-networks (PR #244, 98a93ee721a293410623aafe46890cfba9d81e72, 771bcc8d961d419b53a1e891e9dc536371f1143b)
 - Add a new `split.data.by.bins` function (not to be confused with a previously existing function that had the same name and was renamed in this context), which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+- Add new `compare.sparse.matrices` function to compare two sparse matrices for equality for testing purposes (PR #248, 9784cdf12d1497ee122e2ae73b768b8c334210d4)
+- Add tests for file `util-networks.misc.R` (PR #248, f3202a6f96723d11c170346556d036cf087521c8, 030574b9d0f3435db4032d0e195a3d407fb7244b, 380b02234275127297fcd508772c69db21c216de, 8b803c50d60fc593e4e527a08fd4c2068d801a48, 7335c3dd4d0302b024a66d18701d9800ed3fe806, 6b600df04bec1fe70c272604f274ec5309840e65)
 
 ### Changed/Improved
 
 - Enhance testing data by adding `add_link` and `referenced_by` issue events which connect issues to form edges in issue-based artifact-networks (PR #244, 9f840c040d552e8639aa82c3dd537c189679b348, ea4fe8d3c84f948af6147cf0137e80181ebb7a1e)
 - Add input validation for the `bins` parameter in `split.data.time.based` and `split.data.by.bins` (PR #244, ed0a5302ea8c8934d7200b95be7ac1446305af07, 5e5ecbac44d07927b953ae9d4330a616f8224ba7)
 - Rename `split.data.by.bins` into `split.dataframe.by.bins` as this it what it does (PR #244, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+- Enhance `get.author.names.from.network` and `get.author.names.from.data` to always have the same output format, not depending on the `global` flag (PR #248, d87d32564156f13c83ebe3361c2b68e5d0ac16ac, ddbfe68d3e628e82f34e09b36fffe886646986c5)
+- Changed `util-tensor.R` to correctly use `get.author.names.from.network` function
 
 ### Fixed
 
@@ -21,6 +25,10 @@
 - Fix an issue in activity-based splitting where elements close to the border of bins might be assigned to the wrong bin. The issue was caused by the usage of `split.data.time.based` inside `split.data.activity.based` to split data into the previously derived bins, when elements close to bin borders share the same timestamps. It is fixed by replacing `split.data.time.based` by `split.data.by.bins` (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698)
 - Remove the last range when using a sliding-window approach and the last range's elements are fully contained in the second last range (PR #244, 48ef4fa685adf6e5d85281e5b90a8ed8f6aeb197)
 - Rename vertex attribute `IssueEvent` to `Issue` in multi-networks, to be consistent with bipartite-networks (PR #244, 26d7b7e9fd6d33d1c0a8a08f19c5c2e30346a3d9)
+- Fix `get.expanded.adjacency` to work if provided author list does not contain all authors from network and add a warning when that happens because it causes some authors from the network to be lost in the resulting matrix (PR #248, ff59017e114b10812dcfb1704a19e01fc1586a13)
+- Fix `get.expanded.adjacency.matrices` to have correct names for the columns and rows (PR #248, e72eff864a1cb1a4aecd430e450d4a6a5044fdf2)
+- Fix `get.expanded.adjacency.cumulated` so that it works if `weighted` parameter is set to `FALSE` (PR #248, 2fb9a5d446653f6aee808cbfc87c2dafeb9a749a)
+- Fix `convert.adjacency.matrix.list.to.array` to throw an error if the function is called with wrong parameters (PR #248, ece2d38b4972745af3a83e06f32317a06465a345, 1a3e510df15f5fa4e920e9fce3e0e162c27cd6d1)
 
 
 ## 4.3
