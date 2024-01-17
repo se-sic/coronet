@@ -147,7 +147,7 @@ assert.sparse.matrices.equal = function(matrix.expected, matrix.actual) {
     expected.size = length(matrix.expected)
     expect_equal(expected.size, length(matrix.actual))
     # check if contents are the same
-    for(i in 1 : expected.size) {
+    for (i in seq_len(expected.size)) {
         expect_equal(matrix.expected[i], matrix.actual[i])
     }
 }

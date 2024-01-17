@@ -37,9 +37,9 @@ requireNamespace("Matrix") # for sparse matrices
 #' @param networks the list of networks from which the author names are wanted
 #' @param globally decides if all author names are in one list or in separate lists for each network [default: TRUE]
 #'
-#' @return the list of author names as a list of vectors
+#' @return the list of author names as a list of sorted vectors
 get.author.names.from.networks = function(networks, globally = TRUE) {
-    
+
     ## for each network, get a list of authors that are in this network
     active.authors.list = lapply(networks, function(network) {
         active.authors = igraph::V(network)$name
@@ -50,7 +50,7 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
     if (globally) {
         ## flatten the list of lists to one list of authors
         active.authors = unlist(active.authors.list, recursive = FALSE)
-        
+
         ## remove distracting named list members
         names(active.authors) = NULL
 
@@ -72,22 +72,22 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
 #'                    or any combination of them [default: c("commits", "mails", "issues")]
 #' @param globally decides if all author names are in one list or in separate for each network [default: TRUE]
 #'
-#' @return the list of author names as a list of vectors
+#' @return the list of author names as a list of sorted vectors
 get.author.names.from.data = function(data.ranges, data.sources = c("commits", "mails", "issues"), globally = TRUE) {
 
     data.sources = match.arg.or.default(data.sources, several.ok = TRUE)
 
     ## for each range, get the authors who have been active on at least one data source in this range
     active.authors.list = lapply(data.ranges, function(range.data) {
-        
+
         active.authors = range.data$get.authors.by.data.source(data.sources)
-    
+
         active.authors.names = sort(active.authors[["author.name"]])
 
         return(active.authors.names)
 
     })
-    
+
     if (globally) {
         ## flatten the list of lists to one list of authors
         active.authors = unlist(active.authors.list, recursive = FALSE)
@@ -144,13 +144,13 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
         ## order the adjacency matrix and filter out authors that were not in authors list
         if (nrow(matrix.data) > 1) { # for a 1x1 matrix ordering does not work
             matrix.data = matrix.data[order((rownames(matrix.data)[rownames(matrix.data) %in% authors])), 
-                            order((rownames(matrix.data)[rownames(matrix.data) %in% authors]))]
+                                      order((rownames(matrix.data)[rownames(matrix.data) %in% authors]))]
         }
 
-        if(network.authors.num > nrow(matrix.data)) { 
+        if (network.authors.num > nrow(matrix.data)) { 
             # write a warning with the number of authors from the network that we ignore
             warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
-                                        network.authors.num - nrow(matrix.data))
+                                     network.authors.num - nrow(matrix.data))
             warning(warning.string)
         }
 
@@ -179,9 +179,8 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 get.expanded.adjacency.matrices = function(networks, weighted = FALSE){
 
     adjacency.matrices = parallel::mclapply(networks, function(network) {
-        active.authors = igraph::V(network)$name
-        active.authors = sort(active.authors)
-        return (get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
+        active.authors = sort(igraph::V(network)$name)
+        return(get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
     })
 
     return(adjacency.matrices)
@@ -209,13 +208,16 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
             matrices.cumulated[[m]] = matrices.cumulated[[m - 1]] + matrices[[m]]
             rownames(matrices.cumulated[[m]]) = rownames(matrices.cumulated[[m - 1]])
             colnames(matrices.cumulated[[m]]) = colnames(matrices.cumulated[[m - 1]])
-            
+
             if (!weighted) {
 
                 ## search for a non-zero entry and set them to an arbitray number (e.g., 42)
                 ## to force that all non-zero entries are correctly set to 1 afterwards
-                if(length(matrices.cumulated[[m]]@i) > 0) {
+                if (length(matrices.cumulated[[m]]@i) > 0) {
                 
+                    ## the first non-zero entry of a sparse matrix is at the first position pointed to by
+                    ## the lists @i and @j of the matrix. Since these lists store the position 0-based,
+                    ## but the list access we use them for is 1-based, we need to add 1 to both values.
                     row = matrices.cumulated[[m]]@i[[1]] + 1
                     col = matrices.cumulated[[m]]@j[[1]] + 1
 
@@ -230,7 +232,7 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 }
 
 #' Converts a list of adjacency matrices to an array.
-#' Expects matrices of equal dimension with equal colomn- and rownames.
+#' Expects matrices of equal dimension with equal column- and rownames.
 #'
 #' @param adjacency.list the list of adjacency matrices
 #'
@@ -238,17 +240,17 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 convert.adjacency.matrix.list.to.array = function(adjacency.list){
 
     if (length(adjacency.list) < 1) {
-        logging::logerror("The method convert.adjacency.matrix.list.to.array received an empty list!")
-        stop("The method convert.adjacency.matrix.list.to.array received an empty list!")
+        logging::logerror("The method 'convert.adjacency.matrix.list.to.array received' an empty list!")
+        stop("The method 'convert.adjacency.matrix.list.to.array' received an empty list!")
     }
-    ## Check if all matrices have equal colomn- and rownames
+    ## Check if all matrices have equal column- and rownames
     rownames = rownames(adjacency.list[[1]])
     colnames = colnames(adjacency.list[[1]])
-    
+
     if (length(adjacency.list) > 1) {
-        for(i in 2 : length(adjacency.list)) {
+        for (i in 2:length(adjacency.list)) {
             if (!identical(rownames, rownames(adjacency.list[[i]])) || !identical(colnames, colnames(adjacency.list[[i]]))) {
-                error.string = sprintf("The matrix at position %d has a different col or rownames from the first!", i)
+                error.string = sprintf("The matrix at position %d has different col or rownames from the first!", i)
                 logging::logerror(error.string)
                 stop(error.string)
             }

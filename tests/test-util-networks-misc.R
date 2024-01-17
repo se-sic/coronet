@@ -112,6 +112,7 @@ test_that("getting all authors of a list of networks, list length 2", {
         to = "Dieter"
         )
     second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
+
     ## Act
     result = get.author.names.from.networks(networks = list(first.network, second.network))
 
@@ -145,6 +146,7 @@ test_that("getting all authors of a list of networks, list length 2, not global"
         to = "Dieter"
         )
     second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
+    
     ## Act
     result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
 
@@ -177,7 +179,7 @@ test_that("getting all authors of a list of data ranges, list length 1", {
     
     ## Assert
     expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
-                    "Karl", "Olaf", "Thomas", "udo"))
+                      "Karl", "Olaf", "Thomas", "udo"))
     
     expect_equal(expected, result)
 })
@@ -194,7 +196,7 @@ test_that("getting all authors of a list of data ranges, list length 1, not glob
     
     ## Assert
     expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
-                    "Karl", "Olaf", "Thomas", "udo"))
+                      "Karl", "Olaf", "Thomas", "udo"))
     
     expect_equal(expected, result)
 })
@@ -265,7 +267,7 @@ test_that("getting all authors of a list of data ranges by data source 'issues',
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), 
-                                                            data.sources = "issues", globally = FALSE)
+                                                           data.sources = "issues", globally = FALSE)
     
     ## Assert
     expected = list(c("Björn", "Karl", "Olaf", "Thomas"), c("Björn","Karl", "Max", "Olaf", "Thomas"))
@@ -283,7 +285,7 @@ test_that("getting all authors of a list of data ranges by data source 'commits'
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), 
-                                                            data.sources = "commits", globally = FALSE)
+                                                           data.sources = "commits", globally = FALSE)
     
     ## Assert
     
@@ -307,9 +309,8 @@ test_that("getting a sparse adjacency matrix for a network, single edge, matchin
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Heinz", "Dieter", "Klaus")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
     
@@ -340,9 +341,8 @@ test_that("getting a sparse adjacency matrix for a network, single edge, fewer a
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Dieter", "Heinz")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -350,7 +350,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, fewer a
     matrix.out["Dieter", "Heinz"] = 1
     
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
     
     ## Assert
     
@@ -373,9 +373,8 @@ test_that("getting a sparse adjacency matrix for a network, single edge, more au
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz", "Klaus")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -406,9 +405,8 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no matc
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -439,9 +437,8 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no over
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
     
@@ -469,9 +466,8 @@ test_that("getting a sparse adjacency matrix for a network, two edges, more auth
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Klaus", "Gerhardt", "Bob", "Dieter", "Heinz")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -506,9 +502,8 @@ test_that("getting a sparse adjacency matrix for a network, three edges, more au
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Klaus", "Gerhardt", "Bob", "Dieter", "Heinz")
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -549,9 +544,8 @@ test_that("getting a sparse adjacency matrix per network, one network", {
     network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in), length(authors.in)),
-                                            repr = "T")
+    matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
+                                      length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
 
@@ -584,9 +578,8 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
     network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.one), length(authors.in.one)),
-                                            repr = "T")
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
+                                          length(authors.in.one)), repr = "T")
     rownames(matrix.out.one) = authors.in.one
     colnames(matrix.out.one) = authors.in.one
 
@@ -609,9 +602,8 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
     network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Klaus", "Tobias"))
 
-    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.two), length(authors.in.two)),
-                                            repr = "T")
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
+                                          length(authors.in.two)), repr = "T")
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
 
@@ -642,9 +634,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.one), length(authors.in.one)),
-                                            repr = "T")
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
+                                          length(authors.in.one)), repr = "T")
     rownames(matrix.out.one) = authors.in.one
     colnames(matrix.out.one) = authors.in.one
 
@@ -660,9 +651,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.two), length(authors.in.two)),
-                                            repr = "T")
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
+                                          length(authors.in.two)), repr = "T")
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
 
@@ -695,9 +685,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.one), length(authors.in.one)),
-                                            repr = "T")
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
+                                          length(authors.in.one)), repr = "T")
     rownames(matrix.out.one) = authors.in.one
     colnames(matrix.out.one) = authors.in.one
 
@@ -714,9 +703,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
 
-    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, 
-                                            dims = c(length(authors.in.two), length(authors.in.two)),
-                                            repr = "T")
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
+                                          length(authors.in.two)), repr = "T")
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
     
@@ -734,7 +722,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
 })
 
 test_that("getting cumulative sums of adjacency matrices generated from networks, 
-                    two networks, then convert to array", {
+          two networks, then convert to array", {
 
     ## Arrange
     vertices = data.frame(
@@ -778,7 +766,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
 })
 
 test_that("getting cumulative sums of adjacency matrices generated from networks, 
-                    two networks, weighted, then convert to array", {
+          two networks, weighted, then convert to array", {
 
     ## Arrange
     vertices = data.frame(
