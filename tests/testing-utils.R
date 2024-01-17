@@ -118,11 +118,11 @@ remove.row.names.from.inner.list.of.dfs = function(list.of.lists.of.dfs) {
     return(lapply(list.of.lists.of.dfs, remove.row.names.from.data))
 }
 
-#' Compare edges and vertices of two networks
+#' Assert that two networks are equal. Used for testing purposes.
 #'
 #' @param network.expected the expected network
 #' @param network.actual the actual network
-compare.networks = function(network.expected, network.actual) {
+assert.networks.equal = function(network.expected, network.actual) {
     ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
     # expect_true(igraph::identical_graphs(network.expected, network.actual))
     expected.edges = igraph::as_data_frame(network.expected, what = "edges")
@@ -135,11 +135,11 @@ compare.networks = function(network.expected, network.actual) {
     expect_identical(expected.vertices, actual.vertices, info = "network vertices")
 }
 
-#' Compare two sparse matrices
+#' Assert that two sparse matrices are equal. Used for testing purposes.
 #' 
 #' @param matrix.expected the expected matrix
 #' @param matrix.actual the actual matrix
-compare.sparse.matrices = function(matrix.expected, matrix.actual) {
+assert.sparse.matrices.equal = function(matrix.expected, matrix.actual) {
     # check if colnames and rownames are equal
     expect_equal(colnames(matrix.expected), colnames(matrix.actual))
     expect_equal(rownames(matrix.expected), rownames(matrix.actual))

@@ -675,8 +675,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two))
     
     ## Assert
-    compare.sparse.matrices(matrix.out.one, result[[1]])
-    compare.sparse.matrices(matrix.out.two, result[[2]])
+    assert.sparse.matrices.equal(matrix.out.one, result[[1]])
+    assert.sparse.matrices.equal(matrix.out.two, result[[2]])
 })
 
 test_that("getting cumulative sums of adjacency matrices generated from networks, two networks, weighted", {
@@ -729,8 +729,8 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two), weighted = TRUE)
     
     ## Assert
-    compare.sparse.matrices(matrix.out.one, result[[1]])
-    compare.sparse.matrices(matrix.out.two, result[[2]])
+    assert.sparse.matrices.equal(matrix.out.one, result[[1]])
+    assert.sparse.matrices.equal(matrix.out.two, result[[2]])
 })
 
 test_that("getting cumulative sums of adjacency matrices generated from networks, 
