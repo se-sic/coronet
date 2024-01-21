@@ -307,7 +307,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## will be a sliding range (which started at the half of the last regular range) which
         ## contains only items also included in the last regular range, which makes the sliding
         ## range obsolete.
-        if ((items.unique.count %% activity.amount) > offset.start) {
+        length.of.last.range = items.unique.count %% activity.amount
+        if (length.of.last.range > offset.start || length.of.last.range == 0) {
             cf.data.sliding = cf.data.sliding[-length(cf.data.sliding)]
             bins.date.middle = bins.date.middle[-length(bins.date.middle)]
         } else {
@@ -721,16 +722,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
         ## offsets used for cropping (half the first/last bin)
         offset.start = floor(number.edges / 2)
-        offset.end = (edge.count - offset.start) %% number.edges
-        ## cut the data appropriately
-        if (offset.end > 0) {
-            edges.cut = c(
-                edges.by.date[seq_len(offset.start)],
-                edges.by.date[seq(from = (edge.count - offset.end + 1), to = edge.count)]
-            )
-        } else {
-            edges.cut = edges.by.date[seq_len(offset.start)]
-        }
+        edges.cut = edges.by.date[seq_len(offset.start)]
 
         ## delete edges from the network and create a new network
         network.cut = igraph::delete.edges(network, igraph::E(network)[edges.cut])
@@ -739,33 +731,41 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges,
                                                         sliding.window = FALSE)
 
-        ## append data to normally-split data
-        networks = append(networks, networks.sliding)
-
         ## compute bins for sliding windows: pairwise middle between dates
         bins.date.middle = attr(networks.sliding, "bins")
 
-        ## sort data object properly by bin starts
-        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
-        networks = networks[ order(bins.ranges.start) ]
-
-        ## construct proper bin vectors for configuration
-        bins.date = sort(c(bins.date, bins.date.middle))
-
-        ## if the last regular range and the last sliding-window range end at the same time
-        ## and the latter contains the former's edges, then:
-        ## remove the last regular range as it is not complete and we don't loose data when removing it
-        edges.last.regular = igraph::E(networks[[length(networks)]])
-        edges.last.sliding = igraph::E(networks[[length(networks) - 1]])
-        if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
-            && all(edges.last.regular %in% edges.last.sliding)
-            && table(edges.last.regular$date) %in% table(edges.last.sliding$date) ) {
-
+        ## Both, the last sliding network and the last regular network end at the very last edge.
+        ## This is the case because the end of the edges is never cropped (like the beginning is).
+        ## Both split.network.activity.based, and split.network.by.bins, which are invoked to obtain
+        ## the two set of networks, creates networks until all edges are contained.
+        ##
+        ## The conditional below inspects whether the very last edge is in the first or the second
+        ## half of the last regular network. If it is in the first half, there will be a sliding
+        ## network which covers all edges of the last regular network which makes the last regular
+        ## network obsolete.
+        ## Similarely if the last edge is in the second half of the last regular network, there
+        ## will be a sliding network (which started at the half of the last regular network) which
+        ## contains only edges also included in the last regular network, which makes the sliding
+        ## network obsolete.
+        length.of.last.range = edge.count %% number.edges
+        if (length.of.last.range > offset.start || length.of.last.range == 0) {
+            networks.sliding = networks.sliding[-length(networks.sliding)]
+            bins.date.middle = bins.date.middle[-length(bins.date.middle)]
+        } else {
             networks = networks[-length(networks)]
             bins.date = bins.date[-length(bins.date)]
             bins = bins[-length(bins)]
         }
 
+        ## append sliding networks to normally-split networks
+        networks = append(networks, networks.sliding)
+
+        ## sort networks properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        networks = networks[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
     }
 
     ## set bin attribute

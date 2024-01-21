@@ -162,7 +162,7 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
         "2016-07-12 16:05:41-2016-07-12 16:06:10" = igraph::subgraph.edges(author.net, c(3, 5)),
         "2016-07-12 16:05:41-2016-07-12 16:06:10" = igraph::subgraph.edges(author.net, c(5, 4)),
         "2016-07-12 16:06:10-2016-07-12 16:06:32" = igraph::subgraph.edges(author.net, c(4, 7)),
-        "2016-07-12 16:06:10-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(7, 6)),
+        "2016-07-12 16:06:10-2016-07-12 16:06:32" = igraph::subgraph.edges(author.net, c(7, 6)),
         "2016-07-12 16:06:32-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(6, 8))
     )
     results = split.network.activity.based(author.net, number.edges = 2, sliding.window = TRUE)
