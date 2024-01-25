@@ -520,15 +520,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     ## if a match is found, remove 'add.link' and its corresponding referenced_by event
                     if (nrow(match) > 0) {
                         add.links = add.links[!(
-                            add.links$issue.id == add.link$issue.id &
-                            add.links$event.info.1 == add.link$event.info.1 &
-                            add.links$date == add.link$date &
+                            add.links$issue.id == match$issue.id &
+                            add.links$event.info.1 == match$event.info.1 &
+                            add.links$date == match$date &
                             add.links$author.name == add.link$author.name), ]
                         referenced.bys = referenced.bys[!(
-                            referenced.bys$issue.id == match$issue.id &
-                            referenced.bys$event.info.1 == match$event.info.1 &
-                            referenced.bys$date == match$date &
-                            referenced.bys$author.name == match$author.name), ]
+                            referenced.bys$issue.id == add.link$issue.id &
+                            referenced.bys$event.info.1 == add.link$event.info.1 &
+                            referenced.bys$date == add.link$date &
+                            referenced.bys$author.name == add.link$author.name), ]
                         matched = c(match, add.link)
                     }
                 }
