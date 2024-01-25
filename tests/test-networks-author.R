@@ -494,8 +494,8 @@ test_that("Network construction of the undirected author-issue network with all 
                                 rep("Olaf", 3), # <issue-github-4>
                                 rep("Thomas", 4), rep("Karl", 3), rep("Björn", 7), rep("Olaf", 3), rep("Thomas", 3), rep("Thomas", 7),
                                 rep("Thomas", 3), rep("Björn", 6), rep("Olaf", 2), rep("Olaf", 6), # <issue-github-6>
-                                rep("Thomas", 10), rep("Thomas", 7), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
-                                rep("Björn", 6), rep("Thomas", 4), rep("Thomas", 4) # <issue-jira-ZEPPELIN-332>
+                                rep("Thomas", 11), rep("Thomas", 8), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
+                                rep("Björn", 6), rep("Thomas", 5), rep("Thomas", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
                        to = c(rep("Olaf", 5), rep("Björn", 4), rep("Björn", 3), # <issue-github-1>
                               rep("Björn", 4), rep("Björn", 3), rep("Olaf", 3), # <issue-github-2>
@@ -503,8 +503,8 @@ test_that("Network construction of the undirected author-issue network with all 
                               rep("Björn", 3), # <issue-github-4>
                               rep("udo", 4), rep("udo", 3), rep("udo", 7), rep("udo", 3), rep("Karl", 3), rep("Björn", 7),
                               rep("Olaf", 3), rep("Karl", 6), rep("Karl", 2), rep("Björn", 6), # <issue-github-6>
-                              rep("Björn", 10), rep("Olaf", 7), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
-                              rep("Max", 6), rep("Björn", 4), rep("Max", 4) # <issue-jira-ZEPPELIN-332>
+                              rep("Björn", 11), rep("Olaf", 8), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
+                              rep("Max", 6), rep("Björn", 5), rep("Max", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
                        date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:59", # <issue-github-1>
                                                       "2016-07-12 16:01:01", "2016-07-14 13:37:00", "2016-07-12 15:59:25",
@@ -537,25 +537,26 @@ test_that("Network construction of the undirected author-issue network with all 
                                                       "2016-10-05 15:30:02", "2016-12-07 15:30:02", "2016-12-07 15:30:02",
                                                       "2017-05-23 12:32:39", "2017-05-23 12:31:34",
                                                       "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2017-05-21 12:00:00", # <issue-jira-ZEPPELIN-328>
-                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
-                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
-                                                      "2013-06-01 06:53:06", "2013-04-21 23:52:09", "2013-04-21 23:52:09",
-                                                      "2017-05-21 12:00:00", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
-                                                      "2013-05-25 06:22:23", "2013-06-01 06:50:26", "2013-05-05 21:46:30",
-                                                      "2013-05-05 21:49:21", "2013-05-05 21:49:34", "2013-05-06 01:04:34",
-                                                      "2013-05-25 03:48:41", "2013-05-25 04:08:07", "2013-06-01 06:53:06",
+                                                      "2017-05-21 12:00:00", "2013-05-05 21:46:30", "2013-05-05 21:49:21",
+                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
+                                                      "2013-05-25 04:08:07", "2013-06-01 06:53:06", "2013-04-21 23:52:09",
+                                                      "2013-04-21 23:52:09", "2017-05-21 12:00:00", "2017-05-21 12:00:00",
                                                       "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
-                                                      "2013-06-01 06:50:26",
+                                                      "2013-06-01 06:50:26", "2013-05-05 21:46:30", "2013-05-05 21:49:21",
+                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
+                                                      "2013-05-25 04:08:07", "2013-06-01 06:53:06", "2013-05-25 03:25:06",
+                                                      "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
                                                       "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-jira-ZEPPELIN-332>
                                                       "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52",
                                                       "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39",
-                                                      "2017-05-21 12:00:00", "2016-07-15 20:07:47", "2016-07-27 20:12:08",
-                                                      "2016-07-28 06:27:52", "2017-05-21 12:00:00"
+                                                      "2017-05-21 12:00:00", "2017-05-21 12:00:00", "2016-07-15 20:07:47",
+                                                      "2016-07-27 20:12:08", "2016-07-28 06:27:52", "2017-05-21 12:00:00",
+                                                      "2017-05-21 12:00:00"
                                                       )),
                        artifact.type = "IssueEvent",
                        issue.id = c(rep("<issue-github-1>", 12), rep("<issue-github-2>", 10), rep("<issue-github-3>", 18),
-                                    rep("<issue-github-4>", 3), rep("<issue-github-6>", 44), rep("<issue-jira-ZEPPELIN-328>", 28),
-                                    rep("<issue-jira-ZEPPELIN-332>", 14)),
+                                    rep("<issue-github-4>", 3), rep("<issue-github-6>", 44), rep("<issue-jira-ZEPPELIN-328>", 30),
+                                    rep("<issue-jira-ZEPPELIN-332>", 16)),
                        event.name = c("created", "commented", "state_updated", "commented", "state_updated", "created", # <issue-github-1>
                                       "commented", "state_updated", "commented", "commented", "state_updated", "commented",
                                       "created", "commented", "merged", "state_updated", "created", "commented", "referenced_by", # <issue-github-2>
@@ -570,12 +571,12 @@ test_that("Network construction of the undirected author-issue network with all 
                                       "subscribed", "mentioned", "subscribed", "commented", "commented", "add_link", "labeled", "referenced_by",
                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "referenced_by", "labeled",
                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "labeled",
-                                      "created", "commented", "referenced_by", "commented", "commented", "commented", "commented", # <issue-jira-ZEPPELIN-328>
-                                      "commented", "commented", "resolution_updated", "created", "commented", "referenced_by", "commented", "commented",
-                                      "commented", "commented", "commented", "commented", "commented", "commented", "commented",
+                                      "created", "commented", "referenced_by", "add_link", "commented", "commented", "commented", "commented", # <issue-jira-ZEPPELIN-328>
+                                      "commented", "commented", "resolution_updated", "created", "commented", "referenced_by", "add_link", "commented",
+                                      "commented", "commented", "commented", "commented", "commented", "commented", "commented", "commented",
                                       "commented", "resolution_updated", "commented", "commented", "commented", "commented",
                                       "created", "commented", "commented", "commented", "commented", "commented", "created", # <issue-jira-ZEPPELIN-332>
-                                      "commented", "commented", "add_link", "commented", "commented", "commented", "add_link"
+                                    "commented", "commented", "referenced_by", "add_link", "commented", "commented", "commented", "referenced_by", "add_link"
                                       ),
                        weight = 1,
                        type = TYPE.EDGES.INTRA,

@@ -117,17 +117,33 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>"),
-        to = c("<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-328>"),
+        from = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
+        to = c("<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-332>"),
         date = get.date.from.string(c("2016-08-07 15:30:00", "2016-08-07 15:37:02", "2017-05-21 12:00:00")),
         artifact.type = c("IssueEvent", "IssueEvent", "IssueEvent"),
-        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-332>"),
+        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
         event.name = c("add_link", "add_link", "add_link"),
         author.name = c("Thomas", "Karl", "Thomas"),
         weight = c(1, 1, 1),
         type = TYPE.EDGES.INTRA,
         relation = "issue"
     )
+
+    ## 3) when constructing directed networks, we cannot deduplicate jira edges
+    if (test.directed) {
+        edges = rbind(edges, data.frame(
+            from = "<issue-jira-ZEPPELIN-332>",
+            to = "<issue-jira-ZEPPELIN-328>",
+            date = get.date.from.string("2017-05-21 12:00:00"),
+            artifact.type = "IssueEvent",
+            issue.id = "<issue-jira-ZEPPELIN-332>",
+            event.name = "add_link",
+            author.name = "Thomas",
+            weight = 1,
+            type = TYPE.EDGES.INTRA,
+            relation = "issue"
+        ))
+    }
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
