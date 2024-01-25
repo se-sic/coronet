@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -117,11 +118,11 @@ remove.row.names.from.inner.list.of.dfs = function(list.of.lists.of.dfs) {
     return(lapply(list.of.lists.of.dfs, remove.row.names.from.data))
 }
 
-#' Compare edges and vertices of two networks
+#' Assert that two networks are equal. Used for testing purposes.
 #'
 #' @param network.expected the expected network
 #' @param network.actual the actual network
-compare.networks = function(network.expected, network.actual) {
+assert.networks.equal = function(network.expected, network.actual) {
     ## TODO  as soon as the bug in igraph is fixed switch to the expect_true function below
     # expect_true(igraph::identical_graphs(network.expected, network.actual))
     expected.edges = igraph::as_data_frame(network.expected, what = "edges")
@@ -132,4 +133,21 @@ compare.networks = function(network.expected, network.actual) {
 
     expect_identical(expected.edges, actual.edges, info = "network edges")
     expect_identical(expected.vertices, actual.vertices, info = "network vertices")
+}
+
+#' Assert that two sparse matrices are equal. Used for testing purposes.
+#' 
+#' @param matrix.expected the expected matrix
+#' @param matrix.actual the actual matrix
+assert.sparse.matrices.equal = function(matrix.expected, matrix.actual) {
+    # check if colnames and rownames are equal
+    expect_equal(colnames(matrix.expected), colnames(matrix.actual))
+    expect_equal(rownames(matrix.expected), rownames(matrix.actual))
+    # check if matrices have the same size
+    expected.size = length(matrix.expected)
+    expect_equal(expected.size, length(matrix.actual))
+    # check if contents are the same
+    for (i in seq_len(expected.size)) {
+        expect_equal(matrix.expected[i], matrix.actual[i])
+    }
 }

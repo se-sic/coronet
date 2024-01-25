@@ -16,6 +16,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -190,7 +191,7 @@ patrick::with_parameters_test_that("Network construction of an empty 'comments-o
     network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
     ## test
-    compare.networks(network.built, network.expected)
+    assert.networks.equal(network.built, network.expected)
 }, patrick::cases(
     "directed: FALSE" = list(test.directed = FALSE),
     "directed: TRUE" = list(test.directed = TRUE)

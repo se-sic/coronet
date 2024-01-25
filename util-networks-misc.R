@@ -18,6 +18,7 @@
 ## Copyright 2017 by Angelika Schmid <schmidang@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -36,12 +37,13 @@ requireNamespace("Matrix") # for sparse matrices
 #' @param networks the list of networks from which the author names are wanted
 #' @param globally decides if all author names are in one list or in separate lists for each network [default: TRUE]
 #'
-#' @return the list of author names
+#' @return the list of author names as a list of sorted vectors
 get.author.names.from.networks = function(networks, globally = TRUE) {
 
     ## for each network, get a list of authors that are in this network
     active.authors.list = lapply(networks, function(network) {
         active.authors = igraph::V(network)$name
+        active.authors = sort(active.authors)
         return(active.authors)
     })
 
@@ -55,7 +57,8 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
         ## remove duplicates and order alphabetically ascending
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
-        return(active.authors)
+        ## return as a list
+        return(list(active.authors))
     } else {
         return(active.authors.list)
     }
@@ -69,7 +72,7 @@ get.author.names.from.networks = function(networks, globally = TRUE) {
 #'                    or any combination of them [default: c("commits", "mails", "issues")]
 #' @param globally decides if all author names are in one list or in separate for each network [default: TRUE]
 #'
-#' @return the list of author names
+#' @return the list of author names as a list of sorted vectors
 get.author.names.from.data = function(data.ranges, data.sources = c("commits", "mails", "issues"), globally = TRUE) {
 
     data.sources = match.arg.or.default(data.sources, several.ok = TRUE)
@@ -79,7 +82,7 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
 
         active.authors = range.data$get.authors.by.data.source(data.sources)
 
-        active.authors.names = active.authors[["author.name"]]
+        active.authors.names = sort(active.authors[["author.name"]])
 
         return(active.authors.names)
 
@@ -95,7 +98,8 @@ get.author.names.from.data = function(data.ranges, data.sources = c("commits", "
         ## remove duplicates and order alphabetically ascending
         active.authors = active.authors[!duplicated(active.authors)]
         active.authors = sort(active.authors)
-        return(active.authors)
+        ## return as a list
+        return(list(active.authors))
     } else {
         return(active.authors.list)
     }
@@ -132,13 +136,22 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
             ## get the weighted adjacency matrix for the current network
             matrix.data = igraph::get.adjacency(network, attr = "weight")
         } else {
-            ## get the unweighted adjacency matrix for the current network
+            ## get the unweighted sparse adjacency matrix for the current network
             matrix.data = igraph::get.adjacency(network)
         }
-
-        ## order the adjacency matrix
+        
+        network.authors.num = nrow(matrix.data)
+        ## order the adjacency matrix and filter out authors that were not in authors list
         if (nrow(matrix.data) > 1) { # for a 1x1 matrix ordering does not work
-            matrix.data = matrix.data[order(rownames(matrix.data)), order(colnames(matrix.data))]
+            matrix.data = matrix.data[order((rownames(matrix.data)[rownames(matrix.data) %in% authors])), 
+                                      order((rownames(matrix.data)[rownames(matrix.data) %in% authors]))]
+        }
+
+        if (network.authors.num > nrow(matrix.data)) { 
+            # write a warning with the number of authors from the network that we ignore
+            warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
+                                     network.authors.num - nrow(matrix.data))
+            warning(warning.string)
         }
 
         ## save the activity data per author
@@ -165,9 +178,10 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 #' @return the list of adjacency matrices
 get.expanded.adjacency.matrices = function(networks, weighted = FALSE){
 
-    authors = get.author.names.from.networks(networks)
-
-    adjacency.matrices = parallel::mclapply(networks, get.expanded.adjacency, authors, weighted)
+    adjacency.matrices = parallel::mclapply(networks, function(network) {
+        active.authors = sort(igraph::V(network)$name)
+        return(get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
+    })
 
     return(adjacency.matrices)
 }
@@ -199,11 +213,15 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 
                 ## search for a non-zero entry and set them to an arbitray number (e.g., 42)
                 ## to force that all non-zero entries are correctly set to 1 afterwards
-                not.zero.idxs = which(matrices.cumulated[[m]] >= 1, arr.ind = TRUE)
-                if (nrow(not.zero.idxs) > 0) {
-                    first.not.zero.idx = not.zero.idxs[1, ]
-                    names(first.not.zero.idx) = c("row", "col")
-                    matrices.cumulated[[m]][first.not.zero.idx[["row"]], first.not.zero.idx[["col"]]] = 42
+                if (length(matrices.cumulated[[m]]@i) > 0) {
+                
+                    ## the first non-zero entry of a sparse matrix is at the first position pointed to by
+                    ## the lists @i and @j of the matrix. Since these lists store the position 0-based,
+                    ## but the list access we use them for is 1-based, we need to add 1 to both values.
+                    row = matrices.cumulated[[m]]@i[[1]] + 1
+                    col = matrices.cumulated[[m]]@j[[1]] + 1
+
+                    matrices.cumulated[[m]][row][col] = 42
                     matrices.cumulated[[m]]@x = rep(1, length(matrices.cumulated[[m]]@i))
                 }
             }
@@ -214,16 +232,35 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
 }
 
 #' Converts a list of adjacency matrices to an array.
+#' Expects matrices of equal dimension with equal column- and rownames.
 #'
 #' @param adjacency.list the list of adjacency matrices
 #'
 #' @return the converted array
 convert.adjacency.matrix.list.to.array = function(adjacency.list){
 
+    if (length(adjacency.list) < 1) {
+        logging::logerror("The method 'convert.adjacency.matrix.list.to.array received' an empty list!")
+        stop("The method 'convert.adjacency.matrix.list.to.array' received an empty list!")
+    }
+    ## Check if all matrices have equal column- and rownames
+    rownames = rownames(adjacency.list[[1]])
+    colnames = colnames(adjacency.list[[1]])
+
+    if (length(adjacency.list) > 1) {
+        for (i in 2:length(adjacency.list)) {
+            if (!identical(rownames, rownames(adjacency.list[[i]])) || !identical(colnames, colnames(adjacency.list[[i]]))) {
+                error.string = sprintf("The matrix at position %d has different col or rownames from the first!", i)
+                logging::logerror(error.string)
+                stop(error.string)
+            }
+        }
+    }
+    
     ## create a 3-dimensional array representing the adjacency matrices (SIENA data format) as result
     array = array(data = 0, dim = c(nrow(adjacency.list[[1]]), nrow(adjacency.list[[1]]), length(adjacency.list)))
-    rownames(array) = rownames(adjacency.list[[1]])
-    colnames(array) = colnames(adjacency.list[[1]])
+    rownames(array) = rownames
+    colnames(array) = colnames
 
     ## copy the activity values from the adjacency matrices in the list to the corresponding array slices
     for (i in seq_along(adjacency.list)) {
