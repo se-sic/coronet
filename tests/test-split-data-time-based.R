@@ -87,13 +87,14 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:01:59", "2016-07-12 16:04:59", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "time-based",
         split.length = "3 min",
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:01:59", "2016-07-12 16:04:59", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -198,14 +199,15 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2007-10-10 12:38:13", "2010-10-10 06:38:13", "2013-10-10 00:38:13",
+                  "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "time-based",
         split.length = "3 years",
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2007-10-10 12:38:13", "2010-10-10 06:38:13",
-                            "2013-10-10 00:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -314,13 +316,14 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2015-04-22 11:52:09", "2017-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "time-based",
         split.length = "2 years",
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2015-04-22 11:52:09", "2017-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -426,15 +429,15 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:29", "2016-07-12 16:01:59", "2016-07-12 16:03:29",
+                  "2016-07-12 16:04:59", "2016-07-12 16:06:29", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "time-based",
         split.length = "3 min",
         split.basis = "commits",
         split.sliding.window = TRUE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:29", "2016-07-12 16:01:59",
-                            "2016-07-12 16:03:29", "2016-07-12 16:04:59", "2016-07-12 16:06:29",
-                            "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -554,15 +557,16 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2006-04-10 15:38:13", "2007-10-10 12:38:13", "2009-04-10 09:38:13",
+                  "2010-10-10 06:38:13", "2012-04-10 03:38:13", "2013-10-10 00:38:13", "2015-04-10 21:38:13",
+                  "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "time-based",
         split.length = "3 years",
         split.basis = "mails",
         split.sliding.window = TRUE,
-        split.revisions = c("2004-10-09 18:38:13", "2006-04-10 15:38:13", "2007-10-10 12:38:13",
-                            "2009-04-10 09:38:13", "2010-10-10 06:38:13", "2012-04-10 03:38:13",
-                            "2013-10-10 00:38:13", "2015-04-10 21:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -692,14 +696,15 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2014-04-22 05:52:09", "2015-04-22 11:52:09", "2016-04-21 17:52:09",
+                  "2017-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "time-based",
         split.length = "2 years",
         split.basis = "issues",
         split.sliding.window = TRUE,
-        split.revisions = c("2013-04-21 23:52:09", "2014-04-22 05:52:09", "2015-04-22 11:52:09",
-                            "2016-04-21 17:52:09", "2017-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -807,13 +812,14 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... )
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59")
     expected.config = list(
         split.type = "time-based",
-        split.length = c("2016-01-01 00:00:00", "2016-12-31 23:59:59"),
+        split.length = revisions,
         split.basis = NULL,
         split.sliding.window = FALSE,
-        split.revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -903,13 +909,14 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03")
     expected.config = list(
         split.type = "time-based",
-        split.length = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
+        split.length = revisions,
         split.basis = NULL,
         split.sliding.window = FALSE,
-        split.revisions = c("2016-01-01 00:00:00", "2016-12-31 23:59:59", "2017-06-03 03:03:03"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1044,15 +1051,15 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00", "2016-08-08 00:00:00",
+                  "2016-10-05 09:00:00")
     expected.config = list(
         split.type = "time-based",
-        split.length = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00",
-                         "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
+        split.length = revisions,
         split.basis = NULL,
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:00:00", "2016-07-12 16:00:00", "2016-07-12 16:05:00",
-                            "2016-08-08 00:00:00", "2016-10-05 09:00:00"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1283,14 +1290,14 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
-
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:01:30", "2016-07-12 16:04:01", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "time-based",
         split.length = "2M 31S",
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:01:30", "2016-07-12 16:04:01", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1394,14 +1401,15 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2007-09-18 06:00:04", "2010-08-26 17:21:55", "2013-08-04 04:43:46",
+                  "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "time-based",
         split.length = "2y 0m 342d 23H 21M 51S",
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2007-09-18 06:00:04", "2010-08-26 17:21:55",
-                            "2013-08-04 04:43:46", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1510,13 +1518,14 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2014-09-01 12:05:39", "2016-01-12 00:19:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "time-based",
         split.length = "1y 0m 132d 6H 13M 30S",
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2014-09-01 12:05:39", "2016-01-12 00:19:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)

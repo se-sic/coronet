@@ -87,14 +87,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
+
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
         names(actual) = names(expected.config)
@@ -170,13 +172,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 18,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -269,15 +272,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2010-07-12 11:05:35", "2010-07-12 12:05:41",
+                  "2010-07-12 12:05:44" ,"2016-07-12 15:58:40", "2016-07-12 16:05:37",
+                  "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 11:05:35", "2010-07-12 12:05:41",
-                            "2010-07-12 12:05:44" ,"2016-07-12 15:58:40", "2016-07-12 16:05:37",
-                            "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -373,13 +377,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 26,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -472,15 +477,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2013-05-25 06:22:23", "2016-07-12 15:59:59",
+                  "2016-07-12 16:06:30", "2016-08-07 15:37:02", "2017-05-23 12:31:34",
+                  "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 9,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2013-05-25 06:22:23", "2016-07-12 15:59:59",
-                            "2016-07-12 16:06:30", "2016-08-07 15:37:02", "2017-05-23 12:31:34",
-                            "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -576,13 +582,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 67,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -675,14 +682,15 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                  "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = TRUE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
-                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -766,13 +774,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 18,
         split.basis = "commits",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -869,15 +878,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                  "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
+                  "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = TRUE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
-                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
-                            "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1000,16 +1010,17 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2005-02-09 18:49:49", "2010-07-12 11:05:35",
+                  "2010-07-12 12:05:34", "2010-07-12 12:05:41", "2010-07-12 12:05:42",
+                  "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2016-07-12 15:58:40",
+                  "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "mails",
         split.sliding.window = TRUE,
-        split.revisions = c("2004-10-09 18:38:13", "2005-02-09 18:49:49", "2010-07-12 11:05:35",
-                            "2010-07-12 12:05:34", "2010-07-12 12:05:41", "2010-07-12 12:05:42",
-                            "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2016-07-12 15:58:40",
-                            "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1129,13 +1140,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 26,
         split.basis = "mails",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)            
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1232,16 +1244,17 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2013-05-06 01:04:34", "2013-05-25 06:22:23",
+                  "2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 16:02:02",
+                  "2016-07-12 16:06:30", "2016-07-27 20:12:08", "2016-08-07 15:37:02",
+                  "2016-10-05 16:45:09", "2017-05-23 12:31:34", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 9,
         split.basis = "issues",
         split.sliding.window = TRUE,
-        split.revisions = c("2013-04-21 23:52:09", "2013-05-06 01:04:34", "2013-05-25 06:22:23",
-                            "2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 16:02:02",
-                            "2016-07-12 16:06:30", "2016-07-27 20:12:08", "2016-08-07 15:37:02",
-                            "2016-10-05 16:45:09", "2017-05-23 12:31:34", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1361,13 +1374,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 67,
         split.basis = "issues",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1459,13 +1473,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 4,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1585,13 +1600,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 8,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1712,13 +1728,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2016-07-12 16:03:59", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 24,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:03:59", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
