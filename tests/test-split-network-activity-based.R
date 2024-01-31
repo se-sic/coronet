@@ -72,6 +72,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
 
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
+
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
         igraph::identical_graphs(r, e)
@@ -90,6 +95,10 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (2)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -111,6 +120,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.windows (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -171,6 +185,12 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
 
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                           "2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:32", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
+
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
         igraph::identical_graphs(r, e)
@@ -190,6 +210,10 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (2)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -211,6 +235,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.windows (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -268,6 +297,13 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                           "2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:32", "2020-02-20 20:20:20",
+                                           "2020-02-20 20:20:21"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {

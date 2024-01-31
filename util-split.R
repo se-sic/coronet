@@ -292,7 +292,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
                                                     project.conf.new = project.conf.new)
 
         ## extract bins
-        bins.date.middle = attr(cf.data.sliding, "bins")
+        bins.date.middle = get.date.string(attr(cf.data.sliding, "bins"))
 
         ## Both, the last sliding range and the last regular range end at the very last item.
         ## This is the case because the end of the data is never cropped (like the beginning is).
@@ -732,7 +732,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                                                         sliding.window = FALSE)
 
         ## compute bins for sliding windows: pairwise middle between dates
-        bins.date.middle = attr(networks.sliding, "bins")
+        bins.date.middle = get.date.string(attr(networks.sliding, "bins"))
 
         ## Both, the last sliding network and the last regular network end at the very last edge.
         ## This is the case because the end of the edges is never cropped (like the beginning is).
@@ -769,7 +769,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     }
 
     ## set bin attribute
-    attr(networks, "bins") = bins.date
+    attr(networks, "bins") = get.date.from.string(bins.date)
 
     ## set ranges as names
     revs = get.date.string(bins.date)
@@ -814,6 +814,12 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
         }
     )
 
+    ## convert ranges to bins
+    bins.starts = sapply(ranges.bounds, function(range) range[1])
+    bins.end = ranges.bounds[[length(ranges.bounds)]][2]
+    bins.date = get.date.from.unix.timestamp(c(bins.starts, bins.end))
+
+    attr(nets.split, "bins") = bins.date
     return(nets.split)
 }
 
@@ -857,7 +863,7 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
     })
     ## set 'bins' attribute, if specified
     if (!is.null(bins.date)) {
-        attr(nets, "bins") = bins.date
+        attr(nets, "bins") = get.date.from.string(bins.date)
     }
     logging::logdebug("split.network.by.bins: finished.")
     return(nets)
