@@ -654,6 +654,10 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `simplify`
     * Perform edge contraction to retrieve a simplified network
     * [`TRUE`, *`FALSE`*]
+- `simplify.multiple.relations`
+    * Whether the simplified network should contract edges of multiple relations into a single edge or not (if not, there will be one edge for each relation, resulting in possibly more than one edge between a pair of vertices)
+    * **Note** This parameter does not take effect if ``simplify = FALSE``!
+    * [`TRUE`, *`FALSE`*]
 - `skip.threshold`
     * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
     * any positive integer

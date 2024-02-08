@@ -15,7 +15,7 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -1260,7 +1260,8 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     ## transform multiple edges to edge weights
     if (network.conf$get.value("simplify")) {
-        net = simplify.network(net)
+        net = simplify.network(net,
+                               simplify.multiple.relations = network.conf$get.value("simplify.multiple.relations"))
     }
 
     logging::logdebug("construct.network.from.edge.list: finished.")
@@ -1536,16 +1537,19 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
 #' @param network the given network
 #' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
+#' @param simplify.multiple.relations whether to combine edges of multiple relations into
+#'        one simplified edge [default: FALSE]
 #'
 #' @return the simplified network
-simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE) {
+simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE,
+                            simplify.multiple.relations = FALSE) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
 
     ## save network attributes, otherwise they get lost
     network.attributes = igraph::get.graph.attribute(network)
 
-    if (length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
+    if (!simplify.multiple.relations && length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
         ## data frame of the network
         edge.data = igraph::as_data_frame(network, what = "edges")
         vertex.data = igraph::as_data_frame(network, what = "vertices")
@@ -1587,9 +1591,12 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
 #' @param networks the list of networks
 #' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
+#' @param simplify.multiple.relations whether to combine edges of multiple relations into
+#'                                    one simplified edge [default: FALSE]
 #'
 #' @return the simplified networks
-simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TRUE) {
+simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TRUE,
+                             simplify.multiple.relations = FALSE) {
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
         "Simplifying networks (names = [%s]).",
@@ -1597,7 +1604,7 @@ simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TR
     )
 
     nets = parallel::mclapply(networks, simplify.network, remove.multiple = remove.multiple,
-                              remove.loops = remove.loops)
+                              remove.loops = remove.loops, simplify.multiple.relations = simplify.multiple.relations)
 
     logging::logdebug("simplify.networks: finished.")
     return(nets)
