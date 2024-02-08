@@ -958,8 +958,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## to be consistent with bipartite networks
             artifacts.to.add.kind[artifacts.to.add.kind == "IssueEvent"] = "Issue"
 
-            artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
-                                                             kind = artifacts.to.add.kind)
+            if (length(artifacts.to.add) > 0) {
+                artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
+                                                                 kind = artifacts.to.add.kind)
+            }
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
