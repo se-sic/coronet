@@ -6,10 +6,11 @@
 
 ### Added
 
-- Add issue-based artifact-networks (PR #244, 98a93ee721a293410623aafe46890cfba9d81e72, 771bcc8d961d419b53a1e891e9dc536371f1143b)
+- Add issue-based artifact-networks (PR #244, 98a93ee721a293410623aafe46890cfba9d81e72, 771bcc8d961d419b53a1e891e9dc536371f1143b, 368e79264adf5a5358c04518c94ad2e1c13e212b)
 - Add a new `split.data.by.bins` function (not to be confused with a previously existing function that had the same name and was renamed in this context), which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698, ed5feb214a123b605c9513262f187cfd72b9e1f4)
 - Add new `assert.sparse.matrices.equal` function to compare two sparse matrices for equality for testing purposes (PR #248, 9784cdf12d1497ee122e2ae73b768b8c334210d4, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
 - Add tests for file `util-networks.misc.R` for issue #242 (PR #248, f3202a6f96723d11c170346556d036cf087521c8, 030574b9d0f3435db4032d0e195a3d407fb7244b, 380b02234275127297fcd508772c69db21c216de, 8b803c50d60fc593e4e527a08fd4c2068d801a48, 7335c3dd4d0302b024a66d18701d9800ed3fe806, 6b600df04bec1fe70c272604f274ec5309840e65)
+- Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa)
 
 ### Changed/Improved
 
@@ -20,6 +21,7 @@
 - Change `util-tensor.R` to correctly use the new output format of `get.author.names.from.network` (PR #248, 72b663ebf7169c0da5c687fe215529f3be0c08c5)
 - Throw an error in `convert.adjacency.matrix.list.to.array` if the function is called with wrong parameters (PR #248, ece2d38b4972745af3a83e06f32317a06465a345, 1a3e510df15f5fa4e920e9fce3e0e162c27cd6d1)
 - Rename `compare.networks` to `assert.networks.equal` to better match the purpose of the function (PR #248, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
+- Explicitly add R version 4.3 to the CI test pipeline (9f346d5bc3cfc553f01e5e80f0bbe51e1dc2b53e)
 
 ### Fixed
 
@@ -30,6 +32,8 @@
 - Fix `get.expanded.adjacency` to work if the provided author list does not contain all authors from network and add a warning when that happens since it causes some authors from the network to be lost in the resulting matrix (PR #248, ff59017e114b10812dcfb1704a19e01fc1586a13)
 - Fix `get.expanded.adjacency.matrices` to have correct names for the columns and rows (PR #248, e72eff864a1cb1a4aecd430e450d4a6a5044fdf2)
 - Fix `get.expanded.adjacency.cumulated` so that it works if `weighted` parameter is set to `FALSE` (PR #248, 2fb9a5d446653f6aee808cbfc87c2dafeb9a749a)
+- Fix broken error loggingin `metrics.smallworldness` (03e06881f06abf30d44b69d7988873f20b95232d)
+- Fix multi-network construction to work with igraph version 2.0.1.1, which does not allow to add an empty list of vertices (PR #250, 5547896faa279f6adaae4b2b77c7ab9623ddf256)
 
 
 ## 4.3
