@@ -25,6 +25,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -870,7 +871,6 @@ COMMIT.INTERACTION.LIST.DATA.TYPES = c(
 read.commit.interactions = function(data.path = NULL) {
 
     file = file.path(data.path, "commit-interactions.yaml")
-    # file = file.path("/scratch/hechtl/htop-new", "c5b0ccb9f9.yaml")
 
     commit.interaction.base = try(yaml::read_yaml(file = file), silent = TRUE)
 
