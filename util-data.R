@@ -16,7 +16,7 @@
 ## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020, 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -162,6 +162,7 @@ ProjectData = R6::R6Class("ProjectData",
         commits = create.empty.commits.list(), # data.frame
         commits.unfiltered = create.empty.commits.list(), # data.frame
         commit.messages = create.empty.commit.message.list(), # data.frame
+        commit.interactions = create.empty.commit.interaction.list(),
         ## mails
         mails.unfiltered = create.empty.mails.list(), # data.frame
         mails = create.empty.mails.list(), # data.frame
@@ -403,6 +404,24 @@ ProjectData = R6::R6Class("ProjectData",
                 logging::logwarn("There might be commit message data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
+        },
+
+        update.commit.interactions = function() {
+            if (!self$is.data.source.cached("commits.unfiltered")) {
+                self$get.commits()
+            }
+
+            print(colnames(private$commit.interactions))
+            commit.data.subset = data.frame(hash = private$commits.unfiltered$hash, author.name = private$commits.unfiltered$author.name)
+            commit.data.subset = commit.data.subset[!duplicated(commit.data.subset$hash),]
+
+            commit.interaction.data = merge(private$commit.interactions, commit.data.subset, by.x = "base.hash", by.y = "hash")
+            colnames(commit.interaction.data)[7] = "base.author"
+            commit.interaction.data = merge(commit.interaction.data, commit.data.subset, by.x = "commit.hash", by.y = "hash")
+            colnames(commit.interaction.data)[8] = "interacting.author"
+
+            private$commit.interactions = commit.interaction.data
+
         },
         ## * * Gender data --------------------------------------------------
 
@@ -1186,6 +1205,46 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        #' Get the commit interaction data. If no data.path is given, the standard data.path
+        #' will be used.
+        #'
+        #' @param data.path an optional different data path to the commit-interaction data
+        #'
+        #' @return the commit-interaction data
+        get.commit.interactions = function(data.path = NULL) {
+            logging::loginfo("Getting commit interactions.")
+
+            ## if the commit-interaction data have not yet been read do this
+            if (!self$is.data.source.cached("commit.interactions")) {
+                if(is.null(data.path)) {
+                  commit.interaction.data = read.commit.interactions(self$get.data.path())
+                } else {
+                  commit.interaction.data = read.commit.interactions(data.path)
+                }
+
+                ## cache the result
+                private$commit.interactions = commit.interaction.data
+                private$update.commit.interactions()
+            }
+
+            return(private$commit.interactions)
+        },
+
+        #' Set the commit-interaction data to the new given data.
+        #'
+        #' @param data the new commit-interaction data
+        set.commit.interactions = function(data) {
+            logging::loginfo("Setting commit messages data.")
+
+            if (is.null(data)) {
+                data = create.empty.commit.interaction.list()
+            }
+
+            ## set the actual data
+            private$commit.interactions = data
+            # browser()
+        },
+
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
         #' from disk.
         #'
@@ -1756,7 +1815,8 @@ ProjectData = R6::R6Class("ProjectData",
                     "commit.messages" = "commit.messages",
                     "synchronicity" = "synchronicity",
                     "pasta" = "pasta",
-                    "custom.event.timestamps" = "custom.event.timestamps"
+                    "custom.event.timestamps" = "custom.event.timestamps",
+                    "commit.interactions" = "commit.interactions"
                 )
             )
             sources = self$get.cached.data.sources.internal(source.type)
@@ -1788,7 +1848,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta",
-                                        "gender", "custom.event.timestamps")
+                                        "gender", "custom.event.timestamps", "commit.interactions")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument

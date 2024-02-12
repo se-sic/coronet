@@ -14,7 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2022, 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
@@ -42,6 +42,7 @@ requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
 requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
+requireNamespace("yaml") # for reading commit interaction data
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
@@ -841,6 +842,97 @@ read.pasta = function(data.path) {
 #' @return the empty dataframe
 create.empty.pasta.list = function() {
     return(create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
+}
+
+## * Commit interaction data -----------------------------------------------
+
+## column names of a dataframe containing commit interaction data (see function \code{read.commit.interactions})
+COMMIT.INTERACTION.LIST.COLUMNS = c(
+    "base.hash", "function", "file",
+    "interacting.hash"
+)
+
+## declare the datatype for each column in the constant 'COMMIT.INTERACTION.LIST.COLUMNS'
+COMMIT.INTERACTION.LIST.DATA.TYPES = c(
+    "character", "character", "character",
+    "character"
+)
+
+#' Read and parse the commit-interaction data. This data is present in a `.yaml` file which
+#' needs to be broken down. Within the yaml file, there are different lists in which each
+#' commit (hash) gets mapped to all commits it interacts with and the file/function because of
+#' which they interact.
+#'
+#'
+#' @param data.path the path to the commit-interaction data
+#'
+#' @return the read and parsed commit-interaction data
+read.commit.interactions = function(data.path = NULL) {
+
+    file = file.path(data.path, "commit-interactions.yaml")
+    # file = file.path("/scratch/hechtl/htop-new", "c5b0ccb9f9.yaml")
+
+    commit.interaction.base = try(yaml::read_yaml(file = file), silent = TRUE)
+
+    ## handle the case that the list of commit-interactions is empty
+    if (inherits(commit.interaction.base, "try-error")) {
+        logging::logwarn("There are no commit-interactions available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        # return a dataframe with the correct columns but zero rows
+        return(create.empty.commit.interaction.list())
+    }
+
+    ## extract the top level list of the yaml file which is called 'result-map'
+    result.map = commit.interaction.base$`result-map`
+
+    ## extract a mapping of functions to files to be able to determine what file the current interaction is
+    ## based on
+    file.name.map = fastmap::fastmap()
+    function.file.list = purrr::map(result.map, 2)
+    file.name.map$mset(.list = function.file.list)
+    list.names = names(result.map)
+
+    ## build the result dataframe by iterating over the 'result-map' list
+    commit.interaction.data = data.table::setDF(data.table::rbindlist(parallel::mcmapply(result.map, list.names,
+                                                                             SIMPLIFY = FALSE,
+                                                                             FUN = function(current.interaction,
+                                                                                            function.name) {
+        ## get all commits that interact with the current one
+        insts = current.interaction[[4]]
+        interactions = data.table::setDF(data.table::rbindlist(lapply(insts, function(current.inst) {
+            base.hash = current.inst[[1]][[3]]
+            interacting.hashes = current.inst[[2]]
+            interacting.hashes.df = data.table::setDF(data.table::rbindlist(lapply(interacting.hashes, function(hash) {
+                ## if there is no function name in the current interaction we set the function name to 'GLOBAL'
+                ## as this is most likely code outside of functions, else we set the function name
+                if (!"function" %in% names(hash)) {
+                    return(data.frame(func = "GLOBAL", commit.hash = hash[["commit"]], file = "GLOBAL"))
+                } else {
+                    return(data.frame(func = hash[["function"]], commit.hash = hash[["commit"]],
+                                      file = file.name.map$get(hash[["function"]])))
+                }
+            })))
+            interacting.hashes.df$base.hash = base.hash
+            interacting.hashes.df$base.func = function.name
+            interacting.hashes.df$base.file = file.name.map$get(function.name)
+            return(interacting.hashes.df)
+        })))
+        return(interactions)
+    })))
+
+    ## remove all duplicate entries from the resulting dataframe
+    commit.interaction.data = commit.interaction.data[!duplicated(commit.interaction.data), ]
+    return(commit.interaction.data)
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing commit interaction data.
+#' The dataframe has the column names and column datatypes defined in \code{COMMIT.INTERACTION.LIST.COLUMNS}
+#' and \code{COMMIT.INTERACTION.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.commit.interaction.list = function() {
+    return (create.empty.data.frame(COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES))
 }
 
 ## * Synchronicity data ----------------------------------------------------

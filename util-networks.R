@@ -14,6 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
@@ -225,6 +226,34 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(author.net)
         },
 
+        #' Build and get the author network with commit-interactions as the relation.
+        #'
+        #'  @return the commit-interaction author network
+        get.author.network.commit.interaction = function() {
+            ## get the authors that appear in the commit-interaction data as the vertices of the network
+            vertices = unique(c(private$proj.data$get.commit.interactions()$base.author,
+                                private$proj.data$get.commit.interactions()$interacting.author))
+            vertices = data.frame(name = vertices)
+
+            ## get the commit-interaction data as the edge data of the network
+            edges = private$proj.data$get.commit.interactions()
+            ## set the authors as the 'to' and 'from' of the network
+            colnames(edges)[7] = "to"
+            colnames(edges)[8] = "from"
+            edges = edges[,c(7,8,1,2,3,4,5,6)]
+            colnames(edges)[3] = "hash"
+            author.net.data = list(vertices = vertices, edges = edges)
+            ## construct the network
+            author.net = construct.network.from.edge.list(
+                author.net.data[["vertices"]],
+                author.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed"),
+                available.edge.attributes = list(hash = "character")
+            )
+            return(author.net)
+        },
+
         #' Get the thread-based author relation as network.
         #' If it does not already exist build it first.
         #'
@@ -343,6 +372,33 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.cochange: finished.")
 
             return(artifacts.net)
+        },
+
+        #' Build and get the the commit-interaction based artifact network.
+        #'
+        #' @return the commit-interaction based artifact network
+        get.artifact.network.commit.interaction = function() {
+          ## get the commits that appear in the commit-interaction data as the vertices of the network
+          vertices = unique(c(private$proj.data$get.commit.interactions()$base.file, private$proj.data$get.commit.interactions()$file))
+          vertices = data.frame(name = vertices)
+          ## get the commit-interaction data as the edge data of the network
+          edges = private$proj.data$get.commit.interactions()
+          ## set the commits as the 'to' and 'from' of the network
+          colnames(edges)[6] = "to"
+          colnames(edges)[4] = "from"
+          edges = edges[,c(6,4,1,2,3,5)]
+          colnames(edges)[3] = "hash"
+          author.net.data = list(vertices = vertices, edges = edges)
+          ## construct the network
+          author.net = construct.network.from.edge.list(
+            author.net.data[["vertices"]],
+            author.net.data[["edges"]],
+            network.conf = private$network.conf,
+            directed = private$network.conf$get.value("author.directed"),
+            available.edge.attributes = list(hash = "character")
+          )
+
+          return(author.net)
         },
 
         #' Get the call-graph-based artifact network.
@@ -743,6 +799,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network = switch(
                     relation,
                     cochange = private$get.author.network.cochange(),
+                    interaction = private$get.author.network.commit.interaction(),
                     mail = private$get.author.network.mail(),
                     issue = private$get.author.network.issue(),
                     stop(sprintf("The author relation '%s' does not exist.", rel))
@@ -810,6 +867,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     callgraph = private$get.artifact.network.callgraph(),
                     mail = private$get.artifact.network.mail(),
                     issue = private$get.artifact.network.issue(),
+                    interaction = private$get.artifact.network.commit.interaction(),
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
 
