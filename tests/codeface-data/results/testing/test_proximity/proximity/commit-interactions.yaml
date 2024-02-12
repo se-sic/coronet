@@ -1,0 +1,59 @@
+scope:        REGION
+result-map:
+  test.c:
+    demangled-name:   test.c
+    file:             test.c
+    num-instructions: 30
+    insts:
+      - base-hash:
+          region:         45620620587549
+          function:       test.c
+          commit:         72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0
+          repository:     test-repo
+        interacting-hashes:
+          - region:         87546092348456
+            function:       test.c
+            commit:         5a5ec9675e98187e1e92561e1888aa6f04faa338
+            repository:     test-repo
+        amount:         2
+    callees:
+      - test_callee
+    commits:
+      - commit:         3383d8e5561dfc6fb2b65e0a194df94ccb5e08af
+        repository:     test-repo
+  test2.c:
+    demangled-name:   test2.c
+    file:             test2.c
+    num-instructions: 26
+    insts:
+      - base-hash:
+          region:         50956672345141
+          function:       test2.c
+          commit:         3a0ed78458b3976243db6829f63eba3eead26774
+          repository:     test-repo
+        interacting-hashes:
+          - region:          98750276234511
+            function:        test2.c
+            commit:          0a1a5c523d835459c42f33e863623138555e2526
+            repository:      test-repo
+        amount:          1
+      - base-hash:
+          region:         67230588834344
+          function:       test2.c
+          commit:         0a1a5c523d835459c42f33e863623138555e2526
+          repository:     test-repo
+        interacting-hashes:
+          - region:          33295067820043
+            function:        test2.c
+            commit:          418d1dc4929ad1df251d2aeb833dd45757b04a6f
+            repository:      test-repo
+          - region:          20194653678423
+            function:        test2.c
+            commit:          d01921773fae4bed8186b0aa411d6a2f7a6626e6
+            repository:      test-repo
+        amount:          3
+    callees:
+      - test_callee
+    commits:
+      - commit:         3383d8e5561dfc6fb2b65e0a194df94ccb5e08af
+        repository:     test-repo
