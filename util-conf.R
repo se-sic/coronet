@@ -18,7 +18,7 @@
 ## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
@@ -863,6 +863,12 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            simplify.multiple.relations = list(
+               default = FALSE,
+               type = "logical",
+               allowed = c(TRUE, FALSE),
+               allowed.number = 1
+           ),
             skip.threshold = list(
                 default = Inf,
                 type = "numeric",

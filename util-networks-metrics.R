@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -167,7 +167,7 @@ metrics.smallworldness = function(network) {
     if (!is.simple(network)) {
         ## if this is not the case, raise an error and stop the execution
         error.message = "The input network has too many edges. Try again with a simplified network."
-        logging::error(error.message)
+        logging::logerror(error.message)
         stop(error.message)
     }
 

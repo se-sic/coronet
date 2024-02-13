@@ -632,7 +632,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
 - `artifact.directed`
     * The directedness of edges in an artifact network
-    * **Note**: This parameter does not take effect for now, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed. For the other relations (`mail` and `issue`), we currently do not have data available to exhibit edge information.
+    * **Note**: This parameter does only affect the `issue` relation, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed. For the `mail`, we currently do not have data available to exhibit edge information.
   * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
     * The list of edge-attribute names and information
@@ -653,6 +653,10 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
     * [*`TRUE`*, `FALSE`]
 - `simplify`
     * Perform edge contraction to retrieve a simplified network
+    * [`TRUE`, *`FALSE`*]
+- `simplify.multiple.relations`
+    * Whether the simplified network should contract edges of multiple relations into a single edge or not (if not, there will be one edge for each relation, resulting in possibly more than one edge between a pair of vertices)
+    * **Note** This parameter does not take effect if ``simplify = FALSE``!
     * [`TRUE`, *`FALSE`*]
 - `skip.threshold`
     * The upper bound for total amount of edges to build for a subset of the data, i.e., not building any edges for the subset exceeding the limit
