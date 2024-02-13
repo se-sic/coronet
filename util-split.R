@@ -296,7 +296,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
 
         ## Both, the last sliding range and the last regular range end at the very last item.
         ## This is the case because the end of the data is never cropped (like the beginning is).
-        ## split.data.activity.based, which is invoked to obtain both set of ranges, creates
+        ## 'split.data.activity.based', which is invoked to obtain both set of ranges, creates
         ## ranges until all elements are in one.
         ##
         ## The conditional below inspects whether the very last item is in the first or the second
@@ -736,7 +736,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
         ## Both, the last sliding network and the last regular network end at the very last edge.
         ## This is the case because the end of the edges is never cropped (like the beginning is).
-        ## Both split.network.activity.based, and split.network.by.bins, which are invoked to obtain
+        ## Both 'split.network.activity.based', and 'split.network.by.bins', which are invoked to obtain
         ## the two set of networks, creates networks until all edges are contained.
         ##
         ## The conditional below inspects whether the very last edge is in the first or the second

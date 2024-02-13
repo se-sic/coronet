@@ -497,7 +497,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## we would need to guess the correct direction.
             if (!private$network.conf$get.entry("artifact.directed")) {
 
-                ## obtain add_link events from jira
+                ## obtain 'add_link' events from jira
                 jira.add.links = add.links[add.links$issue.source == "jira", ]
                 matched = c()
 
@@ -506,10 +506,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                     add.link = jira.add.links[i, ]
                     if (all(add.link %in% matched)) {
+                    ## make sure to not remove both duplicate edges
                         next
                     }
 
-                    ## match any add_link events, that are the reverse direction of 'add.link',
+                    ## match any 'add_link' events, that are the reverse direction of 'add.link',
                     ## but the same timestamp and author information.
                     match = jira.add.links[(
                         jira.add.links$issue.id == add.link$event.info.1 &
@@ -517,7 +518,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                         jira.add.links$date == add.link$date &
                         jira.add.links$author.name == add.link$author.name), ]
 
-                    ## if a match is found, remove 'add.link' and its corresponding referenced_by event
+                    ## if a match is found, remove 'add.link' and its corresponding 'referenced_by' event
                     if (nrow(match) > 0) {
                         add.links = add.links[!(
                             add.links$issue.id == match$issue.id &

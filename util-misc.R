@@ -984,6 +984,16 @@ get.range.bounds = function(range) {
     return (range)
 }
 
+#' Obtain the start and end dates from given ranges.
+#'
+#' @param ranges the ranges to get the dates from
+#'
+#' @return a vector that contains the start and end dates of all given ranges
+#'         sorted and disambiguated
+get.bin.dates.from.ranges = function(ranges) {
+    dates = sort(unique(get.date.from.unix.timestamp(unlist(ranges))))
+    return(dates)
+}
 
 #' Get the data from a data frame in a specific range.
 #'
@@ -1010,15 +1020,5 @@ get.data.from.range = function(range, data) {
     } else {
         return(data.between)
     }
-}
-
-#' Obtain the start and end dates from given ranges.
-#'
-#' @param ranges the ranges to get the dates from
-#'
-#' @return a sorted vector of all the start the end dates of the given ranges
-get.bin.dates.from.ranges = function(ranges) {
-    dates = sort(unname(unique(get.date.from.unix.timestamp(unlist(ranges)))))
-    return(dates)
 }
 
