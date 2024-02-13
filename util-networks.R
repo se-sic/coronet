@@ -499,19 +499,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## obtain 'add_link' events from jira
                 jira.add.links = add.links[add.links$issue.source == "jira", ]
-                matched = c()
+                matched = list()
 
                 ## iterate over all add_link events from jira
                 for (i in 1:nrow(jira.add.links)) {
 
                     add.link = jira.add.links[i, ]
-                    if (all(add.link %in% matched)) {
-                    ## make sure to not remove both duplicate edges
+
+                    ## ensure not to remove both duplicate edges
+                    if (any(sapply(matched, function(entry) identical(entry, add.link)))) {
                         next
                     }
 
                     ## match any 'add_link' events, that are the reverse direction of 'add.link',
-                    ## but the same timestamp and author information.
+                    ## but have the same timestamp and author information
                     match = jira.add.links[(
                         jira.add.links$issue.id == add.link$event.info.1 &
                         jira.add.links$event.info.1 == add.link$issue.id &
@@ -524,13 +525,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                             add.links$issue.id == match$issue.id &
                             add.links$event.info.1 == match$event.info.1 &
                             add.links$date == match$date &
-                            add.links$author.name == add.link$author.name), ]
+                            add.links$author.name == match$author.name), ]
                         referenced.bys = referenced.bys[!(
                             referenced.bys$issue.id == add.link$issue.id &
                             referenced.bys$event.info.1 == add.link$event.info.1 &
                             referenced.bys$date == add.link$date &
                             referenced.bys$author.name == add.link$author.name), ]
-                        matched = c(match, add.link)
+                        matched = append(matched, list(match))
                     }
                 }
             }
