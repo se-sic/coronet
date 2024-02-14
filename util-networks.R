@@ -1621,7 +1621,9 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
         ## merge the simplified networks
         network = merge.networks(networks)
     } else {
-        network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
+        relation.handling = function(relation) sort(unique(relation))
+        edge.attr.handling = modifyList(EDGE.ATTR.HANDLING, list(relation = relation.handling))
+        network = igraph::simplify(network, edge.attr.comb = edge.attr.handling,
                                    remove.multiple = remove.multiple, remove.loops = remove.loops)
     }
 
