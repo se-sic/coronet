@@ -530,4 +530,15 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     ## change commit interactions of one project data and assert that equality check fails
     proj.data.two$set.commit.interactions(create.empty.commit.interaction.list())
     expect_false(proj.data.one$equals(proj.data.two))
+
+    ## change commit data in one to test if commit-interactions are correctly updated
+    ## call get.commit.interactions() once to restore read interactions
+    proj.data.two$get.commit.interactions()
+
+    ## change commits in one project data
+    commit.data = proj.data.one$get.commits()
+    commit.data[["hash"]][[5]] = 1
+    proj.data.one$set.commits(commit.data)
+    ## inequality?
+    expect_equal(proj.data.one$get.commit.interactions(), proj.data.two$get.commit.interactions())
 })
