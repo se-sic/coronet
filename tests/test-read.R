@@ -523,3 +523,22 @@ test_that("Read the commit-interactions data.", {
     expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
                      info = "commit interaction data.")
 })
+
+test_that("Read the empty commit-interactions data.", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+
+    ## read the actual data
+    commit.interactions.data.read = read.commit.interactions("./codeface-data/results/testing/
+                                                             test_empty_proximity/proximity")
+    ## build the expected data.frame
+    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 4))
+    colnames(commit.interactions.data.expected) = c("base.hash", "function", "file", "interacting.hash")
+    for(i in seq_len(4)) {
+        commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
+    }
+    ## check the results
+    expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
+                     info = "commit interaction data.")
+})
