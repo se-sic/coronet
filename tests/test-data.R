@@ -539,6 +539,6 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     commit.data = proj.data.one$get.commits()
     commit.data[["hash"]][[5]] = 1
     proj.data.one$set.commits(commit.data)
-    ## inequality?
-    expect_equal(proj.data.one$get.commit.interactions(), proj.data.two$get.commit.interactions())
+
+    expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(), proj.data.two$get.commit.interactions())))
 })
