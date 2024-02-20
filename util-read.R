@@ -849,14 +849,14 @@ create.empty.pasta.list = function() {
 
 ## column names of a dataframe containing commit interaction data (see function \code{read.commit.interactions})
 COMMIT.INTERACTION.LIST.COLUMNS = c(
-    "base.hash", "function", "file",
-    "interacting.hash"
+    "func", "commit.hash", "file",
+    "base.hash", "base.func", "base.file"
 )
 
 ## declare the datatype for each column in the constant 'COMMIT.INTERACTION.LIST.COLUMNS'
 COMMIT.INTERACTION.LIST.DATA.TYPES = c(
     "character", "character", "character",
-    "character"
+    "character", "character", "character"
 )
 
 #' Read and parse the commit-interaction data. This data is present in a `.yaml` file which

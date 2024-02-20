@@ -533,9 +533,10 @@ test_that("Read the empty commit-interactions data.", {
     commit.interactions.data.read = read.commit.interactions("./codeface-data/results/testing/
                                                              test_empty_proximity/proximity")
     ## build the expected data.frame
-    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 4))
-    colnames(commit.interactions.data.expected) = c("base.hash", "function", "file", "interacting.hash")
-    for(i in seq_len(4)) {
+    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 6))
+    colnames(commit.interactions.data.expected) = c("func", "commit.hash", "file",
+                                                    "base.hash", "base.func", "base.file")
+    for(i in seq_len(6)) {
         commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
     }
     ## check the results
