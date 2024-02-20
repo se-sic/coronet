@@ -418,6 +418,16 @@ ProjectData = R6::R6Class("ProjectData",
                 self$get.commits()
             }
 
+            ## remove existing columns named 'base.author' and 'interaction.author'
+            indices.to.remove = which("base.author" == colnames(private$commit.interactions))
+            if (length(indices.to.remove)>0) {
+                private$commit.interactions = private$commit.interactions[, -indices.to.remove]
+            }
+            indices.to.remove = which("interacting.author" == colnames(private$commit.interactions))
+            if (length(indices.to.remove)>0) {
+                private$commit.interactions = private$commit.interactions[, -indices.to.remove]
+            }
+
             ## get relevant data from commits
             commit.data.subset = data.frame(hash = private$commits.unfiltered[["hash"]],
                                             author.name = private$commits.unfiltered[["author.name"]])
