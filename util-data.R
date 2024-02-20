@@ -426,11 +426,15 @@ ProjectData = R6::R6Class("ProjectData",
             ## merge commit interactions with commits and change colnames to avoid duplicates
             commit.interaction.data = merge(private$commit.interactions, commit.data.subset,
                                             by.x = "base.hash", by.y = "hash")
-            colnames(commit.interaction.data)[[7]] = "base.author"
+
+            author.index = match("author.name", colnames(commit.interaction.data))
+            colnames(commit.interaction.data)[[author.index]] = "base.author"
 
             commit.interaction.data = merge(commit.interaction.data, commit.data.subset,
                                             by.x = "commit.hash", by.y = "hash")
-            colnames(commit.interaction.data)[[8]] = "interacting.author"
+
+            author.index = match("author.name", colnames(commit.interaction.data))
+            colnames(commit.interaction.data)[[author.index]] = "interacting.author"
 
             private$commit.interactions = commit.interaction.data
 
