@@ -408,19 +408,30 @@ ProjectData = R6::R6Class("ProjectData",
             }
         },
 
+        ## * * Commit Interaction data --------------------------------------------------
+
+        #' Update the commit-interactions 
+        #'
+        #' This method should be called whenever the field \code{commit.interactions} is changed.
         update.commit.interactions = function() {
             if (!self$is.data.source.cached("commits.unfiltered")) {
                 self$get.commits()
             }
-            commit.data.subset = data.frame(hash = private$commits.unfiltered[["hash"]], author.name = private$commits.unfiltered[["author.name"]])
+
+            ## get relevant data from commits
+            commit.data.subset = data.frame(hash = private$commits.unfiltered[["hash"]],
+                                            author.name = private$commits.unfiltered[["author.name"]])
             commit.data.subset = commit.data.subset[!duplicated(commit.data.subset[["hash"]]),]
-            
-            commit.interaction.data = merge(private$commit.interactions, commit.data.subset, by.x = "base.hash", by.y = "hash")
+
+            ## merge commit interactions with commits and change colnames to avoid duplicates
+            commit.interaction.data = merge(private$commit.interactions, commit.data.subset,
+                                            by.x = "base.hash", by.y = "hash")
             colnames(commit.interaction.data)[[7]] = "base.author"
 
-            commit.interaction.data = merge(commit.interaction.data, commit.data.subset, by.x = "commit.hash", by.y = "hash")
+            commit.interaction.data = merge(commit.interaction.data, commit.data.subset,
+                                            by.x = "commit.hash", by.y = "hash")
             colnames(commit.interaction.data)[[8]] = "interacting.author"
-            
+
             private$commit.interactions = commit.interaction.data
 
         },
