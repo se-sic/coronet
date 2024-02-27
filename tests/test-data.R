@@ -543,6 +543,12 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(),
                                   proj.data.two$get.commit.interactions())))
 
+    ## The data frame should still have 4 entries:
+    expect_true(nrow(proj.data.one$get.commit.interactions()) == 4)
+    ## after cleanup is called, the data frame should only have 3 entries:
+    proj.data.one$cleanup.commit.interactions()
+    expect_true(nrow(proj.data.one$get.commit.interactions()) == 3)
+
     ## set commit list of one project data to empty and test that last
     ## two rows of result data frame are empty
     proj.data.two$set.commits(create.empty.commits.list())
