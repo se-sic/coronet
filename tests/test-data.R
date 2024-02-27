@@ -540,5 +540,36 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     commit.data[["hash"]][[5]] = 1
     proj.data.one$set.commits(commit.data)
 
-    expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(), proj.data.two$get.commit.interactions())))
+    expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(),
+                                  proj.data.two$get.commit.interactions())))
+
+    ## set commit list of one project data to empty and test that last
+    ## two rows of result data frame are empty
+    proj.data.two$set.commits(create.empty.commits.list())
+
+    ## create empty data frame of correct size
+    commit.interactions.data.expected = data.frame(matrix(nrow = 4, ncol = 8))
+    ## assure that the correct type is used
+    for(i in seq_len(8)) {
+        commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
+    }
+    ## set everything except for authors as expected
+    colnames(commit.interactions.data.expected) = c("commit.hash", "base.hash", "func", "file",
+                                                    "base.func", "base.file", "base.author",
+                                                    "interacting.author")
+    commit.interactions.data.expected[["commit.hash"]] =
+                                                        c("0a1a5c523d835459c42f33e863623138555e2526",
+                                                        "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                                        "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                                        "d01921773fae4bed8186b0aa411d6a2f7a6626e6")
+    commit.interactions.data.expected[["base.hash"]] =
+                                                      c("3a0ed78458b3976243db6829f63eba3eead26774",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526",
+                                                        "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526")
+    commit.interactions.data.expected[["func"]] = c("test2.c", "test2.c", "test.c", "test2.c")
+    commit.interactions.data.expected[["file"]] = c("test2.c", "test2.c", "test.c", "test2.c")
+    commit.interactions.data.expected[["base.func"]] = c("test2.c", "test2.c", "test.c", "test2.c")
+    commit.interactions.data.expected[["base.file"]] = c("test2.c", "test2.c", "test.c", "test2.c")
+    expect_equal(proj.data.two$get.commit.interactions(), commit.interactions.data.expected)
 })

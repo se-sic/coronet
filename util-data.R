@@ -420,11 +420,11 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## remove existing columns named 'base.author' and 'interaction.author'
             indices.to.remove = which("base.author" == colnames(private$commit.interactions))
-            if (length(indices.to.remove)>0) {
+            if (length(indices.to.remove) > 0) {
                 private$commit.interactions = private$commit.interactions[, -indices.to.remove]
             }
             indices.to.remove = which("interacting.author" == colnames(private$commit.interactions))
-            if (length(indices.to.remove)>0) {
+            if (length(indices.to.remove) > 0) {
                 private$commit.interactions = private$commit.interactions[, -indices.to.remove]
             }
 
@@ -435,17 +435,24 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## merge commit interactions with commits and change colnames to avoid duplicates
             commit.interaction.data = merge(private$commit.interactions, commit.data.subset,
-                                            by.x = "base.hash", by.y = "hash")
+                                            by.x = "base.hash", by.y = "hash", all.x = TRUE)
 
             author.index = match("author.name", colnames(commit.interaction.data))
             colnames(commit.interaction.data)[[author.index]] = "base.author"
 
             commit.interaction.data = merge(commit.interaction.data, commit.data.subset,
-                                            by.x = "commit.hash", by.y = "hash")
+                                            by.x = "commit.hash", by.y = "hash", all.x = TRUE)
 
             author.index = match("author.name", colnames(commit.interaction.data))
             colnames(commit.interaction.data)[[author.index]] = "interacting.author"
 
+            ## warning if we have interactions without authors
+            if (anyNA(commit.interaction.data[["base.author"]]) ||
+                anyNA(commit.interaction.data[["interacting.author"]])) {
+                logging::logwarn("There are authors in the commit-interactions that are not in the commit data!
+                                  This results in the commit-interactions having empty entries.
+                                  To clean up these entries, call cleanup.commit.interactions.")
+            }
             private$commit.interactions = commit.interaction.data
 
         },
