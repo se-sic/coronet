@@ -1288,6 +1288,24 @@ ProjectData = R6::R6Class("ProjectData",
             private$commit.interactions = data
         },
 
+        #' Remove lines in the commit-interactions data that do not contain authors.
+        #' This should only be called AFTER 'update.commit.interactions' has already been called, as otherwise
+        #' all commit-interactions data will be removed
+        cleanup.commit.interactions = function() {
+            logging::loginfo("Cleaning up commit-interactions")
+
+            ## remove commit-interactions that do not contain author in 'base.author'
+            indices.to.remove = which(is.na(private$commit.interactions[["base.author"]]))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[-indices.to.remove, ]
+            }
+            ## remove commit-interactions that do not contain author in 'interacting.author'
+            indices.to.remove = which(is.na(private$commit.interactions[["interacting.author"]]))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[-indices.to.remove, ]
+            }
+        },
+
         #' Get the synchronicity data. If it is not already stored in the ProjectData, this function triggers a read in
         #' from disk.
         #'
