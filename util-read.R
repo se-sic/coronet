@@ -850,13 +850,15 @@ create.empty.pasta.list = function() {
 ## column names of a dataframe containing commit interaction data (see function \code{read.commit.interactions})
 COMMIT.INTERACTION.LIST.COLUMNS = c(
     "func", "commit.hash", "file",
-    "base.hash", "base.func", "base.file"
+    "base.hash", "base.func", "base.file",
+    "base.author", "interacting.author"
 )
 
 ## declare the datatype for each column in the constant 'COMMIT.INTERACTION.LIST.COLUMNS'
 COMMIT.INTERACTION.LIST.DATA.TYPES = c(
     "character", "character", "character",
-    "character", "character", "character"
+    "character", "character", "character",
+    "character", "character"
 )
 
 #' Read and parse the commit-interaction data. This data is present in a `.yaml` file which
@@ -918,11 +920,14 @@ read.commit.interactions = function(data.path = NULL) {
             interacting.hashes.df$base.file = file.name.map$get(function.name)
             return(interacting.hashes.df)
         })))
+        interactions["base.author"] = NA_character_
+        interactions["interacting.author"] = NA_character_
         return(interactions)
     })))
 
     ## remove all duplicate entries from the resulting dataframe
     commit.interaction.data = commit.interaction.data[!duplicated(commit.interaction.data), ]
+    verify.data.frame.columns(commit.interaction.data, COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES)
     return(commit.interaction.data)
 }
 
