@@ -1788,7 +1788,7 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 #'         empty relation, i.e. \code{character(0)}
 get.data.sources.from.relations = function(network) {
     ## get all relations in the network
-    data.sources = unique(igraph::E(network)$relation)
+    data.sources = unique(unlist(igraph::E(network)$relation))
 
     ## map them to data sources respectively using the defined translation constant
     data.sources = sapply(data.sources, function(relation) {
