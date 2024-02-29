@@ -22,7 +22,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -292,11 +292,11 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
                                                     project.conf.new = project.conf.new)
 
         ## extract bins
-        bins.date.middle = attr(cf.data.sliding, "bins")
+        bins.date.middle = get.date.string(attr(cf.data.sliding, "bins"))
 
         ## Both, the last sliding range and the last regular range end at the very last item.
         ## This is the case because the end of the data is never cropped (like the beginning is).
-        ## split.data.activity.based, which is invoked to obtain both set of ranges, creates
+        ## 'split.data.activity.based', which is invoked to obtain both set of ranges, creates
         ## ranges until all elements are in one.
         ##
         ## The conditional below inspects whether the very last item is in the first or the second
@@ -307,7 +307,8 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
         ## will be a sliding range (which started at the half of the last regular range) which
         ## contains only items also included in the last regular range, which makes the sliding
         ## range obsolete.
-        if ((items.unique.count %% activity.amount) > offset.start) {
+        length.of.last.range = items.unique.count %% activity.amount
+        if (length.of.last.range > offset.start || length.of.last.range == 0) {
             cf.data.sliding = cf.data.sliding[-length(cf.data.sliding)]
             bins.date.middle = bins.date.middle[-length(bins.date.middle)]
         } else {
@@ -472,7 +473,6 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
     return(data.split)
 }
 
-
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Split networks ----------------------------------------------------------
 
@@ -534,28 +534,20 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     if (sliding.window) {
         ranges = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
                                               time.period = time.period, overlap = 0.5, raw = FALSE,
-                                              include.end.date = FALSE) # bins have already been prepared correctly
-        bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
-                                                 time.period = time.period, overlap = 0.5, raw = TRUE,
-                                                 include.end.date = FALSE) # bins have already been prepared correctly
-        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
-
-        logging::loginfo("Splitting network into time ranges [%s].",
+                                              include.end.date = FALSE)
+        logging::loginfo("Splitting network into overlapping time ranges [%s].",
                          paste(ranges, collapse = ", "))
         nets = split.network.time.based.by.ranges(network, ranges, remove.isolates)
     } else {
-        logging::loginfo("Splitting network into bins [%s].",
-                         paste(bins.date, collapse = ", "))
-        nets = split.network.by.bins(network, bins, bins.vector, remove.isolates)
+        revs = get.date.string(bins.date)
+        ranges = construct.ranges(revs, sliding.window = FALSE)
+        logging::loginfo("Splitting network into non-overlapping time ranges [%s].",
+                         paste(ranges, collapse = ", "))
+        nets = split.network.by.bins(network, bins, bins.vector, bins.date, remove.isolates)
     }
 
-    ## set bin attribute
-    attr(nets, "bins") = bins.date
-
     ## set ranges as names
-    revs = get.date.string(bins.date)
-    names(nets) = construct.ranges(revs, sliding.window = sliding.window)
-
+    names(nets) = ranges
     return(nets)
 }
 
@@ -615,10 +607,6 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
             ranges = construct.overlapping.ranges(start = min(dates), end = max(dates),
                                                   time.period = time.period, overlap = 0.5, raw = FALSE,
                                                   include.end.date = TRUE)
-            bins.info = construct.overlapping.ranges(start = min(dates), end = max(dates),
-                                                     time.period = time.period, overlap = 0.5, raw = TRUE,
-                                                     include.end.date = TRUE)
-            bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
         } else {
             bins.info = split.get.bins.time.based(dates, time.period, number.windows)
             bins.date = get.date.from.string(bins.info[["bins"]])
@@ -636,7 +624,6 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
         if (sliding.window) {
             nets = split.network.time.based.by.ranges(network = net, ranges = ranges,
                                                       remove.isolates = remove.isolates)
-            attr(nets, "bins") = bins.date
         } else {
             nets = split.network.time.based(network = net, bins = bins.date, sliding.window = sliding.window,
                                             remove.isolates = remove.isolates)
@@ -717,7 +704,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
     bins.vector = bins.vector[ with(df, order(my.unique.id)) ] # re-order to get igraph ordering
     bins = sort(unique(bins.vector))
     ## split network by bins
-    networks = split.network.by.bins(network, bins, bins.vector, remove.isolates)
+    networks = split.network.by.bins(network, bins, bins.vector, remove.isolates = remove.isolates)
 
     if (number.edges >= edge.count) {
         logging::logwarn("Sliding-window approach does not apply: not enough edges (%s) for number of edges %s",
@@ -735,16 +722,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
         ## offsets used for cropping (half the first/last bin)
         offset.start = floor(number.edges / 2)
-        offset.end = (edge.count - offset.start) %% number.edges
-        ## cut the data appropriately
-        if (offset.end > 0) {
-            edges.cut = c(
-                edges.by.date[seq_len(offset.start)],
-                edges.by.date[seq(from = (edge.count - offset.end + 1), to = edge.count)]
-            )
-        } else {
-            edges.cut = edges.by.date[seq_len(offset.start)]
-        }
+        edges.cut = edges.by.date[seq_len(offset.start)]
 
         ## delete edges from the network and create a new network
         network.cut = igraph::delete.edges(network, igraph::E(network)[edges.cut])
@@ -753,37 +731,45 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges,
                                                         sliding.window = FALSE)
 
-        ## append data to normally-split data
-        networks = append(networks, networks.sliding)
-
         ## compute bins for sliding windows: pairwise middle between dates
-        bins.date.middle = attr(networks.sliding, "bins")
+        bins.date.middle = get.date.string(attr(networks.sliding, "bins"))
 
-        ## sort data object properly by bin starts
-        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
-        networks = networks[ order(bins.ranges.start) ]
-
-        ## construct proper bin vectors for configuration
-        bins.date = sort(c(bins.date, bins.date.middle))
-
-        ## if the last regular range and the last sliding-window range end at the same time
-        ## and the latter contains the former's edges, then:
-        ## remove the last regular range as it is not complete and we don't loose data when removing it
-        edges.last.regular = igraph::E(networks[[length(networks)]])
-        edges.last.sliding = igraph::E(networks[[length(networks) - 1]])
-        if (bins.date[length(bins.date)] == bins.date.middle[length(bins.date.middle)]
-            && all(edges.last.regular %in% edges.last.sliding)
-            && table(edges.last.regular$date) %in% table(edges.last.sliding$date) ) {
-
+        ## Both, the last sliding network and the last regular network end at the very last edge.
+        ## This is the case because the end of the edges is never cropped (like the beginning is).
+        ## Both 'split.network.activity.based', and 'split.network.by.bins', which are invoked to obtain
+        ## the two set of networks, creates networks until all edges are contained.
+        ##
+        ## The conditional below inspects whether the very last edge is in the first or the second
+        ## half of the last regular network. If it is in the first half, there will be a sliding
+        ## network which covers all edges of the last regular network which makes the last regular
+        ## network obsolete.
+        ## Similarely if the last edge is in the second half of the last regular network, there
+        ## will be a sliding network (which started at the half of the last regular network) which
+        ## contains only edges also included in the last regular network, which makes the sliding
+        ## network obsolete.
+        length.of.last.range = edge.count %% number.edges
+        if (length.of.last.range > offset.start || length.of.last.range == 0) {
+            networks.sliding = networks.sliding[-length(networks.sliding)]
+            bins.date.middle = bins.date.middle[-length(bins.date.middle)]
+        } else {
             networks = networks[-length(networks)]
             bins.date = bins.date[-length(bins.date)]
             bins = bins[-length(bins)]
         }
 
+        ## append sliding networks to normally-split networks
+        networks = append(networks, networks.sliding)
+
+        ## sort networks properly by bin starts
+        bins.ranges.start = c(head(bins.date, -1), head(bins.date.middle, -1))
+        networks = networks[ order(bins.ranges.start) ]
+
+        ## construct proper bin vectors for configuration
+        bins.date = sort(c(bins.date, bins.date.middle))
     }
 
     ## set bin attribute
-    attr(networks, "bins") = bins.date
+    attr(networks, "bins") = get.date.from.string(bins.date)
 
     ## set ranges as names
     revs = get.date.string(bins.date)
@@ -818,11 +804,9 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
     ranges.bounds = lapply(ranges, get.range.bounds)
 
     ## loop over all ranges and split the network accordingly:
-    nets.split = mapply(
-        ranges, ranges.bounds, SIMPLIFY = FALSE,
-        FUN = function(range, start.end) {
+    nets.split = lapply(ranges.bounds, function(bounds) {
             ## 1) split the network to the current range
-            range.net = split.network.time.based(network, bins = start.end, sliding.window = FALSE,
+            range.net = split.network.time.based(network, bins = bounds, sliding.window = FALSE,
                                                  remove.isolates = remove.isolates)[[1]]
 
             ## 2) return the network
@@ -830,6 +814,12 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
         }
     )
 
+    ## convert ranges to bins
+    bins.starts = sapply(ranges.bounds, function(range) range[1])
+    bins.end = ranges.bounds[[length(ranges.bounds)]][2]
+    bins.date = get.date.from.unix.timestamp(c(bins.starts, bins.end))
+
+    attr(nets.split, "bins") = bins.date
     return(nets.split)
 }
 
@@ -855,10 +845,12 @@ split.dataframe.by.bins = function(df, bins) {
 #' @param network a network
 #' @param bins a vector with the unique bin identifiers, describing the order in which the bins are created
 #' @param bins.vector a vector of length 'ecount(network)' assigning a bin for each edge of 'network'
+#' @param bins.date a vector of dates representing the start of each bin. If present, then the dates will be set
+#'                  as an attribute on the returned networks [default: NULL]
 #' @param remove.isolates whether to remove isolates in the resulting split networks [default: TRUE]
 #'
 #' @return a list of networks, with the length of 'unique(bins.vector)'
-split.network.by.bins = function(network, bins, bins.vector, remove.isolates = TRUE) {
+split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, remove.isolates = TRUE) {
     logging::logdebug("split.network.by.bins: starting.")
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
@@ -869,6 +861,10 @@ split.network.by.bins = function(network, bins, bins.vector, remove.isolates = T
         g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
+    ## set 'bins' attribute, if specified
+    if (!is.null(bins.date)) {
+        attr(nets, "bins") = get.date.from.string(bins.date)
+    }
     logging::logdebug("split.network.by.bins: finished.")
     return(nets)
 }
@@ -1048,7 +1044,7 @@ split.data.by.time.or.bins = function(project.data, splitting.length, bins, spli
         bins.info = construct.overlapping.ranges(start = min(bins.date), end = max(bins.date),
                                                  time.period = splitting.length, overlap = 0.5, raw = TRUE,
                                                  include.end.date = FALSE) # bins have already been prepared correctly
-        bins.date = sort(unname(unique(get.date.from.unix.timestamp(unlist(bins.info)))))
+        bins.date = get.bin.dates.from.ranges(bins.info)
         bins = get.date.string(bins.date)
 
         logging::loginfo("Splitting data '%s' into time ranges using sliding windows [%s].",

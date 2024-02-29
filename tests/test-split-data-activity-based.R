@@ -19,7 +19,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 context("Splitting functionality, activity-based splitting of data.")
@@ -87,14 +87,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
+
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
         names(actual) = names(expected.config)
@@ -114,8 +116,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:46, 50:51, 53:55), ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 25, ],
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:48, 52:53, 55:57), ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 27, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$issues[0, ]
         ),
         mails = list(
@@ -170,13 +172,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 18,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -193,7 +196,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(16:17, 22:25, 33, 42:46, 50:51, 53:55), ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(18:19, 24:27, 35, 44:48, 52:53, 55:57), ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[15:16, ] # when pasta is not configured: rownames(data$mails) %in% 16:17
@@ -269,15 +272,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2010-07-12 11:05:35", "2010-07-12 12:05:41",
+                  "2010-07-12 12:05:44" ,"2016-07-12 15:58:40", "2016-07-12 16:05:37",
+                  "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 11:05:35", "2010-07-12 12:05:41",
-                            "2010-07-12 12:05:44" ,"2016-07-12 15:58:40", "2016-07-12 16:05:37",
-                            "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -307,8 +311,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2004-10-09 18:38:13-2010-07-12 11:05:35" = data$issues[0, ],
             "2010-07-12 11:05:35-2010-07-12 12:05:41" = data$issues[0, ],
             "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$issues[0, ],
-            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 31:32, 48:49), ],
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:45, 50:51, 53:55), ],
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 33:34, 50:51), ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:47, 52:53, 55:57), ],
             "2016-07-12 16:05:37-2016-07-12 16:05:38" = data$issues[0, ]
         ),
         mails = list(
@@ -373,13 +377,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 26,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -396,7 +401,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commit.messages
         ),
         issues = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
@@ -472,15 +477,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2013-05-25 06:22:23", "2016-07-12 15:59:59",
+                  "2016-07-12 16:06:30", "2016-08-07 15:37:02", "2017-05-23 12:31:34",
+                  "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 9,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2013-05-25 06:22:23", "2016-07-12 15:59:59",
-                            "2016-07-12 16:06:30", "2016-08-07 15:37:02", "2017-05-23 12:31:34",
-                            "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -508,11 +514,11 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         ),
         issues = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$issues[rownames(data$issues) %in% 1:10, ],
-            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 22:24, 31:32, 42:43, 48:49), ],
-            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(16:17, 33, 44:46, 50:51, 53:55), ],
-            "2016-07-12 16:06:30-2016-08-07 15:37:02" = data$issues[rownames(data$issues) %in% c(18:21, 25:26, 29:30, 47, 52), ],
-            "2016-08-07 15:37:02-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(14:15, 27:28, 34:38, 41), ],
-            "2017-05-23 12:31:34-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(39:40), ]
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 24:26, 33:34, 44:45, 50:51), ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(18:19, 35, 46:48, 52:53, 55:57), ],
+            "2016-07-12 16:06:30-2016-08-07 15:37:02" = data$issues[rownames(data$issues) %in% c(20:23, 27:28, 31:32, 49, 54), ],
+            "2016-08-07 15:37:02-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(14:17, 29:30, 36:40, 43), ],
+            "2017-05-23 12:31:34-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(41:42), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -576,13 +582,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
-        split.length = 65,
+        split.length = 67,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -675,14 +682,15 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                  "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = TRUE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
-                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -705,10 +713,10 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:46, 50:51, 53:55), ],
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(16:17, 33, 45:46, 50:51, 53:55), ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 25, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 25, ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:48, 52:53, 55:57), ],
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(18:19, 35, 47:48, 52:53, 55:57), ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 27, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 27, ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -766,13 +774,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 18,
         split.basis = "commits",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -789,7 +798,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(16:17, 22:25, 33, 42:46, 50:51, 53:55), ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(18:19, 24:27, 35, 44:48, 52:53, 55:57), ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:33" = data$mails[15:16, ] # when pasta is not configured: rownames(data$mails) %in% 16:17
@@ -869,15 +878,16 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
+                  "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
+                  "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "commits",
         split.sliding.window = TRUE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:06:10",
-                            "2016-07-12 16:06:20", "2016-07-12 16:06:32", "2016-07-12 16:06:32",
-                            "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -902,10 +912,10 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:46, 50:51, 53:55), ],
-            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(16:17, 33, 45:46, 50:51, 53:55), ],
-            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 25, ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 25, ],
+            "2016-07-12 15:58:59-2016-07-12 16:06:10" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:48, 52:53, 55:57), ],
+            "2016-07-12 16:00:45-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(18:19, 35, 47:48, 52:53, 55:57), ],
+            "2016-07-12 16:06:10-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 27, ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:32" = data$issues[rownames(data$issues) == 27, ],
             "2016-07-12 16:06:32-2016-07-12 16:06:33" = data$issues[0, ]
         ),
         mails = list(
@@ -1000,16 +1010,17 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2005-02-09 18:49:49", "2010-07-12 11:05:35",
+                  "2010-07-12 12:05:34", "2010-07-12 12:05:41", "2010-07-12 12:05:42",
+                  "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2016-07-12 15:58:40",
+                  "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 3,
         split.basis = "mails",
         split.sliding.window = TRUE,
-        split.revisions = c("2004-10-09 18:38:13", "2005-02-09 18:49:49", "2010-07-12 11:05:35",
-                            "2010-07-12 12:05:34", "2010-07-12 12:05:41", "2010-07-12 12:05:42",
-                            "2010-07-12 12:05:44", "2010-07-12 12:05:45", "2016-07-12 15:58:40",
-                            "2016-07-12 15:58:50", "2016-07-12 16:05:37", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1050,10 +1061,10 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2010-07-12 12:05:34-2010-07-12 12:05:42" = data$issues[0, ],
             "2010-07-12 12:05:41-2010-07-12 12:05:44" = data$issues[0, ],
             "2010-07-12 12:05:42-2010-07-12 12:05:45" = data$issues[0, ],
-            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 31:32, 48:49), ],
-            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$issues[rownames(data$issues) %in% c(1:13, 31:32, 48:49), ],
-            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:45, 50:51, 53:55), ],
-            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:45, 50:51, 53:55), ]
+            "2010-07-12 12:05:44-2016-07-12 15:58:40" = data$issues[rownames(data$issues) %in% c(1:13, 33:34, 50:51), ],
+            "2010-07-12 12:05:45-2016-07-12 15:58:50" = data$issues[rownames(data$issues) %in% c(1:13, 33:34, 50:51), ],
+            "2016-07-12 15:58:40-2016-07-12 16:05:37" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:47, 52:53, 55:57), ],
+            "2016-07-12 15:58:50-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:47, 52:53, 55:57), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -1129,13 +1140,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 26,
         split.basis = "mails",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2004-10-09 18:38:13", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)            
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1152,7 +1164,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$commit.messages
         ),
         issues = list(
-            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
+            "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
         ),
         mails = list(
             "2004-10-09 18:38:13-2016-07-12 16:05:38" = data$mails
@@ -1232,16 +1244,17 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2013-05-06 01:04:34", "2013-05-25 06:22:23",
+                  "2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 16:02:02",
+                  "2016-07-12 16:06:30", "2016-07-27 20:12:08", "2016-08-07 15:37:02",
+                  "2016-10-05 16:45:09", "2017-05-23 12:31:34", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 9,
         split.basis = "issues",
         split.sliding.window = TRUE,
-        split.revisions = c("2013-04-21 23:52:09", "2013-05-06 01:04:34", "2013-05-25 06:22:23",
-                            "2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 16:02:02",
-                            "2016-07-12 16:06:30", "2016-07-27 20:12:08", "2016-08-07 15:37:02",
-                            "2016-10-05 16:45:09", "2017-05-23 12:31:34", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1277,15 +1290,15 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
         ),
         issues = list(
             "2013-04-21 23:52:09-2013-05-25 06:22:23" = data$issues[rownames(data$issues) %in% 1:10, ],
-            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$issues[rownames(data$issues) %in% c(6:13, 48:49), ],
-            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 22:24, 31:32, 42:43, 48:49), ],
-            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(16, 22:24, 31:32, 42:45, 53), ],
-            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(16:17, 33, 44:46, 50:51, 53:55), ],
-            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$issues[rownames(data$issues) %in% c(17:19, 25, 33, 46:47, 50:51, 54:55), ],
-            "2016-07-12 16:06:30-2016-08-07 15:37:02" = data$issues[rownames(data$issues) %in% c(18:21, 25:26, 29:30, 47, 52), ],
-            "2016-07-27 20:12:08-2016-10-05 16:45:09" = data$issues[rownames(data$issues) %in% c(20:21, 26:27, 29:30, 34:35, 41, 52), ],
-            "2016-08-07 15:37:02-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(14:15, 27:28, 34:38, 41), ],
-            "2016-10-05 16:45:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:15, 28, 36:40), ]
+            "2013-05-06 01:04:34-2016-07-12 15:30:02" = data$issues[rownames(data$issues) %in% c(6:13, 50:51), ],
+            "2013-05-25 06:22:23-2016-07-12 15:59:59" = data$issues[rownames(data$issues) %in% c(11:13, 24:26, 33:34, 44:45, 50:51), ],
+            "2016-07-12 15:30:02-2016-07-12 16:02:02" = data$issues[rownames(data$issues) %in% c(18, 24:26, 33:34, 44:47, 55), ],
+            "2016-07-12 15:59:59-2016-07-12 16:06:30" = data$issues[rownames(data$issues) %in% c(18:19, 35, 46:48, 52:53, 55:57), ],
+            "2016-07-12 16:02:02-2016-07-27 20:12:08" = data$issues[rownames(data$issues) %in% c(19:21, 27, 35, 48:49, 52:53, 56:57), ],
+            "2016-07-12 16:06:30-2016-08-07 15:37:02" = data$issues[rownames(data$issues) %in% c(20:23, 27:28, 31:32, 49, 54), ],
+            "2016-07-27 20:12:08-2016-10-05 16:45:09" = data$issues[rownames(data$issues) %in% c(22:23, 28:29, 31:32, 36:37, 43, 54), ],
+            "2016-08-07 15:37:02-2017-05-23 12:31:34" = data$issues[rownames(data$issues) %in% c(14:17, 29:30, 36:40, 43), ],
+            "2016-10-05 16:45:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:17, 30, 38:42), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -1361,13 +1374,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (activity
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
-        split.length = 65,
+        split.length = 67,
         split.basis = "issues",
         split.sliding.window = FALSE, # The sliding-window approach does not apply if we only have one range or less
-        split.revisions = c("2013-04-21 23:52:09", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1459,13 +1473,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33")
     expected.config = list(
         split.type = "activity-based",
         split.length = 4,
         split.basis = "commits",
         split.sliding.window = FALSE,
-        split.revisions = c("2016-07-12 15:58:59", "2016-07-12 16:06:20", "2016-07-12 16:06:33"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1484,8 +1499,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
             "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(16:17, 22:24, 33, 42:46, 50:51, 53:55), ],
-            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 25, ]
+            "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 35, 44:48, 52:53, 55:57), ],
+            "2016-07-12 16:06:20-2016-07-12 16:06:33" = data$issues[rownames(data$issues) == 27, ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:06:20" = data$mails[15:16, ], # when pasta is not configured: rownames(data$mails) %in% 16:17
@@ -1585,13 +1600,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38")
     expected.config = list(
         split.type = "activity-based",
         split.length = 8,
         split.basis = "mails",
         split.sliding.window = FALSE,
-        split.revisions = c("2004-10-09 18:38:13", "2010-07-12 12:05:43", "2016-07-12 16:05:38"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1611,7 +1627,7 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
         ),
         issues = list(
             "2004-10-09 18:38:13-2010-07-12 12:05:43" = data$issues[0, ],
-            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 16:17, 22:24, 31:33, 42:45, 48:51, 53:55), ]
+            "2010-07-12 12:05:43-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:13, 18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -1712,13 +1728,14 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
                  info = "Splitting must not modify the original ProjectConf.")
 
     ## test that the config contains the correct splitting information
+    revisions = c("2013-04-21 23:52:09", "2016-07-12 16:03:59", "2017-05-23 12:32:40")
     expected.config = list(
         split.type = "activity-based",
         split.length = 24,
         split.basis = "issues",
         split.sliding.window = FALSE,
-        split.revisions = c("2013-04-21 23:52:09", "2016-07-12 16:03:59", "2017-05-23 12:32:40"),
-        split.revision.dates = NULL
+        split.revisions = revisions,
+        split.revisions.dates = get.date.from.string(revisions)
     )
     lapply(results, function(res) {
         actual = lapply(names(expected.config), res$get.project.conf()$get.value)
@@ -1737,8 +1754,8 @@ patrick::with_parameters_test_that("Split a data object activity-based (number.w
             "2016-07-12 16:03:59-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2016-07-12 16:03:59" = data$issues[rownames(data$issues) %in% c(1:13, 16:17, 22:24, 31:32, 42:45, 48:49, 53:55), ],
-            "2016-07-12 16:03:59-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:15, 18:21, 26:29, 30, 33:40, 25, 41, 46:47, 50:52), ]
+            "2013-04-21 23:52:09-2016-07-12 16:03:59" = data$issues[rownames(data$issues) %in% c(1:13, 18:19, 24:26, 33:34, 44:47, 50:51, 55:57), ],
+            "2016-07-12 16:03:59-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:17, 20:23, 28:31, 32, 35:42, 27, 43, 48:49, 52:54), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured

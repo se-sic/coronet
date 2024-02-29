@@ -16,6 +16,7 @@
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 context("Splitting functionality, time-based splitting of networks.")
@@ -75,6 +76,12 @@ patrick::with_parameters_test_that("Split a network time-based (time.period = ..
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges.")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:59",
+                                           "2016-07-12 16:02:59", "2016-07-12 16:04:59",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -195,6 +202,13 @@ patrick::with_parameters_test_that("Split a network time-based (time.period = ..
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges.")
 
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:59:59",
+                                           "2016-07-12 16:00:59", "2016-07-12 16:01:59",
+                                           "2016-07-12 16:02:59", "2016-07-12 16:03:59",
+                                           "2016-07-12 16:04:59", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
+
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
         igraph::identical_graphs(r, e)
@@ -258,6 +272,12 @@ patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", 
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges.")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:00", "2016-07-12 16:00:59",
+                                           "2016-07-12 16:02:59", "2016-07-12 16:04:59",
+                                           "2016-07-12 17:21:43"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -365,6 +385,12 @@ patrick::with_parameters_test_that("Split a network time-based with equal-sized 
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges.")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:53",
+                                           "2016-07-12 16:02:47", "2016-07-12 16:04:41",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {

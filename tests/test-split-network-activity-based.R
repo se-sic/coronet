@@ -15,6 +15,7 @@
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 context("Splitting functionality, activity-based splitting of networks.")
@@ -71,6 +72,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
 
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
+
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
         igraph::identical_graphs(r, e)
@@ -89,6 +95,10 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (2)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -110,6 +120,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.windows (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -162,13 +177,19 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
         "2016-07-12 16:05:41-2016-07-12 16:06:10" = igraph::subgraph.edges(author.net, c(3, 5)),
         "2016-07-12 16:05:41-2016-07-12 16:06:10" = igraph::subgraph.edges(author.net, c(5, 4)),
         "2016-07-12 16:06:10-2016-07-12 16:06:32" = igraph::subgraph.edges(author.net, c(4, 7)),
-        "2016-07-12 16:06:10-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(7, 6)),
+        "2016-07-12 16:06:10-2016-07-12 16:06:32" = igraph::subgraph.edges(author.net, c(7, 6)),
         "2016-07-12 16:06:32-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(6, 8))
     )
     results = split.network.activity.based(author.net, number.edges = 2, sliding.window = TRUE)
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                           "2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:32", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -190,6 +211,10 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (2)).")
 
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
+
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
         igraph::identical_graphs(r, e)
@@ -210,6 +235,11 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.windows (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:05:41", "2016-07-12 16:06:32",
+                                           "2016-07-12 16:06:33"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {
@@ -267,6 +297,13 @@ patrick::with_parameters_test_that("Split a network activity-based (number.edges
 
     ## check ranges (labels)
     expect_equal(names(results), names(expected), info = "Time ranges (number.edges (1)).")
+
+    ## check bins
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45", "2016-07-12 16:05:41",
+                                           "2016-07-12 16:05:41", "2016-07-12 16:06:10", "2016-07-12 16:06:10",
+                                           "2016-07-12 16:06:32", "2016-07-12 16:06:32", "2020-02-20 20:20:20",
+                                           "2020-02-20 20:20:21"))
+    expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
     check.identical = mapply(results, expected, FUN = function(r, e) {

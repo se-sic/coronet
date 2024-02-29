@@ -21,7 +21,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -486,10 +486,56 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net.data.raw = private$proj.data[[DATASOURCE.TO.ARTIFACT.FUNCTION[["issues"]]]]()
 
             ## obtain issue-connecting events
-            add.links = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "add_link" & 
+            add.links = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "add_link" &
                                                artifacts.net.data.raw$event.info.2 == "issue", ]
-            referenced.bys = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "referenced_by" & 
+            referenced.bys = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "referenced_by" &
                                                artifacts.net.data.raw$event.info.2 == "issue", ]
+
+            ## the codeface extraction for jira issues creates duplicate events, linking the referenced issue
+            ## to the referencing issue, in addition to the correct events, linking the referencing issue to
+            ## the referenced issue. We can only deduplicate them, if we build an undirected network, as otherwise,
+            ## we would need to guess the correct direction.
+            if (!private$network.conf$get.entry("artifact.directed")) {
+
+                ## obtain 'add_link' events from jira
+                jira.add.links = add.links[add.links$issue.source == "jira", ]
+                matched = list()
+
+                ## iterate over all add_link events from jira
+                for (i in 1:nrow(jira.add.links)) {
+
+                    add.link = jira.add.links[i, ]
+
+                    ## ensure not to remove both duplicate edges
+                    if (any(sapply(matched, function(entry) identical(entry, add.link)))) {
+                        next
+                    }
+
+                    ## match any 'add_link' events, that are the reverse direction of 'add.link',
+                    ## but have the same timestamp and author information
+                    match = jira.add.links[(
+                        jira.add.links$issue.id == add.link$event.info.1 &
+                        jira.add.links$event.info.1 == add.link$issue.id &
+                        jira.add.links$date == add.link$date &
+                        jira.add.links$author.name == add.link$author.name), ]
+
+                    ## if a match is found, remove 'add.link' and its corresponding 'referenced_by' event
+                    if (nrow(match) > 0) {
+                        add.links = add.links[!(
+                            add.links$issue.id == match$issue.id &
+                            add.links$event.info.1 == match$event.info.1 &
+                            add.links$date == match$date &
+                            add.links$author.name == match$author.name), ]
+                        referenced.bys = referenced.bys[!(
+                            referenced.bys$issue.id == add.link$issue.id &
+                            referenced.bys$event.info.1 == add.link$event.info.1 &
+                            referenced.bys$date == add.link$date &
+                            referenced.bys$author.name == add.link$author.name), ]
+                        matched = append(matched, list(match))
+                    }
+                }
+            }
+
 
             if (nrow(add.links) != nrow(referenced.bys)) {
                 logging::logwarn("Inconsistent issue data. Unequally many 'add_link' and 'referenced_by' issue-events.")
@@ -515,8 +561,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## construct edge
                 to = subset(referenced.bys,
-                            event.info.1 == from[["issue.id"]] & 
-                            author.name == from[["author.name"]] & 
+                            event.info.1 == from[["issue.id"]] &
+                            author.name == from[["author.name"]] &
                             date == from[["date"]])
                 if (!all(is.na(to))) {
                     combination = list("from" = from[["issue.id"]], "to" = to[["issue.id"]])

@@ -20,7 +20,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -984,6 +984,16 @@ get.range.bounds = function(range) {
     return (range)
 }
 
+#' Obtain the start and end dates from given ranges.
+#'
+#' @param ranges the ranges to get the dates from
+#'
+#' @return a vector that contains the start and end dates of all given ranges
+#'         sorted and disambiguated
+get.bin.dates.from.ranges = function(ranges) {
+    dates = sort(unique(get.date.from.unix.timestamp(unlist(ranges))))
+    return(dates)
+}
 
 #' Get the data from a data frame in a specific range.
 #'
@@ -1011,3 +1021,4 @@ get.data.from.range = function(range, data) {
         return(data.between)
     }
 }
+
