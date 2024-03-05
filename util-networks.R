@@ -381,21 +381,30 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the commit-interaction based artifact network
         get.artifact.network.commit.interaction = function() {
-          ## get the commits that appear in the commit-interaction data as the vertices of the network
-          vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
-                              private$proj.data$get.commit.interactions()[["file"]]))
-          vertices = data.frame(name = vertices)
+          ## initialize the vertices. They will be set correctly depending on the used config.
+          vertices = c()
           ## get the commit-interaction data as the edge data of the network
           edges = private$proj.data$get.commit.interactions()
+
           ## set 'to' and 'from' of the network according to the config
           ## and order the dataframe accordingly
           proj.conf = private$proj.data$get.project.conf()
           if (proj.conf$get.value("artifact") == "file") {
+              ## change the vertices to the functions from the commit-interaction data
+              vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
+                                    private$proj.data$get.commit.interactions()[["file"]]))
+              vertices = data.frame(name = vertices)
+
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
               colnames(edges)[4] = "hash"
           } else {
             if (proj.conf$get.value("artifact") == "function") {
+                ## change the vertices to the functions from the commit-interaction data
+                vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
+                                    private$proj.data$get.commit.interactions()[["func"]]))
+                vertices = data.frame(name = vertices)
+
                 edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                   "base.file", "base.author", "interacting.author")]
                 colnames(edges)[3] = "hash"
