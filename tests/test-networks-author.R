@@ -23,6 +23,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+
 ## All Rights Reserved.
 
 
@@ -676,4 +677,48 @@ test_that("Network construction with only untracked files (no edges expected)", 
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
+})
+
+test_that("Network construction with commit-interactions as relation", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.value("author.relation", "interaction")
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.author.network()
+
+    ## build the expected nbetwork
+    vertices = data.frame(
+        name = c("Olaf", "Thomas", "Björn", "Karl"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Olaf", "Thomas", "Björn", "Thomas"),
+        to = c("Thomas", "Karl", "Olaf", "Thomas"),
+        func = c("test2.c", "test2.c", "test.c", "test2.c"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        file = c("test2.c", "test2.c", "test.c", "test2.c"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.func = c("test2.c", "test2.c", "test.c", "test2.c"),
+        base.file = c("test2.c", "test2.c", "test.c", "test2.c"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("interaction", "interaction", "interaction", "interaction")
+        )
+    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
 })
