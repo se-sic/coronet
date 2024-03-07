@@ -56,7 +56,7 @@ EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
-    relation = "first",
+    relation = function(relation) sort(unique(relation)),
 
     ## commit data
     changed.files = "sum",
@@ -1621,9 +1621,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
         ## merge the simplified networks
         network = merge.networks(networks)
     } else {
-        relation.handling = function(relation) sort(unique(relation))
-        edge.attr.handling = modifyList(EDGE.ATTR.HANDLING, list(relation = relation.handling))
-        network = igraph::simplify(network, edge.attr.comb = edge.attr.handling,
+        network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
                                    remove.multiple = remove.multiple, remove.loops = remove.loops)
     }
 
