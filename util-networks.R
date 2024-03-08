@@ -138,7 +138,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 callgraph   = private$proj.data$get.project.conf.entry("artifact.codeface"),
                 mail        = "MailThread",
                 issue       = "Issue",
-                interaction = "Interaction"
+                interaction = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
             return(vertex.kind)
@@ -388,8 +388,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
           ## set 'to' and 'from' of the network according to the config
           ## and order the dataframe accordingly
-          proj.conf = private$proj.data$get.project.conf()
-          if (proj.conf$get.value("artifact") == "file") {
+          proj.conf.artifact = private$proj.data$get.project.conf.entry("artifact")
+          if (proj.conf.artifact == "file") {
               ## change the vertices to the functions from the commit-interaction data
               vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
                                     private$proj.data$get.commit.interactions()[["file"]]))
@@ -398,23 +398,21 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
               colnames(edges)[4] = "hash"
-          } else {
-            if (proj.conf$get.value("artifact") == "function") {
-                ## change the vertices to the functions from the commit-interaction data
-                vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
-                                    private$proj.data$get.commit.interactions()[["func"]]))
-                vertices = data.frame(name = vertices)
+          } else if (proj.conf.artifact == "function") {
+             ## change the vertices to the functions from the commit-interaction data
+             vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
+                                 private$proj.data$get.commit.interactions()[["func"]]))
+             vertices = data.frame(name = vertices)
 
-                edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
-                                  "base.file", "base.author", "interacting.author")]
-                colnames(edges)[3] = "hash"
-            } else {
-                ## if neither 'function' nor 'file' was configured, send a warning
-                ## and return an empty network
-                logging::logwarn("when creating a commit-interaction artifact network,
-                                  the artifact relation should be either 'file' or 'function'!")
-                return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
-            }
+             edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
+                               "base.file", "base.author", "interacting.author")]
+             colnames(edges)[3] = "hash"
+          } else {
+            ## if neither 'function' nor 'file' was configured, send a warning
+            ## and return an empty network
+            logging::logwarn("when creating a commit-interaction artifact network,
+                              the artifact relation should be either 'file' or 'function'!")
+            return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
           }
           colnames(edges)[1] = "to"
           colnames(edges)[2] = "from"
