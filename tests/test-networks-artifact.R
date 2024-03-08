@@ -229,7 +229,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
     ## build the expected nbetwork
     vertices = data.frame(
         name = c("test2.c", "test.c"),
-        kind = "Interaction",
+        kind = "File",
         type = TYPE.ARTIFACT
         )
     edges = data.frame(
@@ -272,7 +272,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
     ## build the expected nbetwork
     vertices = data.frame(
         name = c("test2.c", "test.c"),
-        kind = "Interaction",
+        kind = "Function",
         type = TYPE.ARTIFACT
         )
     edges = data.frame(
