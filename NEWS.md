@@ -12,6 +12,9 @@
 - Add tests for file `util-networks-misc.R` for issue #242 (PR #248, f3202a6f96723d11c170346556d036cf087521c8, 030574b9d0f3435db4032d0e195a3d407fb7244b, 380b02234275127297fcd508772c69db21c216de, 8b803c50d60fc593e4e527a08fd4c2068d801a48, 7335c3dd4d0302b024a66d18701d9800ed3fe806, 6b600df04bec1fe70c272604f274ec5309840e65)
 - Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa)
 - Add `get.bin.dates.from.ranges` function to convert date ranges into bins format (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f, 858b1812ebfc3194cc6a03c99f3ee7d161d1ca15)
+- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15)
+- Add commit-interaction networks that can be created with `create.author.network` and `create.artifact.network` if the `artifact.relation` and `author.relation` is configured to be `interaction` (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15)
+- Add tests for new commit-interaction functionality (PR #252, 3e5b8962e18c3dde45085fa764c9d084327e2773, 7685ec4745bd43fba7a373bf5544f41bff346ed9, b291cb338e1b3896c8fd9769f45c515bddb8cf48, eea1b053350094084bab957975e1b306e6c9dc23, 3d4a521e47dc81aaae8ae01ff78ca8d514bb7d85, 05ea1ce1c3330f3fb8fb28ccbc08b85fbd4ec2c8, 99103f27ad0c8ee1bd62cdcee10778a98020db70, fd6064a83a7735020ad5250d092e266af5bbada0)
 
 ### Changed/Improved
 
@@ -25,6 +28,7 @@
 - Explicitly add R version 4.3 to the CI test pipeline (9f346d5bc3cfc553f01e5e80f0bbe51e1dc2b53e)
 - Simplify call chain-, and branching-routes in network-splitting functions and consequently set the `bins` attribute on every output network-split (while minimizing recalculations) (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f)
 - Test for the presence and validity of the `bins` attribute on network-, and data-splits (PR #249, c064affcfff2eb170d8bdcb39d837a7ff62b2cbd, 93051ab848ec94de138b0513dac22f6da0d20885)
+- Change some utils functions to include functionality for new commit-interaction data and networks (PR #252, 3329a339cf4ca5634ba2f23fb0d7edd396b999a5, deddd4ce9d2a570ea57088ea73d4312f81e73049)
 
 ### Fixed
 
