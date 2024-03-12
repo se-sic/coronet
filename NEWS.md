@@ -2,6 +2,18 @@
 
 # coronet – Changelog
 
+## unversioned
+
+### Added
+
+- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15, 7792a4e9a087c042a3ef9b7f79a67490305ce85e, 178265dcc69abc0d6e430dfcbc4b87e7565ce615, 80e6ac5f24e6d0248e77be391f93a59b6b17862d, 1ffa607bbe400bd212388dc543263ba5bec4e34c)
+- Add commit-interaction networks that can be created with `create.author.network` and `create.artifact.network` if the `artifact.relation` and `author.relation` is configured to be `interaction` (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15, deddd4ce9d2a570ea57088ea73d4312f81e73049, 0e269af77bc098f2d3157fac349d2032efd6cf49, d96b10b45ec55cdf2dd02c60833d4116358d6d31)
+- Add tests for new commit-interaction functionality (PR #252, 3e5b8962e18c3dde45085fa764c9d084327e2773, 7685ec4745bd43fba7a373bf5544f41bff346ed9, b291cb338e1b3896c8fd9769f45c515bddb8cf48, eea1b053350094084bab957975e1b306e6c9dc23, 3d4a521e47dc81aaae8ae01ff78ca8d514bb7d85, 05ea1ce1c3330f3fb8fb28ccbc08b85fbd4ec2c8, 99103f27ad0c8ee1bd62cdcee10778a98020db70, fd6064a83a7735020ad5250d092e266af5bbada0)
+
+### Changed/Improved
+
+### Fixed
+
 ## 4.4
 
 ### Announcement
