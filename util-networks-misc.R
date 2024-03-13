@@ -151,7 +151,7 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
             # write a warning with the number of authors from the network that we ignore
             warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
                                      network.authors.num - nrow(matrix.data))
-            warning(warning.string)
+            logging::logwarn(warning.string)
         }
 
         ## save the activity data per author
