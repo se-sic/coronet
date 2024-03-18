@@ -781,6 +781,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             igraph::V(net)$kind = TYPE.AUTHOR
             igraph::V(net)$type = TYPE.AUTHOR
 
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
+
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
                 attr(net, "range") = private$proj.data$get.range()
@@ -821,6 +827,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
+
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
 
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
@@ -920,6 +932,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 authors = igraph::get.vertex.attribute(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
                 network = igraph::delete.vertices(network, authors.to.remove)
+            }
+
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                network = simplify.network(network, simplify.multiple.relations =
+                                                    private$network.conf$get.value("simplify.multiple.relations"))
             }
 
             ## add range attribute for later analysis (if available)
@@ -1305,12 +1323,6 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     ## initialize edge weights
     net = igraph::set.edge.attribute(net, "weight", value = 1)
-
-    ## transform multiple edges to edge weights
-    if (network.conf$get.value("simplify")) {
-        net = simplify.network(net,
-                               simplify.multiple.relations = network.conf$get.value("simplify.multiple.relations"))
-    }
 
     logging::logdebug("construct.network.from.edge.list: finished.")
 
