@@ -11,7 +11,7 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2023 by Maximilian Löffler <s8maloef@cs.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@cs.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Update system
         run: |
