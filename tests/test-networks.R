@@ -84,9 +84,6 @@ test_that("Simplify basic multi-relational network", {
     ## Simplify networks with vertices connected by multi-relational edges
     ##
 
-    ## create network configuration
-    net.conf = NetworkConf$new()
-
     ## create artifact network with vertices connected by "cochange" and "mail edges"
     network =
         igraph::make_empty_graph(n = 0, directed = FALSE) +
@@ -119,7 +116,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
-    net.conf$update.values(updated.values = list(author.relation = c("cochange", "mail")))
+    net.conf$update.values(updated.values = list(author.relation = c("cochange", "mail"), simplify = TRUE))
 
     ## construct objects
     proj.data = ProjectData$new(project.conf = proj.conf)
@@ -171,8 +168,8 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     network.expected = igraph::graph.data.frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
-    ## build network and simplify it
-    network.built = simplify.network(network.builder$get.author.network())
+    ## build simplified network
+    network.built = network.builder$get.author.network()
 
     assert.networks.equal(network.built, network.expected)
 
@@ -180,7 +177,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     ## ---------------------- simplify.multiple.relations == TRUE --------------------------- ##
 
     data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl"),
-                    comb.2. = c("Olaf", "Karl", "Thomas", "Thomas"))
+                      comb.2. = c("Olaf", "Karl", "Thomas", "Thomas"))
 
     data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",   # cochange
                                             "2016-07-12 15:58:40", "2016-07-12 15:58:50")), # mail
@@ -218,8 +215,9 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     network.expected = igraph::graph.data.frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
-    ## build network and simplify it
-    network.built = simplify.network(network.builder$get.author.network(), simplify.multiple.relations = TRUE)
+    ## build simplified network
+    network.builder$update.network.conf(updated.values = list(simplify.multiple.relations = TRUE))
+    network.built = network.builder$get.author.network()
 
     assert.networks.equal(network.built, network.expected)
 
