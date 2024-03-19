@@ -522,14 +522,14 @@ test_that("Read the commit-interactions data.", {
                                                           "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
                                                           "d01921773fae4bed8186b0aa411d6a2f7a6626e6")
     commit.interactions.data.expected[["base.hash"]] =
-                                                      c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                                      c("1143db502761379c2bfcecc2007fc34282e7ee61",
                                                         "3a0ed78458b3976243db6829f63eba3eead26774",
                                                         "0a1a5c523d835459c42f33e863623138555e2526",
                                                         "0a1a5c523d835459c42f33e863623138555e2526")
-    commit.interactions.data.expected[["func"]] = c("test.c", "test2.c", "test2.c", "test2.c")
-    commit.interactions.data.expected[["file"]] = c("test.c", "test2.c", "test2.c", "test2.c")
-    commit.interactions.data.expected[["base.func"]] = c("test.c", "test2.c", "test2.c", "test2.c")
-    commit.interactions.data.expected[["base.file"]] = c("test.c", "test2.c", "test2.c", "test2.c")
+    commit.interactions.data.expected[["func"]] = c("GLOBAL", "GLOBAL", "test2", "test2")
+    commit.interactions.data.expected[["file"]] = c("GLOBAL", "GLOBAL", "test2.c", "test2.c")
+    commit.interactions.data.expected[["base.func"]] = c("test_function", "test2", "test2", "test2")
+    commit.interactions.data.expected[["base.file"]] = c("test3.c", "test2.c", "test2.c", "test2.c")
     ## check the results
     expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
                      info = "commit interaction data.")

@@ -571,11 +571,12 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     commit.interactions.data.expected[["base.hash"]] =
                                                       c("3a0ed78458b3976243db6829f63eba3eead26774",
                                                         "0a1a5c523d835459c42f33e863623138555e2526",
-                                                        "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                                        "1143db502761379c2bfcecc2007fc34282e7ee61",
                                                         "0a1a5c523d835459c42f33e863623138555e2526")
-    commit.interactions.data.expected[["func"]] = c("test2.c", "test2.c", "test.c", "test2.c")
-    commit.interactions.data.expected[["file"]] = c("test2.c", "test2.c", "test.c", "test2.c")
-    commit.interactions.data.expected[["base.func"]] = c("test2.c", "test2.c", "test.c", "test2.c")
-    commit.interactions.data.expected[["base.file"]] = c("test2.c", "test2.c", "test.c", "test2.c")
+    commit.interactions.data.expected[["func"]] = c("GLOBAL", "test2", "GLOBAL", "test2")
+    commit.interactions.data.expected[["file"]] = c("GLOBAL", "test2.c", "GLOBAL", "test2.c")
+    commit.interactions.data.expected[["base.func"]] = c("test2", "test2", "test_function", "test2")
+    commit.interactions.data.expected[["base.file"]] = c("test2.c", "test2.c", "test3.c", "test2.c")
+
     expect_equal(proj.data.two$get.commit.interactions(), commit.interactions.data.expected)
 })

@@ -228,24 +228,24 @@ test_that("Network construction with commit-interactions as relation, artifact t
     network.built = network.builder$get.artifact.network()
     ## build the expected nbetwork
     vertices = data.frame(
-        name = c("test2.c", "test.c"),
+        name = c("test2.c", "test3.c", "GLOBAL"),
         kind = "File",
         type = TYPE.ARTIFACT
         )
     edges = data.frame(
-        from = c("test2.c", "test2.c", "test.c", "test2.c"),
-        to = c("test2.c", "test2.c", "test.c", "test2.c"),
-        func = c("test2.c", "test2.c", "test.c", "test2.c"),
+        from = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        to = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        func = c("GLOBAL", "test2", "GLOBAL", "test2"),
         hash = c("0a1a5c523d835459c42f33e863623138555e2526",
                  "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
                  "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                  "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
         base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
                       "0a1a5c523d835459c42f33e863623138555e2526",
-                      "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
                       "0a1a5c523d835459c42f33e863623138555e2526"),
-        base.func = c("test2.c", "test2.c", "test.c", "test2.c"),
-        base.author = c("Olaf", "Thomas", "Björn", "Thomas"),
+        base.func = c("test2", "test2", "test_function", "test2"),
+        base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
@@ -269,26 +269,26 @@ test_that("Network construction with commit-interactions as relation, artifact t
 
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
     network.built = network.builder$get.artifact.network()
-    ## build the expected nbetwork
+    ## build the expected network
     vertices = data.frame(
-        name = c("test2.c", "test.c"),
+        name = c("test2", "test_function", "GLOBAL"),
         kind = "Function",
         type = TYPE.ARTIFACT
         )
     edges = data.frame(
-        from = c("test2.c", "test2.c", "test.c", "test2.c"),
-        to = c("test2.c", "test2.c", "test.c", "test2.c"),
+        from = c("GLOBAL", "test2", "GLOBAL", "test2"),
+        to = c("test2", "test2", "test_function", "test2"),
         hash = c("0a1a5c523d835459c42f33e863623138555e2526",
                  "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
                  "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                  "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
-        file = c("test2.c", "test2.c", "test.c", "test2.c"),
+        file = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
         base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
                       "0a1a5c523d835459c42f33e863623138555e2526",
-                      "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
                       "0a1a5c523d835459c42f33e863623138555e2526"),
-        base.file = c("test2.c", "test2.c", "test.c", "test2.c"),
-        base.author = c("Olaf", "Thomas", "Björn", "Thomas"),
+        base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
