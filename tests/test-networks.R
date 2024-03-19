@@ -104,7 +104,6 @@ test_that("Simplify basic multi-relational network", {
 
     ## simplify network with simplifying multiple relations into single edges
     network.simplified = simplify.network(network, simplify.multiple.relations = TRUE)
-    network.simplified = simplify.network(network, simplify.multiple.relations = TRUE)
     expect_identical(igraph::ecount(simplify.network(network.simplified)), 1)
     expect_identical(igraph::E(network.simplified)$type[[1]], "Unipartite")
     expect_identical(igraph::E(network.simplified)$relation[[1]], c("cochange", "mail"))
@@ -221,6 +220,49 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
 
     assert.networks.equal(network.built, network.expected)
 
+})
+
+test_that("Simplify multiple basic multi-relational networks", {
+
+    ##
+    ## Simplify networks with vertices connected by multi-relational edges
+    ##
+
+    ## create artifact network with vertices connected by "cochange" and "mail edges"
+    network.A =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
+    network.B =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
+    for (i in 1:3) {
+        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
+    }
+
+    network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "cochange")
+    network.B.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
+        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
+        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
+
+    ## simplify networks without simplifying multiple relations into single edges
+    networks.simplified = simplify.networks(list(network.A, network.B), simplify.multiple.relations = FALSE)
+    assert.networks.equal(networks.simplified[[1]], network.A.expected)
+    assert.networks.equal(networks.simplified[[2]], network.B.expected)
+
+    ## simplify network with simplifying multiple relations into single edges
+    networks.simplified = simplify.networks(list(network.A, network.B), simplify.multiple.relations = TRUE)
+    for (i in 1:2) {
+        expect_identical(igraph::ecount(simplify.network(networks.simplified[[i]])), 1)
+        expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
+        expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
+    }
 })
 
 
