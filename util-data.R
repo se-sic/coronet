@@ -1260,7 +1260,7 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## if the commit-interaction data have not yet been read do this
             if (!self$is.data.source.cached("commit.interactions")) {
-                if(is.null(data.path)) {
+                if (is.null(data.path)) {
                   commit.interaction.data = read.commit.interactions(self$get.data.path())
                 } else {
                   commit.interaction.data = read.commit.interactions(data.path)
@@ -1282,6 +1282,9 @@ ProjectData = R6::R6Class("ProjectData",
 
             if (is.null(data)) {
                 data = create.empty.commit.interaction.list()
+            } else {
+                ## verify the format of the given dataframe
+                verify.data.frame.columns(data, COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES)
             }
 
             ## set the actual data

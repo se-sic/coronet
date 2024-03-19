@@ -903,13 +903,17 @@ read.commit.interactions = function(data.path = NULL) {
         ## get all commits that interact with the current one
         insts = current.interaction[[4]]
         interactions = data.table::setDF(data.table::rbindlist(lapply(insts, function(current.inst) {
-            base.hash = current.inst[[1]][[3]]
+            base.hash = current.inst[[1]]$`commit`
             interacting.hashes = current.inst[[2]]
             interacting.hashes.df = data.table::setDF(data.table::rbindlist(lapply(interacting.hashes, function(hash) {
                 ## if there is no function name in the current interaction we set the function name to 'GLOBAL'
                 ## as this is most likely code outside of functions, else we set the function name
                 if (!"function" %in% names(hash)) {
                     return(data.frame(func = "GLOBAL", commit.hash = hash[["commit"]], file = "GLOBAL"))
+                } else if (is.null(file.name.map$get(hash[["function"]]))) {
+                    ## This case should never occur if the data was generated correctly!
+                    warning("An interacting hash specifies a function that does not exist in the data!")
+                    return(data.frame(matrix(nrow = 3, ncol = 0)))
                 } else {
                     return(data.frame(func = hash[["function"]], commit.hash = hash[["commit"]],
                                       file = file.name.map$get(hash[["function"]])))

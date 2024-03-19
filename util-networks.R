@@ -390,7 +390,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
           ## and order the dataframe accordingly
           proj.conf.artifact = private$proj.data$get.project.conf.entry("artifact")
           if (proj.conf.artifact == "file") {
-              ## change the vertices to the functions from the commit-interaction data
+              ## change the vertices to the files from the commit-interaction data
               vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
                                     private$proj.data$get.commit.interactions()[["file"]]))
               vertices = data.frame(name = vertices)
@@ -408,7 +408,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                                "base.file", "base.author", "interacting.author")]
              colnames(edges)[3] = "hash"
           } else {
-            ## if neither 'function' nor 'file' was configured, send a warning
+            ## If neither 'function' nor 'file' was configured, send a warning
             ## and return an empty network
             logging::logwarn("when creating a commit-interaction artifact network,
                               the artifact relation should be either 'file' or 'function'!")
