@@ -874,7 +874,9 @@ read.commit.interactions = function(data.path = NULL) {
 
     file = file.path(data.path, "commit-interactions.yaml")
 
-    commit.interaction.base = try(yaml::read_yaml(file = file), silent = TRUE)
+    commit.interaction.base = try(yaml::read_yaml(file = file,
+                                                  handlers = list(int = function(x) {as.character(x)})),
+                                  silent = TRUE)
 
     ## handle the case that the list of commit-interactions is empty
     if (inherits(commit.interaction.base, "try-error")) {
