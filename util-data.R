@@ -16,7 +16,7 @@
 ## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020, 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017 by Ferdinand Frank <frankfer@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
@@ -26,6 +26,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -77,7 +78,8 @@ DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
     "synchronicity"           = "get.synchronicity",
     "pasta"                   = "get.pasta",
     "gender"                  = "get.gender",
-    "custom.event.timestamps" = "get.custom.event.timestamps"
+    "custom.event.timestamps" = "get.custom.event.timestamps",
+    "commit.interactions"     = "get.commit.interactions"
 )
 
 #' Applies a function to list keys
@@ -162,6 +164,7 @@ ProjectData = R6::R6Class("ProjectData",
         commits = create.empty.commits.list(), # data.frame
         commits.unfiltered = create.empty.commits.list(), # data.frame
         commit.messages = create.empty.commit.message.list(), # data.frame
+        commit.interactions = create.empty.commit.interaction.list(),
         ## mails
         mails.unfiltered = create.empty.mails.list(), # data.frame
         mails = create.empty.mails.list(), # data.frame
@@ -403,6 +406,55 @@ ProjectData = R6::R6Class("ProjectData",
                 logging::logwarn("There might be commit message data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.commit.message.data()'.")
             }
+        },
+
+        ## * * Commit Interaction data --------------------------------------------------
+
+        #' Update the commit-interactions 
+        #'
+        #' This method should be called whenever the field \code{commit.interactions} is changed.
+        update.commit.interactions = function() {
+            if (!self$is.data.source.cached("commits.unfiltered")) {
+                self$get.commits()
+            }
+
+            ## remove existing columns named 'base.author' and 'interaction.author'
+            indices.to.remove = which("base.author" == colnames(private$commit.interactions))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[, -indices.to.remove]
+            }
+            indices.to.remove = which("interacting.author" == colnames(private$commit.interactions))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[, -indices.to.remove]
+            }
+
+            ## get relevant data from commits
+            commit.data.subset = data.frame(hash = private$commits.unfiltered[["hash"]],
+                                            author.name = private$commits.unfiltered[["author.name"]])
+            commit.data.subset = commit.data.subset[!duplicated(commit.data.subset[["hash"]]),]
+
+            ## merge commit interactions with commits and change colnames to avoid duplicates
+            commit.interaction.data = merge(private$commit.interactions, commit.data.subset,
+                                            by.x = "base.hash", by.y = "hash", all.x = TRUE)
+
+            author.index = match("author.name", colnames(commit.interaction.data))
+            colnames(commit.interaction.data)[[author.index]] = "base.author"
+
+            commit.interaction.data = merge(commit.interaction.data, commit.data.subset,
+                                            by.x = "commit.hash", by.y = "hash", all.x = TRUE)
+
+            author.index = match("author.name", colnames(commit.interaction.data))
+            colnames(commit.interaction.data)[[author.index]] = "interacting.author"
+
+            ## warning if we have interactions without authors
+            if (anyNA(commit.interaction.data[["base.author"]]) ||
+                anyNA(commit.interaction.data[["interacting.author"]])) {
+                logging::logwarn("There are authors in the commit-interactions that are not in the commit data!
+                                  This results in the commit-interactions having empty entries.
+                                  To clean up these entries, call cleanup.commit.interactions.")
+            }
+            private$commit.interactions = commit.interaction.data
+
         },
         ## * * Gender data --------------------------------------------------
 
@@ -1109,6 +1161,17 @@ ProjectData = R6::R6Class("ProjectData",
                 }
             }
 
+            ## add commit interaction data if wanted
+            if (private$project.conf$get.value("commit.interactions")) {
+                if (!self$is.data.source.cached("commit.interactions")) {
+                    ## get data (no assignment because we just want to trigger anything commit.interaction related)
+                    self$get.commit.interactions()
+                } else {
+                    ## update all commit.interaction-related data
+                    private$update.commit.interactions()
+                }
+            }
+
             ## sort by date
             private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
 
@@ -1181,6 +1244,66 @@ ProjectData = R6::R6Class("ProjectData",
                 commit.hashes.to.eliminate = commit.hashes.to.eliminate[!is.na(commit.hashes.to.eliminate)]
                 rows.to.remove = private$commit.messages[["hash"]] %in% commit.hashes.to.eliminate
                 private$commit.messages = private$commit.messages[!rows.to.remove, ]
+            }
+        },
+
+        #' Get the commit interaction data. If no data.path is given, the standard data.path
+        #' will be used.
+        #'
+        #' @param data.path an optional different data path to the commit-interaction data
+        #'
+        #' @return the commit-interaction data
+        get.commit.interactions = function(data.path = NULL) {
+            logging::loginfo("Getting commit interactions.")
+
+            ## if the commit-interaction data have not yet been read do this
+            if (!self$is.data.source.cached("commit.interactions")) {
+                if (is.null(data.path)) {
+                  commit.interaction.data = read.commit.interactions(self$get.data.path())
+                } else {
+                  commit.interaction.data = read.commit.interactions(data.path)
+                }
+
+                ## cache the result
+                private$commit.interactions = commit.interaction.data
+                private$update.commit.interactions()
+            }
+
+            return(private$commit.interactions)
+        },
+
+        #' Set the commit-interaction data to the new given data.
+        #'
+        #' @param data the new commit-interaction data
+        set.commit.interactions = function(data) {
+            logging::loginfo("Setting commit messages data.")
+
+            if (is.null(data)) {
+                data = create.empty.commit.interaction.list()
+            } else {
+                ## verify the format of the given dataframe
+                verify.data.frame.columns(data, COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES)
+            }
+
+            ## set the actual data
+            private$commit.interactions = data
+        },
+
+        #' Remove lines in the commit-interactions data that do not contain authors.
+        #' This should only be called AFTER 'update.commit.interactions' has already been called, as otherwise
+        #' all commit-interactions data will be removed
+        cleanup.commit.interactions = function() {
+            logging::loginfo("Cleaning up commit-interactions")
+
+            ## remove commit-interactions that do not contain author in 'base.author'
+            indices.to.remove = which(is.na(private$commit.interactions[["base.author"]]))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[-indices.to.remove, ]
+            }
+            ## remove commit-interactions that do not contain author in 'interacting.author'
+            indices.to.remove = which(is.na(private$commit.interactions[["interacting.author"]]))
+            if (length(indices.to.remove) > 0) {
+                private$commit.interactions = private$commit.interactions[-indices.to.remove, ]
             }
         },
 
@@ -1754,7 +1877,8 @@ ProjectData = R6::R6Class("ProjectData",
                     "commit.messages" = "commit.messages",
                     "synchronicity" = "synchronicity",
                     "pasta" = "pasta",
-                    "custom.event.timestamps" = "custom.event.timestamps"
+                    "custom.event.timestamps" = "custom.event.timestamps",
+                    "commit.interactions" = "commit.interactions"
                 )
             )
             sources = self$get.cached.data.sources.internal(source.type)
@@ -1786,7 +1910,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## define the data sources
             unfiltered.data.sources = c("commits.unfiltered", "mails.unfiltered", "issues.unfiltered")
             additional.data.sources = c("authors", "commit.messages", "synchronicity", "pasta",
-                                        "gender", "custom.event.timestamps")
+                                        "gender", "custom.event.timestamps", "commit.interactions")
             main.data.sources = c("issues", "commits", "mails")
 
             ## set the right data sources to look for according to the argument
