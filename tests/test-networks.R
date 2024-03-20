@@ -13,6 +13,7 @@
 ##
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -918,4 +919,25 @@ test_that("Get the data sources from a network with one relation", {
     network = network.builder$get.author.network()
 
     expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails")
+})
+
+test_that("Get the data sources from a network with multiple relations on a single edge", {
+    expected.data.sources = c("commits", "mails")
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    ## construct network builder
+    net.conf = NetworkConf$new()
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = c("mail", "cochange")))
+
+    ## build network
+    network = network.builder$get.author.network()
+    network = simplify.network(network, simplify.multiple.relations = TRUE)
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: commits, mails")
 })
