@@ -84,7 +84,7 @@ test_that("Simplify basic multi-relational network", {
     ## Simplify networks with vertices connected by multi-relational edges
     ##
 
-    ## create artifact network with vertices connected by "cochange" and "mail edges"
+    ## create artifact network with vertices connected by "cochange" and "mail" edges
     network =
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
@@ -250,14 +250,19 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
+    networks = list(A = network.A, B = network.B)
 
     ## simplify networks without simplifying multiple relations into single edges
-    networks.simplified = simplify.networks(list(network.A, network.B), simplify.multiple.relations = FALSE)
-    assert.networks.equal(networks.simplified[[1]], network.A.expected)
-    assert.networks.equal(networks.simplified[[2]], network.B.expected)
+    networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
+    expect_true(length(networks.simplified) == 2)
+    expect_identical(names(networks.simplified), names(networks))
+    assert.networks.equal(networks.simplified[["A"]], network.A.expected)
+    assert.networks.equal(networks.simplified[["B"]], network.B.expected)
 
-    ## simplify network with simplifying multiple relations into single edges
-    networks.simplified = simplify.networks(list(network.A, network.B), simplify.multiple.relations = TRUE)
+    ## simplify networks with simplifying multiple relations into single edges
+    networks.simplified = simplify.networks(networks, simplify.multiple.relations = TRUE)
+    expect_true(length(networks.simplified) == 2)
+    expect_identical(names(networks.simplified), names(networks))
     for (i in 1:2) {
         expect_identical(igraph::ecount(simplify.network(networks.simplified[[i]])), 1)
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
