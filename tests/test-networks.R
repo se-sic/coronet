@@ -13,6 +13,7 @@
 ##
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -76,6 +77,198 @@ test_that("Simplify network with more than one relation", {
     expect_identical(igraph::ecount(simplify.network(g)), 1) # edges
     expect_true(igraph::are.connected(simplify.network(g), "A", "Base_Feature")) # specific edge
 
+})
+
+test_that("Simplify basic multi-relational network", {
+
+    ##
+    ## Simplify networks with vertices connected by multi-relational edges
+    ##
+
+    ## create artifact network with vertices connected by "cochange" and "mail" edges
+    network =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
+    for (i in 1:3) {
+        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+    }
+
+    network.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "cochange")
+
+    ## simplify network without simplifying multiple relations into single edges
+    network.simplified = simplify.network(network, simplify.multiple.relations = FALSE)
+    assert.networks.equal(network.simplified, network.expected)
+
+    ## simplify network with simplifying multiple relations into single edges
+    network.simplified = simplify.network(network, simplify.multiple.relations = TRUE)
+    expect_identical(igraph::ecount(simplify.network(network.simplified)), 1)
+    expect_identical(igraph::E(network.simplified)$type[[1]], "Unipartite")
+    expect_identical(igraph::E(network.simplified)$relation[[1]], c("cochange", "mail"))
+})
+
+test_that("Simplify author-network with relation = c('cochange', 'mail') using both algorithms", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = c("cochange", "mail"), simplify = TRUE))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## vertex attributes
+    authors = data.frame(name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans"),
+                         kind = TYPE.AUTHOR,
+                         type = TYPE.AUTHOR)
+
+
+    ## ---------------------- simplify.multiple.relations == FALSE -------------------------- ##
+
+    ## edge attributes
+    data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl", # cochange
+                                  "Björn", "Olaf"), # mail
+                      comb.2. = c("Olaf", "Karl", "Thomas", "Thomas", # cochange
+                                  "Olaf", "Thomas")) # mail
+    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45")),
+                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")),
+                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32")),
+                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32")), # cochange
+                     get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:58:50")),
+                     get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37"))) # mail
+    data$artifact.type = list(c("Feature", "Feature"), c("Feature", "Feature"),
+                              c("Feature", "Feature"), c("Feature", "Feature"), # cochange
+                              c("Mail", "Mail"), c("Mail", "Mail")) # mail
+    data$hash = list(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     as.character(c(NA, NA)), as.character(c(NA, NA)))
+    data$file = list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"),
+                     as.character(c(NA, NA)), as.character(c(NA, NA)))
+    data$artifact = list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), 
+                         c("Base_Feature", "Base_Feature"), as.character(c(NA, NA)), as.character(c(NA, NA)))
+    data$weight = rep(2, 6)
+    data$type = rep(TYPE.EDGES.INTRA, 6)
+    data$relation = c(rep("cochange", 4), rep("mail", 2))
+    data$message.id = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
+                           c("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                             "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
+                           c("<65a1sf31sagd684dfv31@mail.gmail.com>",
+                             "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"))
+    data$thread = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
+                       c("<thread-13#8>", "<thread-13#8>"), c("<thread-13#9>", "<thread-13#9>"))
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(data, vertices = authors,
+                                                directed = net.conf$get.value("author.directed"))
+
+    ## build simplified network
+    network.built = network.builder$get.author.network()
+
+    assert.networks.equal(network.built, network.expected)
+
+
+    ## ---------------------- simplify.multiple.relations == TRUE --------------------------- ##
+
+    data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl"),
+                      comb.2. = c("Olaf", "Karl", "Thomas", "Thomas"))
+
+    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",   # cochange
+                                            "2016-07-12 15:58:40", "2016-07-12 15:58:50")), # mail
+                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")), # cochange
+                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32",   # cochange
+                                            "2016-07-12 16:04:40", "2016-07-12 16:05:37")), # mail
+                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32"))) # cochange
+    data$artifact.type = list(c("Feature", "Feature", "Mail", "Mail"),
+                              c("Feature", "Feature"),
+                              c("Feature", "Feature", "Mail", "Mail"),
+                              c("Feature", "Feature"))
+    data$hash = list(as.character(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", NA, NA)),
+                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     as.character(c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526", NA, NA)),
+                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))
+    data$file = list(as.character(c("test.c", "test.c", NA, NA)), c("test2.c", "test3.c"),
+                     as.character(c("test2.c", "test2.c", NA, NA)), c("test3.c", "test2.c"))
+    data$artifact = list(as.character(c("A", "A", NA, NA)), c("Base_Feature", "Base_Feature"),
+                         as.character(c("Base_Feature", "Base_Feature", NA, NA)), c("Base_Feature", "Base_Feature"))
+    data$weight = c(4, 2, 4, 2)
+    data$type = rep(TYPE.EDGES.INTRA, 4)
+    data$relation = list(c("cochange", "mail"), c("cochange"), c("cochange", "mail"), c("cochange"))
+    data$message.id = list(as.character(c(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                                          "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>")),
+                           as.character(c(NA, NA)),
+                           as.character(c(NA, NA, "<65a1sf31sagd684dfv31@mail.gmail.com>",
+                                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>")),
+                           as.character(c(NA, NA)))
+    data$thread = list(as.character(c(NA, NA, "<thread-13#8>", "<thread-13#8>")),
+                       as.character(c(NA, NA)),
+                       as.character(c(NA, NA, "<thread-13#9>", "<thread-13#9>")),
+                       as.character(c(NA, NA)))
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(data, vertices = authors,
+                                                directed = net.conf$get.value("author.directed"))
+
+    ## build simplified network
+    network.builder$update.network.conf(updated.values = list(simplify.multiple.relations = TRUE))
+    network.built = network.builder$get.author.network()
+
+    assert.networks.equal(network.built, network.expected)
+
+})
+
+test_that("Simplify multiple basic multi-relational networks", {
+
+    ##
+    ## Simplify networks with vertices connected by multi-relational edges
+    ##
+
+    ## create artifact network with vertices connected by "cochange" and "mail edges"
+    network.A =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
+    network.B =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
+    for (i in 1:3) {
+        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
+    }
+
+    network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "cochange")
+    network.B.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
+        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
+        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
+    networks = list(A = network.A, B = network.B)
+
+    ## simplify networks without simplifying multiple relations into single edges
+    networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
+    expect_true(length(networks.simplified) == 2)
+    expect_identical(names(networks.simplified), names(networks))
+    assert.networks.equal(networks.simplified[["A"]], network.A.expected)
+    assert.networks.equal(networks.simplified[["B"]], network.B.expected)
+
+    ## simplify networks with simplifying multiple relations into single edges
+    networks.simplified = simplify.networks(networks, simplify.multiple.relations = TRUE)
+    expect_true(length(networks.simplified) == 2)
+    expect_identical(names(networks.simplified), names(networks))
+    for (i in 1:2) {
+        expect_identical(igraph::ecount(simplify.network(networks.simplified[[i]])), 1)
+        expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
+        expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
+    }
 })
 
 
@@ -726,4 +919,25 @@ test_that("Get the data sources from a network with one relation", {
     network = network.builder$get.author.network()
 
     expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: mails")
+})
+
+test_that("Get the data sources from a network with multiple relations on a single edge", {
+    expected.data.sources = c("commits", "mails")
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    ## construct data object
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    ## construct network builder
+    net.conf = NetworkConf$new()
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = c("mail", "cochange")))
+
+    ## build network
+    network = network.builder$get.author.network()
+    network = simplify.network(network, simplify.multiple.relations = TRUE)
+
+    expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: commits, mails")
 })
