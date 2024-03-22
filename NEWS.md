@@ -10,9 +10,10 @@
 - Add a new `split.data.by.bins` function (not to be confused with a previously existing function that had the same name and was renamed in this context), which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698, ed5feb214a123b605c9513262f187cfd72b9e1f4)
 - Add new `assert.sparse.matrices.equal` function to compare two sparse matrices for equality for testing purposes (PR #248, 9784cdf12d1497ee122e2ae73b768b8c334210d4, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
 - Add tests for file `util-networks-misc.R` for issue #242 (PR #248, f3202a6f96723d11c170346556d036cf087521c8, 030574b9d0f3435db4032d0e195a3d407fb7244b, 380b02234275127297fcd508772c69db21c216de, 8b803c50d60fc593e4e527a08fd4c2068d801a48, 7335c3dd4d0302b024a66d18701d9800ed3fe806, 6b600df04bec1fe70c272604f274ec5309840e65)
-- Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, #255, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa, a34b5bd50351b9ccf3cc45fc323cfa2e84d65ea0, 34516415fed599eba0cc7d3cc4a9acd6b26db252, 78f43514962d7651e6b7a1e80ee22ce012f32535, d310fdc38690f0d701cd32c92112c33f7fdde0ff)
-- Add tests for network simplification (PR #254, 338b06941eec1c9cfdb121e78ce0d9db6b75da19, 8a6f47bc115c10fbbe4eee21985d97aee5c9dc91, e01908c94eccc4dda5f2b3c0746b0eab0172dc07, 7b6848fb86f69db088ce6ef2bea8315ac94d48f9)
+- Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, PR #255, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa, a34b5bd50351b9ccf3cc45fc323cfa2e84d65ea0, 34516415fed599eba0cc7d3cc4a9acd6b26db252, 78f43514962d7651e6b7a1e80ee22ce012f32535, d310fdc38690f0d701cd32c92112c33f7fdde0ff, 58d77b01ecc6a237104a4e72ee5fb9025efeaaf2)
+- Add tests for network simplification (PR #255, 338b06941eec1c9cfdb121e78ce0d9db6b75da19, 8a6f47bc115c10fbbe4eee21985d97aee5c9dc91, e01908c94eccc4dda5f2b3c0746b0eab0172dc07, 7b6848fb86f69db088ce6ef2bea8315ac94d48f9)
 - Add `get.bin.dates.from.ranges` function to convert date ranges into bins format (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f, 858b1812ebfc3194cc6a03c99f3ee7d161d1ca15)
+- Add network simplification to showcase file (PR #255, dc32d44f9db7dfc3cc795ef5d6b86609d6c1936f)
 
 ### Changed/Improved
 
