@@ -206,7 +206,8 @@ patrick::with_parameters_test_that("Split a network time-based (time.period = ..
     expected.bins = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:59:59",
                                            "2016-07-12 16:00:59", "2016-07-12 16:01:59",
                                            "2016-07-12 16:02:59", "2016-07-12 16:03:59",
-                                           "2016-07-12 16:04:59", "2016-07-12 16:06:33"))
+                                           "2016-07-12 16:04:59", "2016-07-12 16:05:59",
+                                           "2016-07-12 16:06:33"))
     expect_equal(expected.bins, attr(results, "bins"))
 
     ## check networks
