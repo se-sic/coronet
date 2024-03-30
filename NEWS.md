@@ -25,7 +25,7 @@
 - Throw an error in `convert.adjacency.matrix.list.to.array` if the function is called with wrong parameters (PR #248, ece2d38b4972745af3a83e06f32317a06465a345, 1a3e510df15f5fa4e920e9fce3e0e162c27cd6d1)
 - Rename `compare.networks` to `assert.networks.equal` to better match the purpose of the function (PR #248, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
 - Explicitly add R version 4.3 to the CI test pipeline (9f346d5bc3cfc553f01e5e80f0bbe51e1dc2b53e)
-- Simplify call chain-, and branching-routes in network-splitting functions and consequently set the `bins` attribute on every output network-split (while minimizing recalculations) (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f)
+- Simplify call chain-, and branching-routes in network-splitting functions and consequently set the `bins` attribute on every output network-split (while minimizing recalculations) (PR #249, PR #257, a1842e9be46596321ee86860fd87d17a3c88f50f, 8695fbe7f21ccaa3ccd6d1016e754017d387b1fa)
 - Test for the presence and validity of the `bins` attribute on network-, and data-splits (PR #249, c064affcfff2eb170d8bdcb39d837a7ff62b2cbd, 93051ab848ec94de138b0513dac22f6da0d20885)
 
 ### Fixed
