@@ -222,7 +222,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     net.conf = NetworkConf$new()
-    net.conf$update.value("artifact.relation", "interaction")
+    net.conf$update.value("artifact.relation", "commit.interaction")
 
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
     network.built = network.builder$get.artifact.network()
@@ -249,7 +249,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
-        relation = c("interaction", "interaction", "interaction", "interaction")
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
@@ -265,7 +265,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     net.conf = NetworkConf$new()
-    net.conf$update.value("artifact.relation", "interaction")
+    net.conf$update.value("artifact.relation", "commit.interaction")
 
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
     network.built = network.builder$get.artifact.network()
@@ -292,7 +292,7 @@ test_that("Network construction with commit-interactions as relation, artifact t
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
-        relation = c("interaction", "interaction", "interaction", "interaction")
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 

@@ -99,6 +99,13 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.two$set.project.conf.entry("commit.messages", "message")
     proj.data.two$get.commit.messages()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+
+    proj.data.one$set.project.conf.entry("commit.interactions", TRUE)
+    proj.data.one$get.commit.interactions()
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commit.interactions).")
+    proj.data.two$set.project.conf.entry("commit.interactions", TRUE)
+    proj.data.two$get.commit.interactions()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.interactions).")
 })
 
 test_that("Compare two ProjectData objects on non-empty data", {
@@ -540,6 +547,7 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     commit.data[["hash"]][[5]] = 1
     proj.data.one$set.commits(commit.data)
 
+    ## use isTRUE to compress result of all.equal into a single boolean
     expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(),
                                   proj.data.two$get.commit.interactions())))
 

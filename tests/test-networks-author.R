@@ -688,7 +688,7 @@ test_that("Network construction with commit-interactions as relation", {
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     net.conf = NetworkConf$new()
-    net.conf$update.value("author.relation", "interaction")
+    net.conf$update.value("author.relation", "commit.interaction")
 
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
     network.built = network.builder$get.author.network()
@@ -716,7 +716,7 @@ test_that("Network construction with commit-interactions as relation", {
         base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
-        relation = c("interaction", "interaction", "interaction", "interaction")
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 

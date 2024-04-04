@@ -138,7 +138,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 callgraph   = private$proj.data$get.project.conf.entry("artifact.codeface"),
                 mail        = "MailThread",
                 issue       = "Issue",
-                interaction = private$proj.data$get.project.conf.entry("artifact.codeface")
+                commit.interaction = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
             return(vertex.kind)
@@ -377,7 +377,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
-        #' Build and get the the commit-interaction based artifact network.
+        #' Build and get the commit-interaction based artifact network.
         #'
         #' @return the commit-interaction based artifact network
         get.artifact.network.commit.interaction = function() {
@@ -397,7 +397,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
-              colnames(edges)[4] = "hash"
+              colnames(edges)[colnames(edges)=="commit.hash"] = "hash"
           } else if (proj.conf.artifact == "function") {
              ## change the vertices to the functions from the commit-interaction data
              vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
@@ -406,12 +406,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
              edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                "base.file", "base.author", "interacting.author")]
-             colnames(edges)[3] = "hash"
+             colnames(edges)[colnames(edges)=="commit.hash"] = "hash"
           } else {
             ## If neither 'function' nor 'file' was configured, send a warning
             ## and return an empty network
             logging::logwarn("when creating a commit-interaction artifact network,
-                              the artifact relation should be either 'file' or 'function'!")
+                              the artifact should be either 'file' or 'function'!")
             return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
           }
           colnames(edges)[1] = "to"
@@ -826,7 +826,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network = switch(
                     relation,
                     cochange = private$get.author.network.cochange(),
-                    interaction = private$get.author.network.commit.interaction(),
+                    commit.interaction = private$get.author.network.commit.interaction(),
                     mail = private$get.author.network.mail(),
                     issue = private$get.author.network.issue(),
                     stop(sprintf("The author relation '%s' does not exist.", rel))
@@ -894,7 +894,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     callgraph = private$get.artifact.network.callgraph(),
                     mail = private$get.artifact.network.mail(),
                     issue = private$get.artifact.network.issue(),
-                    interaction = private$get.artifact.network.commit.interaction(),
+                    commit.interaction = private$get.artifact.network.commit.interaction(),
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
 

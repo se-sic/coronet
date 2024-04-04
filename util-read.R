@@ -44,6 +44,8 @@ requireNamespace("digest") # for sha1 hashing of IDs
 requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
 requireNamespace("yaml") # for reading commit interaction data
+requireNamespace("fastmap") # for fast implementation of a map
+requireNamespace("purrr") # for fast mapping function
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
@@ -866,7 +868,6 @@ COMMIT.INTERACTION.LIST.DATA.TYPES = c(
 #' commit (hash) gets mapped to all commits it interacts with and the file/function because of
 #' which they interact.
 #'
-#'
 #' @param data.path the path to the commit-interaction data
 #'
 #' @return the read and parsed commit-interaction data
@@ -888,27 +889,31 @@ read.commit.interactions = function(data.path = NULL) {
     }
 
     ## extract the top level list of the yaml file which is called 'result-map'
-    result.map = commit.interaction.base$`result-map`
+    result.map = commit.interaction.base[["result-map"]]
 
     ## extract a mapping of functions to files to be able to determine what file the current interaction is
     ## based on
+    ## 1) create an empty map
     file.name.map = fastmap::fastmap()
+    ## 2) create a mapping between functions and files as a list
     function.file.list = purrr::map(result.map, 2)
+    ## 3) set the map using the list
     file.name.map$mset(.list = function.file.list)
     list.names = names(result.map)
 
     ## build the result dataframe by iterating over the 'result-map' list
-    commit.interaction.data = data.table::setDF(data.table::rbindlist(parallel::mcmapply(result.map, list.names,
-                                                                             SIMPLIFY = FALSE,
-                                                                             FUN = function(current.interaction,
-                                                                                            function.name) {
+    commit.interaction.data = data.table::setDF(data.table::rbindlist(
+                                                parallel::mcmapply(result.map,
+                                                                   list.names,
+                                                                   SIMPLIFY = FALSE,
+                                                                   FUN = function(current.interaction, function.name) {
         ## get all commits that interact with the current one
         insts = current.interaction[[4]]
         interactions = data.table::setDF(data.table::rbindlist(lapply(insts, function(current.inst) {
-            base.hash = current.inst[[1]]$`commit`
+            base.hash = current.inst[[1]][["commit"]]
             interacting.hashes = current.inst[[2]]
             interacting.hashes.df = data.table::setDF(data.table::rbindlist(lapply(interacting.hashes, function(hash) {
-                ## if there is no function name in the current interaction we set the function name to 'GLOBAL'
+                ## if there is no function name in the current interaction, we set the function name to 'GLOBAL'
                 ## as this is most likely code outside of functions, else we set the function name
                 if (!"function" %in% names(hash)) {
                     return(data.frame(func = "GLOBAL", commit.hash = hash[["commit"]], file = "GLOBAL"))
@@ -921,11 +926,13 @@ read.commit.interactions = function(data.path = NULL) {
                                       file = file.name.map$get(hash[["function"]])))
                 }
             })))
-            interacting.hashes.df$base.hash = base.hash
-            interacting.hashes.df$base.func = function.name
-            interacting.hashes.df$base.file = file.name.map$get(function.name)
+            interacting.hashes.df[["base.hash"]] = base.hash
+            interacting.hashes.df[["base.func"]] = function.name
+            interacting.hashes.df[["base.file"]] = file.name.map$get(function.name)
             return(interacting.hashes.df)
         })))
+        ## Initialize author data as 'NA', since it is not available from the commit-interaction data.
+        ## Author data will be merged from commit data in \code{update.commit.interactions}.
         interactions["base.author"] = NA_character_
         interactions["interacting.author"] = NA_character_
         return(interactions)

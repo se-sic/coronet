@@ -44,7 +44,9 @@ packages = c(
     "viridis",
     "jsonlite",
     "rTensor",
-    "Matrix"
+    "Matrix",
+    "fastmap",
+    "purrr"
 )
 
 

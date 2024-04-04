@@ -790,7 +790,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             author.relation = list(
                 default = "mail",
                 type = "character",
-                allowed = c("mail", "cochange", "issue", "interaction"),
+                allowed = c("mail", "cochange", "issue", "commit.interaction"),
                 allowed.number = Inf
             ),
             author.directed = list(
@@ -821,7 +821,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             artifact.relation = list(
                 default = "cochange",
                 type = "character",
-                allowed = c("cochange", "callgraph", "mail", "issue", "interaction"),
+                allowed = c("cochange", "callgraph", "mail", "issue", "commit.interaction"),
                 allowed.number = Inf
             ),
             artifact.directed = list(
