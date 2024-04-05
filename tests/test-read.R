@@ -526,9 +526,10 @@ test_that("Read the commit-interactions data.", {
                                                         "3a0ed78458b3976243db6829f63eba3eead26774",
                                                         "0a1a5c523d835459c42f33e863623138555e2526",
                                                         "0a1a5c523d835459c42f33e863623138555e2526")
-    commit.interactions.data.expected[["func"]] = c("GLOBAL", "GLOBAL", "test2", "test2")
+    commit.interactions.data.expected[["func"]] = c("GLOBAL", "GLOBAL", "test2.c::test2", "test2.c::test2")
     commit.interactions.data.expected[["file"]] = c("GLOBAL", "GLOBAL", "test2.c", "test2.c")
-    commit.interactions.data.expected[["base.func"]] = c("test_function", "test2", "test2", "test2")
+    commit.interactions.data.expected[["base.func"]] = c("test3.c::test_function", "test2.c::test2",
+                                                         "test2.c::test2", "test2.c::test2")
     commit.interactions.data.expected[["base.file"]] = c("test3.c", "test2.c", "test2.c", "test2.c")
     ## check the results
     expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
