@@ -863,6 +863,8 @@ COMMIT.INTERACTION.LIST.DATA.TYPES = c(
     "character", "character"
 )
 
+COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME = "GLOBAL"
+
 #' Read and parse the commit-interaction data. This data is present in a `.yaml` file which
 #' needs to be broken down. Within the yaml file, there are different lists in which each
 #' commit (hash) gets mapped to all commits it interacts with and the file/function because of
@@ -895,7 +897,8 @@ read.commit.interactions = function(data.path = NULL) {
     ## based on
     ## 1) create an empty map
     file.name.map = fastmap::fastmap()
-    ## 2) create a mapping between functions and files as a list
+    ## 2) create a mapping between functions and files as a named list
+    ## which can be directly converted to a map
     function.file.list = purrr::map(result.map, 2)
     ## 3) set the map using the list
     file.name.map$mset(.list = function.file.list)
@@ -916,19 +919,23 @@ read.commit.interactions = function(data.path = NULL) {
                 ## if there is no function name in the current interaction, we set the function name to 'GLOBAL'
                 ## as this is most likely code outside of functions, else we set the function name
                 if (!"function" %in% names(hash)) {
-                    return(data.frame(func = "GLOBAL", commit.hash = hash[["commit"]], file = "GLOBAL"))
+                    return(data.frame(func = COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME,
+                                      commit.hash = hash[["commit"]],
+                                      file = COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME))
                 } else if (is.null(file.name.map$get(hash[["function"]]))) {
                     ## This case should never occur if the data was generated correctly!
                     warning("An interacting hash specifies a function that does not exist in the data!")
                     return(data.frame(matrix(nrow = 3, ncol = 0)))
                 } else {
-                    return(data.frame(func = hash[["function"]], commit.hash = hash[["commit"]],
-                                      file = file.name.map$get(hash[["function"]])))
+                    file.name = file.name.map$get(hash[["function"]])
+                    func.name = paste(file.name, hash[("function")], sep = "::")
+                    return(data.frame(func = func.name, commit.hash = hash[["commit"]], file = file.name))
                 }
             })))
+            base.file.name = file.name.map$get(function.name)
             interacting.hashes.df[["base.hash"]] = base.hash
-            interacting.hashes.df[["base.func"]] = function.name
-            interacting.hashes.df[["base.file"]] = file.name.map$get(function.name)
+            interacting.hashes.df[["base.func"]] = paste(base.file.name, function.name, sep = "::")
+            interacting.hashes.df[["base.file"]] = base.file.name
             return(interacting.hashes.df)
         })))
         ## Initialize author data as 'NA', since it is not available from the commit-interaction data.

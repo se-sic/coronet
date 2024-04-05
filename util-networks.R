@@ -252,7 +252,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 author.net.data[["edges"]],
                 network.conf = private$network.conf,
                 directed = private$network.conf$get.value("author.directed"),
-                available.edge.attributes = list(hash = "character")
+                available.edge.attributes = private$proj.data$
+                                            get.data.columns.for.data.source("commit.interactions")
             )
             return(author.net)
         },
@@ -423,7 +424,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifact.net.data[["edges"]],
             network.conf = private$network.conf,
             directed = private$network.conf$get.value("artifact.directed"),
-            available.edge.attributes = list(hash = "character")
+            available.edge.attributes = private$proj.data$
+                                        get.data.columns.for.data.source("commit.interactions")
           )
           return(artifact.net)
         },

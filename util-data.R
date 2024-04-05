@@ -1962,13 +1962,19 @@ ProjectData = R6::R6Class("ProjectData",
         #'                    \code{"commits"}, and \code{"issues"}. [default: "commits"]
         #'
         #' @return a named list of data classes, with the corresponding data columns as names
-        get.data.columns.for.data.source = function(data.source = c("commits", "mails", "issues")) {
+        get.data.columns.for.data.source = function(data.source = c("commits", "mails",
+                                                                    "issues", "commit.interactions")) {
 
             ## check arguments
             data.source = match.arg(arg = data.source, several.ok = FALSE)
 
             ## get the needed data method first
             data.fun = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
+
+            ## if 'data.fun' is NULL, check 'DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION'
+            if (is.null(data.fun)) {
+                data.fun = DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION[[data.source]]
+            }
 
             ## get the column classes with corresponding names
             columns = lapply(self[[data.fun]](), class)
