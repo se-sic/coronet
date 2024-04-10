@@ -898,8 +898,8 @@ read.commit.interactions = function(data.path = NULL) {
     ## 1) create an empty map
     file.name.map = fastmap::fastmap()
     ## 2) create a mapping between functions and files as a named list
-    ## which can be directly converted to a map
-    function.file.list = purrr::map(result.map, 2)
+    ##    which can be directly converted to a map
+    function.file.list = purrr::map(result.map, "file")
     ## 3) set the map using the list
     file.name.map$mset(.list = function.file.list)
     list.names = names(result.map)
@@ -911,10 +911,10 @@ read.commit.interactions = function(data.path = NULL) {
                                                                    SIMPLIFY = FALSE,
                                                                    FUN = function(current.interaction, function.name) {
         ## get all commits that interact with the current one
-        insts = current.interaction[[4]]
+        insts = current.interaction[["insts"]]
         interactions = data.table::setDF(data.table::rbindlist(lapply(insts, function(current.inst) {
-            base.hash = current.inst[[1]][["commit"]]
-            interacting.hashes = current.inst[[2]]
+            base.hash = current.inst[["base-hash"]][["commit"]]
+            interacting.hashes = current.inst[["interacting-hashes"]]
             interacting.hashes.df = data.table::setDF(data.table::rbindlist(lapply(interacting.hashes, function(hash) {
                 ## if there is no function name in the current interaction, we set the function name to 'GLOBAL'
                 ## as this is most likely code outside of functions, else we set the function name

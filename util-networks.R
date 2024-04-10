@@ -134,10 +134,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.vertex.kind.for.relation = function(relation) {
 
             vertex.kind = switch(relation,
-                cochange    = private$proj.data$get.project.conf.entry("artifact.codeface"),
-                callgraph   = private$proj.data$get.project.conf.entry("artifact.codeface"),
-                mail        = "MailThread",
-                issue       = "Issue",
+                cochange           = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                callgraph          = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                mail               = "MailThread",
+                issue              = "Issue",
                 commit.interaction = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
@@ -398,7 +398,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
-              colnames(edges)[colnames(edges)=="commit.hash"] = "hash"
+              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else if (proj.conf.artifact == "function") {
              ## change the vertices to the functions from the commit-interaction data
              vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
@@ -407,7 +407,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
              edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                "base.file", "base.author", "interacting.author")]
-             colnames(edges)[colnames(edges)=="commit.hash"] = "hash"
+             colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else {
             ## If neither 'function' nor 'file' was configured, send a warning
             ## and return an empty network

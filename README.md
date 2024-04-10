@@ -268,7 +268,7 @@ Relations determine which information is used to construct edges among the verti
 
 - `commit.interaction`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to interacting commits are connected with an edge.
-    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is a interacting between two commits that occur in the artifacts.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that occur in the artifacts.
     * This relation does not apply for bipartite networks.
 
 #### Edge-construction algorithms for author networks
@@ -605,7 +605,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * Lock custom event timestamps to prevent them from being read if empty or not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]
 - `commit.interactions`:
-    * Alloow construction of author and artifact networks using commit interaction data
+    * Allow construction of author and artifact networks using commit-interaction data
     * [`TRUE`, *`FALSE`*]
 
 ### NetworkConf
