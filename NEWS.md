@@ -6,9 +6,8 @@
 
 ### Added
 
-- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15, 7792a4e9a087c042a3ef9b7f79a67490305ce85e, 178265dcc69abc0d6e430dfcbc4b87e7565ce615, 80e6ac5f24e6d0248e77be391f93a59b6b17862d, 1ffa607bbe400bd212388dc543263ba5bec4e34c)
-- Add commit-interaction networks that can be created with `create.author.network` and `create.artifact.network` if the `artifact.relation` and `author.relation` is configured to be `interaction` (PR #252, 5da0e60e029bdf427520be440fedb0f71d9f7a15, deddd4ce9d2a570ea57088ea73d4312f81e73049, 0e269af77bc098f2d3157fac349d2032efd6cf49, d96b10b45ec55cdf2dd02c60833d4116358d6d31)
-- Add tests for new commit-interaction functionality (PR #252, 3e5b8962e18c3dde45085fa764c9d084327e2773, 7685ec4745bd43fba7a373bf5544f41bff346ed9, b291cb338e1b3896c8fd9769f45c515bddb8cf48, eea1b053350094084bab957975e1b306e6c9dc23, 3d4a521e47dc81aaae8ae01ff78ca8d514bb7d85, 05ea1ce1c3330f3fb8fb28ccbc08b85fbd4ec2c8, 99103f27ad0c8ee1bd62cdcee10778a98020db70, fd6064a83a7735020ad5250d092e266af5bbada0)
+- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, d82857fbebd1111bb16588a4223bb24a8dcd07de, b4fd2a29c9b5fd561b1106c6febb54a32b0085ab, fd0aa05f824b93545ae8e05833b95b3bd9809286) as well as tests for these features (PR #252, eeba7e29932bc973513c963fb9e716e9230d570f, 8bb39f4df39b49dfaff8f19feb6db5e5fbd81fac, 54b6f655248720436af116fe72521f9cb0348429, 7a5497aaf9114017d1b3b9b68b6cccd7ca8ac114, 7b8585f87675795822c07230192d6454de31dcc7, ef725407bf8818c8fff96ea6f343338b7162cbe0)
+- Add commit-interaction networks that can be created with `create.author.network` and `create.artifact.network` if the `artifact.relation` and `author.relation` is configured to be `commit.interaction` (PR #252, d82857fbebd1111bb16588a4223bb24a8dcd07de, 329d97ec3de36a9e1bcadc0c7a53c1d92e8b481c) as well as tests for these features (PR #252, 07e7ed744209b0251217fa8f7f35d9b9875face2, 7068cfa10d993dcae3f5e3f76f8cafa99fa8b350)
 
 ### Changed/Improved
 
