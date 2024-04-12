@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -576,19 +577,6 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
         to = c("Dieter", "Klaus", "Heinz")
         )
     network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
-    authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
-
-    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
-                                          length(authors.in.one)), repr = "T")
-    rownames(matrix.out.one) = authors.in.one
-    colnames(matrix.out.one) = authors.in.one
-
-    # order these statements so that the second arguments are ordered alphabetically
-    # or use the helper function as used below
-    matrix.out.one["Heinz", "Dieter"] = 1
-    matrix.out.one["Klaus", "Dieter"] = 1
-    matrix.out.one["Dieter", "Heinz"] = 1
-    matrix.out.one["Dieter", "Klaus"] = 1
 
     vertices = data.frame(
         name = c("Klaus", "Tobias"),
@@ -600,14 +588,27 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
         to = c("Tobias")
         )
     network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
-    authors.in.two = sort(c("Klaus", "Tobias"))
 
-    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
-                                          length(authors.in.two)), repr = "T")
-    rownames(matrix.out.two) = authors.in.two
-    colnames(matrix.out.two) = authors.in.two
+    all.authors = sort(c("Heinz", "Dieter", "Klaus", "Tobias"))
 
-    # order these statements so that the second arguments are ordered alphabetically 
+    matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(all.authors),
+                                          length(all.authors)), repr = "T")
+    rownames(matrix.out.one) = all.authors
+    colnames(matrix.out.one) = all.authors
+
+    # order these statements so that the second arguments are ordered alphabetically
+    # or use the helper function as used below
+    matrix.out.one["Heinz", "Dieter"] = 1
+    matrix.out.one["Klaus", "Dieter"] = 1
+    matrix.out.one["Dieter", "Heinz"] = 1
+    matrix.out.one["Dieter", "Klaus"] = 1
+
+    matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(all.authors),
+                                          length(all.authors)), repr = "T")
+    rownames(matrix.out.two) = all.authors
+    colnames(matrix.out.two) = all.authors
+
+    # order these statements so that the second arguments are ordered alphabetically
     # or use the helper function as used below
     matrix.out.two["Tobias", "Klaus"] = 1
     matrix.out.two["Klaus", "Tobias"] = 1

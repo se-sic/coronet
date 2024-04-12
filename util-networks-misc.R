@@ -14,7 +14,7 @@
 ## Copyright 2016-2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2016-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Angelika Schmid <schmidang@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
@@ -169,7 +169,7 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 }
 
 #' Calculates a sparse adjacency matrix for each network in the list.
-#' All adjacency matrices are expanded in such a way that the use the same set
+#' All adjacency matrices are expanded in such a way that they use the same set
 #' of authors derived from all networks in the list.
 #'
 #' @param networks list of networks
@@ -178,10 +178,9 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 #' @return the list of adjacency matrices
 get.expanded.adjacency.matrices = function(networks, weighted = FALSE){
 
-    adjacency.matrices = parallel::mclapply(networks, function(network) {
-        active.authors = sort(igraph::V(network)$name)
-        return(get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
-    })
+    authors = get.author.names.from.networks(networks)[[1]]
+
+    adjacency.matrices = parallel::mclapply(networks, get.expanded.adjacency, authors, weighted)
 
     return(adjacency.matrices)
 }
