@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
@@ -219,7 +219,7 @@ cf.data = split.data.time.based(x.data, bins = mybins)
 ## construct (author) networks from range data
 my.networks = lapply(cf.data, function(range.data) {
     y = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
-    return (y$get.author.network())
+    return(y$get.author.network())
 })
 ## add commit-count vertex attributes
 sample = add.vertex.attribute.author.commit.count(my.networks, x.data, aggregation.level = "range")

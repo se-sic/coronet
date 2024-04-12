@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
@@ -977,11 +977,11 @@ get.range.bounds = function(range) {
         start.end = regmatches(range, gregexpr(pattern = pattern[[1]], range))[[1]]
 
         if (length(start.end) == 2) {
-            return (pattern[[2]](start.end))
+            return(pattern[[2]](start.end))
         }
     }
 
-    return (range)
+    return(range)
 }
 
 #' Obtain the start and end dates from given ranges.

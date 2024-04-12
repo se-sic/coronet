@@ -619,7 +619,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
                 attr(bip.relation, "relation") = relation
 
-                return (bip.relation)
+                return(bip.relation)
             })
             names(bip.relations) = relations
 
@@ -1123,8 +1123,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     keys.number = length(list)
 
 
-    ## if edges in an artifact network contain the \code{artifact} attribute 
-    ## replace it with the \code{author.name} attribute as artifacts cannot cause 
+    ## if edges in an artifact network contain the \code{artifact} attribute
+    ## replace it with the \code{author.name} attribute as artifacts cannot cause
     ## edges in artifact networks, authors can
     edge.attributes = network.conf$get.value("edge.attributes")
     if (artifact.edges) {
@@ -1805,7 +1805,7 @@ get.data.sources.from.relations = function(network) {
         ## check for a \code{character(0)} relation and abort if there is one
         if (length(relation) == 0) {
             logging::logwarn("There seems to be an empty relation in the network. Cannot proceed.")
-            return (NA)
+            return(NA)
         }
 
         ## use the translation constant to get the appropriate data source

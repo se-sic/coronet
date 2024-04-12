@@ -34,10 +34,10 @@ test_that("getting all authors of a list of networks, list length 0", {
 
     ## Act
     result = get.author.names.from.networks(networks = list(), globally = TRUE)
-    
+
     ## Assert
     expected = list(c())
-    
+
     expect_equal(expected, result)
 })
 
@@ -60,7 +60,7 @@ test_that("getting all authors of a list of networks, list length 1", {
 
     ## Assert
     expected = list(c("Dieter", "Heinz", "Klaus"))
-    
+
     expect_equal(expected, result)
 
 })
@@ -84,7 +84,7 @@ test_that("getting all authors of a list of networks, list length 1, not global"
 
     ## Assert
     expected = list(c("Dieter", "Heinz", "Klaus"))
-    
+
     expect_equal(expected, result)
 
 })
@@ -119,7 +119,7 @@ test_that("getting all authors of a list of networks, list length 2", {
 
     ## Assert
     expected = list(c("Detlef", "Dieter", "Heinz", "Klaus"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -147,13 +147,13 @@ test_that("getting all authors of a list of networks, list length 2, not global"
         to = "Dieter"
         )
     second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
-    
+
     ## Act
     result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
 
     ## Assert
     expected = list(c("Dieter", "Heinz", "Klaus"), c("Detlef", "Dieter"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -161,10 +161,10 @@ test_that("getting all authors of a list of data ranges, list length 0", {
 
     ## Act
     result = get.author.names.from.data(data.ranges = list())
-    
+
     ## Assert
     expected = list(c())
-    
+
     expect_equal(expected, result)
 })
 
@@ -177,11 +177,11 @@ test_that("getting all authors of a list of data ranges, list length 1", {
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data))
-    
+
     ## Assert
-    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans",
                       "Karl", "Olaf", "Thomas", "udo"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -194,11 +194,11 @@ test_that("getting all authors of a list of data ranges, list length 1, not glob
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data), globally = FALSE)
-    
+
     ## Assert
-    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans",
                       "Karl", "Olaf", "Thomas", "udo"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -212,11 +212,11 @@ test_that("getting all authors of a list of data ranges, list length 2", {
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two))
-    
+
     ## Assert
-    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", 
+    expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans",
                     "Karl", "Max", "Olaf", "Thomas", "udo"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -230,11 +230,11 @@ test_that("getting all authors of a list of data ranges, list length 2, not glob
 
     ## Act
     result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), globally = FALSE)
-    
+
     ## Assert
     expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", "Karl", "Olaf",
                         "Thomas", "udo"), c("Björn", "Karl", "Max", "Olaf", "Thomas"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -247,14 +247,14 @@ test_that("getting all authors of a list of data ranges by data source 'mails', 
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
 
     ## Act
-    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), 
+    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two),
                                                             data.sources = "mails", globally = FALSE)
-    
+
     ## Assert
-    
+
     expected = list(c("Björn", "Fritz fritz@example.org","georg", "Hans", "Olaf",
                         "Thomas", "udo"), c("Björn", "Olaf", "Thomas"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -267,12 +267,12 @@ test_that("getting all authors of a list of data ranges by data source 'issues',
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
 
     ## Act
-    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), 
+    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two),
                                                            data.sources = "issues", globally = FALSE)
-    
+
     ## Assert
     expected = list(c("Björn", "Karl", "Olaf", "Thomas"), c("Björn","Karl", "Max", "Olaf", "Thomas"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -285,13 +285,13 @@ test_that("getting all authors of a list of data ranges by data source 'commits'
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
 
     ## Act
-    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two), 
+    result = get.author.names.from.data(data.ranges = list(range.data.one, range.data.two),
                                                            data.sources = "commits", globally = FALSE)
-    
+
     ## Assert
-    
+
     expected = list(c("Björn", "Olaf"), c("Björn", "Olaf", "Thomas"))
-    
+
     expect_equal(expected, result)
 })
 
@@ -314,15 +314,15 @@ test_that("getting a sparse adjacency matrix for a network, single edge, matchin
                                       length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
-    
+
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
-    
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
+
     ## Assert
-    
+
     expect_equal(matrix.out, result)
 
 })
@@ -349,12 +349,12 @@ test_that("getting a sparse adjacency matrix for a network, single edge, fewer a
 
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
-    
+
     ## Act
     result = get.expanded.adjacency(network = network.in, authors = authors.in)
-    
+
     ## Assert
-    
+
     expect_equal(matrix.out, result)
 
 })
@@ -381,12 +381,12 @@ test_that("getting a sparse adjacency matrix for a network, single edge, more au
 
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
-    
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
+
     ## Assert
-    
+
     expect_equal(matrix.out, result)
 
 })
@@ -413,12 +413,12 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no matc
 
     matrix.out["Heinz", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
-    
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
+
     ## Assert
-    
+
     expect_equal(matrix.out, result)
 
 })
@@ -442,12 +442,12 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no over
                                       length(authors.in)), repr = "T")
     rownames(matrix.out) = authors.in
     colnames(matrix.out) = authors.in
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
-    
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
+
     ## Assert
-    
+
     expect_equal(matrix.out, result)
 
 })
@@ -478,9 +478,9 @@ test_that("getting a sparse adjacency matrix for a network, two edges, more auth
     matrix.out["Klaus", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
     matrix.out["Dieter", "Klaus"] = 1
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in)
+    result = get.expanded.adjacency(network = network.in, authors = authors.in)
 
     ## Assert
     expect_equal(matrix.out, result)
@@ -514,10 +514,10 @@ test_that("getting a sparse adjacency matrix for a network, three edges, more au
     matrix.out["Klaus", "Dieter"] = 3
     matrix.out["Dieter", "Heinz"] = 5
     matrix.out["Dieter", "Klaus"] = 3
-    
+
     ## Act
-    result = get.expanded.adjacency(network =network.in, authors = authors.in, weighted = TRUE)
-    
+    result = get.expanded.adjacency(network = network.in, authors = authors.in, weighted = TRUE)
+
     ## Assert
     expect_equal(matrix.out, result)
 })
@@ -556,7 +556,7 @@ test_that("getting a sparse adjacency matrix per network, one network", {
     matrix.out["Klaus", "Dieter"] = 1
     matrix.out["Dieter", "Heinz"] = 1
     matrix.out["Dieter", "Klaus"] = 1
-    
+
     ## Act
     result = get.expanded.adjacency.matrices(networks = list(network.in))
 
@@ -612,10 +612,10 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
     # or use the helper function as used below
     matrix.out.two["Tobias", "Klaus"] = 1
     matrix.out.two["Klaus", "Tobias"] = 1
-    
+
     ## Act
     result = get.expanded.adjacency.matrices(networks = list(network.in.one, network.in.two))
-    
+
     ## Assert
     expect_equal(list(matrix.out.one, matrix.out.two), result)
 })
@@ -661,10 +661,10 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     matrix.out.two["Klaus", "Dieter"] = 1
     matrix.out.two["Dieter", "Heinz"] = 1
     matrix.out.two["Dieter", "Klaus"] = 1
-    
+
     ## Act
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two))
-    
+
     ## Assert
     assert.sparse.matrices.equal(matrix.out.one, result[[1]])
     assert.sparse.matrices.equal(matrix.out.two, result[[2]])
@@ -708,21 +708,21 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
                                           length(authors.in.two)), repr = "T")
     rownames(matrix.out.two) = authors.in.two
     colnames(matrix.out.two) = authors.in.two
-    
+
     matrix.out.two["Heinz", "Dieter"] = 2
     matrix.out.two["Klaus", "Dieter"] = 3
     matrix.out.two["Dieter", "Heinz"] = 2
     matrix.out.two["Dieter", "Klaus"] = 3
-    
+
     ## Act
     result = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two), weighted = TRUE)
-    
+
     ## Assert
     assert.sparse.matrices.equal(matrix.out.one, result[[1]])
     assert.sparse.matrices.equal(matrix.out.two, result[[2]])
 })
 
-test_that("getting cumulative sums of adjacency matrices generated from networks, 
+test_that("getting cumulative sums of adjacency matrices generated from networks,
           two networks, then convert to array", {
 
     ## Arrange
@@ -761,12 +761,12 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     ## Act
     result.adjacency = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two))
     result.array = convert.adjacency.matrix.list.to.array(result.adjacency)
-    
+
     ## Assert
     expect_equal(expected.array, result.array)
 })
 
-test_that("getting cumulative sums of adjacency matrices generated from networks, 
+test_that("getting cumulative sums of adjacency matrices generated from networks,
           two networks, weighted, then convert to array", {
 
     ## Arrange
@@ -808,7 +808,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
     ## Act
     result.adjacency = get.expanded.adjacency.cumulated(networks = list(network.in.one, network.in.two), weighted = TRUE)
     result.array = convert.adjacency.matrix.list.to.array(result.adjacency)
-    
+
     ## Assert
     expect_equal(expected.array, result.array)
 })

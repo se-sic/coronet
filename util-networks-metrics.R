@@ -193,7 +193,7 @@ metrics.smallworldness = function(network) {
     ## indicator s.delta
     s.delta = gamma / lambda
 
-    return (c(smallworldness = s.delta))
+    return(c(smallworldness = s.delta))
 }
 
 #' Decide, whether a network is smallworld or not.
@@ -246,7 +246,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
     ## If less than minimum.number.vertices vertices are in the power law, set x_min manually
     ## to include a minimum of number of vertices and recompute the powerlaw fit
     non.zero.degree.v.count = length(v.degree[v.degree > 0])
-    if(res[["num.power.law"]] < minimum.number.vertices
+    if (res[["num.power.law"]] < minimum.number.vertices
        & non.zero.degree.v.count >= minimum.number.vertices) {
         ## vertex degree is sorted above
         x.min = v.degree[[minimum.number.vertices]]
@@ -259,7 +259,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
     }
 
     ## Remove non conclusive sample sizes
-    if(res[["num.power.law"]] < minimum.number.vertices) {
+    if (res[["num.power.law"]] < minimum.number.vertices) {
         res[["KS.p"]] = 0 # 0 instead of NA
     }
 

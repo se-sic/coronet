@@ -156,7 +156,7 @@ split.data.time.based.by.timestamps = function(project.data, bins = NULL, projec
         }
     }
 
-    return (split.data.time.based(project.data, bins = bins, project.conf.new));
+    return(split.data.time.based(project.data, bins = bins, project.conf.new))
 }
 
 #' Split project data in activity-based ranges as specified
@@ -473,7 +473,7 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
             range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
 
             ## 2) return the data
-            return (range.data)
+            return(range.data)
         })
     }
     return(data.split)
@@ -816,7 +816,7 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
                                                  remove.isolates = remove.isolates)[[1]]
 
             ## 2) return the network
-            return (range.net)
+            return(range.net)
         }
     )
 
