@@ -815,11 +815,9 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
     )
 
     ## convert ranges to bins
-    bins.starts = sapply(ranges.bounds, function(range) range[1])
-    bins.end = ranges.bounds[[length(ranges.bounds)]][2]
-    bins.date = get.date.from.unix.timestamp(c(bins.starts, bins.end))
+    bins = get.bin.dates.from.ranges(ranges.bounds)
+    attr(nets.split, "bins") = bins
 
-    attr(nets.split, "bins") = bins.date
     return(nets.split)
 }
 
