@@ -105,7 +105,7 @@ test_that("Simplify basic multi-relational network", {
 
     ## simplify network with simplifying multiple relations into single edges
     network.simplified = simplify.network(network, simplify.multiple.relations = TRUE)
-    expect_identical(igraph::ecount(simplify.network(network.simplified)), 1)
+    expect_identical(igraph::ecount(network.simplified), 1)
     expect_identical(igraph::E(network.simplified)$type[[1]], "Unipartite")
     expect_identical(igraph::E(network.simplified)$relation[[1]], c("cochange", "mail"))
 })
@@ -265,7 +265,7 @@ test_that("Simplify multiple basic multi-relational networks", {
     expect_true(length(networks.simplified) == 2)
     expect_identical(names(networks.simplified), names(networks))
     for (i in 1:2) {
-        expect_identical(igraph::ecount(simplify.network(networks.simplified[[i]])), 1)
+        expect_identical(igraph::ecount(networks.simplified[[i]]), 1)
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
         expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
     }
