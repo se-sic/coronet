@@ -1047,9 +1047,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
 
-            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0, 1.4.1, and 1.4.2
-            ## (see https://github.com/igraph/rigraph/issues/761), we need to adjust the type of the date attribute
-            ## of the outcome of 'igraph::disjoint_union'.
+            ## As there is a bug in 'igraph::disjoint_union' in igraph from its version 1.4.0 on, which is still
+            ## present, at least, until its version 2.0.3 (see https://github.com/igraph/rigraph/issues/761), we need
+            ## to adjust the type of the date attribute of the outcome of 'igraph::disjoint_union'.
             ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
             ## affect several other attributes, whose classes are not adjusted in our temporary fix.
             ## The following code block should be redundant as soon as igraph has fixed their bug.
