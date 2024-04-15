@@ -14,7 +14,7 @@
 ## Copyright 2016-2017 by Sofie Kemper <kemperso@fim.uni-passau.de>
 ## Copyright 2016-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2016-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Angelika Schmid <schmidang@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
@@ -139,15 +139,15 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
             ## get the unweighted sparse adjacency matrix for the current network
             matrix.data = igraph::get.adjacency(network)
         }
-        
+
         network.authors.num = nrow(matrix.data)
         ## order the adjacency matrix and filter out authors that were not in authors list
         if (nrow(matrix.data) > 1) { # for a 1x1 matrix ordering does not work
-            matrix.data = matrix.data[order((rownames(matrix.data)[rownames(matrix.data) %in% authors])), 
+            matrix.data = matrix.data[order((rownames(matrix.data)[rownames(matrix.data) %in% authors])),
                                       order((rownames(matrix.data)[rownames(matrix.data) %in% authors]))]
         }
 
-        if (network.authors.num > nrow(matrix.data)) { 
+        if (network.authors.num > nrow(matrix.data)) {
             # write a warning with the number of authors from the network that we ignore
             warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
                                      network.authors.num - nrow(matrix.data))
@@ -169,7 +169,7 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 }
 
 #' Calculates a sparse adjacency matrix for each network in the list.
-#' All adjacency matrices are expanded in such a way that the use the same set
+#' All adjacency matrices are expanded in such a way that they use the same set
 #' of authors derived from all networks in the list.
 #'
 #' @param networks list of networks
@@ -178,10 +178,9 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 #' @return the list of adjacency matrices
 get.expanded.adjacency.matrices = function(networks, weighted = FALSE){
 
-    adjacency.matrices = parallel::mclapply(networks, function(network) {
-        active.authors = sort(igraph::V(network)$name)
-        return(get.expanded.adjacency(network = network, authors = active.authors, weighted = weighted))
-    })
+    authors = get.author.names.from.networks(networks)[[1]]
+
+    adjacency.matrices = parallel::mclapply(networks, get.expanded.adjacency, authors, weighted)
 
     return(adjacency.matrices)
 }
@@ -214,7 +213,7 @@ get.expanded.adjacency.cumulated = function(networks, weighted = FALSE) {
                 ## search for a non-zero entry and set them to an arbitray number (e.g., 42)
                 ## to force that all non-zero entries are correctly set to 1 afterwards
                 if (length(matrices.cumulated[[m]]@i) > 0) {
-                
+
                     ## the first non-zero entry of a sparse matrix is at the first position pointed to by
                     ## the lists @i and @j of the matrix. Since these lists store the position 0-based,
                     ## but the list access we use them for is 1-based, we need to add 1 to both values.
@@ -249,6 +248,7 @@ convert.adjacency.matrix.list.to.array = function(adjacency.list){
 
     if (length(adjacency.list) > 1) {
         for (i in 2:length(adjacency.list)) {
+
             if (!identical(rownames, rownames(adjacency.list[[i]])) || !identical(colnames, colnames(adjacency.list[[i]]))) {
                 error.string = sprintf("The matrix at position %d has different col or rownames from the first!", i)
                 logging::logerror(error.string)
@@ -256,7 +256,7 @@ convert.adjacency.matrix.list.to.array = function(adjacency.list){
             }
         }
     }
-    
+
     ## create a 3-dimensional array representing the adjacency matrices (SIENA data format) as result
     array = array(data = 0, dim = c(nrow(adjacency.list[[1]]), nrow(adjacency.list[[1]]), length(adjacency.list)))
     rownames(array) = rownames

@@ -17,7 +17,7 @@
 ## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2020-2021, 2023 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
@@ -207,7 +207,7 @@ read.commits = function(data.path, artifact) {
 #'
 #' @return the empty dataframe
 create.empty.commits.list = function() {
-    return (create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
+    return(create.empty.data.frame(COMMITS.LIST.COLUMNS, COMMITS.LIST.DATA.TYPES))
 }
 
 ## * Mail data -------------------------------------------------------------
@@ -293,7 +293,7 @@ read.mails = function(data.path) {
 #'
 #' @return the empty dataframe
 create.empty.mails.list = function() {
-    return (create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
+    return(create.empty.data.frame(MAILS.LIST.COLUMNS, MAILS.LIST.DATA.TYPES))
 }
 
 ## * Issue data ------------------------------------------------------------
@@ -428,7 +428,7 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
 #'
 #' @return the empty dataframe
 create.empty.issues.list = function() {
-    return (create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
+    return(create.empty.data.frame(ISSUES.LIST.COLUMNS, ISSUES.LIST.DATA.TYPES))
 }
 
 
@@ -555,7 +555,7 @@ read.authors = function(data.path) {
 #'
 #' @return the empty dataframe
 create.empty.authors.list = function() {
-    return (create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
+    return(create.empty.data.frame(AUTHORS.LIST.COLUMNS, AUTHORS.LIST.DATA.TYPES))
 }
 
 
@@ -643,7 +643,7 @@ read.gender = function(data.path) {
 #'
 #' @return the empty dataframe
 create.empty.gender.list = function() {
-    return (create.empty.data.frame(GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES))
+    return(create.empty.data.frame(GENDER.LIST.COLUMNS, GENDER.LIST.DATA.TYPES))
 }
 
 
@@ -753,7 +753,7 @@ read.commit.messages = function(data.path) {
 #'
 #' @return the empty dataframe
 create.empty.commit.message.list = function() {
-    return (create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
+    return(create.empty.data.frame(COMMIT.MESSAGE.LIST.COLUMNS, COMMIT.MESSAGE.LIST.DATA.TYPES))
 }
 
 ## * PaStA data ------------------------------------------------------------
@@ -840,7 +840,7 @@ read.pasta = function(data.path) {
 #'
 #' @return the empty dataframe
 create.empty.pasta.list = function() {
-    return (create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
+    return(create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
 }
 
 ## * Synchronicity data ----------------------------------------------------
@@ -907,7 +907,7 @@ read.synchronicity = function(data.path, artifact, time.window) {
 #'
 #' @return the empty dataframe
 create.empty.synchronicity.list = function() {
-    return (create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
+    return(create.empty.data.frame(SYNCHRONICITY.LIST.COLUMNS, SYNCHRONICITY.LIST.DATA.TYPES))
 }
 
 
@@ -955,7 +955,7 @@ read.custom.event.timestamps = function(data.path, file.name) {
     }
 
     logging::logdebug("read.custom.event.timestamps: finished.")
-    return (timestamps)
+    return(timestamps)
 }
 
 ## Helper functions --------------------------------------------------------
@@ -969,7 +969,7 @@ COMMIT.ID.FORMAT = "<commit-%s>"
 #'
 #' @return a vector with the formatted commit ids
 format.commit.ids = function(commit.ids) {
-    return (sprintf(COMMIT.ID.FORMAT, commit.ids))
+    return(sprintf(COMMIT.ID.FORMAT, commit.ids))
 }
 
 ## declare a global format for issue.ids in several data frame columns

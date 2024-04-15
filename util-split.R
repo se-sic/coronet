@@ -18,7 +18,7 @@
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020, 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
@@ -135,7 +135,7 @@ split.data.by.bins = function(project.data, activity.amount, bins, split.basis =
 #' and the last range ends with the last timestamp.
 #'
 #' If timestamps are not provided, the custom event timestamps in \code{project.data} are
-#' used instead.
+#' used instead. If no custom event timestamps are available in \code{project.data}, an error is thrown.
 #'
 #' @param project.data the *Data object from which the data is retrieved
 #' @param bins a vector of timestamps [default: NULL]
@@ -148,9 +148,15 @@ split.data.time.based.by.timestamps = function(project.data, bins = NULL, projec
 
     if (is.null(bins)) { # bins were not provided, use custom timestamps from project
         bins = unlist(project.data$get.custom.event.timestamps())
+
+        if (is.null(bins)) { # stop if no custom timestamps are available
+            logging::logerror("There are no custom timestamps available for splitting (configured file: %s).",
+                              project.data$get.project.conf.entry("custom.event.timestamps.file"))
+            stop("Stopping due to missing data.")
+        }
     }
 
-    return (split.data.time.based(project.data, bins = bins, project.conf.new));
+    return(split.data.time.based(project.data, bins = bins, project.conf.new))
 }
 
 #' Split project data in activity-based ranges as specified
@@ -467,7 +473,7 @@ split.data.time.based.by.ranges = function(project.data, ranges) {
             range.data = split.data.time.based(project.data, bins = start.end, sliding.window = FALSE)[[1]]
 
             ## 2) return the data
-            return (range.data)
+            return(range.data)
         })
     }
     return(data.split)
@@ -810,7 +816,7 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
                                                  remove.isolates = remove.isolates)[[1]]
 
             ## 2) return the network
-            return (range.net)
+            return(range.net)
         }
     )
 

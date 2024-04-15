@@ -20,6 +20,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -630,7 +631,7 @@ get.issue.comment.count = function(proj.data, type = c("all", "issues", "pull.re
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
     issue.id.to.comment.count = lapply(issue.id.to.events, function(df) {
         event.names = df[["data.vertices"]]
-        return (length(event.names[event.names == "commented"]))
+        return(length(event.names[event.names == "commented"]))
     })
     logging::logdebug("get.issue.comment.count: finished")
     return(issue.id.to.comment.count)
@@ -745,9 +746,9 @@ get.pr.open.merged.or.closed = function(proj.data, use.unfiltered.data = TRUE) {
                                retained.cols = c("issue.id", "issue.state", "event.name"))
     issue.id.to.events = get.key.to.value.from.df(df, "issue.id", "event.name")
     issue.id.to.state = lapply(issue.id.to.events, function(df) {
-        return (if ("open" %in% df[["issue.state"]] || "reopened" %in% df[["issue.state"]]) "open"
-                else if ("merged" %in% df[["event.name"]]) "merged"
-                else "closed")
+        return(if ("open" %in% df[["issue.state"]] || "reopened" %in% df[["issue.state"]]) "open"
+               else if ("merged" %in% df[["event.name"]]) "merged"
+               else "closed")
     })
     logging::logdebug("get.pr.open.merged.or.closed: finished")
     return(issue.id.to.state)

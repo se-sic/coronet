@@ -13,7 +13,7 @@
 ##
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs-uni-saarland.de>
+## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs-uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -90,7 +90,7 @@ DATASOURCE.TO.ADDITIONAL.ARTIFACT.FUNCTION = list(
 #' @return \code{lst}, with the keys changed
 rename.list.keys = function(lst, map.function) {
     names(lst) = lapply(names(lst), map.function)
-    return (lst)
+    return(lst)
 }
 
 ## Combine \code{DATASOURCE.TO.ARTIFACT.FUNCTION}, \code{DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION}
@@ -288,8 +288,8 @@ ProjectData = R6::R6Class("ProjectData",
                 }
 
                 ## return the mails of the thread with all patchstack mails but the first one being removed
-                return (list(keep = thread[setdiff(seq_len(nrow(thread)), seq_len(i)[-1]), ],
-                             patchstack = thread[seq_len(i), ]))
+                return(list(keep = thread[setdiff(seq_len(nrow(thread)), seq_len(i)[-1]), ],
+                            patchstack = thread[seq_len(i), ]))
             })
 
             ## override thread data with filtered thread data
@@ -579,13 +579,15 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("pasta")) {
                 ## merge PaStA data
                 private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
-                                      by = "message.id", all.x = TRUE, sort = FALSE)
+                                                 by = "message.id", all.x = TRUE, sort = FALSE)
 
                 ## sort by date again because 'merge' disturbs the order
-                private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]], decreasing = FALSE), ]
+                private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]],
+                                                                          decreasing = FALSE), ]
 
                 ## remove duplicated revision set ids
-                private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]], function(rev.id) {
+                private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]],
+                                                                       function(rev.id) {
                     return(unique(rev.id))
                 })
             }
@@ -669,10 +671,11 @@ ProjectData = R6::R6Class("ProjectData",
             if (private$project.conf$get.value("synchronicity")) {
                 ## merge synchronicity data
                 private$commits.unfiltered = merge(private$commits.unfiltered, private$synchronicity,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
+                                                   by = "hash", all.x = TRUE, sort = FALSE)
 
                 ## sort by date again because 'merge' disturbs the order
-                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
+                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]],
+                                                                              decreasing = FALSE), ]
             }
             ## remove previous synchronicity data
             private$commits["synchronicity"] = NULL
@@ -685,16 +688,15 @@ ProjectData = R6::R6Class("ProjectData",
                                         by = "hash", all.x = TRUE, sort = FALSE)
 
                 ## sort by date again because 'merge' disturbs the order
-                private$commits = private$commits[order(private$commits[["date"]],
-                                                                          decreasing = FALSE), ]
+                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
             }
 
             ## get the caller function as a string
             stacktrace = get.stacktrace(sys.calls())
             caller = get.second.last.element(stacktrace)
 
-            ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the case
-            ## that it is called manually, i.e. the stack is too short.
+            ## only print warning if this function has not been called by 'cleanup.synchronicity.data' including the
+            ## case that it is called manually, i.e. the stack is too short.
             if (all(is.na(caller)) || paste(caller, collapse = " ") != "cleanup.synchronicity.data()") {
                 logging::logwarn("There might be synchronicity data that does not appear in the commit data.
                                   To clean this up you can call the function 'cleanup.synchronicity.data()'.")
@@ -894,7 +896,7 @@ ProjectData = R6::R6Class("ProjectData",
             params.keep.environment = params %in% CONF.PARAMETERS.NO.RESET.ENVIRONMENT
 
             ## only reset if at least one of them should cause a reset
-            if(!all(params.keep.environment)) {
+            if (!all(params.keep.environment)) {
                 self$reset.environment()
             } else {
                 ## if the 'commit.messages' parameter has been changed, update the commit message data, since we want to
@@ -1017,7 +1019,7 @@ ProjectData = R6::R6Class("ProjectData",
         #' @seealso get.commits
         get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
             logging::loginfo("Getting commit data (uncached).")
-            return (private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
+            return(private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -1513,7 +1515,7 @@ ProjectData = R6::R6Class("ProjectData",
             if (!self$is.data.source.cached("authors")) {
 
                 ## read author data
-                author.data = read.authors(self$get.data.path());
+                author.data = read.authors(self$get.data.path())
 
                 ## set author data and add gender data (if configured in the 'project.conf')
                 self$set.authors(author.data)
@@ -1567,7 +1569,7 @@ ProjectData = R6::R6Class("ProjectData",
                                         authors[["author.email"]]), "is.bot"]
             ## retain if entry is FALSE or NA
             bot.indices = !bot.indices | is.na(bot.indices)
-            return (data.to.filter[bot.indices,])
+            return(data.to.filter[bot.indices,])
         },
 
         #' Get the issue data, filtered according to options in the project configuration:
@@ -2137,7 +2139,7 @@ ProjectData = R6::R6Class("ProjectData",
             data = lapply(data.sources, function(data.source){
                 data.source.func = DATASOURCE.TO.ARTIFACT.FUNCTION[[data.source]]
                 data.source.authors = self[[data.source.func]]()[c("author.name", "author.email")]
-                return (data.source.authors)
+                return(data.source.authors)
             })
 
             data = plyr::rbind.fill(data)
@@ -2145,7 +2147,7 @@ ProjectData = R6::R6Class("ProjectData",
             ## remove duplicates
             data = unique(data)
 
-            return (data)
+            return(data)
         },
 
         #' Get the list of custom event timestamps,
@@ -2158,14 +2160,14 @@ ProjectData = R6::R6Class("ProjectData",
                 && !private$project.conf$get.value("custom.event.timestamps.locked")) {
 
                 file.name = self$get.project.conf.entry("custom.event.timestamps.file")
-                if(is.na(file.name)) {
+                if (is.na(file.name)) {
                     logging::logwarn("get.custom.event.timestamps: No file configured")
-                    return (list())
+                    return(list())
                 }
                 timestamps = read.custom.event.timestamps(self$get.data.path(), file.name)
                 self$set.custom.event.timestamps(timestamps)
             }
-            return (private$custom.event.timestamps)
+            return(private$custom.event.timestamps)
         },
 
         #' Set the list of custom event timestamps.
@@ -2178,7 +2180,7 @@ ProjectData = R6::R6Class("ProjectData",
                 logging::logerror(error.message)
                 stop(error.message)
             }
-            if(length(custom.event.timestamps) != 0){
+            if (length(custom.event.timestamps) != 0){
                 private$custom.event.timestamps = custom.event.timestamps[
                     order(unlist(get.date.from.string(custom.event.timestamps)))
                 ]
@@ -2305,7 +2307,7 @@ RangeData = R6::R6Class("RangeData", inherit = ProjectData,
         #'         or of type character if input was a commit hash or version;
         #'         or NULL if the string could not be parsed
         get.range.bounds = function() {
-            return (get.range.bounds(private$range))
+            return(get.range.bounds(private$range))
         },
 
         #' Get the 'revision.callgraph' of the current instance
