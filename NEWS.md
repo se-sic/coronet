@@ -2,45 +2,49 @@
 
 # coronet – Changelog
 
-## unversioned
+## 4.4
+
+### Announcement
+
+- Due to a bug in package `igraph` (https://github.com/igraph/rigraph/issues/1158), which is present in their versions 2.0.0 to 2.0.3, the functions `metrics.scale.freeness` and `metrics.is.scale.free` can currently not be used with these `igraph` versions. If you need to call any of these two functions, you either need to install `igraph` version 1.6.0 or wait until the bug in `igraph` is fixed in a future version of `igraph`.
 
 ### Added
 
 - Add issue-based artifact-networks, in which issues form vertices connected by edges that represent issue references. If possible, disambiguate duplicate JIRA issue references that originate from [codeface-extraction](https://github.com/se-sic/codeface-extraction) (PR #244, PR #249, 98a93ee721a293410623aafe46890cfba9d81e72, 771bcc8d961d419b53a1e891e9dc536371f1143b, 368e79264adf5a5358c04518c94ad2e1c13e212b, fa3167c289c9785f3a5db03d9724848f1441a63d, 4646d581d5e1f63260692b396a8bd8f51b0da48fda, ed77bd726bf92e06c2fc9145a5847787a8d0588b)
 - Add a new `split.data.by.bins` function (not to be confused with a previously existing function that had the same name and was renamed in this context), which splits data based on given activity-based bins (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+- Add `get.bin.dates.from.ranges` function to convert date ranges into bins format (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f, 858b1812ebfc3194cc6a03c99f3ee7d161d1ca15)
+- Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, PR #255, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa, a34b5bd50351b9ccf3cc45fc323cfa2e84d65ea0, 34516415fed599eba0cc7d3cc4a9acd6b26db252, 78f43514962d7651e6b7a1e80ee22ce012f32535, d310fdc38690f0d701cd32c92112c33f7fdde0ff, 58d77b01ecc6a237104a4e72ee5fb9025efeaaf2)
+- Add network simplification to showcase file (PR #255, dc32d44f9db7dfc3cc795ef5d6b86609d6c1936f)
+- Add tests for network simplification (PR #255, 338b06941eec1c9cfdb121e78ce0d9db6b75da19, 8a6f47bc115c10fbbe4eee21985d97aee5c9dc91, e01908c94eccc4dda5f2b3c0746b0eab0172dc07, 7b6848fb86f69db088ce6ef2bea8315ac94d48f9, 666d78444ffcb3bc8b36f2121284e4840176618e)
 - Add an `assert.sparse.matrices.equal` function to compare two sparse matrices for equality for testing purposes (PR #248, 9784cdf12d1497ee122e2ae73b768b8c334210d4, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
 - Add tests for file `util-networks-misc.R` (#242, PR #248, PR #258, f3202a6f96723d11c170346556d036cf087521c8, 030574b9d0f3435db4032d0e195a3d407fb7244b, 380b02234275127297fcd508772c69db21c216de, 8b803c50d60fc593e4e527a08fd4c2068d801a48, 7335c3dd4d0302b024a66d18701d9800ed3fe806, 6b600df04bec1fe70c272604f274ec5309840e65, a53fab85358b223af43749a088ad02e9fbcb0a30, faf19fc369beb901b556ecb8c4fa0bf6f1bd6304)
-- Add the possibility to simplify edges of multiple-relation networks into a single edge at all instead of a single edge per relation (PR #250, PR #255, 2105ea89b5227e7c9fa78fea9de1977f2d9e8faa, a34b5bd50351b9ccf3cc45fc323cfa2e84d65ea0, 34516415fed599eba0cc7d3cc4a9acd6b26db252, 78f43514962d7651e6b7a1e80ee22ce012f32535, d310fdc38690f0d701cd32c92112c33f7fdde0ff, 58d77b01ecc6a237104a4e72ee5fb9025efeaaf2)
-- Add tests for network simplification (PR #255, 338b06941eec1c9cfdb121e78ce0d9db6b75da19, 8a6f47bc115c10fbbe4eee21985d97aee5c9dc91, e01908c94eccc4dda5f2b3c0746b0eab0172dc07, 7b6848fb86f69db088ce6ef2bea8315ac94d48f9, 666d78444ffcb3bc8b36f2121284e4840176618e)
-- Add `get.bin.dates.from.ranges` function to convert date ranges into bins format (PR #249, a1842e9be46596321ee86860fd87d17a3c88f50f, 858b1812ebfc3194cc6a03c99f3ee7d161d1ca15)
-- Add network simplification to showcase file (PR #255, dc32d44f9db7dfc3cc795ef5d6b86609d6c1936f)
 
 ### Changed/Improved
 
-- Enhance testing data by adding `add_link` and `referenced_by` issue events, which connect issues to form edges in issue-based artifact-networks. This includes duplicate edge information in JIRA data as produced by [codeface-extraction](https://github.com/se-sic/codeface-extraction) (PR #244, 9f840c040d552e8639aa82c3dd537c189679b348, ea4fe8d3c84f948af6147cf0137e80181ebb7a1e, 6eb731102301b1af08f4affb40d1f8df94500e34)
 - Add input validation for the `bins` parameter in `split.data.time.based` and `split.data.by.bins` (PR #244, ed0a5302ea8c8934d7200b95be7ac1446305af07, 5e5ecbac44d07927b953ae9d4330a616f8224ba7)
+- Test for the presence and validity of the `bins` attribute on network-, and data-splits (PR #249, c064affcfff2eb170d8bdcb39d837a7ff62b2cbd, 93051ab848ec94de138b0513dac22f6da0d20885)
+- Simplify call chain-, and branching-routes in network-splitting functions and consequently set the `bins` attribute on every output network-split (while minimizing recalculations) (PR #249, #256, PR #257, a1842e9be46596321ee86860fd87d17a3c88f50f, 8695fbe7f21ccaa3ccd6d1016e754017d387b1fa)
 - Rename `split.data.by.bins` into `split.dataframe.by.bins` as this it what it does (PR #244, ed5feb214a123b605c9513262f187cfd72b9e1f4)
+- Throw an error in `split.data.time.based.by.timestamps` if no custom event timestamps are available in the ProjectData object (6305adcee7f18747141994b00bdd94641f95e86f)
+- Enhance testing data by adding `add_link` and `referenced_by` issue events, which connect issues to form edges in issue-based artifact-networks. This includes duplicate edge information in JIRA data as produced by [codeface-extraction](https://github.com/se-sic/codeface-extraction) (PR #244, 9f840c040d552e8639aa82c3dd537c189679b348, ea4fe8d3c84f948af6147cf0137e80181ebb7a1e, 6eb731102301b1af08f4affb40d1f8df94500e34)
+- Add a check for empty networks in the functions `metrics.scale.freeness` and `metrics.is.scale.free` and return `NA` if the network is empty (29418f2da38de8c39ec2a1fb3d445b63f320be40)
 - Enhance `get.author.names.from.network` and `get.author.names.from.data` to always have the same output format. Now it doesn't depend on the `global` flag anymore (PR #248, d87d32564156f13c83ebe3361c2b68e5d0ac16ac, ddbfe68d3e628e82f34e09b36fffe886646986c5)
 - Change `util-tensor.R` to correctly use the new output format of `get.author.names.from.network` (PR #248, 72b663ebf7169c0da5c687fe215529f3be0c08c5)
 - Throw an error in `convert.adjacency.matrix.list.to.array` if the function is called with wrong parameters (PR #248, ece2d38b4972745af3a83e06f32317a06465a345, 1a3e510df15f5fa4e920e9fce3e0e162c27cd6d1)
 - Rename `compare.networks` to `assert.networks.equal` to better match the purpose of the function (PR #248, d9f1a8d90e00a634d7caeb5e7f8f262776496838)
 - Explicitly add R version 4.3 to the CI test pipeline (9f346d5bc3cfc553f01e5e80f0bbe51e1dc2b53e)
-- Simplify call chain-, and branching-routes in network-splitting functions and consequently set the `bins` attribute on every output network-split (while minimizing recalculations) (PR #249, #256, PR #257, a1842e9be46596321ee86860fd87d17a3c88f50f, 8695fbe7f21ccaa3ccd6d1016e754017d387b1fa)
-- Test for the presence and validity of the `bins` attribute on network-, and data-splits (PR #249, c064affcfff2eb170d8bdcb39d837a7ff62b2cbd, 93051ab848ec94de138b0513dac22f6da0d20885)
-- Add a check for empty networks in the functions `metrics.scale.freeness` and `metrics.is.scale.free` and return `NA` if the network is empty (29418f2da38de8c39ec2a1fb3d445b63f320be40)
-- Throw an error in `split.data.time.based.by.timestamps` if no custom event timestamps are available in the ProjectData object (6305adcee7f18747141994b00bdd94641f95e86f)
 
 ### Fixed
 
 - Reformat `event.info.1` column of issue data according to the <issue-%source-%id> format, if the content of the `event.info.1` field references another issue (PR #244, 62ff9d0f31adbefb3381936237dc4ab984e33acb)
+- Rename vertex attribute `IssueEvent` to `Issue` in multi-networks, to be consistent with bipartite-networks (PR #244, 26d7b7e9fd6d33d1c0a8a08f19c5c2e30346a3d9)
 - Fix an issue in activity-based splitting where elements close to the border of bins might be assigned to the wrong bin. The issue was caused by the usage of `split.data.time.based` inside `split.data.activity.based` to split data into the previously derived bins, when elements close to bin borders share the same timestamps. It is fixed by replacing `split.data.time.based` by `split.data.by.bins` (PR #244, ece569ceaf557bb38cd0cfad437b69b30fe8a698)
 - Remove the last range when using a sliding-window approach and the last range's elements are fully contained in the second last range (PR #244, 48ef4fa685adf6e5d85281e5b90a8ed8f6aeb197, 943228fbc91eed6854dacafa7075441e58b22675)
-- Rename vertex attribute `IssueEvent` to `Issue` in multi-networks, to be consistent with bipartite-networks (PR #244, 26d7b7e9fd6d33d1c0a8a08f19c5c2e30346a3d9)
+- Fix broken error logging in `metrics.smallworldness` (03e06881f06abf30d44b69d7988873f20b95232d)
 - Fix `get.expanded.adjacency` to work if the provided author list does not contain all authors from the network and add a warning when that happens since it causes some authors from the network to be lost in the resulting matrix (PR #248, ff59017e114b10812dcfb1704a19e01fc1586a13)
 - Fix `get.expanded.adjacency.matrices` to have correct names for the columns and rows (PR #248, PR #258, e72eff864a1cb1a4aecd430e450d4a6a5044fdf2, a53fab85358b223af43749a088ad02e9fbcb0a30)
 - Fix `get.expanded.adjacency.cumulated` so that it works if `weighted` parameter is set to `FALSE` (PR #248, 2fb9a5d446653f6aee808cbfc87c2dafeb9a749a)
-- Fix broken error logging in `metrics.smallworldness` (03e06881f06abf30d44b69d7988873f20b95232d)
-- Fix multi-network construction to work with igraph version 2.0.1.1, which does not allow to add an empty list of vertices (PR #250, 5547896faa279f6adaae4b2b77c7ab9623ddf256)
+- Fix multi-network construction to work with `igraph` version 2.0.1.1, which does not allow to add an empty list of vertices (PR #250, 5547896faa279f6adaae4b2b77c7ab9623ddf256)
 
 
 ## 4.3
