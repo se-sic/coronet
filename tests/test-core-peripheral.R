@@ -17,6 +17,7 @@
 ## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -171,8 +172,8 @@ test_that("Issue-count classification" , {
     result = get.author.class.issue.count(proj.data, issue.type = "all")
 
     ## Assert
-    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), issue.count = c(6, 6, 4))
-    expected.peripheral = data.frame(author.name = c("Karl", "Max", "udo"), issue.count = c(1, 1, 1))
+    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), issue.count = c(6, 6, 6))
+    expected.peripheral = data.frame(author.name = c("Karl", "Max", "udo"), issue.count = c(2, 1, 1))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result[["core"]]) = NULL

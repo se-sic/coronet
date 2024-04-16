@@ -15,7 +15,8 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -101,3 +102,113 @@ test_that("Network construction of the undirected artifact-cochange network", {
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
+
+patrick::with_parameters_test_that("Network construction of an issue-based artifact-network", {
+    ## build expected network:
+    ## 1) vertices
+    vertices = data.frame(name = c("<issue-jira-ZEPPELIN-328>",
+                                   "<issue-github-2>",
+                                   "<issue-github-6>",
+                                   "<issue-github-3>",
+                                   "<issue-github-1>",
+                                   "<issue-jira-ZEPPELIN-332>" ,
+                                   "<issue-github-4>"),
+                          kind = "Issue",
+                          type = TYPE.ARTIFACT)
+    ## 2) edges
+    edges = data.frame(
+        from = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
+        to = c("<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-332>"),
+        date = get.date.from.string(c("2016-08-07 15:30:00", "2016-08-07 15:37:02", "2017-05-21 12:00:00")),
+        artifact.type = c("IssueEvent", "IssueEvent", "IssueEvent"),
+        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
+        event.name = c("add_link", "add_link", "add_link"),
+        author.name = c("Thomas", "Karl", "Thomas"),
+        weight = c(1, 1, 1),
+        type = TYPE.EDGES.INTRA,
+        relation = "issue"
+    )
+
+    ## 3) when constructing directed networks, we cannot deduplicate jira edges
+    if (test.directed) {
+        edges = rbind(edges, data.frame(
+            from = "<issue-jira-ZEPPELIN-332>",
+            to = "<issue-jira-ZEPPELIN-328>",
+            date = get.date.from.string("2017-05-21 12:00:00"),
+            artifact.type = "IssueEvent",
+            issue.id = "<issue-jira-ZEPPELIN-332>",
+            event.name = "add_link",
+            author.name = "Thomas",
+            weight = 1,
+            type = TYPE.EDGES.INTRA,
+            relation = "issue"
+        ))
+    }
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.only.comments", FALSE)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    ## build network
+    network.built = network.builder$get.artifact.network()
+
+    ## test
+    expect_true(igraph::identical_graphs(network.built, network.expected))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
+
+patrick::with_parameters_test_that("Network construction of an empty 'comments-only' issue-based artifact-network", {
+
+    ##
+    ## 'issues.only.comments' (by default), this should not create any edges
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
+
+    ## construct objects
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    ## build network
+    network.built = network.builder$get.artifact.network()
+
+    ## 1) vertices
+    vertices = data.frame(name = c("<issue-jira-ZEPPELIN-328>",
+                                   "<issue-github-2>",
+                                   "<issue-github-1>",
+                                   "<issue-github-3>",
+                                   "<issue-github-4>",
+                                   "<issue-jira-ZEPPELIN-332>",
+                                   "<issue-github-6>"),
+                          kind = "Issue",
+                          type = TYPE.ARTIFACT)
+    ## 2) edges
+    edges = data.frame(
+        from = character(), to = character(), date = get.date.from.string(character(0)), artifact.type = character(),
+        issue.id = character(), event.name = character(), weight = numeric(), type = character(),
+        relation = character()
+    )
+
+    ## build expected network
+    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    ## test
+    assert.networks.equal(network.built, network.expected)
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))

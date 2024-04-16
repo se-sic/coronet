@@ -15,6 +15,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -142,7 +143,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     if (igraph::ecount(network) > 0) {
         p = p +
             ggraph::geom_edge_fan(
-                mapping = ggplot2::aes(colour = relation, linetype = edge.type, width = 0.3 + 0.5 * log(weight)),
+                mapping = ggplot2::aes(colour = paste(relation, sep = " "), linetype = edge.type, width = 0.3 + 0.5 * log(weight)),
                 end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 arrow = if (igraph::is.directed(network)) {

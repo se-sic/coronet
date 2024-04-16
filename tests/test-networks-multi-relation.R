@@ -20,6 +20,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -224,8 +225,8 @@ test_that("Construction of the multi network for the feature artifact with autho
      ## 1) construct expected vertices
     vertices = data.frame(
         name = c("Björn", "Olaf", "Karl", "Thomas", "udo", "Fritz fritz@example.org", "georg", "Hans",
-                 "Base_Feature", "foo", "A", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-github-1>", "<issue-github-3>",
-                 "<issue-github-4>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>"),
+                 "Base_Feature", "foo", "A", "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-github-1>",
+                 "<issue-github-3>", "<issue-github-4>", "<issue-jira-ZEPPELIN-332>", "<issue-github-6>"),
         kind = c(rep(TYPE.AUTHOR, 8), rep("Feature", 3), rep("Issue", 7)),
         type = c(rep(TYPE.AUTHOR, 8), rep(TYPE.ARTIFACT, 10))
     )
@@ -312,7 +313,7 @@ test_that("Construction of the multi network for the feature artifact with autho
     network.expected = igraph::graph.data.frame(edges, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
-    compare.networks(network.expected, network.built)
+    assert.networks.equal(network.expected, network.built)
 })
 
 test_that("Construction of the multi-artifact bipartite network with artifact relations 'cochange' and 'issue'", {
@@ -407,7 +408,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-    compare.networks(net.expected, net.combined)
+    assert.networks.equal(net.expected, net.combined)
 
 })
 
@@ -494,7 +495,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-    compare.networks(net.expected, net.combined)
+    assert.networks.equal(net.expected, net.combined)
 
 })
 
@@ -596,7 +597,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-    compare.networks(net.expected, net.combined)
+    assert.networks.equal(net.expected, net.combined)
 
 })
 
@@ -716,6 +717,6 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
 
-    compare.networks(net.expected, net.combined)
+    assert.networks.equal(net.expected, net.combined)
 
 })

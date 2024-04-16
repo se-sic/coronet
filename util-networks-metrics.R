@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -167,7 +167,7 @@ metrics.smallworldness = function(network) {
     if (!is.simple(network)) {
         ## if this is not the case, raise an error and stop the execution
         error.message = "The input network has too many edges. Try again with a simplified network."
-        logging::error(error.message)
+        logging::logerror(error.message)
         stop(error.message)
     }
 
@@ -193,7 +193,7 @@ metrics.smallworldness = function(network) {
     ## indicator s.delta
     s.delta = gamma / lambda
 
-    return (c(smallworldness = s.delta))
+    return(c(smallworldness = s.delta))
 }
 
 #' Decide, whether a network is smallworld or not.
@@ -217,8 +217,19 @@ metrics.is.smallworld = function(network) {
 #' @param minimum.number.vertices the minimum number of vertices with which
 #'                                a network can be scale free [default: 30]
 #'
-#' @return A dataframe containing the different values, connected to scale-freeness.
+#' @return If the network is empty (i.e., has no vertices), \code{NA}.
+#'         Otherwise, a dataframe containing the different values, connected to scale-freeness.
 metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
+
+    ## check whether the network is empty, i.e., if it has no vertices
+    if (igraph::vcount(network) == 0) {
+        ## print user warning instead of igraph error
+        logging::logwarn("The input network has no vertices. Will return NA right away.")
+
+        ## cancel the execution and return NA
+        return(NA)
+    }
+
     v.degree = sort(igraph::degree(network, mode = "total"), decreasing = TRUE)
 
     ## Power-law fiting
@@ -235,7 +246,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
     ## If less than minimum.number.vertices vertices are in the power law, set x_min manually
     ## to include a minimum of number of vertices and recompute the powerlaw fit
     non.zero.degree.v.count = length(v.degree[v.degree > 0])
-    if(res[["num.power.law"]] < minimum.number.vertices
+    if (res[["num.power.law"]] < minimum.number.vertices
        & non.zero.degree.v.count >= minimum.number.vertices) {
         ## vertex degree is sorted above
         x.min = v.degree[[minimum.number.vertices]]
@@ -248,7 +259,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
     }
 
     ## Remove non conclusive sample sizes
-    if(res[["num.power.law"]] < minimum.number.vertices) {
+    if (res[["num.power.law"]] < minimum.number.vertices) {
         res[["KS.p"]] = 0 # 0 instead of NA
     }
 
@@ -263,10 +274,15 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
 #'                                a network can be scale free [default: 30]
 #'
 #' @return \code{TRUE}, if the network is scale free,
-#'         \code{FALSE}, otherwise.
+#'         \code{FALSE}, if it is not scale free,
+#'         \code{NA}, if the network is empty (i.e., has no vertices).
 metrics.is.scale.free = function(network, minimum.number.vertices = 30) {
     df = metrics.scale.freeness(network, minimum.number.vertices)
-    return(df[["KS.p"]] >= 0.05)
+    if (is.single.na(df)) {
+        return(NA)
+    } else {
+        return(df[["KS.p"]] >= 0.05)
+    }
 }
 
 #' Calculate the hierarchy values for a network, i.e., the vertex degrees and the local

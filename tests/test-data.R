@@ -19,6 +19,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -402,8 +403,8 @@ test_that("Filter bots from issue data", {
     filtered.issues = proj.data$get.issues()
 
     expect_true(all(filtered.issues[["author.name"]] != "Thomas"))
-    ## there are now 41 issue events remaining, since 6 issue events have been removed during filtering
-    expect_equal(nrow(filtered.issues), 41)
+    ## there are now 43 issue events remaining, since 10 issue events have been removed during filtering
+    expect_equal(nrow(filtered.issues), 43)
 })
 
 test_that("Filter bots from mail data", {

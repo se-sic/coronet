@@ -15,13 +15,13 @@
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -56,7 +56,7 @@ EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
-    relation = "first",
+    relation = function(relation) sort(unique(relation)),
 
     ## commit data
     changed.files = "sum",
@@ -475,17 +475,117 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$artifacts.network.issue)
             }
 
-            ## log warning as we do not have relations among issues right now
-            logging::logwarn(paste(
-                "There exist no actual artifact network with the relation 'issue'.",
-                "Return an edge-less network now."
-            ))
+            if (private$proj.data$get.project.conf()$get.entry("issues.only.comments")) {
+                logging::logwarn(paste(
+                    "Create an edge-less artifact network as 'issues.only.comments' is set.",
+                    "Comments in issues cannot create issue edges."
+                ))
+            }
 
-            ## construct edgeless network with mandatory edge and vertex attributes
-            directed = private$network.conf$get.value("artifact.directed")
-            artifacts = private$proj.data$get.artifacts("issues") # issue IDs
-            artifacts.net = create.empty.network(directed = directed, add.attributes = TRUE) +
-                igraph::vertices(artifacts)
+            ## construct edge list based on issue-artifact data
+            artifacts.net.data.raw = private$proj.data[[DATASOURCE.TO.ARTIFACT.FUNCTION[["issues"]]]]()
+
+            ## obtain issue-connecting events
+            add.links = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "add_link" &
+                                               artifacts.net.data.raw$event.info.2 == "issue", ]
+            referenced.bys = artifacts.net.data.raw[artifacts.net.data.raw$event.name == "referenced_by" &
+                                               artifacts.net.data.raw$event.info.2 == "issue", ]
+
+            ## the codeface extraction for jira issues creates duplicate events, linking the referenced issue
+            ## to the referencing issue, in addition to the correct events, linking the referencing issue to
+            ## the referenced issue. We can only deduplicate them, if we build an undirected network, as otherwise,
+            ## we would need to guess the correct direction.
+            if (!private$network.conf$get.entry("artifact.directed")) {
+
+                ## obtain 'add_link' events from jira
+                jira.add.links = add.links[add.links$issue.source == "jira", ]
+                matched = list()
+
+                ## iterate over all add_link events from jira
+                for (i in 1:nrow(jira.add.links)) {
+
+                    add.link = jira.add.links[i, ]
+
+                    ## ensure not to remove both duplicate edges
+                    if (any(sapply(matched, function(entry) identical(entry, add.link)))) {
+                        next
+                    }
+
+                    ## match any 'add_link' events, that are the reverse direction of 'add.link',
+                    ## but have the same timestamp and author information
+                    match = jira.add.links[(
+                        jira.add.links$issue.id == add.link$event.info.1 &
+                        jira.add.links$event.info.1 == add.link$issue.id &
+                        jira.add.links$date == add.link$date &
+                        jira.add.links$author.name == add.link$author.name), ]
+
+                    ## if a match is found, remove 'add.link' and its corresponding 'referenced_by' event
+                    if (nrow(match) > 0) {
+                        add.links = add.links[!(
+                            add.links$issue.id == match$issue.id &
+                            add.links$event.info.1 == match$event.info.1 &
+                            add.links$date == match$date &
+                            add.links$author.name == match$author.name), ]
+                        referenced.bys = referenced.bys[!(
+                            referenced.bys$issue.id == add.link$issue.id &
+                            referenced.bys$event.info.1 == add.link$event.info.1 &
+                            referenced.bys$date == add.link$date &
+                            referenced.bys$author.name == add.link$author.name), ]
+                        matched = append(matched, list(match))
+                    }
+                }
+            }
+
+
+            if (nrow(add.links) != nrow(referenced.bys)) {
+                logging::logwarn("Inconsistent issue data. Unequally many 'add_link' and 'referenced_by' issue-events.")
+            }
+
+            vertices = unique(artifacts.net.data.raw["issue.id"])
+            edge.list = data.frame()
+
+            # edges in artifact networks can not have the 'artifact' attribute but should instead have
+            # the 'author.name' attribute as events caused by authors connect issues
+            edge.attributes = private$network.conf$get.value("edge.attributes")
+            artifact.index = match("artifact", edge.attributes, nomatch = NA)
+            if (!is.na(artifact.index)) {
+                edge.attributes = edge.attributes[-artifact.index]
+                edge.attributes = c(edge.attributes, c("author.name"))
+            }
+
+            ## connect corresponding add_link and referenced_by issue-events
+            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_along(add.links)), function(from) {
+                ## get edge attributes
+                cols.which = edge.attributes %in% colnames(from)
+                edge.attrs = from[, edge.attributes[cols.which], drop = FALSE]
+
+                ## construct edge
+                to = subset(referenced.bys,
+                            event.info.1 == from[["issue.id"]] &
+                            author.name == from[["author.name"]] &
+                            date == from[["date"]])
+                if (!all(is.na(to))) {
+                    combination = list("from" = from[["issue.id"]], "to" = to[["issue.id"]])
+                    combination = cbind(combination, edge.attrs, row.names = NULL) # add edge attributes
+                    return(combination) # return the combination for this row
+                }
+            }))
+
+            artifacts.net.data = list(
+                vertices = data.frame(
+                    name = vertices
+                ),
+                edges = edge.list
+            )
+
+            ## construct network from obtained data
+            artifacts.net = construct.network.from.edge.list(
+                artifacts.net.data[["vertices"]],
+                artifacts.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("artifact.directed"),
+                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
+            )
 
             ## store network
             private$artifacts.network.issue = artifacts.net
@@ -519,7 +619,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(bip.relation, "vertex.kind") = private$get.vertex.kind.for.relation(relation)
                 attr(bip.relation, "relation") = relation
 
-                return (bip.relation)
+                return(bip.relation)
             })
             names(bip.relations) = relations
 
@@ -681,6 +781,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             igraph::V(net)$kind = TYPE.AUTHOR
             igraph::V(net)$type = TYPE.AUTHOR
 
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
+
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
                 attr(net, "range") = private$proj.data$get.range()
@@ -721,6 +827,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
+
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
 
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
@@ -822,6 +934,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network = igraph::delete.vertices(network, authors.to.remove)
             }
 
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                network = simplify.network(network, simplify.multiple.relations =
+                                                    private$network.conf$get.value("simplify.multiple.relations"))
+            }
+
             ## add range attribute for later analysis (if available)
             if ("RangeData" %in% class(private$proj.data)) {
                 attr(network, "range") = private$proj.data$get.range()
@@ -899,8 +1017,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.to.add.kind = artifacts.all[
                 artifacts.all[["data.vertices"]] %in% artifacts.to.add, "artifact.type"
             ]
-            artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
-                                                             kind = artifacts.to.add.kind)
+
+            ## Adjust vertex attribute to 'Issue' in multi networks
+            ## to be consistent with bipartite networks
+            artifacts.to.add.kind[artifacts.to.add.kind == "IssueEvent"] = "Issue"
+
+            if (length(artifacts.to.add) > 0) {
+                artifacts.net = artifacts.net + igraph::vertices(artifacts.to.add, type = TYPE.ARTIFACT,
+                                                                 kind = artifacts.to.add.kind)
+            }
 
             ## check directedness and adapt artifact network if needed
             if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
@@ -922,9 +1047,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
 
-            ## As there is a bug in 'igraph::disjoint_union' in igraph versions 1.4.0, 1.4.1, and 1.4.2
-            ## (see https://github.com/igraph/rigraph/issues/761), we need to adjust the type of the date attribute
-            ## of the outcome of 'igraph::disjoint_union'.
+            ## As there is a bug in 'igraph::disjoint_union' in igraph from its version 1.4.0 on, which is still
+            ## present, at least, until its version 2.0.3 (see https://github.com/igraph/rigraph/issues/761), we need
+            ## to adjust the type of the date attribute of the outcome of 'igraph::disjoint_union'.
             ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
             ## affect several other attributes, whose classes are not adjusted in our temporary fix.
             ## The following code block should be redundant as soon as igraph has fixed their bug.
@@ -998,8 +1123,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     keys.number = length(list)
 
 
-    ## if edges in an artifact network contain the \code{artifact} attribute 
-    ## replace it with the \code{author.name} attribute as artifacts cannot cause 
+    ## if edges in an artifact network contain the \code{artifact} attribute
+    ## replace it with the \code{author.name} attribute as artifacts cannot cause
     ## edges in artifact networks, authors can
     edge.attributes = network.conf$get.value("edge.attributes")
     if (artifact.edges) {
@@ -1198,11 +1323,6 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     ## initialize edge weights
     net = igraph::set.edge.attribute(net, "weight", value = 1)
-
-    ## transform multiple edges to edge weights
-    if (network.conf$get.value("simplify")) {
-        net = simplify.network(net)
-    }
 
     logging::logdebug("construct.network.from.edge.list: finished.")
 
@@ -1477,16 +1597,19 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
 #' @param network the given network
 #' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
+#' @param simplify.multiple.relations whether to combine edges of multiple relations into
+#'        one simplified edge [default: FALSE]
 #'
 #' @return the simplified network
-simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE) {
+simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE,
+                            simplify.multiple.relations = FALSE) {
     logging::logdebug("simplify.network: starting.")
     logging::loginfo("Simplifying network.")
 
     ## save network attributes, otherwise they get lost
     network.attributes = igraph::get.graph.attribute(network)
 
-    if (length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
+    if (!simplify.multiple.relations && length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
         ## data frame of the network
         edge.data = igraph::as_data_frame(network, what = "edges")
         vertex.data = igraph::as_data_frame(network, what = "vertices")
@@ -1528,9 +1651,12 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
 #' @param networks the list of networks
 #' @param remove.multiple whether to contract multiple edges between the same pair of vertices [default: TRUE]
 #' @param remove.loops whether to remove loops [default: TRUE]
+#' @param simplify.multiple.relations whether to combine edges of multiple relations into
+#'                                    one simplified edge [default: FALSE]
 #'
 #' @return the simplified networks
-simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TRUE) {
+simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TRUE,
+                             simplify.multiple.relations = FALSE) {
     logging::logdebug("simplify.networks: starting.")
     logging::loginfo(
         "Simplifying networks (names = [%s]).",
@@ -1538,7 +1664,7 @@ simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TR
     )
 
     nets = parallel::mclapply(networks, simplify.network, remove.multiple = remove.multiple,
-                              remove.loops = remove.loops)
+                              remove.loops = remove.loops, simplify.multiple.relations = simplify.multiple.relations)
 
     logging::logdebug("simplify.networks: finished.")
     return(nets)
@@ -1672,14 +1798,14 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
 #'         empty relation, i.e. \code{character(0)}
 get.data.sources.from.relations = function(network) {
     ## get all relations in the network
-    data.sources = unique(igraph::E(network)$relation)
+    data.sources = unique(unlist(igraph::E(network)$relation))
 
     ## map them to data sources respectively using the defined translation constant
     data.sources = sapply(data.sources, function(relation) {
         ## check for a \code{character(0)} relation and abort if there is one
         if (length(relation) == 0) {
             logging::logwarn("There seems to be an empty relation in the network. Cannot proceed.")
-            return (NA)
+            return(NA)
         }
 
         ## use the translation constant to get the appropriate data source

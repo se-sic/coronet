@@ -16,11 +16,11 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021, 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -977,13 +977,23 @@ get.range.bounds = function(range) {
         start.end = regmatches(range, gregexpr(pattern = pattern[[1]], range))[[1]]
 
         if (length(start.end) == 2) {
-            return (pattern[[2]](start.end))
+            return(pattern[[2]](start.end))
         }
     }
 
-    return (range)
+    return(range)
 }
 
+#' Obtain the start and end dates from given ranges.
+#'
+#' @param ranges the ranges to get the dates from
+#'
+#' @return a vector that contains the start and end dates of all given ranges
+#'         sorted and disambiguated
+get.bin.dates.from.ranges = function(ranges) {
+    dates = sort(unique(get.date.from.unix.timestamp(unlist(ranges))))
+    return(dates)
+}
 
 #' Get the data from a data frame in a specific range.
 #'
@@ -998,7 +1008,7 @@ get.data.from.range = function(range, data) {
 
     ## split data by this bin; this gives a list of three data frames, "0" contains the data before the range, "1" the
     ## data within the range and "2" the holds the data after the range
-    split.data = split.data.by.bins(data, df.bins)
+    split.data = split.dataframe.by.bins(data, df.bins)
 
     ## look for the element with name "1", as we are interested in the data within the range
     ## if there is no data, return an empty data frame corresponding to the data we want to cut
@@ -1011,3 +1021,4 @@ get.data.from.range = function(range, data) {
         return(data.between)
     }
 }
+

@@ -16,13 +16,14 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019 by Klara Schlueter <schluete@fim.uni-passau.de>
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -218,7 +219,7 @@ cf.data = split.data.time.based(x.data, bins = mybins)
 ## construct (author) networks from range data
 my.networks = lapply(cf.data, function(range.data) {
     y = NetworkBuilder$new(project.data = range.data, network.conf = net.conf)
-    return (y$get.author.network())
+    return(y$get.author.network())
 })
 ## add commit-count vertex attributes
 sample = add.vertex.attribute.author.commit.count(my.networks, x.data, aggregation.level = "range")
@@ -360,6 +361,24 @@ g.motifs = motifs.count(network = g,
                                       motif.collaborating.and.communicating = MOTIFS.TRIANGLE.POSITIVE),
                         remove.duplicates = TRUE, raw.data = FALSE)
 
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Network simplification --------------------------------------------------
+
+## construct sample network
+g = y$get.multi.network()
+g = igraph::delete_edges(g, c(5, 6))
+g = igraph::delete_vertices(g, c(2, 4, 5, 6, 7, 8))
+g = g + igraph::edges(c("Björn", "Olaf", "Björn", "Olaf"), type = TYPE.EDGES.INTRA, weight = 1,
+                      relation = "cochange", artifact.type = "Feature")
+
+## merge edges between vertice pairs that stem from the same data source
+g.simplified = simplify.network(g)
+plot.network(g.simplified)
+
+## merge all edges between vertice pairs
+g.simplified = simplify.network(g, simplify.multiple.relations = TRUE)
+plot.network(g.simplified)
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Plots -------------------------------------------------------------------
