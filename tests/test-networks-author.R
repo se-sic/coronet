@@ -685,6 +685,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
     proj.conf$update.value("commit.interactions", TRUE)
     proj.conf$update.value("commits.filter.untracked.files", FALSE)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("filter.commit.interactions", FALSE)
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     net.conf = NetworkConf$new()

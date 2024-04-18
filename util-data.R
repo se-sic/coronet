@@ -1273,6 +1273,11 @@ ProjectData = R6::R6Class("ProjectData",
                         commit.interaction.data = read.commit.interactions(data.path)
                     }
 
+                    ## filter commit interactions if configured
+                    if (private$project.conf$get.value("filter.commit.interactions")) {
+                        commit.interaction.data = subset(commit.interaction.data,
+                                                         file != COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME)
+                    }
                     ## cache the result
                     private$commit.interactions = commit.interaction.data
                     private$update.commit.interactions()
