@@ -6,8 +6,9 @@
 
 ### Added
 
-- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, d82857fbebd1111bb16588a4223bb24a8dcd07de, b4fd2a29c9b5fd561b1106c6febb54a32b0085ab, fd0aa05f824b93545ae8e05833b95b3bd9809286) as well as tests for these features (PR #252, eeba7e29932bc973513c963fb9e716e9230d570f, 8bb39f4df39b49dfaff8f19feb6db5e5fbd81fac, 54b6f655248720436af116fe72521f9cb0348429, 7a5497aaf9114017d1b3b9b68b6cccd7ca8ac114, 7b8585f87675795822c07230192d6454de31dcc7, ef725407bf8818c8fff96ea6f343338b7162cbe0)
+- Add commit-interaction data and add functions `read.commit.interactions` for reading, as well as `get.commit.interactions`, `set.commit.interactions` and utility functions for working with commit-interaction data (PR #252, d82857fbebd1111bb16588a4223bb24a8dcd07de, b4fd2a29c9b5fd561b1106c6febb54a32b0085ab, fd0aa05f824b93545ae8e05833b95b3bd9809286, bca35760eb0aac86c04923f2d534b2d8cece204e) as well as tests for these features (PR #252, eeba7e29932bc973513c963fb9e716e9230d570f, 8bb39f4df39b49dfaff8f19feb6db5e5fbd81fac, 54b6f655248720436af116fe72521f9cb0348429, 7a5497aaf9114017d1b3b9b68b6cccd7ca8ac114, 7b8585f87675795822c07230192d6454de31dcc7, ef725407bf8818c8fff96ea6f343338b7162cbe0)
 - Add commit-interaction networks that can be created with `create.author.network` and `create.artifact.network` if the `artifact.relation` and `author.relation` is configured to be `commit.interaction` (PR #252, d82857fbebd1111bb16588a4223bb24a8dcd07de, 329d97ec3de36a9e1bcadc0c7a53c1d92e8b481c) as well as tests for these features (PR #252, 07e7ed744209b0251217fa8f7f35d9b9875face2, 7068cfa10d993dcae3f5e3f76f8cafa99fa8b350)
+- Add helper function for prefixing function names with file names in `util-read.R` (PR #252, f8ea987b138173cf0509c7910e0572d8ee1b3f1f)
 
 ### Changed/Improved
 
