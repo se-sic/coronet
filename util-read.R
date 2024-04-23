@@ -70,13 +70,13 @@ remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
     return(data)
 }
 
-#' Concatenation of function and file names, e.g. 'file::function'
+#' Concatenate function and file name, i.e. 'file::function'
 #'
 #' @param file.name the name of the file
 #' @param function.name the name of the function
 #'
 #' @return the concatenated function name
-prefix.function.with.file.names = function(file.name, function.name) {
+prefix.function.with.file.name = function(file.name, function.name) {
     return(paste(file.name, function.name, sep = "::"))
 }
 
@@ -178,7 +178,7 @@ read.commits = function(data.path, artifact) {
     ## (we have proximity-based data as foundation)
     if (artifact == "function") {
         ## artifact = file name + "::" . function name
-        artifacts.new = prefix.function.with.file.names(commit.data[["file"]], commit.data[["artifact"]])
+        artifacts.new = prefix.function.with.file.name(commit.data[["file"]], commit.data[["artifact"]])
 
         ## clean up empty artifacts and File_Level artifact
         artifacts.new = gsub("^::$", "", artifacts.new)
@@ -938,13 +938,13 @@ read.commit.interactions = function(data.path = NULL) {
                     return(data.frame(matrix(nrow = 3, ncol = 0)))
                 } else {
                     file.name = file.name.map$get(hash[["function"]])
-                    func.name = prefix.function.with.file.names(file.name, hash[("function")])
+                    func.name = prefix.function.with.file.name(file.name, hash[("function")])
                     return(data.frame(func = func.name, commit.hash = hash[["commit"]], file = file.name))
                 }
             })))
             base.file.name = file.name.map$get(function.name)
             interacting.hashes.df[["base.hash"]] = base.hash
-            interacting.hashes.df[["base.func"]] = prefix.function.with.file.names(base.file.name, function.name)
+            interacting.hashes.df[["base.func"]] = prefix.function.with.file.name(base.file.name, function.name)
             interacting.hashes.df[["base.file"]] = base.file.name
             return(interacting.hashes.df)
         })))

@@ -607,7 +607,7 @@ There is no way to update the entries, except for the revision-based parameters.
 - `commit.interactions`:
     * Allow construction of author and artifact networks using commit-interaction data
     * [`TRUE`, *`FALSE`*]
-- `filter.commit.interactions`:
+- `commit.interactions.filter.global`:
     * Filter out entries from commit interaction data that are not matched to a specific function or file
     * [*`TRUE`*, `FALSE`]
 

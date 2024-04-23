@@ -1274,7 +1274,7 @@ ProjectData = R6::R6Class("ProjectData",
                     }
 
                     ## filter commit interactions if configured
-                    if (private$project.conf$get.value("filter.commit.interactions")) {
+                    if (private$project.conf$get.value("commit.interactions.filter.global")) {
                         commit.interaction.data = subset(commit.interaction.data,
                                                          file != COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME)
                     }

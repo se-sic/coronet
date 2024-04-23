@@ -526,7 +526,7 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     proj.conf$update.value("commit.interactions", TRUE)
     proj.conf$update.value("commits.filter.untracked.files", FALSE)
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
-    proj.conf$update.value("filter.commit.interactions", FALSE)
+    proj.conf$update.value("commit.interactions.filter.global", FALSE)
 
     proj.data.one = ProjectData$new(project.conf = proj.conf)
     proj.data.two = proj.data.one$clone(deep = TRUE)
@@ -591,6 +591,6 @@ test_that("Compare two ProjectData Objects with commit.interactions", {
     expect_equal(proj.data.two$get.commit.interactions(), commit.interactions.data.expected)
 
     ## reactivate filtering of commit interactions
-    proj.data.two$set.project.conf.entry("filter.commit.interactions", TRUE)
+    proj.data.two$set.project.conf.entry("commit.interactions.filter.global", TRUE)
     expect_true(nrow(proj.data.two$get.commit.interactions()) == 2)
 })
