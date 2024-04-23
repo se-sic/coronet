@@ -142,6 +142,8 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `jsonlite`: For parsing the issue data
 - `rTensor`: For calculating EDCPTD centrality
 - `Matrix`: For sparse matrix representation of large adjacency matrices
+- `fastmap`: For fast implementation of a map
+- `purrr`: For fast implementtion of a mapping function
 
 ### Submodule
 
@@ -263,6 +265,11 @@ Relations determine which information is used to construct edges among the verti
     * This relation does not apply for author networks.
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts are connected when they reference each other (i.e., one artifact calls a function contained in the other artifact).
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits (same as for the relation `cochange`).
+
+- `commit.interaction`
+    * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to interacting commits are connected with an edge.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that occur in the artifacts.
+    * This relation does not apply for bipartite networks.
 
 #### Edge-construction algorithms for author networks
 
@@ -597,6 +604,12 @@ There is no way to update the entries, except for the revision-based parameters.
 - `custom.event.timestamps.locked`:
     * Lock custom event timestamps to prevent them from being read if empty or not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]
+- `commit.interactions`:
+    * Allow construction of author and artifact networks using commit-interaction data
+    * [`TRUE`, *`FALSE`*]
+- `commit.interactions.filter.global`:
+    * Filter out entries from commit interaction data that are not matched to a specific function or file
+    * [*`TRUE`*, `FALSE`]
 
 ### NetworkConf
 

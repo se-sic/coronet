@@ -22,6 +22,8 @@
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+
 ## All Rights Reserved.
 
 
@@ -676,3 +678,53 @@ test_that("Network construction with only untracked files (no edges expected)", 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
+
+patrick::with_parameters_test_that("Network construction with commit-interactions as relation", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commit.interactions.filter.global", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(author.relation = "commit.interaction",
+                                                 author.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.author.network()
+
+    ## build the expected network
+    vertices = data.frame(
+        name = c("Olaf", "Thomas", "Karl"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Olaf", "Thomas", "Karl", "Thomas"),
+        to = c("Thomas", "Karl", "Olaf", "Thomas"),
+        func = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        file = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.func = c("test2.c::test2", "test2.c::test2",
+                      "test3.c::test_function", "test2.c::test2"),
+        base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
+        )
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))

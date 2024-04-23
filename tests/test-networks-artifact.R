@@ -212,3 +212,101 @@ patrick::with_parameters_test_that("Network construction of an empty 'comments-o
     "directed: FALSE" = list(test.directed = FALSE),
     "directed: TRUE" = list(test.directed = TRUE)
 ))
+
+patrick::with_parameters_test_that("Network construction with commit-interactions as relation, artifact type 'file'", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commit.interactions.filter.global", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "commit.interaction",
+                                                 artifact.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.artifact.network()
+    ## build the expected nbetwork
+    vertices = data.frame(
+        name = c("test2.c", "test3.c", "GLOBAL"),
+        kind = "File",
+        type = TYPE.ARTIFACT
+        )
+    edges = data.frame(
+        from = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        to = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        func = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.func = c("test2.c::test2", "test2.c::test2",
+                      "test3.c::test_function", "test2.c::test2"),
+        base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
+        interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
+        )
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
+
+patrick::with_parameters_test_that("Network construction with commit-interactions as relation, artifact type 'function'", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
+    proj.conf$update.value("commit.interactions", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commit.interactions.filter.global", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(artifact.relation = "commit.interaction",
+                                                 artifact.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.artifact.network()
+    ## build the expected network
+    vertices = data.frame(
+        name = c("test2.c::test2", "test3.c::test_function", "GLOBAL"),
+        kind = "Function",
+        type = TYPE.ARTIFACT
+        )
+    edges = data.frame(
+        from = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2"),
+        to = c("test2.c::test2", "test2.c::test2",
+               "test3.c::test_function", "test2.c::test2"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        file = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
+        interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
+        )
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))

@@ -14,6 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
+## Copyright 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
@@ -22,6 +23,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -132,10 +134,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.vertex.kind.for.relation = function(relation) {
 
             vertex.kind = switch(relation,
-                cochange  = private$proj.data$get.project.conf.entry("artifact.codeface"),
-                callgraph = private$proj.data$get.project.conf.entry("artifact.codeface"),
-                mail      = "MailThread",
-                issue     = "Issue"
+                cochange           = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                callgraph          = private$proj.data$get.project.conf.entry("artifact.codeface"),
+                mail               = "MailThread",
+                issue              = "Issue",
+                commit.interaction = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
             return(vertex.kind)
@@ -222,6 +225,36 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$authors.network.cochange = author.net
             logging::logdebug("get.author.network.cochange: finished.")
 
+            return(author.net)
+        },
+
+        #' Build and get the author network with commit-interactions as the relation.
+        #'
+        #'  @return the commit-interaction author network
+        get.author.network.commit.interaction = function() {
+            ## get the authors that appear in the commit-interaction data as the vertices of the network
+            vertices = unique(c(private$proj.data$get.commit.interactions()[["base.author"]],
+                                private$proj.data$get.commit.interactions()[["interacting.author"]]))
+            vertices = data.frame(name = vertices)
+
+            ## get the commit-interaction data as the edge data of the network
+            edges = private$proj.data$get.commit.interactions()
+            ## set the authors as the 'to' and 'from' of the network and order the dataframe
+            edges = edges[, c("base.author", "interacting.author", "func", "commit.hash",
+                              "file", "base.hash", "base.func", "base.file")]
+            colnames(edges)[1] = "to"
+            colnames(edges)[2] = "from"
+            colnames(edges)[4] = "hash"
+            author.net.data = list(vertices = vertices, edges = edges)
+            ## construct the network
+            author.net = construct.network.from.edge.list(
+                author.net.data[["vertices"]],
+                author.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("author.directed"),
+                available.edge.attributes = private$proj.data$
+                                            get.data.columns.for.data.source("commit.interactions")
+            )
             return(author.net)
         },
 
@@ -343,6 +376,58 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.cochange: finished.")
 
             return(artifacts.net)
+        },
+
+        #' Build and get the commit-interaction based artifact network.
+        #'
+        #' @return the commit-interaction based artifact network
+        get.artifact.network.commit.interaction = function() {
+          ## initialize the vertices. They will be set correctly depending on the used config.
+          vertices = c()
+          ## get the commit-interaction data as the edge data of the network
+          edges = private$proj.data$get.commit.interactions()
+
+          ## set 'to' and 'from' of the network according to the config
+          ## and order the dataframe accordingly
+          proj.conf.artifact = private$proj.data$get.project.conf.entry("artifact")
+          if (proj.conf.artifact == "file") {
+              ## change the vertices to the files from the commit-interaction data
+              vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
+                                    private$proj.data$get.commit.interactions()[["file"]]))
+              vertices = data.frame(name = vertices)
+
+              edges = edges[, c("file", "base.file", "func", "commit.hash",
+                                "base.hash", "base.func", "base.author", "interacting.author")]
+              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
+          } else if (proj.conf.artifact == "function") {
+             ## change the vertices to the functions from the commit-interaction data
+             vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
+                                 private$proj.data$get.commit.interactions()[["func"]]))
+             vertices = data.frame(name = vertices)
+
+             edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
+                               "base.file", "base.author", "interacting.author")]
+             colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
+          } else {
+            ## If neither 'function' nor 'file' was configured, send a warning
+            ## and return an empty network
+            logging::logwarn("when creating a commit-interaction artifact network,
+                              the artifact should be either 'file' or 'function'!")
+            return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
+          }
+          colnames(edges)[1] = "to"
+          colnames(edges)[2] = "from"
+          artifact.net.data = list(vertices = vertices, edges = edges)
+          ## construct the network
+          artifact.net = construct.network.from.edge.list(
+            artifact.net.data[["vertices"]],
+            artifact.net.data[["edges"]],
+            network.conf = private$network.conf,
+            directed = private$network.conf$get.value("artifact.directed"),
+            available.edge.attributes = private$proj.data$
+                                        get.data.columns.for.data.source("commit.interactions")
+          )
+          return(artifact.net)
         },
 
         #' Get the call-graph-based artifact network.
@@ -743,6 +828,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network = switch(
                     relation,
                     cochange = private$get.author.network.cochange(),
+                    commit.interaction = private$get.author.network.commit.interaction(),
                     mail = private$get.author.network.mail(),
                     issue = private$get.author.network.issue(),
                     stop(sprintf("The author relation '%s' does not exist.", rel))
@@ -810,6 +896,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     callgraph = private$get.artifact.network.callgraph(),
                     mail = private$get.artifact.network.mail(),
                     issue = private$get.artifact.network.issue(),
+                    commit.interaction = private$get.artifact.network.commit.interaction(),
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
 

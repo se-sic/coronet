@@ -22,6 +22,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -497,3 +498,61 @@ test_that("Read and parse the issue data.", {
     expect_identical(issue.data.read.github, issue.data.expected.github, info = "Issue data github.")
 })
 
+test_that("Read the commit-interactions data.", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+
+    ## read the actual data
+    commit.interactions.data.read = read.commit.interactions(proj.conf$get.value("datapath"))
+    ## build the expected data.frame
+
+    commit.interactions.data.expected = data.frame(matrix(nrow = 4, ncol = 8))
+    ## assure that the correct type is used
+    for(i in seq_len(8)) {
+        commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
+    }
+    ## set everything except for authors as expected
+    colnames(commit.interactions.data.expected) = c("func", "commit.hash", "file", "base.hash",
+                                                    "base.func", "base.file", "base.author",
+                                                    "interacting.author")
+    commit.interactions.data.expected[["commit.hash"]] =
+                                                        c("5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                                          "0a1a5c523d835459c42f33e863623138555e2526",
+                                                          "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                                          "d01921773fae4bed8186b0aa411d6a2f7a6626e6")
+    commit.interactions.data.expected[["base.hash"]] =
+                                                      c("1143db502761379c2bfcecc2007fc34282e7ee61",
+                                                        "3a0ed78458b3976243db6829f63eba3eead26774",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526")
+    commit.interactions.data.expected[["func"]] = c("GLOBAL", "GLOBAL", "test2.c::test2", "test2.c::test2")
+    commit.interactions.data.expected[["file"]] = c("GLOBAL", "GLOBAL", "test2.c", "test2.c")
+    commit.interactions.data.expected[["base.func"]] = c("test3.c::test_function", "test2.c::test2",
+                                                         "test2.c::test2", "test2.c::test2")
+    commit.interactions.data.expected[["base.file"]] = c("test3.c", "test2.c", "test2.c", "test2.c")
+    ## check the results
+    expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
+                     info = "commit interaction data.")
+})
+
+test_that("Read the empty commit-interactions data.", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+
+    ## read the actual data
+    commit.interactions.data.read = read.commit.interactions("./codeface-data/results/testing/
+                                                             test_empty_proximity/proximity")
+    ## build the expected data.frame
+    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 8))
+    colnames(commit.interactions.data.expected) = c("func", "commit.hash", "file",
+                                                    "base.hash", "base.func", "base.file",
+                                                    "base.author", "interacting.author")
+    for(i in seq_len(8)) {
+        commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
+    }
+    ## check the results
+    expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
+                     info = "commit interaction data.")
+})

@@ -20,6 +20,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -98,6 +99,13 @@ test_that("Compare two ProjectData objects on empty data", {
     proj.data.two$set.project.conf.entry("commit.messages", "message")
     proj.data.two$get.commit.messages()
     expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.messages).")
+
+    proj.data.one$set.project.conf.entry("commit.interactions", TRUE)
+    proj.data.one$get.commit.interactions()
+    expect_false(proj.data.one$equals(proj.data.two), "Two non-identical ProjectData objects (commit.interactions).")
+    proj.data.two$set.project.conf.entry("commit.interactions", TRUE)
+    proj.data.two$get.commit.interactions()
+    expect_true(proj.data.one$equals(proj.data.two), "Two identical ProjectData objects (commit.interactions).")
 })
 
 test_that("Compare two ProjectData objects on non-empty data", {
@@ -510,4 +518,79 @@ test_that("Create RangeData objects from Codeface ranges and check data path", {
                        "./codeface-data/results/testing/test_feature/feature/002--v2-v3")
 
     expect_identical(range.paths, expected.paths, "RangeData data paths")
+})
+
+test_that("Compare two ProjectData Objects with commit.interactions", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.conf$update.value("commit.interactions", TRUE)
+    proj.conf$update.value("commits.filter.untracked.files", FALSE)
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.conf$update.value("commit.interactions.filter.global", FALSE)
+
+    proj.data.one = ProjectData$new(project.conf = proj.conf)
+    proj.data.two = proj.data.one$clone(deep = TRUE)
+
+    ## test if the project data is equal and the commit interactions are as well
+    expect_equal(proj.data.one$get.commit.interactions(), proj.data.two$get.commit.interactions())
+    expect_true(proj.data.one$equals(proj.data.two))
+
+    ## change commit interactions of one project data and assert that equality check fails
+    proj.data.two$set.commit.interactions(create.empty.commit.interaction.list())
+    expect_false(proj.data.one$equals(proj.data.two))
+
+    ## change commit data in one to test if commit-interactions are correctly updated
+    ## call get.commit.interactions() once to restore read interactions
+    proj.data.two$get.commit.interactions()
+
+    ## change commits in one project data
+    commit.data = proj.data.one$get.commits()
+    commit.data[["hash"]][[5]] = 1
+    proj.data.one$set.commits(commit.data)
+
+    ## use isTRUE to compress result of all.equal into a single boolean
+    expect_false(isTRUE(all.equal(proj.data.one$get.commit.interactions(),
+                                  proj.data.two$get.commit.interactions())))
+
+    ## The data frame should still have 4 entries:
+    expect_true(nrow(proj.data.one$get.commit.interactions()) == 4)
+    ## after cleanup is called, the data frame should only have 3 entries:
+    proj.data.one$cleanup.commit.interactions()
+    expect_true(nrow(proj.data.one$get.commit.interactions()) == 3)
+
+    ## set commit list of one project data to empty and test that last
+    ## two rows of result data frame are empty
+    proj.data.two$set.commits(create.empty.commits.list())
+
+    ## create empty data frame of correct size
+    commit.interactions.data.expected = data.frame(matrix(nrow = 4, ncol = 8))
+    ## assure that the correct type is used
+    for(i in seq_len(8)) {
+        commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
+    }
+    ## set everything except for authors as expected
+    colnames(commit.interactions.data.expected) = c("commit.hash", "base.hash", "func", "file",
+                                                    "base.func", "base.file", "base.author",
+                                                    "interacting.author")
+    commit.interactions.data.expected[["commit.hash"]] =
+                                                        c("0a1a5c523d835459c42f33e863623138555e2526",
+                                                        "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                                        "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                                        "d01921773fae4bed8186b0aa411d6a2f7a6626e6")
+    commit.interactions.data.expected[["base.hash"]] =
+                                                      c("3a0ed78458b3976243db6829f63eba3eead26774",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526",
+                                                        "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                                        "0a1a5c523d835459c42f33e863623138555e2526")
+    commit.interactions.data.expected[["func"]] = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2")
+    commit.interactions.data.expected[["file"]] = c("GLOBAL", "test2.c", "GLOBAL", "test2.c")
+    commit.interactions.data.expected[["base.func"]] = c("test2.c::test2", "test2.c::test2",
+                                                         "test3.c::test_function", "test2.c::test2")
+    commit.interactions.data.expected[["base.file"]] = c("test2.c", "test2.c", "test3.c", "test2.c")
+
+    expect_equal(proj.data.two$get.commit.interactions(), commit.interactions.data.expected)
+
+    ## reactivate filtering of commit interactions
+    proj.data.two$set.project.conf.entry("commit.interactions.filter.global", TRUE)
+    expect_true(nrow(proj.data.two$get.commit.interactions()) == 2)
 })
