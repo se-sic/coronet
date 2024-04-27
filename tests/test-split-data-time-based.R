@@ -770,6 +770,53 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
     "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
 ))
 
+
+##
+## Tests for split.data.time.based(..., split.basis = c('mails', 'issues'), with and without sliding windows
+##
+
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = c('mails', 'issues'))", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+
+    # remove really old mail data
+    mail.data = project.data$get.mails()
+    mail.data = mail.data[-(1:12), ]
+    project.data$set.mails(mail.data)
+
+    # check mail date bounds
+    expect_equal(min(mail.data$date), as.POSIXct("2016-07-12 15:58:40"))
+    expect_equal(max(mail.data$date), as.POSIXct("2016-07-12 16:05:37"))
+
+    # keep issue data that roughly overlaps the mail data
+    issue.data = project.data$get.issues()
+    issue.data = issue.data[-(1:12), ]
+    issue.data = issue.data[-(8:12), ]
+    project.data$set.issues(issue.data)
+
+    # check issue date bounds
+    expect_equal(min(issue.data$date), as.POSIXct("2016-07-12 15:59:25"))
+    expect_equal(max(issue.data$date), as.POSIXct("2016-07-12 16:06:01"))
+
+    # split by 'mails' and 'issues' without sliding window
+    results = split.data.time.based(project.data, time.period = "1 min",
+                                    split.basis = c("mails", "issues"), sliding.window = test.sliding.window)
+
+    # bins should be union of both sources
+    expect_equal(min(attr(results, "bins")), min(c(issue.data$date, mail.data$date)))
+    expect_equal(max(attr(results, "bins")), max(c(issue.data$date, mail.data$date)) + 1)
+
+}, patrick::cases(
+    "sliding.windows: FALSE" = list(test.sliding.window = FALSE),
+    "sliding.windoww: TRUE" = list(test.sliding.window = TRUE)
+))
+
+
 ## * * bins ----------------------------------------------------------------
 
 ##
