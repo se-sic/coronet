@@ -52,7 +52,8 @@ requireNamespace("lubridate") # for date conversion
 #'                       time-sized windows for all ranges. If set, the \code{time.period} and \code{bins} parameters are ignored;
 #'                       consequently, \code{sliding.window} does not make sense then either.
 #'                       [default: NULL]
-#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues'
+#'                    or an arbitrary combination of them
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
@@ -64,6 +65,14 @@ requireNamespace("lubridate") # for date conversion
 split.data.time.based = function(project.data, time.period = "3 months", bins = NULL,
                                  number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                  sliding.window = FALSE, project.conf.new = NULL) {
+
+    # ensure 'split.basis' defaults to 'commits' if not defined
+    # and allow it to be a vector if explicitly wanted
+    if(!hasArg("split.basis")) {
+        split.basis = match.arg.or.default(split.basis, several.ok = FALSE, default = "commits")
+    } else {
+        split.basis = match.arg.or.default(split.basis, several.ok = TRUE)
+    }
 
     # validate existence and type of the 'bins' parameter
     if (!is.null(bins) && !lubridate::is.POSIXct(bins)) {
@@ -98,6 +107,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #' @seealso split.get.bins.activity.based
 split.data.by.bins = function(project.data, activity.amount, bins, split.basis = c("commits", "mails", "issues"),
                                      sliding.window) {
+
+    ## get basis for splitting process
+    split.basis = match.arg(split.basis)
 
     # validate type of the 'bins' parameter
     if (is.null(bins) || !is.list(bins)) {
@@ -887,7 +899,8 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
 #' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
 #' @param number.windows see \code{number.windows} from \code{split.data.time.based}
 #'                       [default: NULL]
-#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues'
+#'                    or an arbitrary combination of them
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
@@ -903,13 +916,13 @@ split.data.by.time.or.bins = function(project.data, splitting.length, bins, spli
                                       number.windows = NULL, split.basis = c("commits", "mails", "issues"),
                                       sliding.window = FALSE, project.conf.new = NULL) {
 
-    ## get basis for splitting process
-    split.basis = match.arg(split.basis)
-
     ## if the data used by the split basis is not present, load it automatically
-    if (!(split.basis %in% project.data$get.cached.data.sources("only.unfiltered"))) {
-        function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[split.basis]]
-        project.data[[function.name]]()
+    for (i in seq_along(split.basis)) {
+        data.source = split.basis[i]
+        if (!(data.source %in% project.data$get.cached.data.sources("only.unfiltered"))) {
+            function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[data.source]]
+            project.data[[function.name]]()
+        }
     }
 
     ## get actual raw data
@@ -945,7 +958,9 @@ split.data.by.time.or.bins = function(project.data, splitting.length, bins, spli
     ## if bins are NOT given explicitly
     if (is.null(bins)) {
         ## get bins based on split.basis
-        bins = split.get.bins.time.based(data[[split.basis]][["date"]], splitting.length, number.windows)$bins
+        dates = project.data$get.data.timestamps(split.basis)
+        dates = get.date.from.unix.timestamp(unname(unlist(dates)))
+        bins = split.get.bins.time.based(dates, splitting.length, number.windows)$bins
         bins.labels = head(bins, -1)
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
