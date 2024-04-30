@@ -116,6 +116,7 @@ In our development process, we pursue the following idea:
 The current build status is as follows:
 - `master`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=master)
 - `dev`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=dev)
+- `test coverage`: ![Coverage Status](https://codecov.io/gh/MaLoefUDS/coronet/graph/badge.svg?token=OU3SR362X9)
 
 ### Pull Requests
 

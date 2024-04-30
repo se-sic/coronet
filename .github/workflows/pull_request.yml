@@ -50,6 +50,8 @@ jobs:
           sudo apt-get install --assume-yes libxml2-dev
           sudo apt-get install --assume-yes libglpk-dev
           sudo apt-get install --assume-yes libfontconfig1-dev
+          sudo apt-get install --assume-yes libssl-dev
+          sudo apt-get install --assume-yes libcurl4-openssl-dev
           sudo su -c "echo 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' >> /etc/apt/sources.list"
           wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 
@@ -62,8 +64,16 @@ jobs:
         run: Rscript install.R
 
       - name: Run Tests
+        id: tests
         run: Rscript tests.R
 
       - name: Run Showcase
         run: Rscript showcase.R
         if: always()
+
+      - name: Generate Coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: Rscript coverage.R ${CODECOV_TOKEN}
+        if: matrix.r-version == 'latest' && steps.tests.outcome == 'success'
+

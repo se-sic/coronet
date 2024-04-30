@@ -20,6 +20,7 @@
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8@maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## Adapted from https://github.com/siemens/codeface/blob/be382e9171fb91b4aa99b99b09b2ef64a6dba0d5/packages.r
@@ -47,7 +48,8 @@ packages = c(
     "rTensor",
     "Matrix",
     "fastmap",
-    "purrr"
+    "purrr",
+    "covr"
 )
 
 
