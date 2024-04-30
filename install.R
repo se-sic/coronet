@@ -16,7 +16,7 @@
 ## Copyright 2015 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2015-2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
@@ -77,10 +77,12 @@ if (length(p) > 0) {
     Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
     if (compareVersion(Matrix.version, "1.3.0") == -1) {
         print("WARNING: Matrix version 1.3.0 or higher is necessary for using coronet. Re-install package Matrix...")
-        install.packages("Matrix", dependencies = NA, verbose = TRUE, quiet = TRUE)
+        #install.packages("Matrix", dependencies = NA, verbose = TRUE, quiet = TRUE)
+        matrix.1.3.4.url = "https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.3-4.tar.gz"
+        install.packages(matrix.1.3.4.url, repos = NULL, dependencies = NA, verbose = TRUE, quiet = TRUE)
         Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
         if (compareVersion(Matrix.version, "1.3.0") == -1) {
-            print("WARNING: Re-installation of package Matrix did not end up in the necessary packge version.")
+            print("WARNING: Re-installation of package Matrix did not end up in the necessary package version.")
         }
     }
 }
