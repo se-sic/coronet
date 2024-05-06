@@ -837,6 +837,18 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
             ),
+            commit.relation = list(
+                default = "cochange",
+                type = "character",
+                allowed = c("cochange", "commit.interaction"),
+                allowed.number = Inf
+            ),
+            commit.directed = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
             edges.for.base.artifacts = list(
                 default = TRUE,
                 type = "logical",

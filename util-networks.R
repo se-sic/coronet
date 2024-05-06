@@ -44,6 +44,7 @@ requireNamespace("lubridate") # for date conversion
 ## vertex types
 TYPE.AUTHOR = "Author"
 TYPE.ARTIFACT = "Artifact"
+TYPE.COMMIT = "Commit"
 
 ## edge types
 TYPE.EDGES.INTRA = "Unipartite"
@@ -914,6 +915,51 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
+
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
+
+            return(net)
+        },
+
+        #' Get the generic commit network.
+        #'
+        #' @return the generic artifact network
+        get.commit.network = function() {
+            logging::loginfo("Constructing artifact network.")
+
+            ## construct network
+            relations = private$network.conf$get.value("commit.relation")
+            networks = lapply(relations, function(relation) {
+                network = switch(
+                    relation,
+                    cochange = private$get.commit.network.cochange(),
+                    commit.interaction = private$get.commit.network.commit.interaction(),
+                    stop(sprintf("The artifact relation '%s' does not exist.", relation))
+                )
+
+                ## set edge attributes on all edges
+                igraph::E(network)$type = TYPE.EDGES.INTRA
+                igraph::E(network)$relation = relation
+
+                ## set vertex attribute 'kind' on all edges, corresponding to relation
+                vertex.kind = private$get.vertex.kind.for.relation(relation)
+                network = igraph::set.vertex.attribute(network, "kind", value = vertex.kind)
+
+                return(network)
+            })
+            net = merge.networks(networks)
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$type = TYPE.COMMIT
 
             ## simplify network if wanted
             if (private$network.conf$get.value("simplify")) {
