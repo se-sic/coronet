@@ -803,7 +803,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
     expect_equal(min(issue.data$date), as.POSIXct("2016-07-12 15:59:25"))
     expect_equal(max(issue.data$date), as.POSIXct("2016-07-12 16:06:01"))
 
-    # split by 'mails' and 'issues' without sliding window
+    # split by 'mails' and 'issues'
     results = split.data.time.based(project.data, time.period = "1 min",
                                     split.basis = c("mails", "issues"), sliding.window = test.sliding.window)
 

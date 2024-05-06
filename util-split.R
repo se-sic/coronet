@@ -52,7 +52,7 @@ requireNamespace("lubridate") # for date conversion
 #'                       time-sized windows for all ranges. If set, the \code{time.period} and \code{bins} parameters are ignored;
 #'                       consequently, \code{sliding.window} does not make sense then either.
 #'                       [default: NULL]
-#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues'
+#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues',
 #'                    or an arbitrary combination of them
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -67,7 +67,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
                                  sliding.window = FALSE, project.conf.new = NULL) {
 
     # ensure 'split.basis' defaults to 'commits' if not defined
-    # and allow it to be a vector if explicitly wanted
+    # and allow it to contain multiple data sources if explicitly wanted
     if(!hasArg("split.basis")) {
         split.basis = match.arg.or.default(split.basis, several.ok = FALSE, default = "commits")
     } else {
@@ -899,7 +899,7 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
 #' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
 #' @param number.windows see \code{number.windows} from \code{split.data.time.based}
 #'                       [default: NULL]
-#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues'
+#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues',
 #'                    or an arbitrary combination of them
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
@@ -960,7 +960,7 @@ split.data.by.time.or.bins = function(project.data, splitting.length, bins, spli
         ## get bins based on split.basis
         dates = project.data$get.data.timestamps(split.basis)
         dates = get.date.from.unix.timestamp(unname(unlist(dates)))
-        bins = split.get.bins.time.based(dates, splitting.length, number.windows)$bins
+        bins = split.get.bins.time.based(dates, splitting.length, number.windows)[["bins"]]
         bins.labels = head(bins, -1)
         ## logging
         logging::loginfo("Splitting data '%s' into time ranges of %s based on '%s' data.",
