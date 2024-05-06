@@ -2143,6 +2143,35 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
+        ## * * processed data ----------------------------------------------
+
+        #' Group the commits of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{"hash"} is duplicated and prepended to each
+        #' group's data as first column (see below for details).
+        #'
+        #' Example: To obtain the commits that changed the same source-code artifact,
+        #' call \code{group.commits.by.data.column("commits", "artifact")}.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the commits of the given \code{data.source} by
+        #'                     [default: "artifact"]
+        #'
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with the column \code{"hash"} duplicated
+        #'         as first column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        group.commits.by.data.column = function(data.source = c("commits", "mails", "issues"),
+                                                group.column = "artifact") {
+            logging::loginfo("Grouping commits by data column.")
+
+            ## store the commits per group that is determined by 'group.column'
+            mylist = self$group.data.by.column(data.source, group.column, "hash")
+
+            return(mylist)
+        },
+
         #' Group the authors of the given \code{data.source} by the given \code{group.column}.
         #' For each group, the column \code{"author.name"} is duplicated and prepended to each
         #' group's data as first column (see below for details).

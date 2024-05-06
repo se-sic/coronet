@@ -123,6 +123,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.callgraph = NULL, # igraph
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
+        commit.network.commit.interaction = NULL, #igraph
+        commit.network.cochange = NULL, #igraph
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -680,6 +682,87 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
+        #' Build and get the commit network with commit-interactions as the relation.
+        #'
+        #'  @return the commit-interaction commit network
+        get.commit.network.commit.interaction = function() {
+
+            logging::logdebug("get.commit.network.commit.interaction: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$commit.network.commit.interaction)) {
+                logging::logdebug("get.commit.network.commit.interaction: finished. (already existing)")
+                return(private$commit.network.commit.interaction)
+            }
+
+            ## get the authors that appear in the commit-interaction data as the vertices of the network
+            vertices = unique(c(private$proj.data$get.commit.interactions()[["base.hash"]],
+                                private$proj.data$get.commit.interactions()[["commit.hash"]]))
+            vertices = data.frame(name = vertices)
+
+            ## get the commit-interaction data as the edge data of the network
+            edges = private$proj.data$get.commit.interactions()
+            ## set the commits as the 'to' and 'from' of the network and order the dataframe
+            edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
+                              "file", "base.author", "base.func", "base.file")]
+            colnames(edges)[1] = "to"
+            colnames(edges)[2] = "from"
+            commit.net.data = list(vertices = vertices, edges = edges)
+            ## construct the network
+            commit.net = construct.network.from.edge.list(
+                commit.net.data[["vertices"]],
+                commit.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("commit.directed"),
+                available.edge.attributes = private$proj.data$
+                                            get.data.columns.for.data.source("commit.interactions")
+            )
+
+            private$commit.network.commit.interaction = commit.net
+            logging::logdebug("get.commit.network.commit.interaction: finished.")
+
+            return(commit.net)
+        },
+
+        #' Get the co-change-based commit network,
+        #' If it does not already exist build it first.
+        #'
+        #' @return the commit network with cochange realtion
+        get.commit.network.cochange = function() {
+
+            logging::logdebug("get.commit.network.cochange: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$artifacts.network.cochange)) {
+                logging::logdebug("get.commit.network.cochange: finished. (already existing)")
+                return(private$commit.network.cochange)
+            }
+
+            ## construct edge list based on commit--artifact data
+            commit.net.data.raw = private$proj.data$group.commits.by.data.column("commits", "artifact")
+            commit.net.data = construct.edge.list.from.key.value.list(
+                commit.net.data.raw,
+                network.conf = private$network.conf,
+                directed = FALSE,
+                respect.temporal.order = TRUE
+            )
+
+            ## construct network from obtained data
+            commit.net = construct.network.from.edge.list(
+                commit.net.data[["vertices"]],
+                commit.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = FALSE,
+                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            )
+
+            ## store network
+            private$commit.network.cochange = commit.net
+            logging::logdebug("get.commit.network.cochange: finished.")
+
+            return(commit.net)
+        },
+
         ## * * bipartite relations ------------------------------------------
 
         #' Get the key-value data for the bipartite relations,
@@ -754,6 +837,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.cochange = NULL
             private$artifacts.network.issue = NULL
             private$artifacts.network.mail = NULL
+            private$commit.network.commit.interaction = NULL
+            private$commit.network.cochange = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
@@ -932,9 +1017,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         #' Get the generic commit network.
         #'
-        #' @return the generic artifact network
+        #' @return the generic commit network
         get.commit.network = function() {
-            logging::loginfo("Constructing artifact network.")
+            logging::loginfo("Constructing commit network.")
 
             ## construct network
             relations = private$network.conf$get.value("commit.relation")
@@ -943,7 +1028,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     relation,
                     cochange = private$get.commit.network.cochange(),
                     commit.interaction = private$get.commit.network.commit.interaction(),
-                    stop(sprintf("The artifact relation '%s' does not exist.", relation))
+                    stop(sprintf("The commit relation '%s' does not exist.", relation))
                 )
 
                 ## set edge attributes on all edges
