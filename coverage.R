@@ -59,9 +59,6 @@ test.files = test.files[!test.files %in% excluded.test.files]
 code.files = unlist(sapply(code.dir, list.files, pattern = "\\.R$", full.names = TRUE))
 code.files = code.files[!code.files %in% excluded.code.files]
 
-## receive codecov API token from GitHub repo secrets via command line
-CODECOV_TOKEN = commandArgs(trailingOnly = TRUE)[1]
-
-## generate coverage report
+## generate and save coverage report
 report = covr::file_coverage(source_files = code.files, test_files = test.files)
-covr::codecov(coverage = report, token = CODECOV_TOKEN)
+covr::to_cobertura(report)

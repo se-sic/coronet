@@ -37,18 +37,19 @@ packages = c(
     "sqldf",
     "data.table",
     "reshape2",
-    "testthat",
-    "patrick",
     "ggplot2",
     "ggraph",
     "markovchain",
     "lubridate",
     "viridis",
     "jsonlite",
+    "xml2",
     "rTensor",
     "Matrix",
     "fastmap",
     "purrr",
+    "testthat",
+    "patrick",
     "covr"
 )
 
