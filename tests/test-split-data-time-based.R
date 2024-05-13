@@ -807,9 +807,21 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
     results = split.data.time.based(project.data, time.period = "1 min",
                                     split.basis = c("mails", "issues"), sliding.window = test.sliding.window)
 
-    # bins should be union of both sources
-    expect_equal(min(attr(results, "bins")), min(c(issue.data$date, mail.data$date)))
-    expect_equal(max(attr(results, "bins")), max(c(issue.data$date, mail.data$date)) + 1)
+    # define bins for 'test.sliding.window' = TRUE
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:59:10", "2016-07-12 15:59:40",
+                                           "2016-07-12 16:00:10", "2016-07-12 16:00:40", "2016-07-12 16:01:10",
+                                           "2016-07-12 16:01:40", "2016-07-12 16:02:10", "2016-07-12 16:02:40",
+                                           "2016-07-12 16:03:10", "2016-07-12 16:03:40", "2016-07-12 16:04:10",
+                                           "2016-07-12 16:04:40", "2016-07-12 16:05:10", "2016-07-12 16:05:40",
+                                           "2016-07-12 16:06:02"))
+
+    if (!test.sliding.window) {
+        # define bins for 'test.sliding.window' = FALSE
+        # remove every second sliding bin but the last one
+        expected.bins = expected.bins[c(seq(1, length(expected.bins), by = 2), length(expected.bins))]
+    }
+
+    expect_equal(attr(results, "bins"), expected.bins)
 
 }, patrick::cases(
     "sliding.windows: FALSE" = list(test.sliding.window = FALSE),
