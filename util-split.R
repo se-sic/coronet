@@ -98,7 +98,9 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 #'             \code{bins}: Dates defining the start of bins (the last date defines the end of the last bin, in an
 #'             *exclusive* manner).
 #'             The expected format of \code{bins} is produced by \code{split.get.bins.activity.based}.
-#' @param split.basis the data name to use as the basis for split bins, either 'commits', 'mails', or 'issues'
+#' @param split.basis the data source that was used to obtain \code{bins} from \code{split.get.bins.activity.based},
+#'                    either 'commits', 'mails', or 'issues'. \code{split.basis} is necessary to associate
+#'                    \code{bins$vector} with the correct data elements.
 #'                    [default: "commits"]
 #' @param sliding.window logical indicating whether a sliding-window approach was used when obtaining the \code{bins}.
 #'
@@ -195,7 +197,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
                                      activity.amount = 5000, number.windows = NULL,
                                      sliding.window = FALSE, project.conf.new = NULL) {
 
-    ## get basis for splitting process
+    ## get activity type for splitting process
     activity.type = match.arg(activity.type)
 
     ## get actual raw data
@@ -207,13 +209,13 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     })
     names(data) = data.sources
 
-    ## if the data used by the split basis is not present, load it automatically
+    ## if the data used by the splitting activity type is not present, load it automatically
     if (!(activity.type %in% project.data$get.cached.data.sources("only.unfiltered"))) {
         function.name = DATASOURCE.TO.UNFILTERED.ARTIFACT.FUNCTION[[activity.type]]
         project.data[[function.name]]()
     }
 
-    ## define ID columns for mails and commits
+    ## define ID columns for commits, mails, and issues
     id.column = list(
         commits = "hash",
         mails = "message.id",
@@ -264,7 +266,7 @@ split.data.activity.based = function(project.data, activity.type = c("commits", 
     logging::loginfo("Splitting data '%s' into activity ranges of %s %s (%s windows).",
                      project.data$get.class.name(), activity.amount, activity.type, number.windows)
 
-    ## get bins based on 'split.basis'. Here the 'include.duplicate.ids' parameter flag must be set, to
+    ## get bins based on 'activity.type'. Here the 'include.duplicate.ids' parameter flag must be set, to
     ## retrieve bins which map every event to a bin including events with non-unique ids. This is important
     ## to ensure that every range really has 'activity.amount' many entries after splitting
     logging::logdebug("Getting activity-based bins.")
@@ -899,9 +901,8 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
 #' @param split.by.time logical indicating whether splitting is done time-based or activity-bins-based
 #' @param number.windows see \code{number.windows} from \code{split.data.time.based}
 #'                       [default: NULL]
-#' @param split.basis the data source to use as the basis for split bins, either 'commits', 'mails', 'issues',
-#'                    or an arbitrary combination of them
-#'                    [default: "commits"]
+#' @param split.basis either formatted as the \code{split.basis} from \code{split.data.time.based}
+#'                    or from \code{split.data.by.bins}.
 #' @param sliding.window logical indicating whether the splitting should be performed using a sliding-window approach
 #'                       [default: FALSE]
 #' @param project.conf.new the new project config to construct the \code{RangeData} objects.
@@ -913,8 +914,8 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
 #' @seealso split.data.time.based
 #' @seealso split.data.by.bins
 split.data.by.time.or.bins = function(project.data, splitting.length, bins, split.by.time,
-                                      number.windows = NULL, split.basis = c("commits", "mails", "issues"),
-                                      sliding.window = FALSE, project.conf.new = NULL) {
+                                      number.windows = NULL, split.basis, sliding.window = FALSE,
+                                      project.conf.new = NULL) {
 
     ## if the data used by the split basis is not present, load it automatically
     for (i in seq_along(split.basis)) {
