@@ -114,9 +114,8 @@ In our development process, we pursue the following idea:
 - The current development will be performed on the branch `dev`, i.e., all incoming pull requests are against this branch.
 
 The current build status is as follows:
-- `master`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=master)
-- `dev`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=dev)
-- `test coverage`: ![Coverage Status](https://codecov.io/gh/MaLoefUDS/coronet/graph/badge.svg?token=OU3SR362X9)
+- `master`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=master) [![Coverage Status](https://codecov.io/gh/se-sic/coronet/branch/master/graph/badge.svg?token=2dhAb3ScLy)](https://codecov.io/gh/se-sic/coronet)
+- `dev`: ![Build Status](https://github.com/se-sic/coronet/actions/workflows/pull_request.yml/badge.svg?branch=dev) [![Coverage Status](https://codecov.io/gh/se-sic/coronet/branch/dev/graph/badge.svg?token=2dhAb3ScLy)](https://codecov.io/gh/se-sic/coronet)
 
 ### Pull Requests
 
