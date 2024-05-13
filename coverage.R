@@ -59,6 +59,9 @@ test.files = test.files[!test.files %in% excluded.test.files]
 code.files = unlist(sapply(code.dir, list.files, pattern = "\\.R$", full.names = TRUE))
 code.files = code.files[!code.files %in% excluded.code.files]
 
+## adjust data path prefix when generating coverage reports
+DATA.PATH.PREFIX = "./tests"
+
 ## generate and save coverage report
 report = covr::file_coverage(source_files = code.files, test_files = test.files)
 covr::to_cobertura(report)
