@@ -1036,7 +1036,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 igraph::E(network)$relation = relation
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
-                vertex.kind = private$get.vertex.kind.for.relation(relation)
+                vertex.kind = TYPE.COMMIT
                 network = igraph::set.vertex.attribute(network, "kind", value = vertex.kind)
 
                 return(network)
