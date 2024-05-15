@@ -1035,15 +1035,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 igraph::E(network)$type = TYPE.EDGES.INTRA
                 igraph::E(network)$relation = relation
 
-                ## set vertex attribute 'kind' on all edges, corresponding to relation
-                vertex.kind = TYPE.COMMIT
-                network = igraph::set.vertex.attribute(network, "kind", value = vertex.kind)
-
                 return(network)
             })
             net = merge.networks(networks)
 
             ## set vertex and edge attributes for identifaction
+            igraph::V(net)$kind = TYPE.COMMIT
             igraph::V(net)$type = TYPE.COMMIT
 
             ## simplify network if wanted
