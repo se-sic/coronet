@@ -281,7 +281,17 @@ run.lapply(data, "get.data.path.callgraph")
 
 ## * Data-based splitting --------------------------------------------------
 
+## split time-based using commits as the data source to split by (with sliding windows)
 cf.data = split.data.time.based(x.data, time.period = "18 months", split.basis = "commits", sliding.window = TRUE)
+for (range in names(cf.data)) {
+    y.data = cf.data[[range]]
+    y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
+    plot.network(y$get.bipartite.network())
+}
+print(run.lapply(cf.data, "get.class.name"))
+
+## split time-based using commits and issues as the data sources to split by (without sliding windows)
+cf.data = split.data.time.based(x.data, time.period = "18 month", split.basis = c("commits", "issues"))
 for (range in names(cf.data)) {
     y.data = cf.data[[range]]
     y = NetworkBuilder$new(project.data = y.data, network.conf = net.conf)
