@@ -76,14 +76,30 @@ jobs:
         run: Rscript coverage.R
         if: matrix.r-version == 'latest' && steps.run_tests.outcome == 'success'
 
+      - name: Store coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cobertura.xml
+        if: matrix.r-version == 'latest' && steps.gen_coverage.outcome == 'success'
+
+  upload-coverage-report:
+    name: Upload coverage report
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Load coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
       - name: Upload Report to CodeCov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./cobertura.xml
+          file: cobertura.xml
           disable_search: true
           fail_ci_if_error: true
           verbose: true
-        if: matrix.r-version == 'latest' && steps.gen_coverage.outcome == 'success'
-
 
