@@ -1180,12 +1180,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             authors.net = self$get.author.network()
             ## artifact relation
             artifacts.net = self$get.artifact.network()
+            ## commit relation
+            commit.net = self$get.commit.network()
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
                 "bipartite.net" = bipartite.net,
                 "authors.net" = authors.net,
-                "artifacts.net" = artifacts.net
+                "artifacts.net" = artifacts.net,
+                "commit.net" = commit.net
             ))
         },
 
