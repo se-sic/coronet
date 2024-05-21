@@ -25,7 +25,6 @@ context("Network-building functionality.")
 CF.DATA = file.path(".", "codeface-data")
 CF.SELECTION.PROCESS = "testing"
 CASESTUDY = "test"
-ARTIFACT = "feature" # function, feature, file, featureexpression
 
 ## use only when debugging this file independently
 if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
@@ -82,6 +81,141 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
+
+patrick::with_parameters_test_that("Network construction with cochange as relation, file as artifact", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "file")
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(commit.relation = "cochange",
+                                                 commit.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.commit.network()
+    ## build the expected network
+    vertices = data.frame(
+        name = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "0a1a5c523d835459c42f33e863623138555e2526",
+                 "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        kind = TYPE.COMMIT,
+        type = TYPE.COMMIT
+        )
+    edges = data.frame(
+        from = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "3a0ed78458b3976243db6829f63eba3eead26774"),
+        to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "0a1a5c523d835459c42f33e863623138555e2526"),
+        artifact.type = c("File", "File"),
+        artifact = c("test.c", "test2.c"),
+        weight = c(1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("cochange", "cochange")
+        )
+
+    if (test.directed) {
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+    }
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
+
+patrick::with_parameters_test_that("Network construction with cochange as relation, function as artifact", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "function")
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(commit.relation = "cochange",
+                                                 commit.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.commit.network()
+    ## build the expected network
+    vertices = data.frame(
+        name = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "0a1a5c523d835459c42f33e863623138555e2526",
+                 "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        kind = TYPE.COMMIT,
+        type = TYPE.COMMIT
+        )
+    edges = data.frame(
+        from = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338", "72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774"),
+        to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+               "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
+               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        artifact.type = c("Function", "Function", "Function", "Function", "Function", "Function"),
+        artifact = c("File_Level", "File_Level", "File_Level", "File_Level", "File_Level", "File_Level"),
+        weight = c(1, 1, 1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA,
+                 TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("cochange", "cochange", "cochange", "cochange", "cochange", "cochange")
+        )
+
+    if (test.directed) {
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+    }
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.built, network))
+}, patrick::cases(
+    "directed: FALSE" = list(test.directed = FALSE),
+    "directed: TRUE" = list(test.directed = TRUE)
+))
+
+patrick::with_parameters_test_that("Network construction with cochange as relation, feature as artifact", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "feature")
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(commit.relation = "cochange",
+                                                 commit.directed = test.directed))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.commit.network()
+    ## build the expected network
+    vertices = data.frame(
+        name = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "1143db502761379c2bfcecc2007fc34282e7ee61",
+                 "0a1a5c523d835459c42f33e863623138555e2526"),
+        kind = TYPE.COMMIT,
+        type = TYPE.COMMIT
+        )
+    edges = data.frame(
+        from = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
+               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        artifact.type = c("Feature", "Feature", "Feature", "Feature"),
+        artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("cochange", "cochange", "cochange", "cochange")
+        )
+
+    if (test.directed) {
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+    }
+    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
     "directed: FALSE" = list(test.directed = FALSE),

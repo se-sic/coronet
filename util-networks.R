@@ -743,16 +743,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             commit.net.data = construct.edge.list.from.key.value.list(
                 commit.net.data.raw,
                 network.conf = private$network.conf,
-                directed = FALSE,
+                directed = private$network.conf$get.value("commit.directed"),
                 respect.temporal.order = TRUE
             )
 
+            commit.net.data$edges <- commit.net.data$edges[, -which(colnames(commit.net.data$edges)
+                                                                    %in% c("date", "hash", "file"))]
             ## construct network from obtained data
             commit.net = construct.network.from.edge.list(
                 commit.net.data[["vertices"]],
                 commit.net.data[["edges"]],
                 network.conf = private$network.conf,
-                directed = FALSE,
+                directed = private$network.conf$get.value("commit.directed"),
                 available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
