@@ -19,7 +19,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -489,7 +489,7 @@ test_that("Cut data and check for right data path", {
     project.data = ProjectData$new(project.configuration)
     project.data = project.data$get.data.cut.to.same.date(data.sources = c("mails", "commits"))
 
-    expected = "./codeface-data/results/testing/test_feature/feature"
+    expected = paste0(DATA.PATH.PREFIX, "/codeface-data/results/testing/test_feature/feature")
     result = project.data$get.data.path()
     expect_identical(result, expected, info = "RangeData data path.")
 
@@ -514,8 +514,8 @@ test_that("Create RangeData objects from Codeface ranges and check data path", {
     range.paths = run.lapply(data, "get.data.path")
     range.paths = unlist(range.paths, use.names = FALSE)
 
-    expected.paths = c("./codeface-data/results/testing/test_feature/feature/001--v1-v2",
-                       "./codeface-data/results/testing/test_feature/feature/002--v2-v3")
+    expected.paths = c(paste0(DATA.PATH.PREFIX, "/codeface-data/results/testing/test_feature/feature/001--v1-v2"),
+                       paste0(DATA.PATH.PREFIX, "/codeface-data/results/testing/test_feature/feature/002--v2-v3"))
 
     expect_identical(range.paths, expected.paths, "RangeData data paths")
 })

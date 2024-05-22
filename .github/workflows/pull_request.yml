@@ -50,6 +50,8 @@ jobs:
           sudo apt-get install --assume-yes libxml2-dev
           sudo apt-get install --assume-yes libglpk-dev
           sudo apt-get install --assume-yes libfontconfig1-dev
+          sudo apt-get install --assume-yes libssl-dev
+          sudo apt-get install --assume-yes libcurl4-openssl-dev
           sudo su -c "echo 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' >> /etc/apt/sources.list"
           wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
 
@@ -62,8 +64,42 @@ jobs:
         run: Rscript install.R
 
       - name: Run Tests
+        id: run_tests
         run: Rscript tests.R
 
       - name: Run Showcase
         run: Rscript showcase.R
         if: always()
+
+      - name: Generate Coverage Report
+        id: gen_coverage
+        run: Rscript coverage.R
+        if: matrix.r-version == 'latest' && steps.run_tests.outcome == 'success'
+
+      - name: Store coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: cobertura.xml
+        if: matrix.r-version == 'latest' && steps.gen_coverage.outcome == 'success'
+
+  upload-coverage-report:
+    name: Upload coverage report
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Load coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Upload Report to CodeCov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: cobertura.xml
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true
+

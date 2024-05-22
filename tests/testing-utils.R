@@ -13,6 +13,7 @@
 ##
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -20,6 +21,12 @@
 
 requireNamespace("patrick")
 requireNamespace("igraph")
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constants ---------------------------------------------------------------
+
+## The path prefix for data files
+DATA.PATH.PREFIX = "."
 
 #' Construct the 'cross product' of two patrick::cases objects.
 #' Each case of the first object is combined with each case of the second,
