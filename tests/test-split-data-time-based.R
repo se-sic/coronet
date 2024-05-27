@@ -770,6 +770,65 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
     "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
 ))
 
+
+##
+## Tests for split.data.time.based(..., split.basis = c('mails', 'issues'), with and without sliding windows
+##
+
+patrick::with_parameters_test_that("Split a data object time-based (split.basis = c('mails', 'issues'))", {
+
+    ## configuration objects
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+
+    ## data object
+    project.data = ProjectData$new(proj.conf)
+
+    # remove really old mail data
+    mail.data = project.data$get.mails()
+    mail.data = mail.data[-(1:12), ]
+    project.data$set.mails(mail.data)
+
+    # check mail date bounds
+    expect_equal(min(mail.data$date), as.POSIXct("2016-07-12 15:58:40"))
+    expect_equal(max(mail.data$date), as.POSIXct("2016-07-12 16:05:37"))
+
+    # keep issue data that roughly overlaps the mail data
+    issue.data = project.data$get.issues()
+    issue.data = issue.data[-(1:12), ]
+    issue.data = issue.data[-(8:12), ]
+    project.data$set.issues(issue.data)
+
+    # check issue date bounds
+    expect_equal(min(issue.data$date), as.POSIXct("2016-07-12 15:59:25"))
+    expect_equal(max(issue.data$date), as.POSIXct("2016-07-12 16:06:01"))
+
+    # split by 'mails' and 'issues'
+    results = split.data.time.based(project.data, time.period = "1 min",
+                                    split.basis = c("mails", "issues"), sliding.window = test.sliding.window)
+
+    # define bins for 'test.sliding.window' = TRUE
+    expected.bins = get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:59:10", "2016-07-12 15:59:40",
+                                           "2016-07-12 16:00:10", "2016-07-12 16:00:40", "2016-07-12 16:01:10",
+                                           "2016-07-12 16:01:40", "2016-07-12 16:02:10", "2016-07-12 16:02:40",
+                                           "2016-07-12 16:03:10", "2016-07-12 16:03:40", "2016-07-12 16:04:10",
+                                           "2016-07-12 16:04:40", "2016-07-12 16:05:10", "2016-07-12 16:05:40",
+                                           "2016-07-12 16:06:02"))
+
+    if (!test.sliding.window) {
+        # define bins for 'test.sliding.window' = FALSE
+        # remove every second sliding bin but the last one
+        expected.bins = expected.bins[c(seq(1, length(expected.bins), by = 2), length(expected.bins))]
+    }
+
+    expect_equal(attr(results, "bins"), expected.bins)
+
+}, patrick::cases(
+    "sliding.windows: FALSE" = list(test.sliding.window = FALSE),
+    "sliding.windoww: TRUE" = list(test.sliding.window = TRUE)
+))
+
+
 ## * * bins ----------------------------------------------------------------
 
 ##
