@@ -68,7 +68,7 @@ split.data.time.based = function(project.data, time.period = "3 months", bins = 
 
     # ensure 'split.basis' defaults to 'commits' if not defined
     # and allow it to contain multiple data sources if explicitly wanted
-    if(!hasArg("split.basis")) {
+    if (!hasArg("split.basis")) {
         split.basis = match.arg.or.default(split.basis, several.ok = FALSE, default = "commits")
     } else {
         split.basis = match.arg.or.default(split.basis, several.ok = TRUE)
