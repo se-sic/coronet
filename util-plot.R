@@ -52,7 +52,7 @@ PLOT.VERTEX.LABEL.COLOR = "gray60"
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
 #' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
-#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' to your liking: \code{network = igraph::set_graph_attr(network, "layout", layout.to.set)}.
 #' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
 #' specified on the Web site in the link given above.
 #'
@@ -76,7 +76,7 @@ plot.network = function(network, labels = TRUE) {
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
 #' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
-#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' to your liking: \code{network = igraph::set_graph_attr(network, "layout", layout.to.set)}.
 #' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
 #' specified on the Web site in the link given above.
 #'
@@ -101,7 +101,7 @@ plot.print.network = function(network, labels = TRUE) {
 #' is used, unless a graph attribute "layout" is set. For a comprehensive list of layouts and more information
 #' on layouts in general, see \link{https://igraph.org/python/doc/tutorial/tutorial.html#layout-algorithms}.
 #' To set the graph attribute on your network, run the following code while replacing \code{layout.to.set}
-#' to your liking: \code{network = igraph::set.graph.attribute(network, "layout", layout.to.set)}.
+#' to your liking: \code{network = igraph::set_graph_attr(network, "layout", layout.to.set)}.
 #' Note that \code{layout.to.set} refers to one of the "short names" of the recpective igraph layout, as
 #' specified on the Web site in the link given above.
 #'
@@ -116,7 +116,7 @@ plot.print.network = function(network, labels = TRUE) {
 plot.get.plot.for.network = function(network, labels = TRUE) {
     ## check if network is empty
     if (igraph::vcount(network) == 0) {
-        network = create.empty.network(directed = igraph::is.directed(network), add.attributes = TRUE)
+        network = create.empty.network(directed = igraph::is_directed(network), add.attributes = TRUE)
         PLOT.VERTEX.SIZE = 0
     }
 
@@ -125,16 +125,16 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     names(PLOT.VERTEX.TYPES) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 
     ## remove loops because of weird behavior when plotting
-    network = igraph::delete.edges(network, igraph::E(network)[igraph::is.loop(network)])
+    network = igraph::delete_edges(network, igraph::E(network)[igraph::is.loop(network)])
 
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network)
 
     ## set igraph network layout if no layout is set yet
     if (!("layout" %in% igraph::list.graph.attributes(network))) {
-        network = igraph::set.graph.attribute(network, "layout", "kk")
+        network = igraph::set_graph_attr(network, "layout", "kk")
     }
-    layout.algorithm = igraph::get.graph.attribute(network, "layout")
+    layout.algorithm = igraph::graph_attr(network, "layout")
 
     ## create a ggraph object using the specified igraph layout
     p = ggraph::ggraph(network, layout = layout.algorithm)
@@ -146,7 +146,7 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
                 mapping = ggplot2::aes(colour = paste(relation, sep = " "), linetype = edge.type, width = 0.3 + 0.5 * log(weight)),
                 end_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
                 start_cap = ggraph::circle(PLOT.VERTEX.SIZE + 3, "pt"),
-                arrow = if (igraph::is.directed(network)) {
+                arrow = if (igraph::is_directed(network)) {
                         ggplot2::arrow(length = ggplot2::unit(PLOT.VERTEX.SIZE / 2, 'pt'), ends = "last", type = "closed")
                     } else {
                         NULL
@@ -225,16 +225,16 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
 plot.fix.type.attributes = function(network) {
     ## copy type attribute to vertex.type and edge.type
     if (igraph::vcount(network) == 0) {
-        network = igraph::set.vertex.attribute(network, "vertex.type", value = NA)
+        network = igraph::set_vertex_attr(network, "vertex.type", value = NA)
     } else {
-        network = igraph::set.vertex.attribute(network, "vertex.type", value = igraph::get.vertex.attribute(network, "type"))
+        network = igraph::set_vertex_attr(network, "vertex.type", value = igraph::vertex_attr(network, "type"))
     }
-    network = igraph::set.edge.attribute(network, "edge.type", value = igraph::get.edge.attribute(network, "type"))
+    network = igraph::set_edge_attr(network, "edge.type", value = igraph::edge_attr(network, "type"))
 
     ## adjust 'type' attribute for vertices for bipartite plotting (we need Booleans there)
-    types = igraph::get.vertex.attribute(network, "type")
-    network = igraph::remove.vertex.attribute(network, "type")
-    network = igraph::set.vertex.attribute(network, "type", value = sapply(
+    types = igraph::vertex_attr(network, "type")
+    network = igraph::delete_vertex_attr(network, "type")
+    network = igraph::set_vertex_attr(network, "type", value = sapply(
         types, function(t) return(t == TYPE.ARTIFACT)
     ))
 

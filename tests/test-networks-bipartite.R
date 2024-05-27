@@ -18,6 +18,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -81,7 +82,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
         relation = "cochange"
     )
     ## 3) construct expected network
-    network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+    network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -134,7 +135,7 @@ test_that("Construction of the bipartite network for the file artifact with auth
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -187,7 +188,7 @@ test_that("Construction of the bipartite network for the function artifact with 
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph_from_data_frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -237,7 +238,7 @@ test_that("Construction of the bipartite network for the featureexpression artif
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -306,7 +307,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                   relation = "issue"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
+              network.expected = igraph::graph_from_data_frame(network.expected.data, directed = net.conf$get.value("author.directed"), vertices = vertices)
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -358,7 +359,7 @@ test_that("Construction of the directed bipartite network for the feature artifa
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -411,7 +412,7 @@ test_that("Construction of the directed bipartite network for the file artifact 
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -465,7 +466,7 @@ test_that("Construction of the directed bipartite network for the function artif
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -517,7 +518,7 @@ test_that("Construction of the directed bipartite network for the featureexpress
                   relation = "cochange"
               )
               ## 3) construct expected network
-              network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+              network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                           directed = net.conf$get.value("author.directed"))
 
               expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -560,7 +561,7 @@ test_that("Network construction with only untracked files (no edges and artifact
     network.expected = construct.network.from.edge.list(vertices = vertices, edge.list = edges, network.conf = net.conf,
                                                         directed = net.conf$get.value("author.directed"))
     ## 4) remove edge again
-    network.expected = igraph::delete.edges(network.expected, 1)
+    network.expected = igraph::delete_edges(network.expected, 1)
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))

@@ -230,7 +230,7 @@ test_that("Network construction of the undirected author-cochange network", {
                       relation = "cochange"
     )
     ## 3) build expected network
-    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
+    network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
 
 
     ##
@@ -314,7 +314,7 @@ test_that("Network construction of the undirected but temorally ordered author-c
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
+    network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -355,7 +355,7 @@ test_that("Network construction of the directed author-cochange network", {
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
+    network.expected = igraph::graph_from_data_frame(data, directed = TRUE, vertices = authors)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -401,7 +401,7 @@ test_that("Network construction of the directed author-cochange network without 
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = TRUE, vertices = authors)
+    network.expected = igraph::graph_from_data_frame(data, directed = TRUE, vertices = authors)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -427,7 +427,7 @@ test_that("Network construction of the undirected simplified author-cochange net
                          type = TYPE.AUTHOR)
 
     ## make test independent of igraph version
-    date.attr = igraph::get.edge.attribute(network.built, "date")
+    date.attr = igraph::edge_attr(network.built, "date")
     date.conversion.function = ifelse(all(sapply(date.attr, lubridate::is.POSIXct)),
                                       get.date.from.unix.timestamp, identity)
 
@@ -462,7 +462,7 @@ test_that("Network construction of the undirected simplified author-cochange net
     data[["artifact"]] = unclass(data[["artifact"]])
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, directed = FALSE, vertices = authors)
+    network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -586,7 +586,7 @@ test_that("Network construction of the undirected author-issue network with all 
             )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -645,7 +645,7 @@ test_that("Network construction of the undirected author-issue network with just
                        relation = "issue")
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -673,7 +673,7 @@ test_that("Network construction with only untracked files (no edges expected)", 
     ## build expected network (two vertices, no edges)
     vertices = list(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
-    network.expected = igraph::add.vertices(network.expected, nv = max(lengths(vertices)), attr = vertices)
+    network.expected = igraph::add_vertices(network.expected, nv = max(lengths(vertices)), attr = vertices)
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -721,7 +721,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(

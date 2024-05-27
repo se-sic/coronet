@@ -524,7 +524,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
                                     number.windows = NULL,  sliding.window = FALSE,
                                     remove.isolates = TRUE) {
     ## extract date attributes from edges
-    dates = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date"))
+    dates = get.date.from.unix.timestamp(igraph::edge_attr(network, "date"))
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -709,7 +709,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
 
     ## get dates in a data.frame for splitting purposes
     df = data.frame(
-        date = get.date.from.unix.timestamp(igraph::get.edge.attribute(network, "date")),
+        date = get.date.from.unix.timestamp(igraph::edge_attr(network, "date")),
         my.unique.id = seq_len(edge.count) # as a unique identifier only
     )
     ## sort by date
@@ -745,7 +745,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
         edges.cut = edges.by.date[seq_len(offset.start)]
 
         ## delete edges from the network and create a new network
-        network.cut = igraph::delete.edges(network, igraph::E(network)[edges.cut])
+        network.cut = igraph::delete_edges(network, igraph::E(network)[edges.cut])
 
         ## split network for sliding windows
         networks.sliding = split.network.activity.based(network.cut, number.edges = number.edges,

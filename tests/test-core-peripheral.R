@@ -17,7 +17,7 @@
 ## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -301,7 +301,7 @@ test_that("Core classification of cochange author networks with vertices but no 
     ## create network with one author and no edges
     authors = data.frame(author.name = "A", kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     edges = create.empty.edge.list()
-    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+    network = igraph::graph_from_data_frame(edges, directed = TRUE, vertices = authors)
 
     ## classify the authors into core/peripheral
     classification = get.author.class.by.type(network, type = "network.eigen")
@@ -311,7 +311,7 @@ test_that("Core classification of cochange author networks with vertices but no 
     ## create network with several authors and no edges
     authors = data.frame(author.name = LETTERS[1:5], kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     edges = create.empty.edge.list()
-    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+    network = igraph::graph_from_data_frame(edges, directed = TRUE, vertices = authors)
 
     ## classify the authors into core/peripheral
     classification = get.author.class.by.type(network, type = "network.eigen")

@@ -50,7 +50,7 @@ get.edgelist.with.timestamps = function(net) {
   edges = as.data.frame(igraph::get.edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
-  dates = igraph::get.edge.attribute(net, "date")
+  dates = igraph::edge_attr(net, "date")
   ## bind everything together
   edges = cbind(edges, date = dates)
 

@@ -14,7 +14,7 @@
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -323,8 +323,8 @@ test_that("Check consistency of data and network time-based splitting.", {
     ## Thus, when splitting the project-level network, there are edges from Olaf to Karl and Thomas,
     ## crossing the time-window border. Hence, when deleting the respective vertices from the networks,
     ## the data-based networks should match the network-based networks.
-    results.network[[1]] = igraph::delete.vertices(results.network[[1]], c("Thomas", "Karl"))
-    results.network[[2]] = igraph::delete.vertices(results.network[[2]], c("Olaf"))
+    results.network[[1]] = igraph::delete_vertices(results.network[[1]], c("Thomas", "Karl"))
+    results.network[[2]] = igraph::delete_vertices(results.network[[2]], c("Olaf"))
     check.identical = mapply(results.data.network, results.network, FUN = function(d, n) {
         igraph::identical_graphs(d, n)
     })
@@ -393,7 +393,7 @@ test_that("Check and correct duplicate range names during network activity-based
         igraph::vertices(c("A", "B")) +
         igraph::edges(rep(c("A", "B"), times = length(dates)))
     ## set some date attributes that are appropriate for the test case
-    net = igraph::set.edge.attribute(net, "date", value = dates)
+    net = igraph::set_edge_attr(net, "date", value = dates)
 
     ## define split arguments
     split.function = split.network.activity.based

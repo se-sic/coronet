@@ -407,7 +407,7 @@ plot.print.network(g, labels = TRUE)
 lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
                 245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
              nrow = 12, byrow = FALSE) # for sample graph
-g = igraph::set.graph.attribute(g, "layout", lay)
+g = igraph::set_graph_attr(g, "layout", lay)
 plot.print.network(g, labels = TRUE)
 
 ## get the plot object and modify it before plotting
