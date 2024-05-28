@@ -639,7 +639,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## connect corresponding add_link and referenced_by issue-events
-            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_along(add.links)), function(from) {
+            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_len(nrow(add.links))), function(from) {
                 ## get edge attributes
                 cols.which = edge.attributes %in% colnames(from)
                 edge.attrs = from[, edge.attributes[cols.which], drop = FALSE]
