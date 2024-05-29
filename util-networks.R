@@ -733,7 +733,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.commit.network.cochange: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$artifacts.network.cochange)) {
+            if (!is.null(private$commit.network.cochange)) {
                 logging::logdebug("get.commit.network.cochange: finished. (already existing)")
                 return(private$commit.network.cochange)
             }

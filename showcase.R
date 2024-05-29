@@ -24,6 +24,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -65,6 +66,7 @@ ARTIFACT = "feature" # function, feature, file, featureexpression (only relevant
 
 AUTHOR.RELATION = "mail" # mail, cochange, issue
 ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
+COMMIT.RELATION = "commit.interaction" # commit.interaction, cochange
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -73,13 +75,16 @@ ARTIFACT.RELATION = "cochange" # cochange, callgraph, mail, issue
 ## initialize project configuration
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 proj.conf$update.value("commits.filter.base.artifact", TRUE)
+proj.conf$update.value("commit.interactions", TRUE)
 ## specify that custom event timestamps should be read from 'custom-events.list'
 proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
 proj.conf$print()
 
 ## initialize network configuration
 net.conf = NetworkConf$new()
-net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION, artifact.relation = ARTIFACT.RELATION))
+net.conf$update.values(updated.values = list(author.relation = AUTHOR.RELATION,
+                                             artifact.relation = ARTIFACT.RELATION,
+                                             commit.relation = COMMIT.RELATION))
 net.conf$print()
 
 ## get ranges
@@ -141,6 +146,7 @@ x$get.author.network()
 x$update.network.conf(updated.values = list(author.directed = FALSE))
 x$get.author.network()
 x$get.artifact.network()
+x$get.commit.network()
 x$reset.environment()
 x$get.networks()
 x$update.network.conf(updated.values = list(author.only.committers = FALSE, author.directed = FALSE))
@@ -201,6 +207,7 @@ y$update.network.conf(updated.values = list(edge.attributes = c("date")))
 y$get.author.network()
 y$update.network.conf(updated.values = list(edge.attributes = c("hash")))
 y$get.artifact.network()
+y$get.commit.network()
 y$get.networks()
 y$update.network.conf(updated.values = list(author.only.committers = FALSE, author.directed = TRUE))
 h = y$get.bipartite.network()
