@@ -105,6 +105,11 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "0a1a5c523d835459c42f33e863623138555e2526",
                  "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        date = c("2016-07-12 15:58:59",
+                 "2016-07-12 16:00:45",
+                 "2016-07-12 16:05:41",
+                 "2016-07-12 16:06:32",
+                 "2016-07-12 16:06:10"),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
@@ -148,6 +153,11 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "0a1a5c523d835459c42f33e863623138555e2526",
                  "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        date = c("2016-07-12 15:58:59",
+                 "2016-07-12 16:00:45",
+                 "2016-07-12 16:05:41",
+                 "2016-07-12 16:06:32",
+                 "2016-07-12 16:06:10"),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
@@ -196,6 +206,11 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = c("2016-07-12 15:58:59",
+                 "2016-07-12 16:00:45",
+                 "2016-07-12 16:05:41",
+                 "2016-07-12 16:06:10",
+                 "2016-07-12 16:06:32"),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
