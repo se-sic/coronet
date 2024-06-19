@@ -37,6 +37,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 ## Prepare global setting
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+proj.conf$update.value("issues.from.source", c("jira", "github"))
 proj.conf$update.value("issues.only.comments", FALSE)
 proj.data = ProjectData$new(proj.conf)
 

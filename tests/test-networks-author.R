@@ -147,6 +147,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
 
                 ## configurations
                 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+                proj.conf$update.value("issues.from.source", c("jira", "github"))
                 proj.conf$update.value("commits.filter.base.artifact", FALSE)
                 proj.conf$update.value("commits.filter.untracked.files", TRUE)
                 net.conf = NetworkConf$new()
@@ -472,6 +473,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
@@ -595,6 +597,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = "issue"))

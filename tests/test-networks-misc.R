@@ -207,6 +207,7 @@ test_that("getting all authors of a list of data ranges, list length 2", {
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
@@ -225,6 +226,7 @@ test_that("getting all authors of a list of data ranges, list length 2, not glob
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
@@ -263,6 +265,7 @@ test_that("getting all authors of a list of data ranges by data source 'issues',
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")

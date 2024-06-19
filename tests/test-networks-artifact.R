@@ -147,6 +147,7 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
@@ -176,6 +177,7 @@ patrick::with_parameters_test_that("Network construction of an empty 'comments-o
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
 

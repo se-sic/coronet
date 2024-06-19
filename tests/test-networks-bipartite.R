@@ -249,6 +249,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
               ## configurations
               proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+              proj.conf$update.value("issues.from.source", c("jira", "github"))
               proj.conf$update.value("commits.filter.base.artifact", FALSE)
               net.conf = NetworkConf$new()
               net.conf$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "issue"))

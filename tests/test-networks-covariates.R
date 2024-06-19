@@ -73,6 +73,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
     proj.conf$update.value("issues.only.comments", issues.only.comments)
@@ -2521,6 +2522,7 @@ test_that("Test get.first.activity.data with missing commits, mails, and issues"
 
     ## initialize a ProjectData object with the ProjectConf
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
 
     ## create a RangeData object with the same data sources as 'proj.data.base'.
@@ -2569,6 +2571,7 @@ test_that("Test get.first.activity.data with missing commits and mails for all a
 
     ## initialize a ProjectData object with the ProjectConf
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     ## get the timestamps for splitting before discarding the data
