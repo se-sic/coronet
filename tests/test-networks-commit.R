@@ -236,3 +236,53 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
     "directed: FALSE" = list(test.directed = FALSE),
     "directed: TRUE" = list(test.directed = TRUE)
 ))
+
+test_that("Adding vertex attributes to a commit network", {
+    ## configuration object for the datapath
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, "feature")
+    proj.conf$update.value("commits.filter.base.artifact", FALSE)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+
+    net.conf = NetworkConf$new()
+    net.conf$update.values(updated.values = list(commit.relation = "cochange",
+                                                 commit.directed = FALSE))
+
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.built = network.builder$get.commit.network()
+    network.new.attr = add.vertex.attribute.commit.network(network.built,proj.data,  "author.name", "NO_AUTHOR")
+    ## build the expected network
+    vertices = data.frame(
+        name = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "1143db502761379c2bfcecc2007fc34282e7ee61",
+                 "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = c("2016-07-12 15:58:59",
+                 "2016-07-12 16:00:45",
+                 "2016-07-12 16:05:41",
+                 "2016-07-12 16:06:10",
+                 "2016-07-12 16:06:32"),
+        kind = TYPE.COMMIT,
+        type = TYPE.COMMIT,
+        author.name = c("Björn",
+                        "Olaf",
+                        "Olaf",
+                        "Karl",
+                        "Thomas")
+        )
+    edges = data.frame(
+        from = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+        to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
+               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        artifact.type = c("Feature", "Feature", "Feature", "Feature"),
+        artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("cochange", "cochange", "cochange", "cochange")
+        )
+
+    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+
+    expect_true(igraph::identical_graphs(network.new.attr, network))
+})

@@ -22,6 +22,7 @@
 ## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -138,6 +139,40 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
     )
 
     return(nets.with.attr)
+}
+
+#' Utility function to add a vertex attribute from commit data to a commit network.
+#'
+#' @param network the commit network
+#' @param project.data the project data from which to extract the values
+#' @param attr.name the name of the attribute
+#' @param default.value the dafault value of the attribute
+#'                      if it does not occur in the commit data
+#'
+#' @return a networks with new vertex attribute
+add.vertex.attribute.commit.network = function(network, project.data,
+                                               attr.name, default.value) {
+    # get the commit data and extract the required data
+    commit.data = project.data$get.commits()
+    hashes = commit.data[["hash"]]
+    attribute = commit.data[[attr.name]]
+    attribute.values = c()
+    for (hash.num in seq_along(igraph::V(network))) {
+        # for each vertex, finc the position in the data frame
+        hash = igraph::V(network)[hash.num]$name
+        hash.index = match(hash, hashes, nomatch = NA)
+
+        value = c()
+        # extract the correct value from the data or use the default value
+        if (!is.na(hash.index)) {
+            value = attribute[[hash.index]]
+        } else {
+            value = default.value
+        }
+        attribute.values = c(attribute.values, value)
+    }
+    net.with.attr = igraph::set.vertex.attribute(network, attr.name, value = attribute.values)
+
 }
 
 
