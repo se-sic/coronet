@@ -59,14 +59,14 @@ While using the package, we require the following infrastructure.
 
 #### [`R`](https://www.r-project.org/)
 
-Minimum requirement is `R` version `3.4.4`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
+Minimum requirement is `R` version `4.0.5`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
 
-We currently *recommend* `R` version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
+We currently *recommend* `R` version `4.1.1` or `4.3.0` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
 The local package manager of `R` enables the user to store all needed `R` packages for this repository inside the repository itself.
-All `R` tools and IDEs should provide a  more sophisticated interface for the interaction with `packrat`([RStudio](https://www.rstudio.com/) does).
+All `R` tools and IDEs should provide a more sophisticated interface for the interaction with `packrat`([RStudio](https://www.rstudio.com/) does).
 
 #### Folder structure of the input data
 
@@ -141,9 +141,9 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
 - `rTensor`: For calculating EDCPTD centrality
-- `Matrix`: For sparse matrix representation of large adjacency matrices
+- `Matrix`: For sparse matrix representation of large adjacency matrices (package version `1.3.0` or higher is mandatory)
 - `fastmap`: For fast implementation of a map
-- `purrr`: For fast implementtion of a mapping function
+- `purrr`: For fast implementation of a mapping function
 
 ### Submodule
 
