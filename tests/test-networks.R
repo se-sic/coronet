@@ -271,6 +271,44 @@ test_that("Simplify multiple basic multi-relational networks", {
     }
 })
 
+test_that("Remove isolated vertices", {
+
+    ## construct network
+    edges = c("A", "A", "D", "C", "E", "C")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F") +
+        igraph::edges(edges, relation = "cochange")
+
+    ## remove isolate vertices
+    network = delete.isolates(network)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network, "name"), c("A", "C", "D", "E"))
+
+})
+
+test_that("Remove isolated authors given a specific edge type", {
+
+    ## construct network
+    edges_inter = c("A", "A", "D", "C", "E", "C")
+    edges_intra = c("F", "D", "A", "E", "D", "B")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F", type = TYPE.AUTHOR) +
+        igraph::edges(edges_inter, relation = "cochange", type = TYPE.EDGES.INTER) +
+        igraph::edges(edges_intra, relation = "cochange", type = TYPE.EDGES.INTRA)
+
+    ## remove isolate vertices
+    network.without.isolates.inter = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTER)
+    network.without.isolates.intra = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTRA)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network.without.isolates.inter, "name"), c("A", "C", "D", "E"))
+    expect_identical(igraph::vertex_attr(network.without.isolates.intra, "name"), c("A", "B", "D", "E", "F"))
+
+})
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Merge -------------------------------------------------------------------
