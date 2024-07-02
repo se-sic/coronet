@@ -574,7 +574,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * [*`TRUE`*, `FALSE`]
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
-    * [*`github`, `jira`*]
+    * [*`github`*, `jira`]
 - `issues.locked`
     * Lock issues to prevent them from being read if not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]
