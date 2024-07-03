@@ -142,6 +142,9 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 }
 
 #' Utility function to add a vertex attribute from commit data to a commit network.
+#' Attribute name should be a column name of the commit data dataframe.
+#' Default column names can be seen in 'COMMITS.LIST.COLUMNS' in 'util-read.R',
+#' though more might be possible.
 #'
 #' @param network the commit network
 #' @param project.data the project data from which to extract the values

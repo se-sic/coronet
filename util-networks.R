@@ -1462,8 +1462,7 @@ construct.edges.temporal.order = function(set, network.conf, edge.attributes, ke
 
         ## mark current item as processed
         if (network.type == "commit") {
-            vertices.processed.set = data.frame(commit = c(vertices.processed.set[["commit"]], item.vertex[["commit"]]),
-                                                date = c(vertices.processed.set[["date"]], item.vertex[["date"]]))
+            vertices.processed.set = rbind(vertices.processed.set, item.vertex)
         } else {
             vertices.processed.set = c(vertices.processed.set, item.vertex)
         }

@@ -239,6 +239,8 @@ sample.pull.requests = add.vertex.attribute.author.issue.count(my.networks, x.da
 ## add vertex attributes for the project-level network
 x.net.as.list = list("1970-01-01 00:00:00-2030-01-01 00:00:00" = x$get.author.network())
 sample.entire = add.vertex.attribute.author.commit.count(x.net.as.list, x.data, aggregation.level = "complete")
+## add vertex attributes to commit network
+add.vertex.attribute.commit.network(x$get.commit.network(), x.data, "author.name", "NO_AUTHOR")
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
