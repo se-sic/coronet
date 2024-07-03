@@ -243,6 +243,11 @@ test_that("Simplify multiple basic multi-relational networks", {
         network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
     }
 
+    ## add graph attributes
+    network.A = igraph::set_graph_attr(network.A, "name", "network.A")
+    network.B = igraph::set_graph_attr(network.B, "name", "network.B")
+    networks = list(A = network.A, B = network.B)
+
     network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
         igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
@@ -251,7 +256,6 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
-    networks = list(A = network.A, B = network.B)
 
     ## simplify networks without simplifying multiple relations into single edges
     networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
@@ -269,6 +273,10 @@ test_that("Simplify multiple basic multi-relational networks", {
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
         expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
     }
+
+    ## verify graph attributes
+    expect_identical(igraph::graph_attr(networks.simplified[["A"]], "name"), "network.A")
+    expect_identical(igraph::graph_attr(networks.simplified[["B"]], "name"), "network.B")
 })
 
 test_that("Remove isolated vertices", {
