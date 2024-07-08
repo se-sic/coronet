@@ -365,10 +365,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             )
 
             ## remove the artifact vertices stemming from untracked files if existing
-            if ("name" %in% igraph::list.vertex.attributes(artifacts.net) &&
+            if ("name" %in% igraph::vertex_attr_names(artifacts.net) &&
                 length(igraph::V(artifacts.net)[name == UNTRACKED.FILE.EMPTY.ARTIFACT]) > 0) {
 
-                artifacts.net = igraph::delete.vertices(artifacts.net, UNTRACKED.FILE.EMPTY.ARTIFACT)
+                artifacts.net = igraph::delete_vertices(artifacts.net, UNTRACKED.FILE.EMPTY.ARTIFACT)
             }
 
             ## store network
@@ -463,14 +463,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             file = file.path(file.dir, file.name)
 
             ## read network from disk
-            artifacts.net = igraph::read.graph(file, format = "pajek")
+            artifacts.net = igraph::read_graph(file, format = "pajek")
 
             # set vertex labels properly (copy "id" attribute to "name" attribute)
-            artifacts.net = igraph::set.vertex.attribute(
+            artifacts.net = igraph::set_vertex_attr(
                 artifacts.net,
                 "name",
                 igraph::V(artifacts.net),
-                igraph::get.vertex.attribute(artifacts.net, "id")
+                igraph::vertex_attr(artifacts.net, "id")
             )
 
             ## process vertex names in artifact networks for consistent names:
@@ -478,7 +478,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## need to be processed in order to match the ones coming from other analyses
             ## (e.g. Codeface):
             ## (1) retrieve parameters for processing
-            names = igraph::get.vertex.attribute(artifacts.net, "name")
+            names = igraph::vertex_attr(artifacts.net, "name")
             artifact = private$proj.data$get.project.conf.entry("artifact")
             ## (2) different replacings for different artifacts
             ## feature
@@ -498,10 +498,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 names = gsub(".cg", "", names, fixed = TRUE)
             }
             ## (3) set processed names inside graph object
-            artifacts.net = igraph::set.vertex.attribute(artifacts.net, "name", value = names)
+            artifacts.net = igraph::set_vertex_attr(artifacts.net, "name", value = names)
 
             ## set edge attribute 'artifact.type' as the raw data do not contain this!
-            artifacts.net = igraph::set.edge.attribute(
+            artifacts.net = igraph::set_edge_attr(
                 artifacts.net, "artifact.type",
                 value = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
@@ -639,7 +639,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## connect corresponding add_link and referenced_by issue-events
-            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_along(add.links)), function(from) {
+            edge.list = plyr::rbind.fill(parallel::mclapply(split(add.links, seq_len(nrow(add.links))), function(from) {
                 ## get edge attributes
                 cols.which = edge.attributes %in% colnames(from)
                 edge.attrs = from[, edge.attributes[cols.which], drop = FALSE]
@@ -846,20 +846,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## add all missing authors to the network if wanted
             if (private$network.conf$get.value("author.all.authors")) {
                 authors.all = private$proj.data$get.authors()[[ "author.name" ]]
-                authors.net = igraph::get.vertex.attribute(net, "name")
+                authors.net = igraph::vertex_attr(net, "name")
                 net = net + igraph::vertices(setdiff(authors.all, authors.net))
             }
 
             ## remove all authors from the corresponding network who do not have touched any artifact
             if (private$network.conf$get.value("author.only.committers")) {
                 ## authors-artifact relation
-                authors.from.net = igraph::get.vertex.attribute(net, "name")
+                authors.from.net = igraph::vertex_attr(net, "name")
                 authors.from.artifacts = lapply(private$get.bipartite.relations(), function(bipartite.relation) {
                     return(names(bipartite.relation))
                 })
                 authors.from.artifacts = unlist(authors.from.artifacts)
                 if (!is.null(authors.from.artifacts)) {
-                    net = igraph::delete.vertices(net, setdiff(authors.from.net, authors.from.artifacts))
+                    net = igraph::delete_vertices(net, setdiff(authors.from.net, authors.from.artifacts))
                 }
             }
 
@@ -906,7 +906,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
                 vertex.kind = private$get.vertex.kind.for.relation(relation)
-                network = igraph::set.vertex.attribute(network, "kind", value = vertex.kind)
+                network = igraph::set_vertex_attr(network, "kind", value = vertex.kind)
 
                 return(network)
             })
@@ -1016,9 +1016,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## remove vertices that are not committers if wanted
             if (private$network.conf$get.value("author.only.committers")) {
                 committers = unique(private$proj.data$get.commits.unfiltered()[["author.name"]])
-                authors = igraph::get.vertex.attribute(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
+                authors = igraph::vertex_attr(network, "name", igraph::V(network)[ type == TYPE.AUTHOR ])
                 authors.to.remove = setdiff(authors, committers)
-                network = igraph::delete.vertices(network, authors.to.remove)
+                network = igraph::delete_vertices(network, authors.to.remove)
             }
 
             ## simplify network if wanted
@@ -1078,7 +1078,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## we only add bipartite edges for authors already present in the author network (this can be
             ## configured by 'author.only.committers', for example), thus, we need to remove any authors
             ## from the author--artifact relation that are superfluous
-            authors.from.net = igraph::get.vertex.attribute(authors.net, "name")
+            authors.from.net = igraph::vertex_attr(authors.net, "name")
             ## save relation and intersect the author vertices from the author network and the
             ## bipartite networks
             authors.to.artifacts = mapply(function(a2a.rel, relation.type) {
@@ -1099,7 +1099,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             })
             artifacts.all = plyr::rbind.fill(artifacts)
 
-            artifacts.from.net = igraph::get.vertex.attribute(artifacts.net, "name")
+            artifacts.from.net = igraph::vertex_attr(artifacts.net, "name")
             artifacts.to.add = setdiff(artifacts.all[["data.vertices"]], artifacts.from.net)
             artifacts.to.add.kind = artifacts.all[
                 artifacts.all[["data.vertices"]] %in% artifacts.to.add, "artifact.type"
@@ -1115,11 +1115,11 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             ## check directedness and adapt artifact network if needed
-            if (igraph::is.directed(authors.net) && !igraph::is.directed(artifacts.net)) {
+            if (igraph::is_directed(authors.net) && !igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is directed, but artifact network is not.",
                                         "Converting artifact network..."))
                 artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
-            } else if (!igraph::is.directed(authors.net) && igraph::is.directed(artifacts.net)) {
+            } else if (!igraph::is_directed(authors.net) && igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is undirected, but artifact network is not.",
                                         "Converting artifact network..."))
                 artifacts.net = igraph::as.undirected(artifacts.net, mode = "each",
@@ -1140,14 +1140,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
             ## affect several other attributes, whose classes are not adjusted in our temporary fix.
             ## The following code block should be redundant as soon as igraph has fixed their bug.
-            u.actual.edge.attribute.date = igraph::get.edge.attribute(u, "date")
+            u.actual.edge.attribute.date = igraph::edge_attr(u, "date")
             if (!is.null(u.actual.edge.attribute.date)) {
                 if (is.list(u.actual.edge.attribute.date)) {
                     u.expected.edge.attribute.date = lapply(u.actual.edge.attribute.date, get.date.from.unix.timestamp)
                 } else {
                     u.expected.edge.attribute.date = get.date.from.unix.timestamp(u.actual.edge.attribute.date)
                 }
-                u = igraph::set.edge.attribute(u, "date", value = u.expected.edge.attribute.date)
+                u = igraph::set_edge_attr(u, "date", value = u.expected.edge.attribute.date)
             }
 
             ## 2) add the bipartite edges
@@ -1390,16 +1390,16 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     }
 
     ## construct network from edge list if there are vertices
-    net = igraph::graph.data.frame(edge.list, directed = directed, vertices = vertices.processed)
+    net = igraph::graph_from_data_frame(edge.list, directed = directed, vertices = vertices.processed)
 
-    ## add missing vertex attributes if vertices.processed was empty (igraph::graph.data.frame does add them then)
+    ## add missing vertex attributes if vertices.processed was empty (igraph::graph_from_data_frame does add them then)
     if (nrow(vertices.processed) == 0) {
         ## vertex attributes
         needed.vertex.attributes.types = list(name = "character")
         net = add.attributes.to.network(net, "vertex", needed.vertex.attributes.types)
     }
 
-    ## add missing edge attributes if edge.list was empty (igraph::graph.data.frame does add them then)
+    ## add missing edge attributes if edge.list was empty (igraph::graph_from_data_frame does add them then)
     if (nrow(edge.list) == 0) {
         ## edge attributes
         allowed.attributes = network.conf$get.value("edge.attributes")
@@ -1409,7 +1409,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     }
 
     ## initialize edge weights
-    net = igraph::set.edge.attribute(net, "weight", value = 1)
+    net = igraph::set_edge_attr(net, "weight", value = 1)
 
     logging::logdebug("construct.network.from.edge.list: finished.")
 
@@ -1484,14 +1484,14 @@ merge.networks = function(networks) {
 
     ## catch case where no vertices (and no vertex attributes) are given
     if (ncol(new.network.data[["vertices"]]) == 0) {
-        new.network.data[["vertices"]] = NULL # igraph::graph.data.frame can handle this
+        new.network.data[["vertices"]] = NULL # igraph::graph_from_data_frame can handle this
     }
 
     ## build whole network form edge and vertex data frame
-    whole.network = igraph::graph.data.frame(
+    whole.network = igraph::graph_from_data_frame(
         new.network.data[["edges"]],
         vertices = new.network.data[["vertices"]],
-        directed = igraph::is.directed(networks[[1]])
+        directed = igraph::is_directed(networks[[1]])
     )
 
     logging::logdebug("merge.networks: finished.")
@@ -1636,13 +1636,13 @@ add.attributes.to.network = function(network, type = c("vertex", "edge"), attrib
 
     ## get corresponding attribute functions
     if (type == "vertex") {
-        attribute.set.function = igraph::set.vertex.attribute # sprintf("igraph::set.%s.attribute", type)
-        attribute.get.function = igraph::get.vertex.attribute # sprintf("igraph::get.%s.attribute", type)
-        attribute.remove.function = igraph::remove.vertex.attribute # sprintf("igraph::remove.%s.attribute", type)
+        attribute.set.function = igraph::set_vertex_attr # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::vertex_attr # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::delete_vertex_attr # sprintf("igraph::remove.%s.attribute", type)
     } else {
-        attribute.set.function = igraph::set.edge.attribute # sprintf("igraph::set.%s.attribute", type)
-        attribute.get.function = igraph::get.edge.attribute # sprintf("igraph::get.%s.attribute", type)
-        attribute.remove.function = igraph::remove.edge.attribute # sprintf("igraph::remove.%s.attribute", type)
+        attribute.set.function = igraph::set_edge_attr # sprintf("igraph::set.%s.attribute", type)
+        attribute.get.function = igraph::edge_attr # sprintf("igraph::get.%s.attribute", type)
+        attribute.remove.function = igraph::delete_edge_attr # sprintf("igraph::remove.%s.attribute", type)
     }
 
     ## iterate over all wanted attribute names and add the attribute with the wanted class
@@ -1694,9 +1694,9 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     logging::loginfo("Simplifying network.")
 
     ## save network attributes, otherwise they get lost
-    network.attributes = igraph::get.graph.attribute(network)
+    network.attributes = igraph::graph_attr(network)
 
-    if (!simplify.multiple.relations && length(unique(igraph::get.edge.attribute(network, "relation"))) > 1) {
+    if (!simplify.multiple.relations && length(unique(igraph::edge_attr(network, "relation"))) > 1) {
         ## data frame of the network
         edge.data = igraph::as_data_frame(network, what = "edges")
         vertex.data = igraph::as_data_frame(network, what = "vertices")
@@ -1707,7 +1707,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
                                 network.data = edge.data[edge.data[["relation"]] == relation, ]
                                 net = igraph::graph_from_data_frame(d = network.data,
                                                                     vertices = vertex.data,
-                                                                    directed = igraph::is.directed(network))
+                                                                    directed = igraph::is_directed(network))
 
                                 ## simplify networks (contract edges and remove loops)
                                 net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
@@ -1726,7 +1726,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
 
     ## re-apply all network attributes
     for (att in names(network.attributes)) {
-        network = igraph::set.graph.attribute(network, att, network.attributes[[att]])
+        network = igraph::set_graph_attr(network, att, network.attributes[[att]])
     }
 
     logging::logdebug("simplify.network: finished.")
@@ -1764,7 +1764,7 @@ simplify.networks = function(networks, remove.multiple = TRUE, remove.loops = TR
 #'
 #' @return the network without isolates
 delete.isolates = function(network) {
-    network.no.isolates = igraph::delete.vertices(
+    network.no.isolates = igraph::delete_vertices(
         network,
         igraph::degree(network, mode = "all") == 0
     )
@@ -1784,7 +1784,7 @@ delete.isolates = function(network) {
 #' @return the author-vertex-induced subgraph of \code{network}
 extract.author.network.from.network = function(network, remove.isolates = FALSE) {
     ## only retain all author vertices
-    author.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.AUTHOR])
+    author.network = igraph::induced_subgraph(network, igraph::V(network)[type == TYPE.AUTHOR])
     ## remove isolates if wanted
     if (remove.isolates) {
         author.network = delete.isolates(author.network)
@@ -1801,7 +1801,7 @@ extract.author.network.from.network = function(network, remove.isolates = FALSE)
 #' @return the artifact-vertex-induced subgraph of \code{network}
 extract.artifact.network.from.network = function(network, remove.isolates = FALSE) {
     ## only retain all artifact vertices
-    artifact.network = igraph::induced.subgraph(network, igraph::V(network)[type == TYPE.ARTIFACT])
+    artifact.network = igraph::induced_subgraph(network, igraph::V(network)[type == TYPE.ARTIFACT])
     ## remove isolates if wanted
     if (remove.isolates) {
         artifact.network = delete.isolates(artifact.network)
@@ -1826,7 +1826,7 @@ extract.bipartite.network.from.network = function(network, remove.isolates = FAL
     }
 
     ## check whether there is an edge attibute 'type'
-    if (!("type" %in% igraph::list.edge.attributes(network))) {
+    if (!("type" %in% igraph::edge_attr_names(network))) {
         logging::logerror("Extraction of an bipartite network without the edge attribute 'type' does not work!")
         stop("Failed extraction of bipartite network.")
     }
@@ -1868,7 +1868,7 @@ delete.authors.without.specific.edges = function(network, specific.edge.types =
     ## compute all authors without specific edges as vertex IDs
     vertex.ids.author.no.specific = setdiff(vertex.ids.author, vertex.ids.specific)
     ## remove all authors without specific edges from network
-    network = igraph::delete.vertices(network, vertex.ids.author.no.specific)
+    network = igraph::delete_vertices(network, vertex.ids.author.no.specific)
 
     return(network)
 }
@@ -1935,13 +1935,13 @@ get.sample.network = function() {
 
     ## construct multi network
     network = net.builder$get.multi.network()
-    network = igraph::set.graph.attribute(network, "sample.network", TRUE)
+    network = igraph::set_graph_attr(network, "sample.network", TRUE)
 
     ## set layout for plotting
     lay = matrix(c(  20, 179, 693, 552, 956, 1091, 124, 317, 516, 615, 803, 1038,
                     245, 175, 255, 185, 253, 225,   73,   8,  75,   0,  96,   86),
                  nrow = 12, byrow = FALSE) # for sample graph
-    network = igraph::set.graph.attribute(network, "layout", lay)
+    network = igraph::set_graph_attr(network, "layout", lay)
 
     return(network)
 }

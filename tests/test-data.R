@@ -402,6 +402,7 @@ test_that("Filter bots from commit data", {
 
 test_that("Filter bots from issue data", {
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("filter.bots", TRUE)
     ## disable all other filterings
     proj.conf$update.value("issues.only.comments", FALSE)

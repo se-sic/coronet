@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015+2017 by Claus Hunsen <hunsen@fim.uni-passau.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -92,7 +93,7 @@ MOTIF.TYPE.MAPPING = as.data.frame(rbind(
 get.vertex.types.as.numeric = function(network, index = igraph::V(network)) {
 
     ## get the vertex attribute as factor
-    attr.factor = factor(igraph::get.vertex.attribute(network, "type", index))
+    attr.factor = factor(igraph::vertex_attr(network, "type", index))
 
     ## replace factor levels with corresponding numerics
     levels(attr.factor) = sapply(levels(attr.factor), function(f) {
@@ -141,7 +142,7 @@ motifs.search.in.network = function(network, motif, remove.duplicates = TRUE) {
     vs.cleaned = lapply(vs, function(seq) {
         ## get types and names of vertices
         types = get.vertex.types.as.numeric(network, index = seq)
-        names = igraph::get.vertex.attribute(network, "name", index = seq)
+        names = igraph::vertex_attr(network, "name", index = seq)
 
         ## sort vertex sequence by types and names
         seq = seq[ order(types, names) ]
@@ -307,7 +308,7 @@ motifs.remove.artifacts.from.matched.motifs = function(network, vs) {
     ## iterate over all vertex sequences to remove artifacts
     vs.cleaned = lapply(vs, function(seq) {
         ## get types of vertices
-        types = igraph::get.vertex.attribute(network, "type", index = seq)
+        types = igraph::vertex_attr(network, "type", index = seq)
         ## remove artifact vertices
         seq = seq[ types != TYPE.ARTIFACT ]
         return(seq)

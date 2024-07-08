@@ -20,6 +20,35 @@
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Network data ------------------------------------------------------------
+
+test_that("Get edgelist augmented with timestamps", {
+
+    ## construct network
+    edges = list(list("A", "A"), list("D", "C"), list("C", "A"), list("B", "C"))
+    timestamps = c("2016-12-07 15:30:02", "2016-08-07 15:37:02", "2016-07-12 15:59:25", "2016-07-12 15:59:59")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D") +
+        igraph::edges(edges, relation = "mail", date = timestamps)
+
+
+    ## get edgelist augmented with timestamps
+    edgelist = get.edgelist.with.timestamps(network)
+
+    ## check correctness
+    expect_equal(names(edgelist), c("from", "to", "date"))
+    expect_equal(nrow(edgelist), 4)
+    lapply(1:4, function(i) {
+        actual = edgelist[i, ]
+        expect_equal(actual[["from"]], edges[[i]][[1]])
+        expect_equal(actual[["to"]], edges[[i]][[2]])
+        expect_equal(actual[["date"]], timestamps[i])
+    })
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Parameter verification --------------------------------------------------
 
 ##

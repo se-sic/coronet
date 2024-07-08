@@ -422,9 +422,9 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed.number = 1
             ),
             issues.from.source = list(
-                default = c("jira", "github"),
+                default = "github",
                 type = "character",
-                allowed = c("jira", "github"),
+                allowed = c("github", "jira"),
                 allowed.number = Inf
             ),
             issues.locked = list(

@@ -13,6 +13,7 @@
 ##
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -53,7 +54,7 @@ test_that("getting all authors of a list of networks, list length 1", {
         from = "Heinz",
         to = "Dieter"
         )
-    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     ## Act
     result = get.author.names.from.networks(networks = list(network))
@@ -77,7 +78,7 @@ test_that("getting all authors of a list of networks, list length 1, not global"
         from = "Heinz",
         to = "Dieter"
         )
-    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     ## Act
     result = get.author.names.from.networks(networks = list(network), globally = FALSE)
@@ -101,7 +102,7 @@ test_that("getting all authors of a list of networks, list length 2", {
         from = "Heinz",
         to = "Dieter"
         )
-    first.network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    first.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     second.vertices = data.frame(
         name = c("Detlef", "Dieter"),
@@ -112,7 +113,7 @@ test_that("getting all authors of a list of networks, list length 2", {
         from = "Detlef",
         to = "Dieter"
         )
-    second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
+    second.network = igraph::graph_from_data_frame(second.edges, directed = FALSE, vertices = second.vertices)
 
     ## Act
     result = get.author.names.from.networks(networks = list(first.network, second.network))
@@ -135,7 +136,7 @@ test_that("getting all authors of a list of networks, list length 2, not global"
         from = "Heinz",
         to = "Dieter"
         )
-    first.network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    first.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     second.vertices = data.frame(
         name = c("Detlef", "Dieter"),
@@ -146,7 +147,7 @@ test_that("getting all authors of a list of networks, list length 2, not global"
         from = "Detlef",
         to = "Dieter"
         )
-    second.network = igraph::graph.data.frame(second.edges, directed = FALSE, vertices = second.vertices)
+    second.network = igraph::graph_from_data_frame(second.edges, directed = FALSE, vertices = second.vertices)
 
     ## Act
     result = get.author.names.from.networks(networks = list(first.network, second.network), globally = FALSE)
@@ -206,6 +207,7 @@ test_that("getting all authors of a list of data ranges, list length 2", {
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
@@ -224,6 +226,7 @@ test_that("getting all authors of a list of data ranges, list length 2, not glob
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
@@ -262,6 +265,7 @@ test_that("getting all authors of a list of data ranges by data source 'issues',
 
     ## Arrange
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
     range.data.one = proj.data.base$get.data.cut.to.same.date("mails")
     range.data.two = proj.data.base$get.data.cut.to.same.date("issues")
@@ -307,7 +311,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, matchin
         from = "Heinz",
         to = "Dieter"
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Heinz", "Dieter", "Klaus")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -339,7 +343,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, fewer a
         from = "Heinz",
         to = "Dieter"
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Dieter", "Heinz")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -371,7 +375,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, more au
         from = "Heinz",
         to = "Dieter"
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz", "Klaus")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -403,7 +407,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no matc
         from = "Heinz",
         to = "Dieter"
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob", "Dieter", "Heinz")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -435,7 +439,7 @@ test_that("getting a sparse adjacency matrix for a network, single edge, no over
         from = "Heinz",
         to = "Dieter"
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Gerhardt", "Bob")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -464,7 +468,7 @@ test_that("getting a sparse adjacency matrix for a network, two edges, more auth
         from = c("Heinz", "Dieter"),
         to = c("Dieter", "Klaus")
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Klaus", "Gerhardt", "Bob", "Dieter", "Heinz")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -500,7 +504,7 @@ test_that("getting a sparse adjacency matrix for a network, three edges, more au
         to = c("Dieter", "Klaus", "Heinz"),
         weight = c(1, 3, 4)
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = c("Klaus", "Gerhardt", "Bob", "Dieter", "Heinz")
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -542,7 +546,7 @@ test_that("getting a sparse adjacency matrix per network, one network", {
         from = c("Heinz", "Dieter", "Dieter"),
         to = c("Dieter", "Klaus", "Heinz")
         )
-    network.in = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in = sort(c("Heinz", "Dieter", "Klaus"))
 
     matrix.out = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in),
@@ -576,7 +580,7 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
         from = c("Heinz", "Dieter", "Dieter"),
         to = c("Dieter", "Klaus", "Heinz")
         )
-    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.one = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     vertices = data.frame(
         name = c("Klaus", "Tobias"),
@@ -587,7 +591,7 @@ test_that("getting a sparse adjacency matrix per network, two networks", {
         from = c("Klaus"),
         to = c("Tobias")
         )
-    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     all.authors = sort(c("Heinz", "Dieter", "Klaus", "Tobias"))
 
@@ -632,7 +636,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         from = c("Heinz", "Dieter", "Dieter"),
         to = c("Dieter", "Klaus", "Heinz")
         )
-    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.one = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
     matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
@@ -649,7 +653,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         from = c("Klaus"),
         to = c("Dieter")
         )
-    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
 
     matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
@@ -683,7 +687,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         to = c("Dieter", "Klaus", "Heinz"),
         weight = c(1, 2, 1)
         )
-    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.one = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
     matrix.out.one = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.one),
@@ -701,7 +705,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         to = c("Dieter"),
         weight = c(1)
         )
-    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
 
     matrix.out.two = Matrix::sparseMatrix(i = c(), j = c(), x = 0, dims = c(length(authors.in.two),
@@ -735,14 +739,14 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         from = c("Heinz", "Dieter", "Dieter"),
         to = c("Dieter", "Klaus", "Heinz")
         )
-    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.one = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
     edges = data.frame(
         from = c("Klaus"),
         to = c("Dieter")
         )
-    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     expected.array = array(data = 0, dim = c(3, 3, 2))
     rownames(expected.array) = authors.in.one
@@ -780,7 +784,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         to = c("Dieter", "Klaus", "Heinz"),
         weight = c(1, 2, 1)
         )
-    network.in.one = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.one = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.one = sort(c("Heinz", "Dieter", "Klaus"))
 
     edges = data.frame(
@@ -788,7 +792,7 @@ test_that("getting cumulative sums of adjacency matrices generated from networks
         to = c("Dieter"),
         weight = c(1)
         )
-    network.in.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.in.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
     authors.in.two = sort(c("Heinz", "Dieter", "Klaus"))
 
     expected.array = array(data = 0, dim = c(3, 3, 2))

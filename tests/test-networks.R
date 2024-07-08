@@ -75,7 +75,7 @@ test_that("Simplify network with more than one relation", {
     expect_error(simplify.network(g), NA) # expect that no error occurs
     expect_identical(igraph::V(simplify.network(g))$name, c("A", "B", "C", "Base_Feature")) # vertices
     expect_identical(igraph::ecount(simplify.network(g)), 1) # edges
-    expect_true(igraph::are.connected(simplify.network(g), "A", "Base_Feature")) # specific edge
+    expect_true(igraph::are_adjacent(simplify.network(g), "A", "Base_Feature")) # specific edge
 
 })
 
@@ -90,8 +90,8 @@ test_that("Simplify basic multi-relational network", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
     for (i in 1:3) {
-        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
     }
 
     network.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
@@ -165,7 +165,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                        c("<thread-13#8>", "<thread-13#8>"), c("<thread-13#9>", "<thread-13#9>"))
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, vertices = authors,
+    network.expected = igraph::graph_from_data_frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
     ## build simplified network
@@ -212,7 +212,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                        as.character(c(NA, NA)))
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, vertices = authors,
+    network.expected = igraph::graph_from_data_frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
     ## build simplified network
@@ -237,11 +237,16 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
     for (i in 1:3) {
-        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
-        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
     }
+
+    ## add graph attributes
+    network.A = igraph::set_graph_attr(network.A, "name", "network.A")
+    network.B = igraph::set_graph_attr(network.B, "name", "network.B")
+    networks = list(A = network.A, B = network.B)
 
     network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
@@ -251,7 +256,6 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
-    networks = list(A = network.A, B = network.B)
 
     ## simplify networks without simplifying multiple relations into single edges
     networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
@@ -269,6 +273,48 @@ test_that("Simplify multiple basic multi-relational networks", {
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
         expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
     }
+
+    ## verify graph attributes
+    expect_identical(igraph::graph_attr(networks.simplified[["A"]], "name"), "network.A")
+    expect_identical(igraph::graph_attr(networks.simplified[["B"]], "name"), "network.B")
+})
+
+test_that("Remove isolated vertices", {
+
+    ## construct network
+    edges = c("A", "A", "D", "C", "E", "C")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F") +
+        igraph::edges(edges, relation = "cochange")
+
+    ## remove isolate vertices
+    network = delete.isolates(network)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network, "name"), c("A", "C", "D", "E"))
+
+})
+
+test_that("Remove isolated authors given a specific edge type", {
+
+    ## construct network
+    edges_inter = c("A", "A", "D", "C", "E", "C")
+    edges_intra = c("F", "D", "A", "E", "D", "B")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F", type = TYPE.AUTHOR) +
+        igraph::edges(edges_inter, relation = "cochange", type = TYPE.EDGES.INTER) +
+        igraph::edges(edges_intra, relation = "cochange", type = TYPE.EDGES.INTRA)
+
+    ## remove isolate vertices
+    network.without.isolates.inter = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTER)
+    network.without.isolates.intra = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTRA)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network.without.isolates.inter, "name"), c("A", "C", "D", "E"))
+    expect_identical(igraph::vertex_attr(network.without.isolates.intra, "name"), c("A", "B", "D", "E", "F"))
+
 })
 
 
@@ -314,7 +360,7 @@ test_that("Extraction of sub-networks", {
     author.net.built = extract.author.network.from.network(base.net, remove.isolates = FALSE)
 
     ## construct expected author network (by removing artifact vertices and adjacent edges)
-    author.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[7:12])
+    author.net.expected = igraph::delete_vertices(base.net, igraph::V(base.net)[7:12])
 
     expect_true(igraph::identical_graphs(author.net.built, author.net.expected), info = "author-network extraction")
 
@@ -326,8 +372,8 @@ test_that("Extraction of sub-networks", {
     bip.net.built = extract.bipartite.network.from.network(base.net, remove.isolates = TRUE)
 
     ## construct expected bipartite network (by removing unipartite edges and isolate vertices)
-    bip.net.expected = igraph::delete.edges(base.net, igraph::E(base.net)[1:9])
-    bip.net.expected = igraph::delete.vertices(bip.net.expected, "A2")
+    bip.net.expected = igraph::delete_edges(base.net, igraph::E(base.net)[1:9])
+    bip.net.expected = igraph::delete_vertices(bip.net.expected, "A2")
 
     expect_true(igraph::identical_graphs(bip.net.built, bip.net.expected), info = "bipartite-network extraction")
 
@@ -339,7 +385,7 @@ test_that("Extraction of sub-networks", {
     art.net.built = extract.artifact.network.from.network(base.net, remove.isolates = FALSE)
 
     ## construct expected artifact network (by removing author vertices and adjacent edges)
-    art.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[1:6])
+    art.net.expected = igraph::delete_vertices(base.net, igraph::V(base.net)[1:6])
 
     expect_true(igraph::identical_graphs(art.net.built, art.net.expected), info = "artifact-network extraction")
 
@@ -527,7 +573,7 @@ test_that("Construction of networks from empty edge list (with vertices)", {
     ## construct edgeless network
     net.edgeless = create.empty.network(directed = directed) + igraph::vertices(vertices.as.sequence)
     ## add attribute 'weight' which is always added by 'construct.network.from.edge.list'
-    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
+    net.edgeless = igraph::set_edge_attr(net.edgeless, "weight", value = 1)
 
     ##
     ## normal network
@@ -574,8 +620,8 @@ test_that("Construction of networks from empty edge list (without vertices)", {
     ## construct edgeless network
     net.edgeless = create.empty.network(directed = directed)
     ## add attributes 'name' and 'weight' which is always added by 'construct.network.from.edge.list'
-    net.edgeless = igraph::set.vertex.attribute(net.edgeless, "name", value = "name")
-    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
+    net.edgeless = igraph::set_vertex_attr(net.edgeless, "name", value = "name")
+    net.edgeless = igraph::set_edge_attr(net.edgeless, "weight", value = 1)
 
     ##
     ## vertices: NULL
@@ -763,7 +809,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "cochange"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – cochange")
 
@@ -772,7 +818,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – mail")
 
@@ -781,7 +827,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "issue"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – issue")
 
@@ -794,7 +840,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange")))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – cochange")
 
@@ -803,7 +849,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – mail")
 
@@ -812,7 +858,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – issue")
 
@@ -825,7 +871,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – cochange")
 
@@ -834,7 +880,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – mail")
 
@@ -843,7 +889,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – issue")
 
@@ -856,7 +902,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "cochange", author.relation = "cochange"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),
@@ -869,7 +915,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "mail", author.relation = "mail"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),
@@ -882,7 +928,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "issue", author.relation = "cochange"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),

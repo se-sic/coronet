@@ -56,7 +56,7 @@ test_that("Network construction of the undirected artifact-cochange network", {
         relation = "cochange"
     )
     ## 3) build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
 
     ##
@@ -147,6 +147,7 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
@@ -156,7 +157,7 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
     network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network.expected = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
 
     ## build network
     network.built = network.builder$get.artifact.network()
@@ -176,6 +177,7 @@ patrick::with_parameters_test_that("Network construction of an empty 'comments-o
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(artifact.relation = "issue", artifact.directed = test.directed))
 
@@ -204,7 +206,7 @@ patrick::with_parameters_test_that("Network construction of an empty 'comments-o
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network.expected = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
 
     ## test
     assert.networks.equal(network.built, network.expected)
@@ -254,7 +256,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -303,7 +305,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(

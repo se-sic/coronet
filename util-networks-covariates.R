@@ -21,6 +21,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -105,7 +106,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
                 net.with.attr = add.attributes.to.network(current.network, "vertex", attributes)
                 ## overwrite set vertex attribute with 'default.value', given the case that there are indeed vertices
                 ## in the current network
-                net.with.attr = igraph::set.vertex.attribute(net.with.attr, attr.name, value = default.value)
+                net.with.attr = igraph::set_vertex_attr(net.with.attr, attr.name, value = default.value)
                 ## return immediately
                 return(net.with.attr)
             }
@@ -130,7 +131,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
                 attributes = unlist(attributes, recursive = FALSE)
             }
 
-            net.with.attr = igraph::set.vertex.attribute(current.network, attr.name, value = attributes)
+            net.with.attr = igraph::set_vertex_attr(current.network, attr.name, value = attributes)
 
             return(net.with.attr)
         }

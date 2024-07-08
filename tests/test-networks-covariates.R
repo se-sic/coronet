@@ -21,7 +21,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021-2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -73,6 +73,7 @@ get.network.covariates.test.networks = function(network.type = c("author", "arti
 
     ## configuration and data objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     proj.conf$update.value("commits.filter.untracked.files", TRUE)
     proj.conf$update.value("issues.only.comments", issues.only.comments)
@@ -461,7 +462,7 @@ test_that("Test add.vertex.attribute.author.commit.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "commit.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "commit.count")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -489,7 +490,7 @@ test_that("Test add.vertex.attribute.author.commit.count.committer.and.author", 
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "commit.count.committer.and.author")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "commit.count.committer.and.author")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -517,7 +518,7 @@ test_that("Test add.vertex.attribute.author.commit.count.committer.or.author", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "commit.count.committer.or.author")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "commit.count.committer.or.author")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -544,7 +545,7 @@ test_that("Test add.vertex.attribute.author.mail.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "mail.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "mail.count")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -571,7 +572,7 @@ test_that("Test add.vertex.attribute.author.mail.thread.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "mail.thread.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "mail.thread.count")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -624,7 +625,7 @@ test_that("Test add.vertex.attribute.author.issue.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -637,7 +638,7 @@ test_that("Test add.vertex.attribute.author.issue.count", {
             issue.type = "pull.requests", name = "pull.request.count"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pull.request.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -649,7 +650,7 @@ test_that("Test add.vertex.attribute.author.issue.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -688,7 +689,7 @@ test_that("Test add.vertex.attribute.author.issues.commented.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issues.commented.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issues.commented.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -701,7 +702,7 @@ test_that("Test add.vertex.attribute.author.issues.commented.count", {
             issue.type = "pull.requests", name = "pull.requests.commented.count"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.requests.commented.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pull.requests.commented.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -713,7 +714,7 @@ test_that("Test add.vertex.attribute.author.issues.commented.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issues.commented.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issues.commented.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -751,7 +752,7 @@ test_that("Test add.vertex.attribute.author.issue.creation.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.creation.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.creation.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -764,7 +765,7 @@ test_that("Test add.vertex.attribute.author.issue.creation.count", {
             issue.type = "pull.requests", name = "pull.request.creation.count"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.creation.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pull.request.creation.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -776,7 +777,7 @@ test_that("Test add.vertex.attribute.author.issue.creation.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.creation.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.creation.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -814,7 +815,7 @@ test_that("Test add.vertex.attribute.author.issue.comment.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.comment.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.comment.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -827,7 +828,7 @@ test_that("Test add.vertex.attribute.author.issue.comment.count", {
             issue.type = "pull.requests", name = "pull.request.comment.count"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.comment.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pull.request.comment.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -839,7 +840,7 @@ test_that("Test add.vertex.attribute.author.issue.comment.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, issue.type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.comment.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.comment.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -864,7 +865,7 @@ test_that("Test add.vertex.attribute.author.email", {
         networks.and.data[["networks"]], networks.and.data[["project.data"]]
     )
 
-    actual.attributes = lapply(networks.with.attr,  igraph::get.vertex.attribute, name = "author.email")
+    actual.attributes = lapply(networks.with.attr,  igraph::vertex_attr, name = "author.email")
 
     expect_identical(expected.attributes, actual.attributes)
 })
@@ -892,7 +893,7 @@ test_that("Test add.vertex.attribute.author.artifact.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "artifact.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "artifact.count")
 
         expect_identical(expected.attributes[[level]], actual.attributes)
     })
@@ -979,7 +980,7 @@ test_that("Test add.vertex.attribute.author.first.activity with multiple types a
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = TRUE
         )
-        actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
+        actual.attributes = lapply(networks.with.attributes, igraph::vertex_attr, name = "first.activity")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1005,7 +1006,7 @@ test_that("Test add.vertex.attribute.author.first.activity with multiple types a
             activity.types = c("mails", "commits", "issues"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = FALSE
         )
-        actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
+        actual.attributes = lapply(networks.with.attributes, igraph::vertex_attr, name = "first.activity")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1037,7 +1038,7 @@ test_that("Test add.vertex.attribute.author.first.activity with one type and com
             activity.types = c("mails"), name = "first.activity", aggregation.level = level,
             default.value = NA, combine.activity.types = FALSE
         )
-        actual.attributes = lapply(networks.with.attributes, igraph::get.vertex.attribute, name = "first.activity")
+        actual.attributes = lapply(networks.with.attributes, igraph::vertex_attr, name = "first.activity")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1057,7 +1058,7 @@ test_that("Test add.vertex.attribute.author.active.ranges with computation over 
         networks.and.data[["networks"]], networks.and.data[["project.data"]],
         combine.activity.types = TRUE
     )
-    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "active.ranges")
+    actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "active.ranges")
 
     # adjust prepared expected attributes to the current use case
     expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
@@ -1086,7 +1087,7 @@ test_that("Test default values of add.vertex.attribute.author.active.ranges", {
     test.default.value =  "test.default.value"
     networks.with.attr = add.vertex.attribute.author.active.ranges(test.networks, test.data,
         activity.types = test.activity.types, default.value = test.default.value)
-    actual.attributes = lapply(networks.with.attr, igraph:: get.vertex.attribute, name = "active.ranges")
+    actual.attributes = lapply(networks.with.attr, igraph:: vertex_attr, name = "active.ranges")
 
     # adjust prepared expected attributes to the current use case
     expected.attributes = lapply(get.expected.active.ranges(), function(active.ranges) {
@@ -1172,7 +1173,7 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 type = type, aggregation.level = level
             )
 
-            actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "author.role")
+            actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "author.role")
 
             expect_identical(expected.attributes[[level]][[type]], actual.attributes,
                              info = sprintf("level = '%s', type = '%s'", level, type))
@@ -1249,9 +1250,9 @@ test_that("Test add.vertex.attribute.artifact.editor.count", {
             aggregation.level = level, editor.definition = c("author", "committer")
         )
 
-        actual.attributes.author = lapply(networks.with.attr.author, igraph::get.vertex.attribute, name = "editor.count")
-        actual.attributes.committer = lapply(networks.with.attr.committer, igraph::get.vertex.attribute, name = "editor.count")
-        actual.attributes.both = lapply(networks.with.attr.both, igraph::get.vertex.attribute, name = "editor.count")
+        actual.attributes.author = lapply(networks.with.attr.author, igraph::vertex_attr, name = "editor.count")
+        actual.attributes.committer = lapply(networks.with.attr.committer, igraph::vertex_attr, name = "editor.count")
+        actual.attributes.both = lapply(networks.with.attr.both, igraph::vertex_attr, name = "editor.count")
 
         expect_equal(expected.attributes.author[[level]], actual.attributes.author)
         expect_equal(expected.attributes.committer[[level]], actual.attributes.committer)
@@ -1308,7 +1309,7 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "first.occurrence")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "first.occurrence")
 
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
@@ -1366,7 +1367,7 @@ test_that("Test add.vertex.attribute.artifact.last.edited", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "last.edited")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "last.edited")
 
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
@@ -1405,7 +1406,7 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "change.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "change.count")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1449,7 +1450,7 @@ test_that("Test add.vertex.attribute.mail.thread.contributor.count", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.contributor.count")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1491,7 +1492,7 @@ test_that("Test add.vertex.attribute.mail.thread.message.count", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.message.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.message.count")
 
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
@@ -1540,7 +1541,7 @@ test_that("Test add.vertex.attribute.mail.thread.start.date", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.start.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.start.date")
 
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
@@ -1592,7 +1593,7 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "thread.end.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.end.date")
 
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
@@ -1620,7 +1621,7 @@ test_that("Test add.vertex.attribute.mail.thread.originating.mailing.list", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute,
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr,
                                    name = "thread.originating.mailing.list")
 
         expect_equal(expected.attributes, actual.attributes)
@@ -1695,7 +1696,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -1707,7 +1708,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.contributor.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -1719,7 +1720,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -1757,7 +1758,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -1769,7 +1770,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.contributor.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -1781,7 +1782,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -1820,7 +1821,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             type = "issues", use.unfiltered.data = TRUE
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -1832,7 +1833,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests", use.unfiltered.data = TRUE)
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.contributor.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -1845,7 +1846,7 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
             type = "all", use.unfiltered.data = TRUE
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.contributor.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.contributor.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -1883,7 +1884,7 @@ test_that("Test add.vertex.attribute.issue.event.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.event.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -1895,7 +1896,7 @@ test_that("Test add.vertex.attribute.issue.event.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.event.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -1907,7 +1908,7 @@ test_that("Test add.vertex.attribute.issue.event.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.event.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -1945,7 +1946,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.comment.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.comment.event.count")
 
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
@@ -1957,7 +1958,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.comment.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.comment.event.count")
 
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
@@ -1969,7 +1970,7 @@ test_that("Test add.vertex.attribute.issue.comment.count", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.comment.event.count")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.comment.event.count")
 
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
@@ -2039,7 +2040,7 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.opened.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2053,7 +2054,7 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.opened.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.opened.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2067,7 +2068,7 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.opened.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2139,7 +2140,7 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.closed.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2153,7 +2154,7 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.closed.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.closed.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2167,7 +2168,7 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.closed.date")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2282,7 +2283,7 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.last.activity")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2296,7 +2297,7 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.last.activity")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.last.activity")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2310,7 +2311,7 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.last.activity")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
         ## convert UNIX timestamps to POSIXct
         actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
 
@@ -2375,7 +2376,7 @@ test_that("Test add.vertex.attribute.issue.title", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "issues"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.title")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.title")
 
         expect_identical(expected.attributes.issues.only, actual.attributes)
     })
@@ -2387,7 +2388,7 @@ test_that("Test add.vertex.attribute.issue.title", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level,
             type = "pull.requests")
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pr.title")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.title")
 
         expect_identical(expected.attributes.prs.only, actual.attributes)
     })
@@ -2399,7 +2400,7 @@ test_that("Test add.vertex.attribute.issue.title", {
             networks.and.data[["networks"]], networks.and.data[["project.data"]], aggregation.level = level, type = "all"
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.title")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.title")
 
         expect_identical(expected.attributes.both, actual.attributes)
     })
@@ -2421,7 +2422,7 @@ test_that("Test add.vertex.attribute.pr.open.merged.or.closed", {
     networks.with.attr = add.vertex.attribute.pr.open.merged.or.closed(
         networks.and.data[["networks"]], networks.and.data[["project.data"]])
 
-    actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "pull.request.state")
+    actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pull.request.state")
 
     expect_equal(expected.attributes, actual.attributes)
 })
@@ -2445,7 +2446,7 @@ test_that("Test add.vertex.attribute.issue.is.pull.request", {
             aggregation.level = level
         )
 
-        actual.attributes = lapply(networks.with.attr, igraph::get.vertex.attribute, name = "issue.is.pull.request")
+        actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.is.pull.request")
 
         expect_equal(expected.attributes, actual.attributes)
     })
@@ -2472,7 +2473,7 @@ test_that("Test addition of attributes despite of empty data", {
 
     ## add commit-count attribute
     net.commit.count = add.vertex.attribute.author.commit.count(networks, proj.data.empty, default = 0L)[[1]]
-    expect_true("commit.count" %in% igraph::list.vertex.attributes(net.commit.count))
+    expect_true("commit.count" %in% igraph::vertex_attr_names(net.commit.count))
 
     ## add author-role attribute:
     ## 1) construct empty classification
@@ -2480,7 +2481,7 @@ test_that("Test addition of attributes despite of empty data", {
     names(classification) = range
     ## 2) add attribute
     net.author.role = add.vertex.attribute.author.role(networks, classification, default = "unclassified")[[1]]
-    expect_true("author.role" %in% igraph::list.vertex.attributes(net.author.role))
+    expect_true("author.role" %in% igraph::vertex_attr_names(net.author.role))
 
 })
 
@@ -2506,8 +2507,8 @@ test_that("Test addition of attributes despite of non-captured vertices", {
     net.commit.count = add.vertex.attribute.author.commit.count.committer.and.author(networks, proj.data.empty, default = 0L)[[1]]
 
     ## check existence and proper value
-    expect_true("commit.count.committer.and.author" %in% igraph::list.vertex.attributes(net.commit.count))
-    expect_identical(igraph::get.vertex.attribute(net.commit.count, "commit.count.committer.and.author"), 0L)
+    expect_true("commit.count.committer.and.author" %in% igraph::vertex_attr_names(net.commit.count))
+    expect_identical(igraph::vertex_attr(net.commit.count, "commit.count.committer.and.author"), 0L)
 
 })
 
@@ -2521,6 +2522,7 @@ test_that("Test get.first.activity.data with missing commits, mails, and issues"
 
     ## initialize a ProjectData object with the ProjectConf
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data.base = ProjectData$new(project.conf = proj.conf)
 
     ## create a RangeData object with the same data sources as 'proj.data.base'.
@@ -2569,6 +2571,7 @@ test_that("Test get.first.activity.data with missing commits and mails for all a
 
     ## initialize a ProjectData object with the ProjectConf
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.data = ProjectData$new(project.conf = proj.conf)
 
     ## get the timestamps for splitting before discarding the data

@@ -53,6 +53,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -115,9 +116,9 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(18, 24:26, 44:47), ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(19, 35, 55:57), ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(27, 48, 52:53), ]
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(1:3, 21:24, 54), ],
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(12, 32:34, 55), ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(4, 25, 29:30), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -164,6 +165,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -232,8 +234,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         issues = list(
             "2004-10-09 18:38:13-2007-10-10 12:38:13" = data$issues[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 37:49, ],
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:3, 10:12, 21:24, 27:30, 32:34, 54:55), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -282,6 +284,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -344,9 +347,9 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(18:40, 43:57), ],
-            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:17, 41:42), ]
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 37:49, ],
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(1:17, 20:34, 54:59), ],
+            "2017-04-21 23:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(18:19, 50:53), ]
         ),
         mails = list(
             "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$mails[0, ],
@@ -393,6 +396,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -462,11 +466,11 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(18, 24:26, 44:47), ],
-            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$issues[rownames(data$issues) %in% c(18:19, 47, 55:57), ],
-            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(19, 35, 55:57), ],
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$issues[rownames(data$issues) %in% c(35, 48, 52:53), ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(27, 48, 52:53), ]
+            "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$issues[rownames(data$issues) %in% c(1:3, 21:24, 54), ],
+            "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$issues[rownames(data$issues) %in% c(24, 32:34, 54:55), ],
+            "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$issues[rownames(data$issues) %in% c(12, 32:34, 55), ],
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$issues[rownames(data$issues) %in% c(12, 25, 29:30), ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(4, 25, 29:30), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -518,6 +522,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -600,9 +605,9 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2006-04-10 15:38:13-2009-04-10 09:38:13" = data$issues[0, ],
             "2007-10-10 12:38:13-2010-10-10 06:38:13" = data$issues[0, ],
             "2009-04-10 09:38:13-2012-04-10 03:38:13" = data$issues[0, ],
-            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
+            "2010-10-10 06:38:13-2013-10-10 00:38:13" = data$issues[rownames(data$issues) %in% 37:49, ],
+            "2012-04-10 03:38:13-2015-04-10 21:38:13" = data$issues[rownames(data$issues) %in% 37:49, ],
+            "2013-10-10 00:38:13-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:3, 10:12, 21:24, 27:30, 32:34, 54:55), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -660,6 +665,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -727,10 +733,10 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2013-04-21 23:52:09-2015-04-22 11:52:09" = data$issues[rownames(data$issues) %in% 37:49, ],
             "2014-04-22 05:52:09-2016-04-21 17:52:09" = data$issues[0, ],
-            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(18:40, 43:57), ],
-            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(14:57), ]
+            "2015-04-22 11:52:09-2017-04-21 23:52:09" = data$issues[rownames(data$issues) %in% c(1:17, 20:34, 54:59), ],
+            "2016-04-21 17:52:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(1:34, 50:59), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -779,6 +785,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     net.conf = NetworkConf$new()
 
     ## data object
@@ -839,6 +846,7 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... )
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -896,7 +904,7 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... )
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$commit.messages
         ),
         issues = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(18:40, 43:57), ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(1:17, 20:34, 54:59), ]
         ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ]
@@ -934,6 +942,7 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -994,8 +1003,8 @@ patrick::with_parameters_test_that("Split a data object time-based (bins = ... ,
             "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$commit.messages
         ),
         issues = list(
-            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(18:40, 43:57), ],
-            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% c(14:17, 41:42), ]
+            "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$issues[rownames(data$issues) %in% c(1:17, 20:34, 54:59), ],
+            "2016-12-31 23:59:59-2017-06-03 03:03:03" = data$issues[rownames(data$issues) %in% c(18:19, 50:53), ]
         ),
         mails = list(
             "2016-01-01 00:00:00-2016-12-31 23:59:59" = data$mails[rownames(data$mails) %in% 13:17, ],
@@ -1075,6 +1084,7 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     proj.conf$update.value("custom.event.timestamps.file", "custom-events.list")
@@ -1141,10 +1151,10 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
             "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$issues[rownames(data$issues) %in% c(24:26, 33:34, 44:46), ],
-            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$issues[rownames(data$issues) %in% c(18:19, 35, 47, 52:53, 55:57), ],
-            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$issues[rownames(data$issues) %in% c(20:23, 27:28, 31:32, 43, 48:49, 54), ],
-            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$issues[rownames(data$issues) %in% c(29, 36), ]
+            "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$issues[rownames(data$issues) %in% c(1:3, 10:11, 21:23), ],
+            "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$issues[rownames(data$issues) %in% c(12, 24, 29:30, 32:34, 54:55), ],
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$issues[rownames(data$issues) %in% c(4:5, 8:9, 20, 25:26, 31, 56:59), ],
+            "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$issues[rownames(data$issues) %in% c(6, 13), ]
         ),
         mails = list(
             ## comments indicate rownames when pasta is not configured
@@ -1315,6 +1325,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -1377,9 +1388,9 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
             "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$commit.messages
         ),
         issues = list(
-            "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$issues[rownames(data$issues) %in% c(24:26, 44:47), ],
-            "2016-07-12 16:01:30-2016-07-12 16:04:01" = data$issues[rownames(data$issues) %in% c(18:19, 35, 55:57), ],
-            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(27, 48, 52:53), ]
+            "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$issues[rownames(data$issues) %in% c(1:3, 21:24), ],
+            "2016-07-12 16:01:30-2016-07-12 16:04:01" = data$issues[rownames(data$issues) %in% c(12, 32:34, 54:55), ],
+            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$issues[rownames(data$issues) %in% c(4, 25, 29:30), ]
         ),
         mails = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$mails[0, ],
@@ -1425,6 +1436,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -1493,8 +1505,8 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         issues = list(
             "2004-10-09 18:38:13-2007-09-18 06:00:04" = data$issues[0, ],
             "2007-09-18 06:00:04-2010-08-26 17:21:55" = data$issues[0, ],
-            "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$issues[rownames(data$issues) %in% 1:13, ],
-            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(18:19, 24:26, 33:35, 44:47, 50:53, 55:57), ]
+            "2010-08-26 17:21:55-2013-08-04 04:43:46" = data$issues[rownames(data$issues) %in% 37:49, ],
+            "2013-08-04 04:43:46-2016-07-12 16:05:38" = data$issues[rownames(data$issues) %in% c(1:3, 10:12, 21:24, 27:30, 32:34, 54:55), ]
         ),
         mails = list(
             ## comments indicate row names when pasta is not configured
@@ -1543,6 +1555,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
 
     ## configuration objects
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("github", "jira"))
     proj.conf$update.value("issues.only.comments", FALSE)
     proj.conf$update.values(list(pasta = test.pasta, synchronicity = test.synchronicity))
     net.conf = NetworkConf$new()
@@ -1605,9 +1618,9 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
             "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$commit.messages
         ),
         issues = list(
-            "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$issues[rownames(data$issues) %in% 1:13, ],
+            "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$issues[rownames(data$issues) %in% 37:49, ],
             "2014-09-01 12:05:39-2016-01-12 00:19:09" = data$issues[0, ],
-            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% 14:57, ]
+            "2016-01-12 00:19:09-2017-05-23 12:32:40" = data$issues[rownames(data$issues) %in% c(1:34, 50:59), ]
         ),
         mails = list(
             "2013-04-21 23:52:09-2014-09-01 12:05:39" = data$mails[0, ],

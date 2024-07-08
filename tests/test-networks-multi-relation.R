@@ -19,7 +19,7 @@
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -92,7 +92,7 @@ test_that("Network construction of the undirected author network with relation =
     )
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, vertices = authors,
+    network.expected = igraph::graph_from_data_frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -104,6 +104,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = c("cochange", "issue"), artifact.relation = c("issue", "mail")))
@@ -198,7 +199,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
     )
 
     ## 3) build expected network
-    network.expected = igraph::graph.data.frame(network.expected.data, vertices = vertices,
+    network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -210,6 +211,7 @@ test_that("Construction of the multi network for the feature artifact with autho
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf = NetworkConf$new()
     net.conf$update.values(updated.values = list(author.relation = c("cochange", "mail"), artifact.relation = c("cochange", "issue")))
@@ -310,7 +312,7 @@ test_that("Construction of the multi network for the feature artifact with autho
      )
 
     ## 3) build expected network
-    network.expected = igraph::graph.data.frame(edges, vertices = vertices,
+    network.expected = igraph::graph_from_data_frame(edges, vertices = vertices,
                                                 directed = net.conf$get.value("author.directed"))
 
     assert.networks.equal(network.expected, network.built)
@@ -320,6 +322,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf.cochange = NetworkConf$new()
     net.conf.cochange$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
@@ -406,7 +409,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
         event.name = c(rep(NA, 6), rep("commented", 24))
     )
 
-    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    net.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     assert.networks.equal(net.expected, net.combined)
 
@@ -493,7 +496,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                       "<thread-13#9>", "<thread-13#3>")
     )
 
-    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    net.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     assert.networks.equal(net.expected, net.combined)
 
@@ -503,6 +506,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf.issue = NetworkConf$new()
     net.conf.issue$update.values(updated.values = list(author.relation = "issue", artifact.relation = "issue"))
@@ -595,7 +599,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                       "<thread-42#7>", "<thread-13#8>", "<thread-13#9>", "<thread-13#9>", "<thread-13#3>")
     )
 
-    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    net.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     assert.networks.equal(net.expected, net.combined)
 
@@ -605,6 +609,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
 
     ## configurations
     proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.conf$update.value("issues.from.source", c("jira", "github"))
     proj.conf$update.value("commits.filter.base.artifact", FALSE)
     net.conf.cochange = NetworkConf$new()
     net.conf.cochange$update.values(updated.values = list(author.relation = "cochange", artifact.relation = "cochange"))
@@ -715,7 +720,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
                       "<thread-13#9>", "<thread-13#3>")
     )
 
-    net.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    net.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
 
     assert.networks.equal(net.expected, net.combined)
 
