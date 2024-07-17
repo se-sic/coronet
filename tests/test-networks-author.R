@@ -720,6 +720,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         base.func = c("test2.c::test2", "test2.c::test2",
                       "test3.c::test_function", "test2.c::test2"),
         base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        artifact.type = c("CommitInteraction", "CommitInteraction", "CommitInteraction", "CommitInteraction"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")

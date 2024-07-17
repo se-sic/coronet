@@ -248,6 +248,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
             colnames(edges)[4] = "hash"
+            edges = cbind(edges, data.frame(artifact.type = c("CommitInteraction")))
             author.net.data = list(vertices = vertices, edges = edges)
             ## construct the network
             author.net = construct.network.from.edge.list(
@@ -401,6 +402,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
+              edges = cbind(edges, data.frame(artifact.type = c("File")))
               colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else if (proj.conf.artifact == "function") {
              ## change the vertices to the functions from the commit-interaction data
@@ -410,6 +412,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
              edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                "base.file", "base.author", "interacting.author")]
+             edges = cbind(edges, data.frame(artifact.type = c("Function")))
              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else {
             ## If neither 'function' nor 'file' was configured, send a warning
@@ -705,6 +708,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set the commits as the 'to' and 'from' of the network and order the dataframe
             edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
                               "file", "base.author", "base.func", "base.file")]
+            edges = cbind(edges, data.frame(artifact.type = c("CommitInteraction")))
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
             commit.net.data = list(vertices = vertices, edges = edges)
@@ -1360,7 +1364,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     ## if edges in a commit network contain 'date', 'hash' or 'file' attributes, remove them
     ## as they belong to commits, which are the vertices in commit networks
     if (network.type == "commit") {
-        cols.which = which(edge.attributes %in% c("date", "hash", "file"))
+        cols.which = which(edge.attributes %in% c("hash", "file"))
         edge.attributes <- edge.attributes[-cols.which]
     }
 
@@ -1391,7 +1395,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         return(list(
         vertices = data.frame(
             name = unique(vertices.processed),
-            date = unique(vertices.dates.processed)
+            date = get.date.from.string(unique(vertices.dates.processed))
         ),
         edges = edge.list
         ))
@@ -1427,6 +1431,10 @@ construct.edges.temporal.order = function(set, network.conf, edge.attributes, ke
         logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
                          attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
         return(NULL)
+    }
+
+    if (network.type == "commit") {
+        set = set[order(set[["date"]]), ]
     }
 
     ## queue of already processed artifacts

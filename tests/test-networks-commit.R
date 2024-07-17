@@ -76,6 +76,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         base.func = c("test2.c::test2", "test2.c::test2",
                       "test3.c::test_function", "test2.c::test2"),
         base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        artifact.type = c("CommitInteraction", "CommitInteraction", "CommitInteraction", "CommitInteraction"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
@@ -105,17 +106,18 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "0a1a5c523d835459c42f33e863623138555e2526",
                  "1143db502761379c2bfcecc2007fc34282e7ee61"),
-        date = c("2016-07-12 15:58:59",
-                 "2016-07-12 16:00:45",
-                 "2016-07-12 16:05:41",
-                 "2016-07-12 16:06:32",
-                 "2016-07-12 16:06:10"),
+        date = get.date.from.string(c("2016-07-12 15:58:59",
+                                      "2016-07-12 16:00:45",
+                                      "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:32",
+                                      "2016-07-12 16:06:10")),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
     edges = data.frame(
         from = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "3a0ed78458b3976243db6829f63eba3eead26774"),
         to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:32")),
         artifact.type = c("File", "File"),
         artifact = c("test.c", "test2.c"),
         weight = c(1, 1),
@@ -124,7 +126,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         )
 
     if (test.directed) {
-        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
@@ -153,11 +155,11 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "0a1a5c523d835459c42f33e863623138555e2526",
                  "1143db502761379c2bfcecc2007fc34282e7ee61"),
-        date = c("2016-07-12 15:58:59",
-                 "2016-07-12 16:00:45",
-                 "2016-07-12 16:05:41",
-                 "2016-07-12 16:06:32",
-                 "2016-07-12 16:06:10"),
+        date = get.date.from.string(c("2016-07-12 15:58:59",
+                                      "2016-07-12 16:00:45",
+                                      "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:32",
+                                      "2016-07-12 16:06:10")),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
@@ -168,6 +170,8 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
                "3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526",
                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:32", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
         artifact.type = c("Function", "Function", "Function", "Function", "Function", "Function"),
         artifact = c("File_Level", "File_Level", "File_Level", "File_Level", "File_Level", "File_Level"),
         weight = c(1, 1, 1, 1, 1, 1),
@@ -177,7 +181,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         )
 
     if (test.directed) {
-        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
@@ -206,11 +210,11 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "0a1a5c523d835459c42f33e863623138555e2526"),
-        date = c("2016-07-12 15:58:59",
-                 "2016-07-12 16:00:45",
-                 "2016-07-12 16:05:41",
-                 "2016-07-12 16:06:10",
-                 "2016-07-12 16:06:32"),
+        date = get.date.from.string(c("2016-07-12 15:58:59",
+                                      "2016-07-12 16:00:45",
+                                      "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:10",
+                                      "2016-07-12 16:06:32")),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT
         )
@@ -219,6 +223,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
         to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
         artifact.type = c("Feature", "Feature", "Feature", "Feature"),
         artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
         weight = c(1, 1, 1, 1),
@@ -227,7 +232,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         )
 
     if (test.directed) {
-        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7), ]
+        edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
 
@@ -257,11 +262,11 @@ test_that("Adding vertex attributes to a commit network", {
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "0a1a5c523d835459c42f33e863623138555e2526"),
-        date = c("2016-07-12 15:58:59",
-                 "2016-07-12 16:00:45",
-                 "2016-07-12 16:05:41",
-                 "2016-07-12 16:06:10",
-                 "2016-07-12 16:06:32"),
+        date = get.date.from.string(c("2016-07-12 15:58:59",
+                                      "2016-07-12 16:00:45",
+                                      "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:10",
+                                      "2016-07-12 16:06:32")),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT,
         author.name = c("Björn",
@@ -275,6 +280,7 @@ test_that("Adding vertex attributes to a commit network", {
                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
         to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
         artifact.type = c("Feature", "Feature", "Feature", "Feature"),
         artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
         weight = c(1, 1, 1, 1),
@@ -295,11 +301,11 @@ test_that("Adding vertex attributes to a commit network", {
                  "3a0ed78458b3976243db6829f63eba3eead26774",
                  "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "0a1a5c523d835459c42f33e863623138555e2526"),
-        date = c("2016-07-12 15:58:59",
-                 "2016-07-12 16:00:45",
-                 "2016-07-12 16:05:41",
-                 "2016-07-12 16:06:10",
-                 "2016-07-12 16:06:32"),
+        date = get.date.from.string(c("2016-07-12 15:58:59",
+                                      "2016-07-12 16:00:45",
+                                      "2016-07-12 16:05:41",
+                                      "2016-07-12 16:06:10",
+                                      "2016-07-12 16:06:32")),
         kind = TYPE.COMMIT,
         type = TYPE.COMMIT,
         author.name = c("Björn",
@@ -315,6 +321,7 @@ test_that("Adding vertex attributes to a commit network", {
                  "3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
         to = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
                "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
+        date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
         artifact.type = c("Feature", "Feature", "Feature", "Feature"),
         artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
         weight = c(1, 1, 1, 1),

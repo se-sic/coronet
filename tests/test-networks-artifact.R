@@ -252,6 +252,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
                       "test3.c::test_function", "test2.c::test2"),
         base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
+        artifact.type = c("File", "File", "File", "File"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
@@ -301,6 +302,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
         base.author = c("Olaf", "Thomas", "Karl", "Thomas"),
         interacting.author = c("Thomas", "Karl", "Olaf", "Thomas"),
+        artifact.type = c("Function", "Function", "Function", "Function"),
         weight = c(1, 1, 1, 1),
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
