@@ -863,14 +863,15 @@ create.empty.pasta.list = function() {
 COMMIT.INTERACTION.LIST.COLUMNS = c(
     "func", "commit.hash", "file",
     "base.hash", "base.func", "base.file",
-    "base.author", "interacting.author"
+    "base.author", "interacting.author",
+    "artifact.type"
 )
 
 ## declare the datatype for each column in the constant 'COMMIT.INTERACTION.LIST.COLUMNS'
 COMMIT.INTERACTION.LIST.DATA.TYPES = c(
     "character", "character", "character",
     "character", "character", "character",
-    "character", "character"
+    "character", "character", "character"
 )
 
 COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME = "GLOBAL"
@@ -952,6 +953,7 @@ read.commit.interactions = function(data.path = NULL) {
         ## Author data will be merged from commit data in \code{update.commit.interactions}.
         interactions["base.author"] = NA_character_
         interactions["interacting.author"] = NA_character_
+        interactions["artifact.type"] = "CommitInteraction"
         return(interactions)
     })))
 
