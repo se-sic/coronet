@@ -152,7 +152,7 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 #' @param default.value the dafault value of the attribute
 #'                      if it does not occur in the commit data
 #'
-#' @return a networks with new vertex attribute
+#' @return a network with new vertex attribute
 add.vertex.attribute.commit.network = function(network, project.data,
                                                attr.name, default.value) {
     # get the commit data and extract the required data
@@ -160,9 +160,8 @@ add.vertex.attribute.commit.network = function(network, project.data,
     hashes = commit.data[["hash"]]
     attribute = commit.data[[attr.name]]
     attribute.values = c()
-    for (hash.num in seq_along(igraph::V(network))) {
-        # for each vertex, finc the position in the data frame
-        hash = igraph::V(network)[hash.num]$name
+    for (hash in igraph::V(network)$name) {
+        # for each vertex, find the position in the data frame
         hash.index = match(hash, hashes, nomatch = NA)
 
         value = c()

@@ -248,7 +248,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
             colnames(edges)[4] = "hash"
-            edges = cbind(edges, data.frame(artifact.type = c("CommitInteraction")))
+            edges[["artifact.type"]] = "CommitInteraction"
             author.net.data = list(vertices = vertices, edges = edges)
             ## construct the network
             author.net = construct.network.from.edge.list(
@@ -402,7 +402,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
-              edges = cbind(edges, data.frame(artifact.type = c("File")))
+              edges[["artifact.type"]] = "File"
               colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else if (proj.conf.artifact == "function") {
              ## change the vertices to the functions from the commit-interaction data
@@ -412,7 +412,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
              edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                "base.file", "base.author", "interacting.author")]
-             edges = cbind(edges, data.frame(artifact.type = c("Function")))
+             edges[["artifact.type"]] = "Function"
              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else {
             ## If neither 'function' nor 'file' was configured, send a warning
@@ -698,7 +698,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(private$commit.network.commit.interaction)
             }
 
-            ## get the authors that appear in the commit-interaction data as the vertices of the network
+            ## get the hashes that appear in the commit-interaction data as the vertices of the network
             vertices = unique(c(private$proj.data$get.commit.interactions()[["base.hash"]],
                                 private$proj.data$get.commit.interactions()[["commit.hash"]]))
             vertices = data.frame(name = vertices)
@@ -708,7 +708,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set the commits as the 'to' and 'from' of the network and order the dataframe
             edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
                               "file", "base.author", "base.func", "base.file")]
-            edges = cbind(edges, data.frame(artifact.type = c("CommitInteraction")))
+            edges[["artifact.type"]] = "CommitInteraction"
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
             commit.net.data = list(vertices = vertices, edges = edges)
@@ -1391,7 +1391,8 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     logging::logdebug("construct.edge.list.from.key.value.list: finished.")
 
     if (network.type == "commit") {
-        vertices.dates.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "vertices.dates.processed")) )
+        vertices.dates.processed = unlist( parallel::mclapply(edge.list.data,
+                                                              function(data) attr(data, "vertices.dates.processed")) )
         return(list(
         vertices = data.frame(
             name = unique(vertices.processed),
@@ -1412,10 +1413,10 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
 #' Constructs edge list from the given key value list respecting temporal order.
 #' Helper method which is called by 'construct.edge.list.by.key.value.list'.
 #'
-#' @param list the given key value list
+#' @param set the given key value list
 #' @param network.conf the network configuration
 #' @param edge.attributes the attributes that should be on the edges of the network
-#' @param keys the keays of the key value list
+#' @param keys the keys of the key value list
 #' @param keys.number the amount of keys in the key value list
 #' @param network.type the type of network that should be created
 #'
@@ -1458,12 +1459,13 @@ construct.edges.temporal.order = function(set, network.conf, edge.attributes, ke
         ## construct edges
         combinations = c()
         if (network.type == "commit") {
-            combinations = expand.grid(item.vertex[["commit"]], vertices.processed.set[["commit"]], stringsAsFactors = FALSE)
+            combinations = expand.grid(item.vertex[["commit"]],
+                                       vertices.processed.set[["commit"]], stringsAsFactors = FALSE)
         } else {
             combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
         }
 
-        if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
+        if (nrow(combinations) > 0 && nrow(item.edge.attrs) == 1) {
             combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
         }
         edge.list.set = rbind(edge.list.set, combinations) # add to edge list
@@ -1492,10 +1494,10 @@ construct.edges.temporal.order = function(set, network.conf, edge.attributes, ke
 #' Constructs edge list from the given key value list not respecting temporal order.
 #' Helper method which is called by 'construct.edge.list.by.key.value.list'.
 #'
-#' @param list the given key value list
+#' @param set the given key value list
 #' @param network.conf the network configuration
 #' @param edge.attributes the attributes that should be on the edges of the network
-#' @param keys the keays of the key value list
+#' @param keys the keys of the key value list
 #' @param keys.number the amount of keys in the key value list
 #'
 #' @return the data for the edge list
