@@ -149,8 +149,8 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
 #' @param network the commit network
 #' @param project.data the project data from which to extract the values
 #' @param attr.name the name of the attribute
-#' @param default.value the dafault value of the attribute
-#'                      if it does not occur in the commit data
+#' @param default.value the default value that is used if the current hash
+#'                      is not contained in the commit data at all
 #'
 #' @return a network with new vertex attribute
 add.vertex.attribute.commit.network = function(network, project.data,
@@ -174,7 +174,6 @@ add.vertex.attribute.commit.network = function(network, project.data,
         attribute.values = c(attribute.values, value)
     }
     net.with.attr = igraph::set.vertex.attribute(network, attr.name, value = attribute.values)
-
 }
 
 

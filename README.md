@@ -234,6 +234,11 @@ There are four types of networks that can be built using this library: author ne
      * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`. The relation also describes which kinds of artifacts are represented as vertices in the network. (For example, if "mail" is selected as `artifact.relation`, only mail-thread vertices are included in the network.)
 
+- Commit networks
+     * The vertices in a commit network denote any commits in the data. All vertices
+     are uniquely identifyable by the hash of the commit. There are only unipartite edges among commits in this type of network.
+     * The relations (i.e., the edges meaning and source) can be configured using the [`networkConf`](#networkconf) attribute `commit.relation`. The relation also describes the type of data used for network construction (`cochange` uses commit data, `commit.interaction` uses commit interaction data).
+
 - Bipartite networks
      * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
@@ -249,6 +254,7 @@ Relations determine which information is used to construct edges among the verti
 - `cochange`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who change the same source-code artifact are connected with an edge.
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts that are concurrently changed in the same commit are connected with an edge.
+    * For commit networks (configured vie `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected if they change the same artifact.
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits.
 
 - `mail`
@@ -269,6 +275,7 @@ Relations determine which information is used to construct edges among the verti
 - `commit.interaction`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to interacting commits are connected with an edge.
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that occur in the artifacts.
+    * For commit networks (configured via `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected when they interact in the commit interaction data.
     * This relation does not apply for bipartite networks.
 
 #### Edge-construction algorithms for author networks

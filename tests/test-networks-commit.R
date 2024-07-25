@@ -83,6 +83,9 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         )
     network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
     expect_true(igraph::identical_graphs(network.built, network))
+
+    network.new.attr = add.vertex.attribute.commit.network(network.built, proj.data,  "deleted.lines", "NO_DATA")
+    expect_identical(igraph::V(network.new.attr)$deleted.lines, c("0", "0","0", "NO_DATA", "0", "NO_DATA"))
 }, patrick::cases(
     "directed: FALSE" = list(test.directed = FALSE),
     "directed: TRUE" = list(test.directed = TRUE)

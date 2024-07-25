@@ -505,15 +505,15 @@ test_that("Read the commit-interactions data.", {
     commit.interactions.data.read = read.commit.interactions(proj.conf$get.value("datapath"))
     ## build the expected data.frame
 
-    commit.interactions.data.expected = data.frame(matrix(nrow = 4, ncol = 8))
+    commit.interactions.data.expected = data.frame(matrix(nrow = 4, ncol = 9))
     ## assure that the correct type is used
-    for(i in seq_len(8)) {
+    for(i in seq_len(ncol(commit.interactions.data.expected))) {
         commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
     }
     ## set everything except for authors as expected
     colnames(commit.interactions.data.expected) = c("func", "commit.hash", "file", "base.hash",
                                                     "base.func", "base.file", "base.author",
-                                                    "interacting.author")
+                                                    "interacting.author", "artifact.type")
     commit.interactions.data.expected[["commit.hash"]] =
                                                         c("5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                           "0a1a5c523d835459c42f33e863623138555e2526",
@@ -529,6 +529,8 @@ test_that("Read the commit-interactions data.", {
     commit.interactions.data.expected[["base.func"]] = c("test3.c::test_function", "test2.c::test2",
                                                          "test2.c::test2", "test2.c::test2")
     commit.interactions.data.expected[["base.file"]] = c("test3.c", "test2.c", "test2.c", "test2.c")
+    commit.interactions.data.expected[["artifact.type"]] = c("CommitInteraction", "CommitInteraction",
+                                                             "CommitInteraction", "CommitInteraction")
     ## check the results
     expect_identical(commit.interactions.data.read, commit.interactions.data.expected,
                      info = "commit interaction data.")
@@ -543,11 +545,11 @@ test_that("Read the empty commit-interactions data.", {
     commit.interactions.data.read = read.commit.interactions("./codeface-data/results/testing/
                                                              test_empty_proximity/proximity")
     ## build the expected data.frame
-    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 8))
+    commit.interactions.data.expected = data.frame(matrix(nrow = 0, ncol = 9))
     colnames(commit.interactions.data.expected) = c("func", "commit.hash", "file",
                                                     "base.hash", "base.func", "base.file",
-                                                    "base.author", "interacting.author")
-    for(i in seq_len(8)) {
+                                                    "base.author", "interacting.author", "artifact.type")
+    for(i in seq_len(ncol(commit.interactions.data.expected))) {
         commit.interactions.data.expected[[i]] = as.character(commit.interactions.data.expected[[i]])
     }
     ## check the results

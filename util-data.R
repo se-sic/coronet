@@ -415,7 +415,10 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' This method should be called whenever the field \code{commit.interactions} is changed.
         update.commit.interactions = function() {
-            if (self$is.data.source.cached("commit.interactions")) {
+            stacktrace = get.stacktrace(sys.calls())
+            caller = get.second.last.element(stacktrace)
+            if (self$is.data.source.cached("commit.interactions") &&
+                (is.na(caller)|| paste(caller, collapse = " ") != "self$set.commits(commit.data)")) {
                 if (!self$is.data.source.cached("commits.unfiltered")) {
                     self$get.commits()
                 }
@@ -2143,8 +2146,6 @@ ProjectData = R6::R6Class("ProjectData",
             return(mylist)
         },
 
-        ## * * processed data ----------------------------------------------
-
         #' Group the commits of the given \code{data.source} by the given \code{group.column}.
         #' For each group, the column \code{"hash"} is duplicated and prepended to each
         #' group's data as first column (see below for details).
@@ -2162,12 +2163,11 @@ ProjectData = R6::R6Class("ProjectData",
         #'         as first column (with name \code{"data.vertices"})
         #'
         #' @seealso ProjectData$group.data.by.column
-        group.commits.by.data.column = function(data.source = c("commits", "mails", "issues"),
-                                                group.column = "artifact") {
+        group.commits.by.data.column = function(group.column = "artifact") {
             logging::loginfo("Grouping commits by data column.")
 
             ## store the commits per group that is determined by 'group.column'
-            mylist = self$group.data.by.column(data.source, group.column, "hash")
+            mylist = self$group.data.by.column("commits", group.column, "hash")
 
             return(mylist)
         },
