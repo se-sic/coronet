@@ -630,7 +630,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `author.relation`
     * The relation(s) among authors, encoded as edges in an author network
     * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
-    * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
+    * possible values: [*`"mail"`*, `"cochange"`, `"issue"`, `commit.interaction`]
 - `author.directed`
     * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
@@ -649,7 +649,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `artifact.relation`
     * The relation(s) among artifacts, encoded as edges in an artifact network
     * **Note**: Additionally, this relation configures also the author--artifact relation in bipartite and multi networks!
-    * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
+    * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`, `commit.interaction`]
 - `artifact.directed`
     * The directedness of edges in an artifact network
     * **Note**: This parameter does only affect the `issue` relation, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed. For the `mail`, we currently do not have data available to exhibit edge information.

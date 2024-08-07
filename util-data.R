@@ -415,11 +415,13 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' This method should be called whenever the field \code{commit.interactions} is changed.
         update.commit.interactions = function() {
-            stacktrace = get.stacktrace(sys.calls())
-            caller = get.second.last.element(stacktrace)
-            if (self$is.data.source.cached("commit.interactions") &&
-                (is.na(caller)|| paste(caller, collapse = " ") != "self$set.commits(commit.data)")) {
-                if (!self$is.data.source.cached("commits.unfiltered")) {
+            if (self$is.data.source.cached("commit.interactions")) {
+                ## check if caller was 'set.commits'. If so, or if commits are already filtered,
+                ## do not get the commits again.
+                stacktrace = get.stacktrace(sys.calls())
+                caller = get.second.last.element(stacktrace)
+                if (!self$is.data.source.cached("commits.unfiltered") &&
+                    (is.na(caller) || paste(caller, collapse = " ") != "self$set.commits(commit.data)")) {
                     self$get.commits()
                 }
 

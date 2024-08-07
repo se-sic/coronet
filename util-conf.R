@@ -63,6 +63,8 @@ ARTIFACT.CODEFACE = list(
     "file"     = "File"
 )
 
+ARTIFACT.COMMIT.INTERACTION = "CommitInteraction"
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Conf --------------------------------------------------------------------

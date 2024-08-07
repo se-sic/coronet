@@ -249,7 +249,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             colnames(edges)[2] = "from"
             colnames(edges)[4] = "hash"
             if (nrow(edges) > 0) {
-                edges[["artifact.type"]] = "CommitInteraction"
+                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
             }
             author.net.data = list(vertices = vertices, edges = edges)
             ## construct the network
@@ -715,7 +715,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
                               "file", "base.author", "base.func", "base.file")]
             if (nrow(edges) > 0) {
-                edges[["artifact.type"]] = "CommitInteraction"
+                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
             }
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
