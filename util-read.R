@@ -953,7 +953,7 @@ read.commit.interactions = function(data.path = NULL) {
         ## Author data will be merged from commit data in \code{update.commit.interactions}.
         interactions["base.author"] = NA_character_
         interactions["interacting.author"] = NA_character_
-        interactions["artifact.type"] = "CommitInteraction"
+        interactions["artifact.type"] = ARTIFACT.COMMIT.INTERACTION
         return(interactions)
     })))
 
