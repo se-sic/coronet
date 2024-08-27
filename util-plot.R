@@ -125,13 +125,13 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
     names(PLOT.VERTEX.TYPES) = c(TYPE.AUTHOR, TYPE.ARTIFACT)
 
     ## remove loops because of weird behavior when plotting
-    network = igraph::delete_edges(network, igraph::E(network)[igraph::is.loop(network)])
+    network = igraph::delete_edges(network, igraph::E(network)[igraph::which_loop(network)])
 
     ## fix the type attributes (add new ones, also named)
     network = plot.fix.type.attributes(network)
 
     ## set igraph network layout if no layout is set yet
-    if (!("layout" %in% igraph::list.graph.attributes(network))) {
+    if (!("layout" %in% igraph::graph_attr_names(network))) {
         network = igraph::set_graph_attr(network, "layout", "kk")
     }
     layout.algorithm = igraph::graph_attr(network, "layout")
