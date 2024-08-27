@@ -1993,6 +1993,26 @@ delete.isolates = function(network) {
     return(network.no.isolates)
 }
 
+#' Remove duplicate edges from the given network.
+#'
+#' Keep exactly one edge from all equivalence classes of edges over identity.
+#' This function retains all set network, vertex, and edge attributes.
+#'
+#' @param network the given network
+#'
+#' @return the simplified network
+remove.duplicate.edges = function(network) {
+
+    logging::logdebug("remove.duplicate.edges: starting.")
+
+    ## remove all duplicates
+    edges = igraph::as_data_frame(network, "edges")
+    network = igraph::delete_edges(network, which(duplicated(edges)))
+
+    logging::logdebug("remove.duplicate.edges: finished.")
+    return(network)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Multi-network views -----------------------------------------------------
