@@ -317,6 +317,58 @@ test_that("Remove isolated authors given a specific edge type", {
 
 })
 
+test_that("Remove duplicate edges", {
+
+    ##
+    ## Remove duplicate edges from a network
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list("author.respect.temporal.order" = TRUE, author.directed = FALSE))
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+
+    ## construct data for expected network
+    edges = data.frame(comb.1. = c("Björn", "Olaf", rep("Hans", 5)),
+                       comb.2. = c("Olaf", "Thomas", rep("Hans", 5)),
+                       date = get.date.from.string(c("2016-07-12 15:58:50", "2016-07-12 16:05:37",
+                                                     "2010-07-12 12:05:41", "2010-07-12 12:05:42",
+                                                     "2010-07-12 12:05:43", "2010-07-12 12:05:44",
+                                                     "2010-07-12 12:05:45")),
+                       artifact.type = rep("Mail", 7),
+                       message.id = c("<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
+                                      "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
+                                      "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
+                                      "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>",
+                                      "<hans6@mail.gmail.com>"),
+                       thread = c("<thread-13#8>", "<thread-13#9>", rep("<thread-42#6>", 5)),
+                       weight = rep(1, 7),
+                       type = rep(TYPE.EDGES.INTRA, 7),
+                       relation = rep("mail", 7))
+    vertices = data.frame(name = c("Björn", "udo", "Olaf", "Thomas", "Fritz fritz@example.org", "georg", "Hans"),
+                          kind = rep("Author", 7),
+                          type = rep("Author", 7))
+
+    ## build expected network
+    network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+
+    ## build network with unique edges
+    network = network.builder$get.author.network()
+    network.built = remove.duplicate.edges(network)
+
+    assert.networks.equal(network.expected, network.built)
+
+    ##
+    ## Attempt to remove non-existent duplicate edges should not change anything
+    ##
+
+    assert.networks.equal(network.built, remove.duplicate.edges(network.built))
+
+})
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Merge -------------------------------------------------------------------
