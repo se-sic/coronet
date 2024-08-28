@@ -44,6 +44,7 @@ requireNamespace("lubridate") # for date conversion
 ## vertex types
 TYPE.AUTHOR = "Author"
 TYPE.ARTIFACT = "Artifact"
+TYPE.COMMIT = "Commit"
 
 ## edge types
 TYPE.EDGES.INTRA = "Unipartite"
@@ -122,6 +123,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifacts.network.callgraph = NULL, # igraph
         artifacts.network.mail = NULL, # igraph
         artifacts.network.issue = NULL, # igraph
+        commits.network.commit.interaction = NULL, #igraph
+        commits.network.cochange = NULL, #igraph
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -245,6 +248,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
             colnames(edges)[4] = "hash"
+            if (nrow(edges) > 0) {
+                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+            }
             author.net.data = list(vertices = vertices, edges = edges)
             ## construct the network
             author.net = construct.network.from.edge.list(
@@ -352,7 +358,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.conf = private$network.conf,
                 directed = FALSE,
                 respect.temporal.order = TRUE,
-                artifact.edges = TRUE
+                network.type = "artifact"
             )
 
             ## construct network from obtained data
@@ -398,6 +404,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
               edges = edges[, c("file", "base.file", "func", "commit.hash",
                                 "base.hash", "base.func", "base.author", "interacting.author")]
+              if (nrow(edges) > 0) {
+                  edges[["artifact.type"]] = ARTIFACT.CODEFACE[[proj.conf.artifact]]
+              }
               colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else if (proj.conf.artifact == "function") {
              ## change the vertices to the functions from the commit-interaction data
@@ -407,6 +416,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
              edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
                                "base.file", "base.author", "interacting.author")]
+             if (nrow(edges) > 0) {
+                 edges[["artifact.type"]] = ARTIFACT.CODEFACE[[proj.conf.artifact]]
+             }
              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
           } else {
             ## If neither 'function' nor 'file' was configured, send a warning
@@ -679,6 +691,92 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(artifacts.net)
         },
 
+        #' Build and get the commit network with commit-interactions as the relation.
+        #'
+        #'  @return the commit-interaction commit network
+        get.commit.network.commit.interaction = function() {
+
+            logging::logdebug("get.commit.network.commit.interaction: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$commits.network.commit.interaction)) {
+                logging::logdebug("get.commit.network.commit.interaction: finished. (already existing)")
+                return(private$commits.network.commit.interaction)
+            }
+
+            ## get the hashes that appear in the commit-interaction data as the vertices of the network
+            vertices = unique(c(private$proj.data$get.commit.interactions()[["base.hash"]],
+                                private$proj.data$get.commit.interactions()[["commit.hash"]]))
+            vertices = data.frame(name = vertices)
+
+            ## get the commit-interaction data as the edge data of the network
+            edges = private$proj.data$get.commit.interactions()
+            ## set the commits as the 'to' and 'from' of the network and order the dataframe
+            edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
+                              "file", "base.author", "base.func", "base.file")]
+            if (nrow(edges) > 0) {
+                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+            }
+            colnames(edges)[1] = "to"
+            colnames(edges)[2] = "from"
+            commit.net.data = list(vertices = vertices, edges = edges)
+            ## construct the network
+            commit.net = construct.network.from.edge.list(
+                commit.net.data[["vertices"]],
+                commit.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("commit.directed"),
+                available.edge.attributes = private$proj.data$
+                                            get.data.columns.for.data.source("commit.interactions")
+            )
+
+            private$commits.network.commit.interaction = commit.net
+            logging::logdebug("get.commit.network.commit.interaction: finished.")
+
+            return(commit.net)
+        },
+
+        #' Get the cochange-based commit network,
+        #' If it does not already exist build it first.
+        #'
+        #' @return the commit network with cochange realtion
+        get.commit.network.cochange = function() {
+
+            logging::logdebug("get.commit.network.cochange: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$commits.network.cochange)) {
+                logging::logdebug("get.commit.network.cochange: finished. (already existing)")
+                return(private$commits.network.cochange)
+            }
+
+            ## construct edge list based on commit--artifact data
+            commit.net.data.raw = private$proj.data$group.commits.by.data.column("artifact")
+
+            commit.net.data = construct.edge.list.from.key.value.list(
+                commit.net.data.raw,
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("commit.directed"),
+                respect.temporal.order = TRUE,
+                network.type = "commit"
+            )
+
+            ## construct network from obtained data
+            commit.net = construct.network.from.edge.list(
+                commit.net.data[["vertices"]],
+                commit.net.data[["edges"]],
+                network.conf = private$network.conf,
+                directed = private$network.conf$get.value("commit.directed"),
+                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            )
+
+            ## store network
+            private$commits.network.cochange = commit.net
+            logging::logdebug("get.commit.network.cochange: finished.")
+
+            return(commit.net)
+        },
+
         ## * * bipartite relations ------------------------------------------
 
         #' Get the key-value data for the bipartite relations,
@@ -753,6 +851,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifacts.network.cochange = NULL
             private$artifacts.network.issue = NULL
             private$artifacts.network.mail = NULL
+            private$commits.network.commit.interaction = NULL
+            private$commits.network.cochange = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
@@ -929,6 +1029,48 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(net)
         },
 
+        #' Get the generic commit network.
+        #'
+        #' @return the generic commit network
+        get.commit.network = function() {
+            logging::loginfo("Constructing commit network.")
+
+            ## construct network
+            relations = private$network.conf$get.value("commit.relation")
+            networks = lapply(relations, function(relation) {
+                network = switch(
+                    relation,
+                    cochange = private$get.commit.network.cochange(),
+                    commit.interaction = private$get.commit.network.commit.interaction(),
+                    stop(sprintf("The commit relation '%s' does not exist.", relation))
+                )
+
+                ## set edge attributes on all edges
+                igraph::E(network)$type = TYPE.EDGES.INTRA
+                igraph::E(network)$relation = relation
+
+                return(network)
+            })
+            net = merge.networks(networks)
+
+            ## set vertex and edge attributes for identifaction
+            igraph::V(net)$kind = TYPE.COMMIT
+            igraph::V(net)$type = TYPE.COMMIT
+
+            ## simplify network if wanted
+            if (private$network.conf$get.value("simplify")) {
+                net = simplify.network(net, simplify.multiple.relations =
+                                            private$network.conf$get.value("simplify.multiple.relations"))
+            }
+
+            ## add range attribute for later analysis (if available)
+            if ("RangeData" %in% class(private$proj.data)) {
+                attr(net, "range") = private$proj.data$get.range()
+            }
+
+            return(net)
+        },
+
         #' Get the (real) bipartite network.
         #'
         #' @return the bipartite network
@@ -1050,12 +1192,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             authors.net = self$get.author.network()
             ## artifact relation
             artifacts.net = self$get.artifact.network()
+            ## commit relation
+            commit.net = self$get.commit.network()
 
             return(list(
                 "authors.to.artifacts" = authors.to.artifacts,
                 "bipartite.net" = bipartite.net,
                 "authors.net" = authors.net,
-                "artifacts.net" = artifacts.net
+                "artifacts.net" = artifacts.net,
+                "commits.net" = commit.net
             ))
         },
 
@@ -1185,14 +1330,17 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 #'                               i.e., whether to only add edges from the later event to the previous one.
 #'                               If \code{NA} is passed, the default value is taken.
 #'                               [default: directed]
-#' @param artifact.edges whether the key value data represents edges in an artifact network based
-#'                       on the cochange relation
-#'                       [default: FALSE]
+#' @param network.type the type of network for which the key value data is to be used as edges
+#'                     (one out of "author", "artifact", or "commit")[default: "author"]
 #'
 #' @return a list of two data.frames named 'vertices' and 'edges' (compatible with return value
 #'         of \code{igraph::as.data.frame})
 construct.edge.list.from.key.value.list = function(list, network.conf, directed = FALSE,
-                                                   respect.temporal.order = directed, artifact.edges = FALSE) {
+                                                   respect.temporal.order = directed,
+                                                   network.type = c("author", "artifact", "commit")) {
+
+    network.type = match.arg.or.default(network.type, default = "author", several.ok = FALSE)
+
     logging::loginfo("Create edges.")
     logging::logdebug("construct.edge.list.from.key.value.list: starting.")
 
@@ -1214,7 +1362,7 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
     ## replace it with the \code{author.name} attribute as artifacts cannot cause
     ## edges in artifact networks, authors can
     edge.attributes = network.conf$get.value("edge.attributes")
-    if (artifact.edges) {
+    if (network.type == "artifact") {
         artifact.index = match("artifact", edge.attributes, nomatch = NA)
         if (!is.na(artifact.index)) {
             edge.attributes = edge.attributes[-artifact.index]
@@ -1222,138 +1370,212 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         }
     }
 
+    ## if edges in a commit network contain 'hash' or 'file' attributes, remove them
+    ## as they belong to commits, which are the vertices in commit networks
+    if (network.type == "commit") {
+        cols.which = which(edge.attributes %in% c("hash", "file"))
+        edge.attributes = edge.attributes[-cols.which]
+    }
+
     if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
-        edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(seq_len(nrow(set)) - 1)
-            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
-                              match(attr(set, "group.name"), keys), keys.number,
-                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
-
-            ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.value("skip.threshold")) {
-                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
-                return(NULL)
-            }
-
-            ## queue of already processed artifacts
-            edge.list.set = data.frame()
-            vertices.processed.set = c()
-
-            ## connect the current item to all previous ones
-            for (item.no in seq_len(nrow(set))) {
-                item = set[item.no, ]
-
-                ## get vertex data
-                item.vertex = item[["data.vertices"]]
-
-                ## get edge attributes
-                cols.which = edge.attributes %in% colnames(item)
-                item.edge.attrs = item[ , edge.attributes[cols.which], drop = FALSE]
-
-                ## construct edges
-                combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
-                if (nrow(combinations) > 0 & nrow(item.edge.attrs) == 1) {
-                    combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
-                }
-                edge.list.set = rbind(edge.list.set, combinations) # add to edge list
-
-                ## mark current item as processed
-                vertices.processed.set = c(vertices.processed.set, item.vertex)
-            }
-
-            ## store set of processed vertices
-            attr(edge.list.set, "vertices.processed") = vertices.processed.set
-
-            logging::logdebug("Constructing edges for %s '%s': finished.", attr(set, "group.type"), attr(set, "group.name"))
-
-            return(edge.list.set)
-        })
+        edge.list.data = parallel::mclapply(list, construct.edges.temporal.order, network.conf,
+                                            edge.attributes, keys, keys.number, network.type)
 
         edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "vertices.processed")) )
+        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
+            return(attr(data, "vertices.processed"))
+            }))
 
     } else {
 
         ## for all items in the sublists, construct the cartesian product
-        edge.list.data = parallel::mclapply(list, function(set) {
-            number.edges = sum(table(set[["data.vertices"]]) * (dim(table(set[["data.vertices"]])) - 1))
-            logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
-                              match(attr(set, "group.name"), keys), keys.number,
-                              attr(set, "group.type"), attr(set, "group.name"), number.edges)
-
-            ## Skip artifacts with many, many edges
-            if (number.edges > network.conf$get.value("skip.threshold")) {
-                logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
-                                 attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
-                return(NULL)
-            }
-
-            ## get vertex data
-            vertices = unique(set[["data.vertices"]])
-
-            ## break if there is no author
-            if (length(vertices) < 1) {
-                return(NULL)
-            }
-
-            ## if there is only one author, just create the vertex, but no edges
-            if (length(vertices) == 1) {
-                edges = data.frame()
-                attr(edges, "vertices.processed") = vertices # store set of processed vertices
-                return(edges)
-            }
-
-            ## get combinations
-            combinations = combn(vertices, 2) # all unique pairs of authors
-
-            ## construct edge list
-            edges = apply(combinations, 2, function(comb) {
-
-                ## iterate over each of the two data vertices of the current combination to determine the edges
-                ## for which it is the sender of the edge and use the second one as the receiver of the edge
-                edges.by.comb.item = lapply(comb, function(comb.item) {
-                    ## basic edge data
-                    edge = data.frame(from = comb.item, to = comb[comb != comb.item])
-
-                    ## get edge attibutes
-                    edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
-                    cols.which = edge.attributes %in% colnames(edge.attrs)
-                    edge.attrs = edge.attrs[ , edge.attributes[cols.which], drop = FALSE]
-
-                    # add edge attributes to edge list
-                    edgelist = cbind(edge, edge.attrs)
-                    return(edgelist)
-                })
-
-                ## union the edge lists for the combination items
-                edges.union = plyr::rbind.fill(edges.by.comb.item)
-                return(edges.union)
-
-            })
-            edges = plyr::rbind.fill(edges)
-
-            ## store set of processed vertices
-            attr(edges, "vertices.processed") = vertices
-
-            return(edges)
-        })
+        edge.list.data = parallel::mclapply(list, construct.edges.no.temporal.order, network.conf,
+                                            edge.attributes, keys, keys.number)
 
         edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist( parallel::mclapply(edge.list.data, function(data) attr(data, "vertices.processed")) )
+        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
+            return(attr(data, "vertices.processed"))
+        }))
 
     }
 
     logging::logdebug("construct.edge.list.from.key.value.list: finished.")
 
-    return(list(
-        vertices = data.frame(
-            name = unique(vertices.processed)
-        ),
-        edges = edge.list
-    ))
+    if (network.type == "commit") {
+        vertices.dates.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
+            return (attr(data, "vertices.dates.processed"))
+        }))
+        return(list(
+            vertices = data.frame(
+                name = unique(vertices.processed),
+                date = get.date.from.string(unique(vertices.dates.processed))
+            ),
+            edges = edge.list
+        ))
+    } else {
+        return(list(
+            vertices = data.frame(
+                name = unique(vertices.processed)
+            ),
+            edges = edge.list
+        ))
+    }
+}
+
+#' Constructs edge list from the given key value list respecting temporal order.
+#' Helper method which is called by 'construct.edge.list.by.key.value.list'.
+#'
+#' @param set the given key value list
+#' @param network.conf the network configuration
+#' @param edge.attributes the attributes that should be on the edges of the network
+#' @param keys the keys of the key value list
+#' @param keys.number the amount of keys in the key value list
+#' @param network.type the type of network that should be created
+#'
+#' @return the data for the edge list
+construct.edges.temporal.order = function(set, network.conf, edge.attributes, keys, keys.number, network.type) {
+    number.edges = sum(seq_len(nrow(set)) - 1)
+    logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                      match(attr(set, "group.name"), keys), keys.number,
+                      attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+    ## Skip artifacts with many, many edges
+    if (number.edges > network.conf$get.value("skip.threshold")) {
+        logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                         attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
+        return(NULL)
+    }
+
+    if (network.type == "commit") {
+        set = set[order(set[["date"]]), ]
+    }
+
+    ## queue of already processed artifacts
+    edge.list.set = data.frame()
+    vertices.processed.set = c()
+
+    ## connect the current item to all previous ones
+    for (item.no in seq_len(nrow(set))) {
+        item = set[item.no, ]
+
+        ## get vertex data
+        item.vertex = item[["data.vertices"]]
+        if (network.type == "commit") {
+            item.vertex = data.frame(commit = item.vertex, date = get.date.string(item[["date"]]))
+        }
+
+        ## get edge attributes
+        cols.which = edge.attributes %in% colnames(item)
+        item.edge.attrs = item[ , edge.attributes[cols.which], drop = FALSE]
+
+        ## construct edges
+        combinations = c()
+        if (network.type == "commit") {
+            combinations = expand.grid(item.vertex[["commit"]],
+                                       vertices.processed.set[["commit"]], stringsAsFactors = FALSE)
+        } else {
+            combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
+        }
+
+        if (nrow(combinations) > 0 && nrow(item.edge.attrs) == 1) {
+            combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
+        }
+        edge.list.set = rbind(edge.list.set, combinations) # add to edge list
+
+        ## mark current item as processed
+        if (network.type == "commit") {
+            vertices.processed.set = rbind(vertices.processed.set, item.vertex)
+        } else {
+            vertices.processed.set = c(vertices.processed.set, item.vertex)
+        }
+    }
+
+    ## store set of processed vertices
+    if (network.type == "commit") {
+        attr(edge.list.set, "vertices.processed") = vertices.processed.set[["commit"]]
+        attr(edge.list.set, "vertices.dates.processed") = vertices.processed.set[["date"]]
+    } else {
+        attr(edge.list.set, "vertices.processed") = vertices.processed.set
+    }
+
+    logging::logdebug("Constructing edges for %s '%s': finished.", attr(set, "group.type"), attr(set, "group.name"))
+
+    return(edge.list.set)
+}
+
+#' Constructs edge list from the given key value list not respecting temporal order.
+#' Helper method which is called by 'construct.edge.list.by.key.value.list'.
+#'
+#' @param set the given key value list
+#' @param network.conf the network configuration
+#' @param edge.attributes the attributes that should be on the edges of the network
+#' @param keys the keys of the key value list
+#' @param keys.number the amount of keys in the key value list
+#'
+#' @return the data for the edge list
+construct.edges.no.temporal.order = function(set, network.conf, edge.attributes, keys, keys.number) {
+    number.edges = sum(table(set[["data.vertices"]]) * (dim(table(set[["data.vertices"]])) - 1))
+    logging::logdebug("[%s/%s] Constructing edges for %s '%s': starting (%s edges to construct).",
+                      match(attr(set, "group.name"), keys), keys.number,
+                      attr(set, "group.type"), attr(set, "group.name"), number.edges)
+
+    ## Skip artifacts with many, many edges
+    if (number.edges > network.conf$get.value("skip.threshold")) {
+        logging::logwarn("Skipping edges for %s '%s' due to amount (> %s).",
+                         attr(set, "group.type"), attr(set, "group.name"), network.conf$get.value("skip.threshold"))
+        return(NULL)
+    }
+
+    ## get vertex data
+    vertices = unique(set[["data.vertices"]])
+
+    ## break if there is no author
+    if (length(vertices) < 1) {
+        return(NULL)
+    }
+
+    ## if there is only one author, just create the vertex, but no edges
+    if (length(vertices) == 1) {
+        edges = data.frame()
+        attr(edges, "vertices.processed") = vertices # store set of processed vertices
+        return(edges)
+    }
+
+    ## get combinations
+    combinations = combn(vertices, 2) # all unique pairs of authors
+
+    ## construct edge list
+    edges = apply(combinations, 2, function(comb) {
+
+        ## iterate over each of the two data vertices of the current combination to determine the edges
+        ## for which it is the sender of the edge and use the second one as the receiver of the edge
+        edges.by.comb.item = lapply(comb, function(comb.item) {
+            ## basic edge data
+            edge = data.frame(from = comb.item, to = comb[comb != comb.item])
+
+            ## get edge attibutes
+            edge.attrs = set[set[["data.vertices"]] %in% comb.item, ] # get data for current combination item
+            cols.which = edge.attributes %in% colnames(edge.attrs)
+            edge.attrs = edge.attrs[ , edge.attributes[cols.which], drop = FALSE]
+
+            # add edge attributes to edge list
+            edgelist = cbind(edge, edge.attrs)
+            return(edgelist)
+        })
+
+        ## union the edge lists for the combination items
+        edges.union = plyr::rbind.fill(edges.by.comb.item)
+        return(edges.union)
+
+    })
+    edges = plyr::rbind.fill(edges)
+
+    ## store set of processed vertices
+    attr(edges, "vertices.processed") = vertices
+
+    return(edges)
 }
 
 #' Construct a network from the given lists of vertices and edges.

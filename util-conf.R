@@ -63,6 +63,8 @@ ARTIFACT.CODEFACE = list(
     "file"     = "File"
 )
 
+ARTIFACT.COMMIT.INTERACTION = "CommitInteraction"
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Conf --------------------------------------------------------------------
@@ -832,6 +834,18 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                 allowed.number = Inf
             ),
             artifact.directed = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commit.relation = list(
+                default = "cochange",
+                type = "character",
+                allowed = c("cochange", "commit.interaction"),
+                allowed.number = Inf
+            ),
+            commit.directed = list(
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),

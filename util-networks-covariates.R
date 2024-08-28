@@ -22,6 +22,7 @@
 ## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -138,6 +139,41 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
     )
 
     return(nets.with.attr)
+}
+
+#' Utility function to add a vertex attribute from commit data to a commit network.
+#' Attribute name should be a column name of the commit data dataframe.
+#' Default column names can be seen in 'COMMITS.LIST.COLUMNS' in 'util-read.R',
+#' though more might be possible.
+#'
+#' @param network the commit network
+#' @param project.data the project data from which to extract the values
+#' @param attr.name the name of the attribute
+#' @param default.value the default value that is used if the current hash
+#'                      is not contained in the commit data at all
+#'
+#' @return a network with new vertex attribute
+add.vertex.attribute.commit.network = function(network, project.data,
+                                               attr.name, default.value) {
+    # get the commit data and extract the required data
+    commit.data = project.data$get.commits()
+    hashes = commit.data[["hash"]]
+    attribute = commit.data[[attr.name]]
+    attribute.values = c()
+    for (hash in igraph::V(network)$name) {
+        # for each vertex, find the position in the data frame
+        hash.index = match(hash, hashes, nomatch = NA)
+
+        value = c()
+        # extract the correct value from the data or use the default value
+        if (!is.na(hash.index)) {
+            value = attribute[[hash.index]]
+        } else {
+            value = default.value
+        }
+        attribute.values = c(attribute.values, value)
+    }
+    net.with.attr = igraph::set.vertex.attribute(network, attr.name, value = attribute.values)
 }
 
 

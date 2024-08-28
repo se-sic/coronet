@@ -416,7 +416,12 @@ ProjectData = R6::R6Class("ProjectData",
         #' This method should be called whenever the field \code{commit.interactions} is changed.
         update.commit.interactions = function() {
             if (self$is.data.source.cached("commit.interactions")) {
-                if (!self$is.data.source.cached("commits.unfiltered")) {
+                ## check if caller was 'set.commits'. If so, or if commits are already filtered,
+                ## do not get the commits again.
+                stacktrace = get.stacktrace(sys.calls())
+                caller = get.second.last.element(stacktrace)
+                if (!self$is.data.source.cached("commits.unfiltered") &&
+                    (is.na(caller) || paste(caller, collapse = " ") != "self$set.commits(commit.data)")) {
                     self$get.commits()
                 }
 
@@ -2139,6 +2144,32 @@ ProjectData = R6::R6Class("ProjectData",
 
             ## store the authors per group that is determined by 'group.column'
             mylist = self$group.data.by.column(data.source, group.column, "author.name")
+
+            return(mylist)
+        },
+
+        #' Group the commits of the given \code{data.source} by the given \code{group.column}.
+        #' For each group, the column \code{"hash"} is duplicated and prepended to each
+        #' group's data as first column (see below for details).
+        #'
+        #' Example: To obtain the commits that changed the same source-code artifact,
+        #' call \code{group.commits.by.data.column("commits", "artifact")}.
+        #'
+        #' @param data.source The specified data source. One of \code{"commits"},
+        #'                    \code{"mails"}, and \code{"issues"}. [default: "commits"]
+        #' @param group.column The column to group the commits of the given \code{data.source} by
+        #'                     [default: "artifact"]
+        #'
+        #' @return a list mapping each distinct item in \code{group.column} to all corresponding
+        #'         data items from \code{data.source}, with the column \code{"hash"} duplicated
+        #'         as first column (with name \code{"data.vertices"})
+        #'
+        #' @seealso ProjectData$group.data.by.column
+        group.commits.by.data.column = function(group.column = "artifact") {
+            logging::loginfo("Grouping commits by data column.")
+
+            ## store the commits per group that is determined by 'group.column'
+            mylist = self$group.data.by.column("commits", group.column, "hash")
 
             return(mylist)
         },
