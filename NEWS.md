@@ -13,11 +13,13 @@
 - Add the possibility to split data time-based by multiple data sources (PR #261, 1088395f46b84028c8d7c463ca86b5dc38500c26, e1f79fc9e40cd6f41c946be42db364b2101cfe10, 0bb187fec0fd801d7634bf8d5180525770f6ab0b, 371a97ac6ebf3de4fe9360dea79d62e2ed3ef585)
 - Add tests for uncovered functionality in `util-misc.R` and `util-networks.R` (PR #264, ff30f3238b1bf2539280d0d055a5d925c197c271, af80551d0615a49b86e45ff596bd75941ee88f91)
 - Add commit network as a new type of network. It uses commits as vertices and connects them either via cochange or commit interactions. This includes adding new config parameters and the function `add.vertex.attribute.commit.network` for adding vertex attributes to a commit network (PR #263, ab73271781e8e9a0715f784936df4b371d64c338, ab73271781e8e9a0715f784936df4b371d64c338, cd9a930fcb54ff465c2a5a7c43cfe82ac15c134d)
+- Add `remove.duplicate.edges` function that takes a network as input and conflates identical edges (PR #268, d9a4be417b340812b744f59398ba6460ba527e1c, 0c2f47c4fea6f5f2f582c0259f8cf23af985058a, c6e90dd9cb462232563f753f414da14a24b392a3)
+- Add `cumulative` as an argument to `construct.ranges` which enables the creation of cumulative ranges from given revisions (PR #268, a135f6bb6f83ccb03ae27c735c2700fccc1ee0c8, 8ec207f1e306ef6a641fb0205a9982fa89c7e0d9)
 
 ### Changed/Improved
 
 - Change the default value for the `issues.from.source` configuration parameter. Instead of reading JIRA and GitHub issues together, which was the previous default, the new default value causes only GitHub issue data to be read. To restore the previous default behavior and read data from both issue sources, this now needs to be manually configured when needed. (PR #264, 5ff83c364f6bfc1e6ff95e9c5f1087e031c48a5d, 8c8080cb9caf115f19d9f145ad6e6c108b131a67, 8bcbc81db521877908d2e5c2989082ed672f2a3b)
-- Replace deprecated `igraph` functions by their preferred alternatives (PR #264, 0df9d5bf6bafbb5d440f4c47db4ec901cf11f037)
+- Replace deprecated `igraph` functions by their preferred alternatives (PR #264, PR #268, 0df9d5bf6bafbb5d440f4c47db4ec901cf11f037, 7ac840d287a862eff61b1a84e194a4cba399f9e5)
 - Deprecate support for R version 3.6 (PR #264, c8e6f45111e487fadbe7f0a13c7595eb23f3af6e, fb3f5474259d4a88f4ff545691cca9d1ccde90e3)
 - Explicitly add R version 4.4 to the CI test pipeline (c8e6f45111e487fadbe7f0a13c7595eb23f3af6e)
 - Refactor function `construct.edge.list.from.key.value.list` to be more readable (PR #263, 05c3bc09cb1d396fd59c34a88030cdca58fd04dd)
