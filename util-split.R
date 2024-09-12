@@ -1016,6 +1016,9 @@ split.data.by.time.or.bins = function(project.data, splitting.length, bins, spli
                         findInterval(df[["date"]], bins.date, all.inside = FALSE)
             ## split data according to df.bins
             df.split = split(df, df.bins)
+            ## remove events that occur before the first bin.
+            ## these events are put in a bin with the name "0" by 'findInterval'
+            df.split = df.split[names(df.split) != "0"]
             ## add proper labels/names
             names(df.split) = sapply(as.integer(names(df.split)), function(bin) bins[bin])
             return(df.split)
