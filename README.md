@@ -278,7 +278,7 @@ Relations determine which information is used to construct edges among the verti
     * For commit networks (configured via `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected when they interact in the commit-interaction data.
     * This relation does not apply for bipartite networks.
 
-#### Edge-construction algorithms for author networks
+#### Edge-construction algorithms for networks
 
 When constructing author networks, we use events in time (i.e., commits, e-mails, issue events) to model interactions among authors on the same artifact as edges. Therefore, we group the events on artifacts, based on the configured relation (see the [previous section](#relations)).
 
@@ -318,7 +318,7 @@ Based on the above raw data, we get the following author networks with relation 
   </tr>
 </table>
 
-When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread from the answer's author to the senders of every previous e-mail in this mail thread. Note that this can lead to duplicated edges if an author has sent several previous e-mails to the mail thread (see the duplicated edges `A –(3)– B` in the above example). This also leads to loop edges if an author of an answer has already sent an e-mail to this thread before (see the edge `A –(2)– A`).
+When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread from the answer's author to the senders of every previous e-mail in this mail thread. Note that this can lead to duplicated edges if an author has sent several previous e-mails to the mail thread (see the duplicated edges `A –(3)– B` in the above example). These may be conflated again using the `remove.duplicate.edges` function. Furthermore, respecting the temporal order also leads to loop edges if an author of an answer has already sent an e-mail to this thread before (see the edge `A –(2)– A`).
 
 If the temporal order is not respected, for each e-mail in a mail thread, there is an edge from the sender of the e-mail to every other author participating in this mail thread (regardless of in which order the e-mails were sent). In this case, no loop edges are contained in the network. However, it is possible that there are several edges (having different timestamps) between two authors (see the edges `A –(1)– B` and `A –(2)– B` in the example above). If directedness is configured, the edges are directed from the sender of an e-mail to the other authors.
 
