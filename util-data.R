@@ -797,8 +797,8 @@ ProjectData = R6::R6Class("ProjectData",
             }
             ## NAs otherwise
             else {
-                source.date.min = NA
-                source.date.max = NA
+                source.date.min = as.POSIXct(NA)
+                source.date.max = as.POSIXct(NA)
             }
 
             ## remove old line if existing
