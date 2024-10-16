@@ -25,7 +25,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -113,7 +113,7 @@ DATASOURCE.TO.ARTIFACT.COLUMN = list(
 
 
 ## the maximum time difference between subsequent mails of a patchstack
-PATCHSTACK.MAIL.DECAY.THRESHOLD = "30 seconds"
+PATCHSTACK.MAIL.DECAY.THRESHOLD = lubridate::as.duration("30 seconds")
 
 ## configuration parameters that do not reset the environment when changed
 CONF.PARAMETERS.NO.RESET.ENVIRONMENT = c("commit.messages",
@@ -283,8 +283,7 @@ ProjectData = R6::R6Class("ProjectData",
                 ## of 'PATCHSTACK.MAIL.DECAY.THRESHOLD'
                 while (i < nrow(thread) && running) {
                     if (thread[1, "author.name"] == thread[i + 1, "author.name"] &&
-                        thread[i + 1, "date"] - thread[i, "date"] <=
-                        lubridate::as.duration(PATCHSTACK.MAIL.DECAY.THRESHOLD)) {
+                        thread[i + 1, "date"] - thread[i, "date"] <= PATCHSTACK.MAIL.DECAY.THRESHOLD) {
                         i = i + 1
                     } else {
                         running = FALSE
