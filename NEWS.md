@@ -27,6 +27,7 @@
 ### Fixed
 
 - Fix the creation of edgelists for issue-based artifact-networks by correctly iterating over the issue data (PR #264, 321d85043112971c04998249c14a0677a32c9004)
+- Fix a bug in `extract.timestamps` that occurs when the first `data.source` contains empty data and that leads to a return value of type numeric which should be POSIXct (PR #270, 10696e4cf4ae92371917ed8ccaec2b0183da145c, 646c01a42ad8decfbc9040030e790e51cb65cffd)
 
 ## 4.4
 
