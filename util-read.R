@@ -949,6 +949,10 @@ read.commit.interactions = function(data.path = NULL) {
             interacting.hashes.df[["base.file"]] = base.file.name
             return(interacting.hashes.df)
         })))
+        ## Return an empty data frame if the current interaction is empty (i.e., if an interaction is not existent).
+        if (nrow(interactions) == 0) {
+          return(data.frame())
+        }
         ## Initialize author data as 'NA', since it is not available from the commit-interaction data.
         ## Author data will be merged from commit data in \code{update.commit.interactions}.
         interactions["base.author"] = NA_character_
