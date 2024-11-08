@@ -1263,7 +1263,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (igraph::is_directed(authors.net) && !igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is directed, but artifact network is not.",
                                         "Converting artifact network..."))
-                artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
+                artifacts.net = igraph::as_directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is_directed(authors.net) && igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is undirected, but artifact network is not.",
                                         "Converting artifact network..."))
@@ -1807,7 +1807,7 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 #' @return the new empty network
 create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
     ## create empty network
-    net = igraph::graph.empty(0, directed = directed)
+    net = igraph::make_empty_graph(0, directed = directed)
 
     # set proper attributes if wanted
     if (add.attributes) {
@@ -2074,7 +2074,9 @@ extract.bipartite.network.from.network = function(network, remove.isolates = FAL
     }
 
     ## only retain all bipartite edges and induced vertices
-    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER], delete.vertices = remove.isolates)
+    bip.network = igraph::subgraph_from_edges(network,
+                                              igraph::E(network)[type == TYPE.EDGES.INTER],
+                                              delete.vertices = remove.isolates)
 
     return(bip.network)
 }

@@ -876,7 +876,7 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
         ## identify edges in the current bin
         edges = igraph::E(network)[ bins.vector == bin ]
         ## create network based on the current set of edges
-        g = igraph::subgraph.edges(network, edges, delete.vertices = remove.isolates)
+        g = igraph::subgraph_from_edges(network, edges, delete.vertices = remove.isolates)
         return(g)
     })
     ## set 'bins' attribute, if specified

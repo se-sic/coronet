@@ -47,7 +47,7 @@ requireNamespace("lubridate") # for date conversion
 #' @return the new edgelist
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
-  edges = as.data.frame(igraph::get.edgelist(net))
+  edges = as.data.frame(igraph::as_edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
   dates = igraph::edge_attr(net, "date")

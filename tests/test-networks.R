@@ -632,7 +632,7 @@ test_that("Construction of networks from empty edge list (with vertices)", {
     ##
 
     net.constructed = construct.network.from.edge.list(vertices, edge.list, net.conf)
-    net.expected = igraph::graph.empty(n = 0, directed = directed) +
+    net.expected = igraph::make_empty_graph(n = 0, directed = directed) +
         igraph::vertices(vertices.as.sequence) +
         igraph::edges(edge.list.as.sequence, weight = 1)
 
