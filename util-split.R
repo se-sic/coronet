@@ -834,6 +834,11 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
         }
     )
 
+    # add range information
+    if (is.null(names(nets.split))) {
+        names(nets.split) = ranges
+    }
+
     ## convert ranges to bins
     bins = get.bin.dates.from.ranges(ranges.bounds)
     attr(nets.split, "bins") = bins
