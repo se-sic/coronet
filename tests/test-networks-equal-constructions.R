@@ -42,12 +42,12 @@ compare.edge.and.vertex.lists = function(split.networks.one, split.networks.two)
     for (i in seq_along(split.networks.one)) {
         edges.one = igraph::as_data_frame(split.networks.one[[i]], what = "edges")
         ordering = order(edges.one[["from"]], edges.one[["to"]],
-                         edges.one[["date"]])
+                         as.vector(edges.one[["date"]], "numeric"))
         edges.one = edges.one[ordering, ]
         rownames(edges.one) = seq_len(nrow(edges.one))
         edges.two = igraph::as_data_frame(split.networks.two[[i]], what = "edges")
         ordering = order(edges.two[["from"]], edges.two[["to"]],
-                         edges.two[["date"]])
+                         as.vector(edges.two[["date"]], "numeric"))
         edges.two = edges.two[ordering, ]
         rownames(edges.two) = seq_len(nrow(edges.two))
         vertices.one = igraph::as_data_frame(split.networks.one[[i]], what = "vertices")

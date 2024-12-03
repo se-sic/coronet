@@ -83,6 +83,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
     expect_true(igraph::identical_graphs(network.built, network))
 
     network.new.attr = add.vertex.attribute.commit.network(network.built, proj.data,  "deleted.lines", "NO_DATA")
@@ -133,6 +134,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -188,6 +190,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -239,6 +242,7 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
     network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -293,6 +297,7 @@ test_that("Adding vertex attributes to a commit network", {
         )
 
     network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.new.attr, network))
 
@@ -334,6 +339,7 @@ test_that("Adding vertex attributes to a commit network", {
         )
 
     network.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.two = convert.edge.attributes.to.list(network.two)
 
     expect_true(igraph::identical_graphs(network.new.attr, network.two))
 })

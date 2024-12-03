@@ -135,34 +135,34 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                                   "Björn", "Olaf"), # mail
                       comb.2. = c("Olaf", "Karl", "Thomas", "Thomas", # cochange
                                   "Olaf", "Thomas")) # mail
-    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45")),
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")),
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32")), # cochange
-                     get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:58:50")),
-                     get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37"))) # mail
-    data$artifact.type = list(c("Feature", "Feature"), c("Feature", "Feature"),
-                              c("Feature", "Feature"), c("Feature", "Feature"), # cochange
-                              c("Mail", "Mail"), c("Mail", "Mail")) # mail
-    data$hash = list(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
-                     as.character(c(NA, NA)), as.character(c(NA, NA)))
-    data$file = list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"),
-                     as.character(c(NA, NA)), as.character(c(NA, NA)))
-    data$artifact = list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), 
-                         c("Base_Feature", "Base_Feature"), as.character(c(NA, NA)), as.character(c(NA, NA)))
+    data$date = list(as.list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32"))), # cochange
+                     as.list(get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:58:50"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37")))) # mail
+    data$artifact.type = list(list("Feature", "Feature"), list("Feature", "Feature"),
+                              list("Feature", "Feature"), list("Feature", "Feature"), # cochange
+                              list("Mail", "Mail"), list("Mail", "Mail")) # mail
+    data$hash = list(list("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     list("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     as.list(rep(NA, 2)), as.list(rep(NA, 2)))
+    data$file = list(list("test.c", "test.c"), list("test2.c", "test3.c"), list("test2.c", "test2.c"), list("test3.c", "test2.c"),
+                     as.list(rep(NA, 2)), as.list(rep(NA, 2)))
+    data$artifact = list(list("A", "A"), list("Base_Feature", "Base_Feature"), list("Base_Feature", "Base_Feature"),
+                         list("Base_Feature", "Base_Feature"), as.list(rep(NA, 2)), as.list(rep(NA, 2)))
     data$weight = rep(2, 6)
     data$type = rep(TYPE.EDGES.INTRA, 6)
     data$relation = c(rep("cochange", 4), rep("mail", 2))
-    data$message.id = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
-                           c("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
-                             "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
-                           c("<65a1sf31sagd684dfv31@mail.gmail.com>",
-                             "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"))
-    data$thread = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
-                       c("<thread-13#8>", "<thread-13#8>"), c("<thread-13#9>", "<thread-13#9>"))
+    data$message.id = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
+                           list("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                                "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
+                           list("<65a1sf31sagd684dfv31@mail.gmail.com>",
+                                "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"))
+    data$thread = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
+                       list("<thread-13#8>", "<thread-13#8>"), list("<thread-13#9>", "<thread-13#9>"))
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, vertices = authors,
@@ -179,37 +179,38 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl"),
                       comb.2. = c("Olaf", "Karl", "Thomas", "Thomas"))
 
-    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",   # cochange
-                                            "2016-07-12 15:58:40", "2016-07-12 15:58:50")), # mail
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")), # cochange
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32",   # cochange
-                                            "2016-07-12 16:04:40", "2016-07-12 16:05:37")), # mail
-                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32"))) # cochange
-    data$artifact.type = list(c("Feature", "Feature", "Mail", "Mail"),
-                              c("Feature", "Feature"),
-                              c("Feature", "Feature", "Mail", "Mail"),
-                              c("Feature", "Feature"))
-    data$hash = list(as.character(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", NA, NA)),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
-                     as.character(c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526", NA, NA)),
-                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))
-    data$file = list(as.character(c("test.c", "test.c", NA, NA)), c("test2.c", "test3.c"),
-                     as.character(c("test2.c", "test2.c", NA, NA)), c("test3.c", "test2.c"))
-    data$artifact = list(as.character(c("A", "A", NA, NA)), c("Base_Feature", "Base_Feature"),
-                         as.character(c("Base_Feature", "Base_Feature", NA, NA)), c("Base_Feature", "Base_Feature"))
+    data$date = list(as.list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",    # cochange
+                                                    "2016-07-12 15:58:40", "2016-07-12 15:58:50"))), # mail
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10"))), # cochange
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32",    # cochange
+                                                    "2016-07-12 16:04:40", "2016-07-12 16:05:37"))), # mail
+                     as.list(get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32")))) # cochange
+    data$artifact.type = list(list("Feature", "Feature", "Mail", "Mail"),
+                              list("Feature", "Feature"),
+                              list("Feature", "Feature", "Mail", "Mail"),
+                              list("Feature", "Feature"))
+
+    data$hash = list(list("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", NA, NA),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526", NA, NA),
+                     list("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))
+    data$file = list(list("test.c", "test.c", NA, NA), list("test2.c", "test3.c"),
+                     list("test2.c", "test2.c", NA, NA), list("test3.c", "test2.c"))
+    data$artifact = list(list("A", "A", NA, NA), list("Base_Feature", "Base_Feature"),
+                         list("Base_Feature", "Base_Feature", NA, NA), list("Base_Feature", "Base_Feature"))
     data$weight = c(4, 2, 4, 2)
     data$type = rep(TYPE.EDGES.INTRA, 4)
     data$relation = list(c("cochange", "mail"), c("cochange"), c("cochange", "mail"), c("cochange"))
-    data$message.id = list(as.character(c(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
-                                          "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>")),
-                           as.character(c(NA, NA)),
-                           as.character(c(NA, NA, "<65a1sf31sagd684dfv31@mail.gmail.com>",
-                                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>")),
-                           as.character(c(NA, NA)))
-    data$thread = list(as.character(c(NA, NA, "<thread-13#8>", "<thread-13#8>")),
-                       as.character(c(NA, NA)),
-                       as.character(c(NA, NA, "<thread-13#9>", "<thread-13#9>")),
-                       as.character(c(NA, NA)))
+    data$message.id = list(list(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                                        "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
+                           list(NA, NA),
+                           list(NA, NA, "<65a1sf31sagd684dfv31@mail.gmail.com>",
+                                        "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"),
+                           list(NA, NA))
+    data$thread = list(list(NA, NA, "<thread-13#8>", "<thread-13#8>"),
+                       list(NA, NA),
+                       list(NA, NA, "<thread-13#9>", "<thread-13#9>"),
+                       list(NA, NA))
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, vertices = authors,
@@ -354,6 +355,7 @@ test_that("Remove duplicate edges", {
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     ## build network with unique edges
     network = network.builder$get.author.network()

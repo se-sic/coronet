@@ -394,6 +394,7 @@ test_that("Check and correct duplicate range names during network activity-based
         igraph::edges(rep(c("A", "B"), times = length(dates)))
     ## set some date attributes that are appropriate for the test case
     net = igraph::set_edge_attr(net, "date", value = dates)
+    net = convert.edge.attributes.to.list(net)
 
     ## define split arguments
     split.function = split.network.activity.based
