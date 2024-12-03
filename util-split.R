@@ -524,7 +524,8 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
                                     number.windows = NULL,  sliding.window = FALSE,
                                     remove.isolates = TRUE) {
     ## extract date attributes from edges
-    dates = get.date.from.unix.timestamp(igraph::edge_attr(network, "date"))
+    dates = do.call(base::c, igraph::edge_attr(network, "date"))
+    dates = get.date.from.unix.timestamp(dates)
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -619,7 +620,7 @@ split.networks.time.based = function(networks, time.period = "3 months", bins = 
             dates = igraph::E(net)$date
             return(dates)
         })
-        dates = unlist(networks.dates, recursive = FALSE)
+        dates = unlist(networks.dates)
         dates = get.date.from.unix.timestamp(dates)
 
         ## 2) get bin information
@@ -708,8 +709,9 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                      number.edges, number.windows)
 
     ## get dates in a data.frame for splitting purposes
+    dates = do.call(base::c, igraph::edge_attr(network, "date"))
     df = data.frame(
-        date = get.date.from.unix.timestamp(igraph::edge_attr(network, "date")),
+        date = get.date.from.unix.timestamp(dates),
         my.unique.id = seq_len(edge.count) # as a unique identifier only
     )
     ## sort by date
