@@ -1282,6 +1282,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks:
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
+            for (attr in igraph::edge_attr_names(u)) {
+                values = igraph::edge_attr(u, attr)
+                NULLs = sapply(values, is.null)
+                if (any(NULLs)) {
+                    values[NULLs] = NA
+                    u = igraph::set_edge_attr(u, attr, value = values)
+                }
+            }
 
             ## 2) add the bipartite edges
             u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
@@ -1792,6 +1800,15 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 
         ## add the vertex sequences as edges to the network
         net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+
+        for (attr in igraph::edge_attr_names(net)) {
+            values = igraph::edge_attr(net, attr)
+            NULLs = sapply(values, is.null)
+            if (any(NULLs)) {
+                values[NULLs] = NA
+                net = igraph::set_edge_attr(net, attr, value = values)
+            }
+        }
     }
 
     return(net)
