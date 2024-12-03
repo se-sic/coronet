@@ -1658,9 +1658,18 @@ merge.network.data = function(vertex.data, edge.data) {
     edge.data.filtered = Filter(function(ed) {
         return(nrow(ed) > 0)
     }, edge.data)
-    ## 2) call rbind
+    ## 2) add in missing columns
+    all.columns = Reduce(union, lapply(edge.data.filtered, colnames))
+    edge.data.filtered = lapply(edge.data.filtered, function(edges) {
+        missing.columns = setdiff(all.columns, colnames(edges))
+        for (column in missing.columns) {
+            edges[[column]] = NA
+        }
+        return(edges)
+    })
+    ## 3) call rbind
     edges = plyr::rbind.fill(edge.data.filtered)
-    ## 3) correct empty results
+    ## 4) correct empty results
     if (is.null(edges)) {
         edges = create.empty.edge.list()
     }
