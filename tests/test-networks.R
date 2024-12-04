@@ -992,6 +992,54 @@ test_that("Addition of edge attributes with data", {
 
 })
 
+
+patrick::with_parameters_test_that("Convert edge attributes to list", {
+
+    ## configure edge attributes
+    edge.attributes = c("date", "message.id", "thread", "weight", "type", "relation")
+    attribute.defaults = list(get.date.from.string("2020-01-01 00:00:00"), "abc", "def", 1, TYPE.EDGES.INTRA, "mail")
+
+    ## construct network
+    network =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", "C", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
+        igraph::edges("A", "B", "B", "C", "C", "A")
+
+    ## assign edge attributes
+    for (i in seq_along(edge.attributes)) {
+        network = igraph::set_edge_attr(network, edge.attributes[i], value = attribute.defaults[[i]])
+    }
+
+    ## convert specified edge attributes to list
+    if (is.null(remain.as.is)) {
+        network.listified = convert.edge.attributes.to.list(network)
+
+        ## set 'remain.as.is' to the default of 'convert.edge.attributes.to.list'
+        ## for later use in the validation process
+        remain.as.is = names(EDGE.ATTR.HANDLING)
+    } else {
+        network.listified = convert.edge.attributes.to.list(network, remain.as.is = remain.as.is)
+    }
+
+    ## check edge attributes
+    for (attr in igraph::edge_attr_names(network)) {
+        conversion.function = ifelse(attr %in% remain.as.is, identity, as.list)
+        expect_equal(
+            conversion.function(igraph::edge_attr(network, attr)),
+            igraph::edge_attr(network.listified, attr),
+            info = paste("edge attribute", attr, "values")
+        )
+    }
+
+}, patrick::cases(
+    "remain.as.is: weight" = list(remain.as.is = c("weight")),
+    "remain.as.is: date" = list(remain.as.is = c("date")),
+    "remain.as.is: weight, date" = list(remain.as.is = c("weight", "date")),
+    "remain.as.is: default" = list(remain.as.is = NULL)
+))
+
+
+
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Extract data sources ----------------------------------------------------
 test_that("Get the data sources from a network with two relations", {
