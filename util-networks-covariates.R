@@ -688,30 +688,105 @@ add.vertex.attribute.author.email = function(list.of.networks, project.data, nam
 
 #' Add first activity attribute.
 #'
-#' @param list.of.networks The network list.
-#' @param project.data The project data.
+#' @param list.of.networks The network list
+#' @param project.data The project data
 #' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
-#'                       \code{issues}. [default: c("mails", "commits", "issues")]
-#' @param name The attribute name to add. [default: "first.activity"]
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "first.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value. [default: NA].
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #' @param combine.all.activity.types Flag indicating that one value, computed over all given
-#'                                           \code{activity.types} is of interest (instead of one value per type).
-#'                                           [default: FALSE]
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
 #'
-#' @return A list of networks with the added attribute.
+#' @return A list of networks with the added attribute
+#'
+#' @seealso add.vertex.attribute.author.aggregated.activity
 add.vertex.attribute.author.first.activity = function(list.of.networks, project.data,
-                                               activity.types = c("mails", "commits", "issues"),
-                                               name = "first.activity",
-                                               aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                     "project.cumulative", "project.all.ranges",
-                                                                     "complete"),
-                                               default.value = NA,
-                                               combine.activity.types = FALSE) {
+                                                      activity.types = c("mails", "commits", "issues"),
+                                                      name = "first.activity",
+                                                      aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                            "project.cumulative", "project.all.ranges",
+                                                                            "complete"),
+                                                      default.value = NA,
+                                                      combine.activity.types = FALSE) {
+    return(add.vertex.attribute.author.aggregated.activity(list.of.networks, project.data, activity.types, name,
+                                                           aggregation.level, default.value, combine.activity.types,
+                                                           aggregation.function = min,
+                                                           data.aggregation.function = get.first.activity.data))
+}
+
+
+#' Add last activity attribute.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "last.activity"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "complete"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
+#'
+#' @return A list of networks with the added attribute
+#'
+#' @seealso add.vertex.attribute.author.aggregated.activity
+add.vertex.attribute.author.last.activity = function(list.of.networks, project.data,
+                                                     activity.types = c("mails", "commits", "issues"),
+                                                     name = "last.activity",
+                                                     aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                           "project.cumulative", "project.all.ranges",
+                                                                           "complete"),
+                                                     default.value = NA,
+                                                     combine.activity.types = FALSE) {
+    return(add.vertex.attribute.author.aggregated.activity(list.of.networks, project.data, activity.types, name,
+                                                           aggregation.level, default.value, combine.activity.types,
+                                                           aggregation.function = max,
+                                                           data.aggregation.function = get.last.activity.data))
+}
+
+
+#' Add aggregated activity-date attribute.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "aggregated.activity"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details [default: "complete"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
+#' @param aggregation.function The function that should be used to aggregate when combining all activity types
+#' @param data.aggregation.function The function that should be used to aggregate the activity information per author
+#'                                  within activity types
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.author.aggregated.activity = function(list.of.networks, project.data,
+                                                           activity.types = c("mails", "commits", "issues"),
+                                                           name = "aggregated.activity",
+                                                           aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                 "project.cumulative", "project.all.ranges",
+                                                                                 "complete"),
+                                                           default.value = NA,
+                                                           combine.activity.types = FALSE,
+                                                           aggregation.function,
+                                                           data.aggregation.function) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
@@ -730,17 +805,17 @@ add.vertex.attribute.author.first.activity = function(list.of.networks, project.
     }
 
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, parsed.activity.types, type.default)
+        data = data.aggregation.function(range.data, parsed.activity.types, type.default)
 
-        ## If configured, find minimum over all activity types per author, for example:
+        ## If configured, aggregate over all activity types per author. For example, for first activity
         ## data
         ##      list(authorA = list(mails = 1, commits = 2), authorB = list(mails = 3, commits = 3))
         ## yields
         ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
         if (combine.activity.types) {
             data = parallel::mclapply(data, function(item.list) {
-                min.value = min(do.call(base::c, item.list), na.rm = TRUE)
-                return(list(all.activities = min.value))
+                aggregated.value = aggregation.function(do.call(base::c, item.list), na.rm = TRUE)
+                return(list(all.activities = aggregated.value))
             })
         }
         return(data)
@@ -760,7 +835,7 @@ add.vertex.attribute.author.first.activity = function(list.of.networks, project.
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "active.ranges"]
 #' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
-#'                       \code{issues}. [default: c("mails", "commits", "issues")]
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
 #' @param default.value The default value to add if a vertex has no matching value [default: list()]
 #' @param combine.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
