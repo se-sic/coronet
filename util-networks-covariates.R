@@ -1582,43 +1582,78 @@ add.vertex.attribute.issue.is.pull.request = function(list.of.networks, project.
 ## Helper ------------------------------------------------------------------
 
 #' Helper function for first activity: computes first activity information per person and activity type.
+#’
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
 #'
-#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
-#' @param range.data The data to base the computation on.
-#' @param default.value The default value to add if no information is available per author and activity type.
-#' [default: NA]
-#'
-#' @return A list containing per author a list of first activity values named with the corresponding activity type.
+#' @return A list containing per author a list of first activity dates named with the corresponding activity type.
 #'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
 #'         types in \code{activity.types}
-get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
-                                   default.value = NA) {
+#'
+#' @seealso get.aggregated.activity.data
+get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"), default.value = NA) {
+    return(get.aggregated.activity.data(range.data, activity.types, default.value, aggregation.function = min))
+}
+
+#' Helper function for last activity: computes last activity information per person and activity type.
+#
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
+#'
+#' @return A list containing per author a list of last activity dates named with the corresponding activity type.
+#'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
+#'         types in \code{activity.types}
+#'
+#' @seealso get.aggregated.activity.data
+get.last.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"), default.value = NA) {
+    return(get.aggregated.activity.data(range.data, activity.types, default.value, aggregation.function = max))
+}
+
+#' Helper function to aggregate activity information (e.g., to compute first or last activity information per person
+#' and activity type).
+#'
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
+#' @param aggregation.function The function that should be used to aggregate the activity data (e.g., minimum for
+#'                             first activity, or maximum for last activity)
+#'
+#' @return A list containing per author a list of aggregated activity dates named with the corresponding activity type.
+#'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
+#'         types in \code{activity.types}
+get.aggregated.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
+                                        default.value = NA, aggregation.function) {
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
     default.value = get.date.from.string(default.value)
 
-    ## get data for each activity type and extract minimal date for each author in each type,
+    ## get data for each activity type and extract aggregated date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
-    ## mapped to their first activity for the current activity type; for example:
+    ## mapped to their aggregated activity date for the current activity type; for example:
     ##    list(
     ##        commits = list(authorA = list(commits = 1), authorB = list(commits = 0)),
     ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
     ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
     ##    )
     activity.by.type = parallel::mclapply(activity.types, function(type) {
-        ## compute minima
-        minima.per.person = lapply(
+        ## compute aggregation
+        aggregation.per.person = lapply(
             range.data$group.artifacts.by.data.column(type, "author.name"),
             function(x) {
-                ## get first date
-                m = list(min(x[["date"]]))
+                ## get aggregated date
+                m = list(aggregation.function(x[["date"]]))
                 ## add activity type as name to the list
                 names(m) = type
 
                 return(m)
             }
         )
-        return(minima.per.person)
+        return(aggregation.per.person)
     })
     names(activity.by.type) = activity.types
 
