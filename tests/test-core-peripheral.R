@@ -18,6 +18,7 @@
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -103,6 +104,74 @@ test_that("Eigenvector classification", {
                                                           result[["peripheral"]][["author.name"]]), , drop = FALSE]
     row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result, tolerance = 0.0001)
+})
+
+test_that("Betweenness classification", {
+
+    ## Act
+    result = get.author.class.network.betweenness(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               betweenness.centrality = c(1))
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Thomas", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     betweenness.centrality = c(0, 0, 0, 0, 0, 0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Closeness classification", {
+
+    ## Act
+    result = get.author.class.network.closeness(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               closeness.centrality = c(0.5))
+    expected.peripheral = data.frame(author.name = c("Björn", "Thomas", "udo", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     closeness.centrality = c(0.33333, 0.33333, 0.0, 0.0, 0.0, 0.0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result, tolerance = 0.0001)
+})
+
+test_that("Pagerank classification", {
+
+    ## Act
+    result = get.author.class.network.pagerank(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               pagerank.centrality = c(0.40541))
+    expected.peripheral = data.frame(author.name = c("Björn", "Thomas", "udo", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     pagerank.centrality = c(0.21396, 0.21396, 0.041667, 0.041667, 0.041667, 0.041667))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result, tolerance = 0.0001)
+})
+
+test_that("Eccentricity classification", {
+
+    ## Act
+    result = get.author.class.network.eccentricity(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               eccentricity = c(1))
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Thomas", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     eccentricity = c(0, 0, 0, 0, 0, 0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
 })
 
 # TODO: Add a test for hierarchy classification
