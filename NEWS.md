@@ -20,6 +20,7 @@
 - Add `remove.duplicate.edges` function that takes a network as input and conflates identical edges (PR #268, d9a4be417b340812b744f59398ba6460ba527e1c, 0c2f47c4fea6f5f2f582c0259f8cf23af985058a, c6e90dd9cb462232563f753f414da14a24b392a3)
 - Add `cumulative` as an argument to `construct.ranges` which enables the creation of cumulative ranges from given revisions (PR #268, a135f6bb6f83ccb03ae27c735c2700fccc1ee0c8, 8ec207f1e306ef6a641fb0205a9982fa89c7e0d9)
 - Add function `get.last.activity.data` to compute developers' last activities in a project, as well as function `add.vertex.attribute.author.last.activity` to add a developer's date of last activity as vertex attribute to a network, as well as helper functions `get.aggregated.activity.data` and `add.vertex.attribute.author.aggregated.activity` to allow for other activity aggregations than first and last activity (PR #275, 9f231612fcd33a283362c79b35a94295ff3d4ef9, 8660ed763ba4b69e909e7fbb01e27e1999522047)
+- Add four new metric which can be used for the classification of authors into core and peripheral: Betweenness, Closeness, Pagerank and Eccentricity (PR #276, 65d5c9cc86708777ef458b0c2e744ab4b846bdd1, b392d1a125d0f306b4bce8d95032162a328a3ce2, c5d37d40024e32ad5778fa5971a45bc08f7631e0)
 
 ### Changed/Improved
 
