@@ -703,6 +703,30 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL,
     return(result)
 }
 
+## * Betweenness-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the betweenness-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
 get.author.class.network.betweenness = function(network, result.limit = NULL,
                                               restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.betweenness: starting.")
@@ -714,6 +738,30 @@ get.author.class.network.betweenness = function(network, result.limit = NULL,
     return(result)
 }
 
+## * Closeness-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the closeness-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
 get.author.class.network.closeness = function(network, result.limit = NULL,
                                               restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.closeness: starting.")
@@ -725,6 +773,30 @@ get.author.class.network.closeness = function(network, result.limit = NULL,
     return(result)
 }
 
+## * Pagerank-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the pagerank-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
 get.author.class.network.pagerank = function(network, result.limit = NULL,
                                               restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.pagerank: starting.")
@@ -736,6 +808,30 @@ get.author.class.network.pagerank = function(network, result.limit = NULL,
     return(result)
 }
 
+## * Eccentricity-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the eccentricity of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their eccentricity values in the second column.
+#'
+#' @seealso get.author.class.by.type
 get.author.class.network.eccentricity = function(network, result.limit = NULL,
                                               restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.eccentricity: starting.")
