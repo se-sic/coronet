@@ -836,7 +836,7 @@ split.network.time.based.by.ranges = function(network, ranges, remove.isolates =
         }
     )
 
-    # add range information
+    ## add range information
     if (is.null(names(nets.split))) {
         names(nets.split) = ranges
     }
