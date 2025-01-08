@@ -101,7 +101,7 @@ CLASSIFICATION.TYPE.TO.CATEGORY = list(
 #'             Network-based options/metrics (parameter \code{network} has to be specified):
 #'              - "network.degree"
 #'              - "network.eigen"
-#'              - "network.hierarchy" ###TODO check all documentation
+#'              - "network.hierarchy"
 #'             Count-based options/metrics (parameter \code{proj.data} has to be specified):
 #'              - "commit.count"
 #'              - "loc.count"
@@ -247,7 +247,7 @@ get.author.class.by.type = function(network = NULL,
         centrality.dataframe = data.frame(author.name = names(betweenness.centrality.vec),
                                           centrality = as.vector(betweenness.centrality.vec))
     } else if (type == "network.closeness") {
-        closeness.centrality.vec = igraph::closeness(network)
+        closeness.centrality.vec = igraph::closeness(network, mode = "all")
         ## Construct centrality dataframe
         centrality.dataframe = data.frame(author.name = names(closeness.centrality.vec),
                                           centrality = as.vector(closeness.centrality.vec))
@@ -260,6 +260,7 @@ get.author.class.by.type = function(network = NULL,
         eccentricity.vec = igraph::eccentricity(network)
         ## since core developers are expected to have a lower eccentricity,
         ## we need to invert all non-zero values
+        ## all entries with value zero are isolated vertices, so the value is already correct
         indices = which(eccentricity.vec > 0)
         eccentricity.vec[indices] = max(eccentricity.vec) - eccentricity.vec[indices]
         ## Construct centrality dataframe
@@ -728,7 +729,7 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL,
 #'
 #' @seealso get.author.class.by.type
 get.author.class.network.betweenness = function(network, result.limit = NULL,
-                                              restrict.classification.to.authors = NULL) {
+                                                restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.betweenness: starting.")
 
     result = get.author.class.by.type(network = network, type = "network.betweenness", result.limit = result.limit,
@@ -798,7 +799,7 @@ get.author.class.network.closeness = function(network, result.limit = NULL,
 #'
 #' @seealso get.author.class.by.type
 get.author.class.network.pagerank = function(network, result.limit = NULL,
-                                              restrict.classification.to.authors = NULL) {
+                                             restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.pagerank: starting.")
 
     result = get.author.class.by.type(network = network, type = "network.pagerank", result.limit = result.limit,
@@ -833,7 +834,7 @@ get.author.class.network.pagerank = function(network, result.limit = NULL,
 #'
 #' @seealso get.author.class.by.type
 get.author.class.network.eccentricity = function(network, result.limit = NULL,
-                                              restrict.classification.to.authors = NULL) {
+                                                 restrict.classification.to.authors = NULL) {
     logging::logdebug("get.author.class.network.eccentricity: starting.")
 
     result = get.author.class.by.type(network = network, type = "network.eccentricity", result.limit = result.limit,

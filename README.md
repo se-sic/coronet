@@ -34,6 +34,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
       - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
       - [Handling data independently](#handling-data-independently)
+      - [Core/Peripheral Classification](#coreperipheral-classification)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -374,6 +375,49 @@ Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very f
 #### Handling data independently
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
+
+#### Core/Peripheral Classification
+
+Core/Peripheral classification descibes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute 80% of all work in a given project. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired 80:20 split is achieved.
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors.
+- `network.degree`
+    * calculates scores for authors based on the vertex degrees in an author network
+    * the degree of a vertex is the number of adjacent edges
+- `network.eigen`
+    * calculates scores for authors based on the eigenvector centralities in an author network
+    * eigenvector centrality measures the importance of vertices within a graph by granting a higher score for outgoing edges proportional to the score of the target vertex
+- `network.hierarchy`
+    * calculates scores for authors based on the hierarchy found within an author network
+    * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
+- `network.betweenness`
+    * calculates scores for authors based on the betweenness of vertices in an author network
+    * betweenness measures the number of shortest paths that go through each vertex
+- `network.closeness`
+    * calculates scores for authors based on the closeness of vertices in an author network
+    * closeness measures how close vertices are to each other by taking the inverse if the sum of all their shortest paths
+- `network.pagerank`
+    * calculates scores for authors based on the pagerank of vertices in an author network
+    * pagerank refers to the pagerank algorithm employed by google, which is closely related to eigenvector centrality
+- `network.eccentricity`
+    * calculates scores for authors based on the eccentricity of vertices in an author network
+    * eccentricity measures the distance to each vertices' furthest reachablke vertex
+- `commit.count`
+    * calculates scores based on the number of commits per author
+- `loc.count`
+    * calculates scores based on the number of lines of code changed by each author
+- `mail.count`
+    * calculates scores based on the number of mails sent per author
+- `mail.thread.count`
+    * calculates scores based on the number of mail threads each author participated in
+- `issue.count`
+    * calculates scores based on the number of issues each author participated in
+- `issue.comment.count`
+    * calculates scores based on the number of comments each author made in issues
+- `issue.commented.in.count`
+    * calculates scores based on the number of issues each author commented in
+- `issue.created.count`
+    * calculates scores based on the number of issues each created
 
 ### How-to
 
