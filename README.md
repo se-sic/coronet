@@ -125,7 +125,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)
 - `R6`: For proper classes
-- `igraph`: For the construction of networks (package version `1.3.0` or higher is recommended)
+- `igraph`: For the construction of networks (package version `2.1.0` or higher is required)
 - `plyr`: For the `dlply` splitting-function and `rbind.fill`
 - `parallel`: For parallelization
 - `logging`: Logging
