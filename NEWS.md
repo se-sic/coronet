@@ -6,7 +6,7 @@
 
 ### Announcement
 
-- Coronet is not compatible anymore with igraph versions below 2.1.0. This is due to the simultaneous deprecation of `subgraph.edges` and the introduction of the replacement for it, `subgraph_from_edges`, in igraph version 2.1.0.
+- Coronet is not compatible with `igraph` versions below 2.1.0 anymore. This is due to the simultaneous deprecation of `subgraph.edges` and the introduction of the replacement for it, `subgraph_from_edges`, in igraph version 2.1.0.
 
 ### Added
 
@@ -22,20 +22,21 @@
 
 ### Changed/Improved
 
-- **Breaking Change**: Change the default representation of edge attributes from vectors to lists. This change is necessary for the interplay of coronet networks with certain igraph functionality since igraph version 2.1. (PR #274, 1c35d1fa2548deb297dbfa5e2b07fce31962c5b7, eda30b838369ec46376812298a3ea8159eec5789, 44c7b72e3234cb332bb2713fb408c124e67255d9, 7303eabef6a78198575fe5bdfc02813fde3d3974)
+- **Breaking Change**: Change the default representation of edge attributes from vectors to lists. This change is necessary for the interplay of coronet networks with certain `igraph` functionality since igraph version 2.1.0 (PR #274, 1c35d1fa2548deb297dbfa5e2b07fce31962c5b7, eda30b838369ec46376812298a3ea8159eec5789, 0c6b2eba79b37f8ef2af7ffc41d86f1f307581bf, 44c7b72e3234cb332bb2713fb408c124e67255d9, 7303eabef6a78198575fe5bdfc02813fde3d3974, 0c27012641d24e19e5fa037406b480034c93f1aa)
 - Change the default value for the `issues.from.source` configuration parameter. Instead of reading JIRA and GitHub issues together, which was the previous default, the new default value causes only GitHub issue data to be read. To restore the previous default behavior and read data from both issue sources, this now needs to be manually configured when needed. (PR #264, 5ff83c364f6bfc1e6ff95e9c5f1087e031c48a5d, 8c8080cb9caf115f19d9f145ad6e6c108b131a67, 8bcbc81db521877908d2e5c2989082ed672f2a3b)
 - Replace deprecated `igraph` functions by their preferred alternatives (PR #264, PR #268, PR #274, 0df9d5bf6bafbb5d440f4c47db4ec901cf11f037, 7ac840d287a862eff61b1a84e194a4cba399f9e5, e3617b8c6b21fb4242c1d392124813501069ca84, 4b0d5221dd56bb3c9ddf196f67719d4f503d9b61)
 - Deprecate support for R version 3.6 (PR #264, c8e6f45111e487fadbe7f0a13c7595eb23f3af6e, fb3f5474259d4a88f4ff545691cca9d1ccde90e3)
 - Explicitly add R version 4.4 to the CI test pipeline (c8e6f45111e487fadbe7f0a13c7595eb23f3af6e)
 - Refactor function `construct.edge.list.from.key.value.list` to be more readable (PR #263, 05c3bc09cb1d396fd59c34a88030cdca58fd04dd)
+- Update necessary `igraph` version to 2.1.0 in `README.md` (PR #274, 6c3bcd1a2366d0d3a176d9fde95b8356b0158da3)
 
 ### Fixed
 
 - Fix the creation of edgelists for issue-based artifact-networks by correctly iterating over the issue data (PR #264, 321d85043112971c04998249c14a0677a32c9004)
 - Fix a bug in `extract.timestamps` that occurs when the first `data.source` contains empty data and that leads to a return value of type numeric which should be POSIXct (PR #270, 10696e4cf4ae92371917ed8ccaec2b0183da145c, 646c01a42ad8decfbc9040030e790e51cb65cffd)
-- Fix `read.commit.interactions` by explicitly considering non-existent commit interaction data (PR #274, f591528a0f1f11b1a4390949ab770f3f74a766f9)
+- Fix `read.commit.interactions` by explicitly considering non-existent commit interactions (PR #274, f591528a0f1f11b1a4390949ab770f3f74a766f9)
 - Add range information to network-splits when splitting a network using `split.network.time.based.by.ranges`. This effect also propagates into `split.networks.time.based` (PR #274, 87911ade231c44b93be194a1d6734f7de043a4af)
-- Adjust `metrics.scale.freeness` and `metrics.is.scale.free` functions be compatible with both older and newer igraph versions (PR #274, 4b0d5221dd56bb3c9ddf196f67719d4f503d9b61)
+- Adjust `metrics.scale.freeness` and `metrics.is.scale.free` functions to be compatible with both older and newer igraph versions (PR #274, 4b0d5221dd56bb3c9ddf196f67719d4f503d9b61)
 
 ## 4.4
 
