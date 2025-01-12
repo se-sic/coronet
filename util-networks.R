@@ -22,7 +22,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -1282,16 +1282,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## combine the networks:
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
-            for (attr in igraph::edge_attr_names(u)) {
+
+            ## 2) replace NULLs in edge attributes with NAs for consistency
+            u = Reduce(function(u, attr) {
                 values = igraph::edge_attr(u, attr)
                 NULLs = sapply(values, is.null)
                 if (any(NULLs)) {
                     values[NULLs] = NA
                     u = igraph::set_edge_attr(u, attr, value = values)
                 }
-            }
+                return(u)
+            }, igraph::edge_attr_names(u), u)
 
-            ## 2) add the bipartite edges
+            ## 3) add the bipartite edges
             u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
             ## add range attribute for later analysis (if available)
@@ -1810,14 +1813,16 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         ## add the vertex sequences as edges to the network
         net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
 
-        for (attr in igraph::edge_attr_names(net)) {
+        ## replace NULLs in edge attributes with NAs for consistency
+        net = Reduce(function(net, attr) {
             values = igraph::edge_attr(net, attr)
             NULLs = sapply(values, is.null)
             if (any(NULLs)) {
                 values[NULLs] = NA
                 net = igraph::set_edge_attr(net, attr, value = values)
             }
-        }
+            return(net)
+        }, igraph::edge_attr_names(net), net)
     }
 
     return(net)
