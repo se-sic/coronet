@@ -34,7 +34,9 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
       - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
       - [Handling data independently](#handling-data-independently)
-      - [Core/Peripheral Classification](#coreperipheral-classification)
+      - [Core/Peripheral classification](#coreperipheral-classification)
+           - [Count-based metrics](#count-based-metrics)
+           - [Network-based metrics](#network-based-metrics)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -376,32 +378,13 @@ Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very f
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
 
-#### Core/Peripheral Classification
+#### Core/Peripheral classification
 
-Core/Peripheral classification descibes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute 80% of all work in a given project. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired 80:20 split is achieved.
+Core/Peripheral classification descibes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute most of the work in a given project. The concrete threshold can be configured in `CORE.THRESHOLD` and is per default set to 80%, a value commonly used in literature. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired split is achieved.
 
-In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors.
-- `network.degree`
-    * calculates scores for authors based on the vertex degrees in an author network
-    * the degree of a vertex is the number of adjacent edges
-- `network.eigen`
-    * calculates scores for authors based on the eigenvector centralities in an author network
-    * eigenvector centrality measures the importance of vertices within a graph by granting a higher score for outgoing edges proportional to the score of the target vertex
-- `network.hierarchy`
-    * calculates scores for authors based on the hierarchy found within an author network
-    * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
-- `network.betweenness`
-    * calculates scores for authors based on the betweenness of vertices in an author network
-    * betweenness measures the number of shortest paths that go through each vertex
-- `network.closeness`
-    * calculates scores for authors based on the closeness of vertices in an author network
-    * closeness measures how close vertices are to each other by taking the inverse if the sum of all their shortest paths
-- `network.pagerank`
-    * calculates scores for authors based on the pagerank of vertices in an author network
-    * pagerank refers to the pagerank algorithm employed by google, which is closely related to eigenvector centrality
-- `network.eccentricity`
-    * calculates scores for authors based on the eccentricity of vertices in an author network
-    * eccentricity measures the distance to each vertices' furthest reachablke vertex
+##### Count-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using count-based metrics.
 - `commit.count`
     * calculates scores based on the number of commits per author
 - `loc.count`
@@ -417,7 +400,32 @@ In this section, we provide descriptions of the different algorithms we provide 
 - `issue.commented.in.count`
     * calculates scores based on the number of issues each author commented in
 - `issue.created.count`
-    * calculates scores based on the number of issues each created
+    * calculates scores based on the number of issues each author created
+
+##### Network-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks.
+- `network.degree`
+    * calculates scores for authors based on the vertex degrees in an author network
+    * the degree of a vertex is the number of adjacent edges
+- `network.eigen`
+    * calculates scores for authors based on the eigenvector centralities in an author network
+    * eigenvector centrality measures the importance of vertices within a network by awarding scores for adjacent edges proportional to the score of the connected vertex
+- `network.hierarchy`
+    * calculates scores for authors based on the hierarchy found within an author network
+    * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
+- `network.betweenness`
+    * calculates scores for authors based on the betweenness of vertices in an author network
+    * betweenness measures the number of shortest paths between any two vertices that go through each vertex
+- `network.closeness`
+    * calculates scores for authors based on the closeness of vertices in an author network
+    * closeness measures how close vertices are to each other by calculating the sum of their shortest paths to all other vertices
+- `network.pagerank`
+    * calculates scores for authors based on the pagerank of vertices in an author network
+    * pagerank refers to the pagerank algorithm employed by google, which is closely related to eigenvector centrality
+- `network.eccentricity`
+    * calculates scores for authors based on the eccentricity of vertices in an author network
+    * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
 
 ### How-to
 

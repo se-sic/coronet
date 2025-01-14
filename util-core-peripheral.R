@@ -259,8 +259,9 @@ get.author.class.by.type = function(network = NULL,
     } else if (type == "network.eccentricity") {
         eccentricity.vec = igraph::eccentricity(network)
         ## since core developers are expected to have a lower eccentricity,
-        ## we need to invert all non-zero values
-        ## all entries with value zero are isolated vertices, so the value is already correct
+        ## we need to invert all non-zero values.
+        ## all entries with value zero are isolated vertices, so the expected value is also zero.
+        ## thus, they should not be inverted.
         indices = which(eccentricity.vec > 0)
         eccentricity.vec[indices] = max(eccentricity.vec) - eccentricity.vec[indices]
         ## Construct centrality dataframe
