@@ -106,6 +106,49 @@ test_that("Eigenvector classification", {
     expect_equal(expected, result, tolerance = 0.0001)
 })
 
+test_that("Hierarchy classification", {
+
+    vertices = data.frame(
+        name = c("Olaf", "Thomas", "Karl"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Olaf", "Thomas", "Karl", "Thomas"),
+        to = c("Thomas", "Karl", "Olaf", "Thomas"),
+        func = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        file = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.func = c("test2.c::test2", "test2.c::test2",
+                      "test3.c::test_function", "test2.c::test2"),
+        base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        artifact.type = c("CommitInteraction", "CommitInteraction", "CommitInteraction", "CommitInteraction"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
+        )
+    test.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+
+    ## Act
+    result = get.author.class.network.hierarchy(test.network)
+    ## Assert
+    expected.core = data.frame(author.name = c("Thomas"),
+                               hierarchy = c(4))
+    expected.peripheral = data.frame(author.name = c("Olaf", "Karl"),
+                                     hierarchy = c(2, 2))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
 test_that("Betweenness classification", {
 
     ## Act
