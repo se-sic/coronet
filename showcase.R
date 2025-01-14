@@ -404,7 +404,7 @@ plot.network(g.simplified)
 
 ## construct sample network for plotting
 g = get.sample.network()
-g = igraph::as.directed(g, mode = "arbitrary")
+g = igraph::as_directed(g, mode = "arbitrary")
 g = g + igraph::edges("A6", "A5", type = TYPE.EDGES.INTRA, weight = 2,
                       relation = "callgraph", artifact.type = "Feature")
 g = simplify.network(g)

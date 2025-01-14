@@ -232,6 +232,7 @@ test_that("Network construction of the undirected author-cochange network", {
     )
     ## 3) build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
 
     ##
@@ -316,6 +317,7 @@ test_that("Network construction of the undirected but temorally ordered author-c
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -357,6 +359,7 @@ test_that("Network construction of the directed author-cochange network", {
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = TRUE, vertices = authors)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -403,6 +406,7 @@ test_that("Network construction of the directed author-cochange network without 
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = TRUE, vertices = authors)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -431,25 +435,26 @@ test_that("Network construction of the undirected simplified author-cochange net
     date.attr = igraph::edge_attr(network.built, "date")
     date.conversion.function = ifelse(all(sapply(date.attr, lubridate::is.POSIXct)),
                                       get.date.from.unix.timestamp, identity)
+    date.conversion.function = get.date.from.unix.timestamp
 
     ## edge attributes
     data = data.frame(
         from = c("Björn", "Olaf", "Olaf", "Karl"),
         to = c("Olaf", "Karl", "Thomas", "Thomas"),
-        date = I(list(date.conversion.function(c(1468339139, 1468339245)),
-                      date.conversion.function(c(1468339541, 1468339570)),
-                      date.conversion.function(c(1468339541, 1468339592)),
-                      date.conversion.function(c(1468339570, 1468339592)))),
-        artifact.type = I(list(c("Feature", "Feature"), c("Feature", "Feature"), c("Feature", "Feature"),
-                               c("Feature", "Feature"))),
+        date = I(list(as.list(date.conversion.function(c(1468339139, 1468339245))),
+                      as.list(date.conversion.function(c(1468339541, 1468339570))),
+                      as.list(date.conversion.function(c(1468339541, 1468339592))),
+                      as.list(date.conversion.function(c(1468339570, 1468339592))))),
+        artifact.type = I(list(list("Feature", "Feature"), list("Feature", "Feature"), list("Feature", "Feature"),
+                               list("Feature", "Feature"))),
         hash = I(list(
-            c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
-            c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
-            c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-            c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))),
-        file = I(list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"))),
-        artifact = I(list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"),
-                          c("Base_Feature", "Base_Feature"))),
+            list("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+            list("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+            list("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+            list("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))),
+        file = I(list(list("test.c", "test.c"), list("test2.c", "test3.c"), list("test2.c", "test2.c"), list("test3.c", "test2.c"))),
+        artifact = I(list(list("A", "A"), list("Base_Feature", "Base_Feature"), list("Base_Feature", "Base_Feature"),
+                          list("Base_Feature", "Base_Feature"))),
         weight = 2,
         type = TYPE.EDGES.INTRA,
         relation = "cochange"
@@ -589,6 +594,7 @@ test_that("Network construction of the undirected author-issue network with all 
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -649,6 +655,7 @@ test_that("Network construction of the undirected author-issue network with just
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     expect_true(igraph::identical_graphs(network.built, network.expected))
 })
@@ -677,6 +684,7 @@ test_that("Network construction with only untracked files (no edges expected)", 
     vertices = list(name = c("Karl", "Thomas"), kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     network.expected = create.empty.network(directed = FALSE, add.attributes = TRUE)
     network.expected = igraph::add_vertices(network.expected, nv = max(lengths(vertices)), attr = vertices)
+    network.expected = convert.edge.attributes.to.list(network.expected)
 
     ## test
     expect_true(igraph::identical_graphs(network.built, network.expected))
@@ -726,6 +734,7 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
     network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(

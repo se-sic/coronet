@@ -234,7 +234,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
 
     ## Power-law fiting
     ## (by  Mitchell Joblin <mitchell.joblin.ext@siemens.com>, Siemens AG,  2012, 2013)
-    p.fit = igraph::power.law.fit(v.degree, implementation = "plfit")
+    p.fit = igraph::fit_power_law(v.degree, implementation = "plfit", p.value = TRUE)
     param.names = c("alpha", "xmin", "KS.p")
     res = list()
     res[param.names] = p.fit[param.names]
@@ -250,7 +250,7 @@ metrics.scale.freeness = function(network, minimum.number.vertices = 30) {
        & non.zero.degree.v.count >= minimum.number.vertices) {
         ## vertex degree is sorted above
         x.min = v.degree[[minimum.number.vertices]]
-        p.fit = power.law.fit(v.degree, implementation = "plfit", xmin = x.min)
+        p.fit = igraph::fit_power_law(v.degree, implementation = "plfit", xmin = x.min, p.value = TRUE)
         res[param.names] = p.fit[param.names]
 
         ## Check percent of vertices under power-law

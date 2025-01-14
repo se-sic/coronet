@@ -22,7 +22,7 @@
 ## Copyright 2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -978,6 +978,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
+            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
@@ -1026,6 +1027,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
+            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
@@ -1068,6 +1070,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
+            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
@@ -1174,6 +1177,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(network, "range") = private$proj.data$get.range()
             }
 
+            network = convert.edge.attributes.to.list(network)
             return(network)
         },
 
@@ -1263,7 +1267,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (igraph::is_directed(authors.net) && !igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is directed, but artifact network is not.",
                                         "Converting artifact network..."))
-                artifacts.net = igraph::as.directed(artifacts.net, mode = "mutual")
+                artifacts.net = igraph::as_directed(artifacts.net, mode = "mutual")
             } else if (!igraph::is_directed(authors.net) && igraph::is_directed(artifacts.net)) {
                 logging::logwarn(paste0("Author network is undirected, but artifact network is not.",
                                         "Converting artifact network..."))
@@ -1279,23 +1283,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## 1) merge the existing networks
             u = igraph::disjoint_union(authors.net, artifacts.net)
 
-            ## As there is a bug in 'igraph::disjoint_union' in igraph from its version 1.4.0 on, which is still
-            ## present, at least, until its version 2.0.3 (see https://github.com/igraph/rigraph/issues/761), we need
-            ## to adjust the type of the date attribute of the outcome of 'igraph::disjoint_union'.
-            ## Note: The following temporary fix only considers the 'date' attribute. However, this problem could also
-            ## affect several other attributes, whose classes are not adjusted in our temporary fix.
-            ## The following code block should be redundant as soon as igraph has fixed their bug.
-            u.actual.edge.attribute.date = igraph::edge_attr(u, "date")
-            if (!is.null(u.actual.edge.attribute.date)) {
-                if (is.list(u.actual.edge.attribute.date)) {
-                    u.expected.edge.attribute.date = lapply(u.actual.edge.attribute.date, get.date.from.unix.timestamp)
-                } else {
-                    u.expected.edge.attribute.date = get.date.from.unix.timestamp(u.actual.edge.attribute.date)
+            ## 2) replace NULLs in edge attributes with NAs for consistency
+            u = Reduce(function(u, attr) {
+                values = igraph::edge_attr(u, attr)
+                NULLs = sapply(values, is.null)
+                if (any(NULLs)) {
+                    values[NULLs] = NA
+                    u = igraph::set_edge_attr(u, attr, value = values)
                 }
-                u = igraph::set_edge_attr(u, "date", value = u.expected.edge.attribute.date)
-            }
+                return(u)
+            }, igraph::edge_attr_names(u), u)
 
-            ## 2) add the bipartite edges
+            ## 3) add the bipartite edges
             u = add.edges.for.bipartite.relation(u, authors.to.artifacts, private$network.conf)
 
             ## add range attribute for later analysis (if available)
@@ -1632,6 +1631,7 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 
     ## initialize edge weights
     net = igraph::set_edge_attr(net, "weight", value = 1)
+    net = convert.edge.attributes.to.list(net)
 
     logging::logdebug("construct.network.from.edge.list: finished.")
 
@@ -1661,9 +1661,18 @@ merge.network.data = function(vertex.data, edge.data) {
     edge.data.filtered = Filter(function(ed) {
         return(nrow(ed) > 0)
     }, edge.data)
-    ## 2) call rbind
+    ## 2) add in missing columns
+    all.columns = Reduce(union, lapply(edge.data.filtered, colnames))
+    edge.data.filtered = lapply(edge.data.filtered, function(edges) {
+        missing.columns = setdiff(all.columns, colnames(edges))
+        for (column in missing.columns) {
+            edges[[column]] = NA
+        }
+        return(edges)
+    })
+    ## 3) call rbind
     edges = plyr::rbind.fill(edge.data.filtered)
-    ## 3) correct empty results
+    ## 4) correct empty results
     if (is.null(edges)) {
         edges = create.empty.edge.list()
     }
@@ -1792,8 +1801,28 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         extra.edge.attributes["type"] = TYPE.EDGES.INTER # add egde type
         extra.edge.attributes["relation"] = relation # add relation type
 
+        ## Convert edge attributes to list similarly to 'convert.edge.attributes.to.list'.
+        ## We cannot use 'convert.edge.attributes.to.list', as we operate on edge
+        ## data directly, instead of a network.
+        edge.attrs = names(extra.edge.attributes)
+        which.attrs = !(edge.attrs %in% names(EDGE.ATTR.HANDLING))
+        for (attr in edge.attrs[which.attrs]) {
+            extra.edge.attributes[[attr]] = as.list(extra.edge.attributes[[attr]])
+        }
+
         ## add the vertex sequences as edges to the network
         net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+
+        ## replace NULLs in edge attributes with NAs for consistency
+        net = Reduce(function(net, attr) {
+            values = igraph::edge_attr(net, attr)
+            NULLs = sapply(values, is.null)
+            if (any(NULLs)) {
+                values[NULLs] = NA
+                net = igraph::set_edge_attr(net, attr, value = values)
+            }
+            return(net)
+        }, igraph::edge_attr_names(net), net)
     }
 
     return(net)
@@ -1807,12 +1836,12 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
 #' @return the new empty network
 create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
     ## create empty network
-    net = igraph::graph.empty(0, directed = directed)
+    net = igraph::make_empty_graph(0, directed = directed)
 
     # set proper attributes if wanted
     if (add.attributes) {
         mandatory.edge.attributes.classes = list(
-            date = c("POSIXct", "POSIXt"), artifact.type = "character", weight = "numeric",
+            date = "list", artifact.type = "list", weight = "numeric",
             type = "character", relation = "character"
         )
         mandatory.vertex.attributes.classes = list(name = "character", kind = "character", type = "character")
@@ -2074,7 +2103,9 @@ extract.bipartite.network.from.network = function(network, remove.isolates = FAL
     }
 
     ## only retain all bipartite edges and induced vertices
-    bip.network = igraph::subgraph.edges(network, igraph::E(network)[type == TYPE.EDGES.INTER], delete.vertices = remove.isolates)
+    bip.network = igraph::subgraph_from_edges(network,
+                                              igraph::E(network)[type == TYPE.EDGES.INTER],
+                                              delete.vertices = remove.isolates)
 
     return(bip.network)
 }
@@ -2142,6 +2173,34 @@ get.data.sources.from.relations = function(network) {
     }, USE.NAMES = FALSE) # avoid element names as we only want the data source's name
 
     return(data.sources)
+}
+
+#' Convert edge attributes to list type.
+#'
+#' This conversion is necessary to ensure merging networks works in all cases,
+#' especially when merging simplified networks with unsimplified networks as
+#' simplification may convert edge attributes to list type. Attributes that are
+#' explicitly considered during simplification (through EDGE.ATTR.HANDLING)
+#' generally do not need to be converted.
+#'
+#' @param network the network of which the edge attributes are to be converted
+#' @param remain.as.is the edge attributes to remain as they are
+#'                     [default: names(EDGE.ATTR.HANDLING)]
+#'
+#' @return the network with converted edge attributes
+convert.edge.attributes.to.list = function(network, remain.as.is = names(EDGE.ATTR.HANDLING)) {
+
+    ## get edge attributes
+    edge.attrs = igraph::edge_attr_names(network)
+    which.attrs = !(edge.attrs %in% remain.as.is)
+
+    ## convert edge attributes to list type
+    for (attr in edge.attrs[which.attrs]) {
+        list.attr = as.list(igraph::edge_attr(network, attr))
+        network = igraph::set_edge_attr(network, attr, value = list.attr)
+    }
+
+    return(network)
 }
 
 

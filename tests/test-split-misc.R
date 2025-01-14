@@ -109,11 +109,11 @@ test_that("Split network and data on low level (split.dataframe.by.bins, split.n
 
     ## results
     expected = list(
-        igraph::subgraph.edges(net, c(1,  5,  7)),
-        igraph::subgraph.edges(net, c(9, 12)),
-        igraph::subgraph.edges(net, c(2,  6,  8, 14)),
-        igraph::subgraph.edges(net, c(4, 11, 13)),
-        igraph::subgraph.edges(net, c(3, 10, 15))
+        igraph::subgraph_from_edges(net, c(1,  5,  7)),
+        igraph::subgraph_from_edges(net, c(9, 12)),
+        igraph::subgraph_from_edges(net, c(2,  6,  8, 14)),
+        igraph::subgraph_from_edges(net, c(4, 11, 13)),
+        igraph::subgraph_from_edges(net, c(3, 10, 15))
     )
     results = split.network.by.bins(net, bins, bins.vector)
 
@@ -394,6 +394,7 @@ test_that("Check and correct duplicate range names during network activity-based
         igraph::edges(rep(c("A", "B"), times = length(dates)))
     ## set some date attributes that are appropriate for the test case
     net = igraph::set_edge_attr(net, "date", value = dates)
+    net = convert.edge.attributes.to.list(net)
 
     ## define split arguments
     split.function = split.network.activity.based

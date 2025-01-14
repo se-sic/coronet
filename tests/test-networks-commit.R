@@ -12,6 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 
 ## All Rights Reserved.
 
@@ -81,7 +82,8 @@ patrick::with_parameters_test_that("Network construction with commit-interaction
         type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
         relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
         )
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
     expect_true(igraph::identical_graphs(network.built, network))
 
     network.new.attr = add.vertex.attribute.commit.network(network.built, proj.data,  "deleted.lines", "NO_DATA")
@@ -131,7 +133,8 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
     if (test.directed) {
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -186,7 +189,8 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
     if (test.directed) {
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -237,7 +241,8 @@ patrick::with_parameters_test_that("Network construction with cochange as relati
     if (test.directed) {
         edges <- edges[, c(2, 1, 3, 4, 5, 6, 7, 8), ]
     }
-    network = igraph::graph.data.frame(edges, directed = test.directed, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = test.directed, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.built, network))
 }, patrick::cases(
@@ -291,7 +296,8 @@ test_that("Adding vertex attributes to a commit network", {
         relation = c("cochange", "cochange", "cochange", "cochange")
         )
 
-    network = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network = convert.edge.attributes.to.list(network)
 
     expect_true(igraph::identical_graphs(network.new.attr, network))
 
@@ -332,7 +338,8 @@ test_that("Adding vertex attributes to a commit network", {
         relation = c("cochange", "cochange", "cochange", "cochange")
         )
 
-    network.two = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+    network.two = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.two = convert.edge.attributes.to.list(network.two)
 
     expect_true(igraph::identical_graphs(network.new.attr, network.two))
 })

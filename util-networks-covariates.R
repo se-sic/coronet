@@ -173,7 +173,7 @@ add.vertex.attribute.commit.network = function(network, project.data,
         }
         attribute.values = c(attribute.values, value)
     }
-    net.with.attr = igraph::set.vertex.attribute(network, attr.name, value = attribute.values)
+    net.with.attr = igraph::set_vertex_attr(network, attr.name, value = attribute.values)
 }
 
 

@@ -67,10 +67,10 @@ patrick::with_parameters_test_that("Split a network time-based (time.period = ..
     author.net = net.builder$get.author.network()
 
     expected = list(
-        "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph.edges(author.net, c(1:2)),
-        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:04:59-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(3:8))
+        "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph_from_edges(author.net, c(1:2)),
+        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:04:59-2016-07-12 16:06:33" = igraph::subgraph_from_edges(author.net, c(3:8))
     )
     results = split.network.time.based(author.net, time.period = "2 mins")
 
@@ -189,13 +189,13 @@ patrick::with_parameters_test_that("Split a network time-based (time.period = ..
     author.net = net.builder$get.author.network()
 
     expected = list(
-        "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph.edges(author.net, c(1:2)),
-        "2016-07-12 15:59:59-2016-07-12 16:01:59" = igraph::subgraph.edges(author.net, c(2)),
-        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:01:59-2016-07-12 16:03:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:03:59-2016-07-12 16:05:59" = igraph::subgraph.edges(author.net, c(3,5)),
-        "2016-07-12 16:04:59-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(3:8))
+        "2016-07-12 15:58:59-2016-07-12 16:00:59" = igraph::subgraph_from_edges(author.net, c(1:2)),
+        "2016-07-12 15:59:59-2016-07-12 16:01:59" = igraph::subgraph_from_edges(author.net, c(2)),
+        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:01:59-2016-07-12 16:03:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:03:59-2016-07-12 16:05:59" = igraph::subgraph_from_edges(author.net, c(3,5)),
+        "2016-07-12 16:04:59-2016-07-12 16:06:33" = igraph::subgraph_from_edges(author.net, c(3:8))
     )
     results = split.network.time.based(author.net, time.period = "2 mins", sliding.window = TRUE)
 
@@ -264,10 +264,10 @@ patrick::with_parameters_test_that("Split a network time-based (bins = ...), ", 
 
     ## results
     expected = list(
-        "2016-07-12 15:58:00-2016-07-12 16:00:59" = igraph::subgraph.edges(author.net, c(1:2)),
-        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:04:59-2016-07-12 17:21:43" = igraph::subgraph.edges(author.net, c(3:8))
+        "2016-07-12 15:58:00-2016-07-12 16:00:59" = igraph::subgraph_from_edges(author.net, c(1:2)),
+        "2016-07-12 16:00:59-2016-07-12 16:02:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:02:59-2016-07-12 16:04:59" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:04:59-2016-07-12 17:21:43" = igraph::subgraph_from_edges(author.net, c(3:8))
     )
     results = split.network.time.based(author.net, bins = bins, sliding.window = test.sliding.window)
 
@@ -377,10 +377,10 @@ patrick::with_parameters_test_that("Split a network time-based with equal-sized 
     author.net = net.builder$get.author.network()
 
     expected = list(
-        "2016-07-12 15:58:59-2016-07-12 16:00:53" = igraph::subgraph.edges(author.net, c(1:2)),
-        "2016-07-12 16:00:53-2016-07-12 16:02:47" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:02:47-2016-07-12 16:04:41" = igraph::subgraph.edges(author.net, c()),
-        "2016-07-12 16:04:41-2016-07-12 16:06:33" = igraph::subgraph.edges(author.net, c(3:8))
+        "2016-07-12 15:58:59-2016-07-12 16:00:53" = igraph::subgraph_from_edges(author.net, c(1:2)),
+        "2016-07-12 16:00:53-2016-07-12 16:02:47" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:02:47-2016-07-12 16:04:41" = igraph::subgraph_from_edges(author.net, c()),
+        "2016-07-12 16:04:41-2016-07-12 16:06:33" = igraph::subgraph_from_edges(author.net, c(3:8))
     )
     results = split.network.time.based(author.net, number.windows = 4)
 
