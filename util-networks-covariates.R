@@ -14,7 +14,7 @@
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2025 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Klara Schlüter <schluete@fim.uni-passau.de>
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2020 by Christian Hechtl <hechtl@cs.uni-saarland.de>
@@ -325,13 +325,13 @@ add.vertex.attribute.author.commit.count.committer = function(list.of.networks, 
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.commit.count.committer.not.author = function(list.of.networks, project.data,
-                                                                  name = "commit.count.committer.not.author",
-                                                                  aggregation.level = c("range", "cumulative",
-                                                                                        "all.ranges",
-                                                                                        "project.cumulative",
-                                                                                        "project.all.ranges",
-                                                                                        "complete"),
-                                                                  default.value = 0L) {
+                                                                         name = "commit.count.committer.not.author",
+                                                                         aggregation.level = c("range", "cumulative",
+                                                                                               "all.ranges",
+                                                                                               "project.cumulative",
+                                                                                               "project.all.ranges",
+                                                                                               "complete"),
+                                                                         default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.not.author.commit.count, "committer.name"
@@ -354,13 +354,13 @@ add.vertex.attribute.author.commit.count.committer.not.author = function(list.of
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.commit.count.committer.and.author = function(list.of.networks, project.data,
-                                                                  name = "commit.count.committer.and.author",
-                                                                  aggregation.level = c("range", "cumulative",
-                                                                                        "all.ranges",
-                                                                                        "project.cumulative",
-                                                                                        "project.all.ranges",
-                                                                                        "complete"),
-                                                                  default.value = 0L) {
+                                                                         name = "commit.count.committer.and.author",
+                                                                         aggregation.level = c("range", "cumulative",
+                                                                                               "all.ranges",
+                                                                                               "project.cumulative",
+                                                                                               "project.all.ranges",
+                                                                                               "complete"),
+                                                                         default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.and.author.commit.count, "committer.name"
@@ -384,13 +384,13 @@ add.vertex.attribute.author.commit.count.committer.and.author = function(list.of
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.commit.count.committer.or.author = function(list.of.networks, project.data,
-                                                                  name = "commit.count.committer.or.author",
-                                                                  aggregation.level = c("range", "cumulative",
-                                                                                        "all.ranges",
-                                                                                        "project.cumulative",
-                                                                                        "project.all.ranges",
-                                                                                        "complete"),
-                                                                  default.value = 0L) {
+                                                                        name = "commit.count.committer.or.author",
+                                                                        aggregation.level = c("range", "cumulative",
+                                                                                              "all.ranges",
+                                                                                              "project.cumulative",
+                                                                                              "project.all.ranges",
+                                                                                              "complete"),
+                                                                        default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.committer.or.author.commit.count, "name"
@@ -414,10 +414,10 @@ add.vertex.attribute.author.commit.count.committer.or.author = function(list.of.
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.artifact.count = function(list.of.networks, project.data, name = "artifact.count",
-                                               aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                     "project.cumulative", "project.all.ranges",
-                                                                     "complete"),
-                                               default.value = 0L) {
+                                                      aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                            "project.cumulative", "project.all.ranges",
+                                                                            "complete"),
+                                                      default.value = 0L) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     nets.with.attr = split.and.add.vertex.attribute(
@@ -452,11 +452,11 @@ add.vertex.attribute.author.artifact.count = function(list.of.networks, project.
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.mail.count = function(list.of.networks, project.data,
-                                           name = "mail.count",
-                                           aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                 "project.cumulative", "project.all.ranges",
-                                                                 "complete"),
-                                           default.value = 0L) {
+                                                  name = "mail.count",
+                                                  aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                        "project.cumulative", "project.all.ranges",
+                                                                        "complete"),
+                                                  default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.author.mail.count, "author.name"
@@ -479,11 +479,11 @@ add.vertex.attribute.author.mail.count = function(list.of.networks, project.data
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.mail.thread.count = function(list.of.networks, project.data,
-                                           name = "mail.thread.count",
-                                           aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                 "project.cumulative", "project.all.ranges",
-                                                                 "complete"),
-                                           default.value = 0L) {
+                                                         name = "mail.thread.count",
+                                                         aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                               "project.cumulative",
+                                                                               "project.all.ranges", "complete"),
+                                                         default.value = 0L) {
     nets.with.attr = add.vertex.attribute.count.helper(
         list.of.networks, project.data, name, aggregation.level,
         default.value, get.author.mail.thread.count, "author.name"
@@ -511,12 +511,13 @@ add.vertex.attribute.author.mail.thread.count = function(list.of.networks, proje
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issue.count = function(list.of.networks, project.data,
-                                            name = "issue.count",
-                                            aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                  "project.cumulative", "project.all.ranges",
-                                                                  "complete"),
-                                            default.value = 0L, issue.type = c("all", "pull.requests", "issues"),
-                                            use.unfiltered.data = FALSE) {
+                                                   name = "issue.count",
+                                                   aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                         "project.cumulative", "project.all.ranges",
+                                                                         "complete"),
+                                                   default.value = 0L,
+                                                   issue.type = c("all", "pull.requests", "issues"),
+                                                   use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -550,14 +551,13 @@ add.vertex.attribute.author.issue.count = function(list.of.networks, project.dat
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issues.commented.count = function(list.of.networks, project.data,
-                                                          name = "issues.commented.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues"),
-                                                          use.unfiltered.data = FALSE) {
+                                                              name = "issues.commented.count",
+                                                              aggregation.level = c("range", "cumulative",
+                                                                                    "all.ranges", "project.cumulative",
+                                                                                    "project.all.ranges", "complete"),
+                                                              default.value = 0L,
+                                                              issue.type = c("all", "pull.requests", "issues"),
+                                                              use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -594,14 +594,13 @@ add.vertex.attribute.author.issues.commented.count = function(list.of.networks, 
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issue.creation.count = function(list.of.networks, project.data,
-                                                          name = "issue.creation.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues"),
-                                                          use.unfiltered.data = TRUE) {
+                                                            name = "issue.creation.count",
+                                                            aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                  "project.cumulative",
+                                                                                  "project.all.ranges", "complete"),
+                                                            default.value = 0L,
+                                                            issue.type = c("all", "pull.requests", "issues"),
+                                                            use.unfiltered.data = TRUE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -634,14 +633,13 @@ add.vertex.attribute.author.issue.creation.count = function(list.of.networks, pr
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.issue.comment.count = function(list.of.networks, project.data,
-                                                          name = "issue.comment.count",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = 0L, issue.type = c("all", "pull.requests",
-                                                                                             "issues"),
-                                                          use.unfiltered.data = FALSE) {
+                                                           name = "issue.comment.count",
+                                                           aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                 "project.cumulative",
+                                                                                 "project.all.ranges", "complete"),
+                                                           default.value = 0L,
+                                                           issue.type = c("all", "pull.requests", "issues"),
+                                                           use.unfiltered.data = FALSE) {
     issue.type = match.arg(issue.type)
 
     if (missing(name) && identical(issue.type, "pull.requests")) {
@@ -688,30 +686,105 @@ add.vertex.attribute.author.email = function(list.of.networks, project.data, nam
 
 #' Add first activity attribute.
 #'
-#' @param list.of.networks The network list.
-#' @param project.data The project data.
+#' @param list.of.networks The network list
+#' @param project.data The project data
 #' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
-#'                       \code{issues}. [default: c("mails", "commits", "issues")]
-#' @param name The attribute name to add. [default: "first.activity"]
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "first.activity"]
 #' @param aggregation.level Determines the data to use for the attribute calculation.
 #'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
 #'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
 #'                          \code{"complete"}. See \code{split.data.by.networks} for
 #'                          more details. [default: "complete"]
-#' @param default.value The default value to add if a vertex has no matching value. [default: NA].
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
 #' @param combine.all.activity.types Flag indicating that one value, computed over all given
-#'                                           \code{activity.types} is of interest (instead of one value per type).
-#'                                           [default: FALSE]
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
 #'
-#' @return A list of networks with the added attribute.
+#' @return A list of networks with the added attribute
+#'
+#' @seealso add.vertex.attribute.author.aggregated.activity
 add.vertex.attribute.author.first.activity = function(list.of.networks, project.data,
-                                               activity.types = c("mails", "commits", "issues"),
-                                               name = "first.activity",
-                                               aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                     "project.cumulative", "project.all.ranges",
-                                                                     "complete"),
-                                               default.value = NA,
-                                               combine.activity.types = FALSE) {
+                                                      activity.types = c("mails", "commits", "issues"),
+                                                      name = "first.activity",
+                                                      aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                            "project.cumulative", "project.all.ranges",
+                                                                            "complete"),
+                                                      default.value = NA,
+                                                      combine.activity.types = FALSE) {
+    return(add.vertex.attribute.author.aggregated.activity(list.of.networks, project.data, activity.types, name,
+                                                           aggregation.level, default.value, combine.activity.types,
+                                                           aggregation.function = min,
+                                                           data.aggregation.function = get.first.activity.data))
+}
+
+
+#' Add last activity attribute.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "last.activity"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details. [default: "complete"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
+#'
+#' @return A list of networks with the added attribute
+#'
+#' @seealso add.vertex.attribute.author.aggregated.activity
+add.vertex.attribute.author.last.activity = function(list.of.networks, project.data,
+                                                     activity.types = c("mails", "commits", "issues"),
+                                                     name = "last.activity",
+                                                     aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                           "project.cumulative", "project.all.ranges",
+                                                                           "complete"),
+                                                     default.value = NA,
+                                                     combine.activity.types = FALSE) {
+    return(add.vertex.attribute.author.aggregated.activity(list.of.networks, project.data, activity.types, name,
+                                                           aggregation.level, default.value, combine.activity.types,
+                                                           aggregation.function = max,
+                                                           data.aggregation.function = get.last.activity.data))
+}
+
+
+#' Add aggregated activity-date attribute.
+#'
+#' @param list.of.networks The network list
+#' @param project.data The project data
+#' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
+#' @param name The attribute name to add [default: "aggregated.activity"]
+#' @param aggregation.level Determines the data to use for the attribute calculation.
+#'                          One of \code{"range"}, \code{"cumulative"}, \code{"all.ranges"},
+#'                          \code{"project.cumulative"}, \code{"project.all.ranges"}, and
+#'                          \code{"complete"}. See \code{split.data.by.networks} for
+#'                          more details [default: "complete"]
+#' @param default.value The default value to add if a vertex has no matching value [default: NA]
+#' @param combine.all.activity.types Flag indicating that one value, computed over all given
+#'                                   \code{activity.types} is of interest (instead of one value per type)
+#'                                   [default: FALSE]
+#' @param aggregation.function The function that should be used to aggregate when combining all activity types
+#' @param data.aggregation.function The function that should be used to aggregate the activity information per author
+#'                                  within activity types
+#'
+#' @return A list of networks with the added attribute
+add.vertex.attribute.author.aggregated.activity = function(list.of.networks, project.data,
+                                                           activity.types = c("mails", "commits", "issues"),
+                                                           name = "aggregated.activity",
+                                                           aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                                 "project.cumulative",
+                                                                                 "project.all.ranges", "complete"),
+                                                           default.value = NA,
+                                                           combine.activity.types = FALSE,
+                                                           aggregation.function,
+                                                           data.aggregation.function) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
@@ -730,17 +803,17 @@ add.vertex.attribute.author.first.activity = function(list.of.networks, project.
     }
 
     compute.attr = function(range, range.data, net) {
-        data = get.first.activity.data(range.data, parsed.activity.types, type.default)
+        data = data.aggregation.function(range.data, parsed.activity.types, type.default)
 
-        ## If configured, find minimum over all activity types per author, for example:
+        ## If configured, aggregate over all activity types per author. For example, for first activity
         ## data
         ##      list(authorA = list(mails = 1, commits = 2), authorB = list(mails = 3, commits = 3))
         ## yields
         ##      list(authorA = list(all.activities = 1), authorB = list(all.activities = 3))
         if (combine.activity.types) {
             data = parallel::mclapply(data, function(item.list) {
-                min.value = min(do.call(base::c, item.list), na.rm = TRUE)
-                return(list(all.activities = min.value))
+                aggregated.value = aggregation.function(do.call(base::c, item.list), na.rm = TRUE)
+                return(list(all.activities = aggregated.value))
             })
         }
         return(data)
@@ -760,7 +833,7 @@ add.vertex.attribute.author.first.activity = function(list.of.networks, project.
 #' @param project.data The project data
 #' @param name The attribute name to add [default: "active.ranges"]
 #' @param activity.types The kinds of activity to use as basis: One or more of \code{mails}, \code{commits} and
-#'                       \code{issues}. [default: c("mails", "commits", "issues")]
+#'                       \code{issues} [default: c("mails", "commits", "issues")]
 #' @param default.value The default value to add if a vertex has no matching value [default: list()]
 #' @param combine.activity.types Flag indicating that one value, computed over all given
 #'                                           \code{activity.types} is of interest (instead of one value per type).
@@ -768,9 +841,9 @@ add.vertex.attribute.author.first.activity = function(list.of.networks, project.
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.author.active.ranges = function(list.of.networks, project.data, name = "active.ranges",
-                                              activity.types = c("mails", "commits", "issues"),
-                                              default.value = list(),
-                                              combine.activity.types = FALSE) {
+                                                     activity.types = c("mails", "commits", "issues"),
+                                                     default.value = list(),
+                                                     combine.activity.types = FALSE) {
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, "range")
     parsed.activity.types = match.arg.or.default(activity.types, several.ok = TRUE)
 
@@ -865,8 +938,8 @@ add.vertex.attribute.author.role.simple = function(list.of.networks, project.dat
 add.vertex.attribute.author.role.function = function(list.of.networks, project.data, classification.function,
                                                      name = "author.role",
                                                      aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                          "project.cumulative", "project.all.ranges",
-                                                                          "complete"),
+                                                                           "project.cumulative", "project.all.ranges",
+                                                                           "complete"),
                                                      default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
@@ -1038,8 +1111,7 @@ add.vertex.attribute.artifact.change.count = function(list.of.networks, project.
 add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, project.data, name = "first.occurrence",
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
+                                                                                "project.all.ranges", "complete"),
                                                           default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
@@ -1073,11 +1145,10 @@ add.vertex.attribute.artifact.first.occurrence = function(list.of.networks, proj
 #'
 #' @return A list of networks with the added attribute
 add.vertex.attribute.artifact.last.edited = function(list.of.networks, project.data, name = "last.edited",
-                                                          aggregation.level = c("range", "cumulative", "all.ranges",
-                                                                                "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
-                                                          default.value = NA) {
+                                                     aggregation.level = c("range", "cumulative", "all.ranges",
+                                                                           "project.cumulative",
+                                                                           "project.all.ranges", "complete"),
+                                                     default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
@@ -1144,8 +1215,7 @@ add.vertex.attribute.mail.thread.contributor.count = function(list.of.networks, 
 add.vertex.attribute.mail.thread.message.count = function(list.of.networks, project.data, name = "thread.message.count",
                                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                                 "project.cumulative",
-                                                                                "project.all.ranges",
-                                                                                "complete"),
+                                                                                "project.all.ranges", "complete"),
                                                           default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
@@ -1174,8 +1244,7 @@ add.vertex.attribute.mail.thread.message.count = function(list.of.networks, proj
 add.vertex.attribute.mail.thread.start.date = function(list.of.networks, project.data, name = "thread.start.date",
                                                        aggregation.level = c("range", "cumulative", "all.ranges",
                                                                              "project.cumulative",
-                                                                             "project.all.ranges",
-                                                                             "complete"),
+                                                                             "project.all.ranges", "complete"),
                                                        default.value = NA) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
 
@@ -1317,8 +1386,8 @@ add.vertex.attribute.issue.event.count = function(list.of.networks, project.data
                                                   aggregation.level = c("range", "cumulative", "all.ranges",
                                                                         "project.cumulative", "project.all.ranges",
                                                                         "complete"),
-                                                  type = c("all", "issues", "pull.requests"), default.value = NA,
-                                                  use.unfiltered.data = FALSE) {
+                                                  type = c("all", "issues", "pull.requests"),
+                                                  default.value = NA, use.unfiltered.data = FALSE) {
     type = match.arg(type)
     aggregation.level = match.arg.or.default(aggregation.level, default = "complete")
     if (missing(name) && identical(type, "pull.requests")) {
@@ -1582,43 +1651,78 @@ add.vertex.attribute.issue.is.pull.request = function(list.of.networks, project.
 ## Helper ------------------------------------------------------------------
 
 #' Helper function for first activity: computes first activity information per person and activity type.
+#’
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
 #'
-#' @param activity.types The activity types to compute information for. [default: c("mails", "commits", "issues")]
-#' @param range.data The data to base the computation on.
-#' @param default.value The default value to add if no information is available per author and activity type.
-#' [default: NA]
-#'
-#' @return A list containing per author a list of first activity values named with the corresponding activity type.
+#' @return A list containing per author a list of first activity dates named with the corresponding activity type.
 #'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
 #'         types in \code{activity.types}
-get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
-                                   default.value = NA) {
+#'
+#' @seealso get.aggregated.activity.data
+get.first.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"), default.value = NA) {
+    return(get.aggregated.activity.data(range.data, activity.types, default.value, aggregation.function = min))
+}
+
+#' Helper function for last activity: computes last activity information per person and activity type.
+#
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
+#'
+#' @return A list containing per author a list of last activity dates named with the corresponding activity type.
+#'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
+#'         types in \code{activity.types}
+#'
+#' @seealso get.aggregated.activity.data
+get.last.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"), default.value = NA) {
+    return(get.aggregated.activity.data(range.data, activity.types, default.value, aggregation.function = max))
+}
+
+#' Helper function to aggregate activity information (e.g., to compute first or last activity information per person
+#' and activity type).
+#'
+#' @param activity.types The activity types to compute information for [default: c("mails", "commits", "issues")]
+#' @param range.data The data to base the computation on
+#' @param default.value The default value to add if no information is available per author and activity type
+#'                      [default: NA]
+#' @param aggregation.function The function that should be used to aggregate the activity data (e.g., minimum for
+#'                             first activity, or maximum for last activity)
+#'
+#' @return A list containing per author a list of aggregated activity dates named with the corresponding activity type.
+#'         Empty list if there are no activities in \code{range.data} at all or none corresponding to the configured
+#'         types in \code{activity.types}
+get.aggregated.activity.data = function(range.data, activity.types = c("commits", "mails", "issues"),
+                                        default.value = NA, aggregation.function) {
 
     ## make sure that the default value contains a tzone attribute (even if the default value is NA)
     default.value = get.date.from.string(default.value)
 
-    ## get data for each activity type and extract minimal date for each author in each type,
+    ## get data for each activity type and extract aggregated date for each author in each type,
     ## resulting in a list of activity types with each item containing a list of authors
-    ## mapped to their first activity for the current activity type; for example:
+    ## mapped to their aggregated activity date for the current activity type; for example:
     ##    list(
     ##        commits = list(authorA = list(commits = 1), authorB = list(commits = 0)),
     ##        mails   = list(authorB = list(mails = 2), authorC = list(mails = 3)),
     ##        issues  = list(authorA = list(issues = 2), authorD = list(issues = 2))
     ##    )
     activity.by.type = parallel::mclapply(activity.types, function(type) {
-        ## compute minima
-        minima.per.person = lapply(
+        ## compute aggregation
+        aggregation.per.person = lapply(
             range.data$group.artifacts.by.data.column(type, "author.name"),
             function(x) {
-                ## get first date
-                m = list(min(x[["date"]]))
+                ## get aggregated date
+                m = list(aggregation.function(x[["date"]]))
                 ## add activity type as name to the list
                 names(m) = type
 
                 return(m)
             }
         )
-        return(minima.per.person)
+        return(aggregation.per.person)
     })
     names(activity.by.type) = activity.types
 
