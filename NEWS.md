@@ -31,6 +31,7 @@
 - Explicitly add R version 4.4 to the CI test pipeline (c8e6f45111e487fadbe7f0a13c7595eb23f3af6e)
 - Refactor function `construct.edge.list.from.key.value.list` to be more readable (PR #263, 05c3bc09cb1d396fd59c34a88030cdca58fd04dd)
 - Update necessary `igraph` version to 2.1.0 in `README.md` (PR #274, 6c3bcd1a2366d0d3a176d9fde95b8356b0158da3)
+- Include core/peripheral classification in the `README.md` (PR #276, )
 
 ### Fixed
 
