@@ -889,6 +889,19 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
     edge.attr.names = igraph::edge_attr_names(network)
     edge.count = igraph::ecount(network)
 
+    ## pre-distribute edges into bins to optimize for performance
+    edges.per.bins = setNames(lapply(bins, function(bin) list()), bins)
+    for (i in seq_len(edge.count)) {
+
+        ## get all bins that the edge belongs to
+        edge.bins = bins.vector[[i]]
+
+        ## for all bins the edge belongs to, add the edge to the corresponding bin
+        for (bin in intersect(bins, unique(edge.bins))) {
+            edges.per.bins[[bin]] = c(edges.per.bins[[bin]], i)
+        }
+    }
+
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
         logging::logdebug("Splitting network: bin %s", bin)
@@ -899,8 +912,8 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
             attributes = c()
         )
 
-        ## collect (partial-)edges in the current bin
-        for (i in seq_len(edge.count)) {
+        ## construct (partial-)edges in the current bin
+        for (i in edges.per.bins[[bin]]) {
             edge = network.edges[i, ]
 
             ## edge is singular
