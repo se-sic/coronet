@@ -106,7 +106,7 @@ test_that("Eigenvector classification", {
     expect_equal(expected, result, tolerance = 0.0001)
 })
 
-test_that("Hierarchy classification", {
+test_that("Trivial hierarchy classification", {
 
     vertices = data.frame(
         name = c("Olaf", "Thomas", "Karl"),
@@ -143,6 +143,31 @@ test_that("Hierarchy classification", {
                                hierarchy = c(4))
     expected.peripheral = data.frame(author.name = c("Olaf", "Karl"),
                                      hierarchy = c(2, 2))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Non-trivial hierarchy classification", {
+
+    vertices = data.frame(
+        name = c("Heinz", "Olaf", "Thomas", "Karl", "Christian", "Maxi", "Leo")
+        )
+    edges = data.frame(
+        from = c("Heinz", "Heinz", "Olaf", "Karl", "Karl", "Karl", "Christian", "Christian", "Maxi", "Christian", "Leo", "Christian"),
+        to = c("Karl", "Olaf", "Karl", "Olaf", "Karl", "Thomas", "Thomas", "Maxi", "Leo", "Leo", "Maxi", "Karl")
+        )
+    test.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+
+    ## Act
+    result = get.author.class.network.hierarchy(test.network)
+    ## Assert
+    expected.core = data.frame(author.name = c("Karl", "Christian"),
+                               hierarchy = c(21, 12))
+    expected.peripheral = data.frame(author.name = c("Olaf", "Maxi", "Leo", "Heinz", "Thomas"),
+                                     hierarchy = c(3, 3, 3, 2, 2))
+
     expected = list(core = expected.core, peripheral = expected.peripheral)
     row.names(result[["core"]]) = NULL
     row.names(result[["peripheral"]]) = NULL
@@ -216,8 +241,6 @@ test_that("Eccentricity classification", {
     row.names(result[["peripheral"]]) = NULL
     expect_equal(expected, result)
 })
-
-# TODO: Add a test for hierarchy classification
 
 test_that("Commit-count classification using 'result.limit'" , {
 

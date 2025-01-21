@@ -404,7 +404,7 @@ In this section, we provide descriptions of the different algorithms we provide 
 
 ##### Network-based metrics
 
-In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks. Note that the provided methods can be used for any network and not just author networks. The classification would then occur regarding the type of the vertices, i.e. an artifact network would result in a classification of the artifacts based on their importance in the network.
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks. Note that the provided methods can be used for any network and not just author networks. The classification would then occur regarding the type of the vertices, e.g. an artifact network would result in a classification of the artifacts based on their centrality in the network.
 - `network.degree`
     * calculates scores based on the vertex degrees in a network
     * the degree of a vertex is the number of adjacent edges
@@ -422,7 +422,7 @@ In this section, we provide descriptions of the different algorithms we provide 
     * closeness measures how close vertices are to each other by calculating the sum of their shortest paths to all other vertices
 - `network.pagerank`
     * calculates scores based on the pagerank of vertices in a network
-    * pagerank refers to the pagerank algorithm employed by google, which is closely related to eigenvector centrality
+    * pagerank refers to the pagerank algorithm, which is closely related to eigenvector centrality
 - `network.eccentricity`
     * calculates scores based on the eccentricity of vertices in a network
     * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
