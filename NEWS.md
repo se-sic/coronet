@@ -20,7 +20,7 @@
 - Add `remove.duplicate.edges` function that takes a network as input and conflates identical edges (PR #268, d9a4be417b340812b744f59398ba6460ba527e1c, 0c2f47c4fea6f5f2f582c0259f8cf23af985058a, c6e90dd9cb462232563f753f414da14a24b392a3)
 - Add `cumulative` as an argument to `construct.ranges` which enables the creation of cumulative ranges from given revisions (PR #268, a135f6bb6f83ccb03ae27c735c2700fccc1ee0c8, 8ec207f1e306ef6a641fb0205a9982fa89c7e0d9)
 - Add function `get.last.activity.data` to compute developers' last activities in a project, as well as function `add.vertex.attribute.author.last.activity` to add a developer's date of last activity as vertex attribute to a network, as well as helper functions `get.aggregated.activity.data` and `add.vertex.attribute.author.aggregated.activity` to allow for other activity aggregations than first and last activity (PR #275, 9f231612fcd33a283362c79b35a94295ff3d4ef9, 8660ed763ba4b69e909e7fbb01e27e1999522047)
-- Add four new metric that can be used for the classification of authors into core and peripheral: betweenness, closeness, pagerank, and eccentricity (PR #276, 65d5c9cc86708777ef458b0c2e744ab4b846bdd1, b392d1a125d0f306b4bce8d95032162a328a3ce2, c5d37d40024e32ad5778fa5971a45bc08f7631e0)
+- Add four new metric that can be used for the classification of authors into core and peripheral: betweenness, closeness, pagerank, and eccentricity (PR #276, e27acb5ad7b4c4532e787d793301d06f13e8bbba, 217880809a07f970b055bd3b84c05cb6e61ac6af)
 
 ### Changed/Improved
 
@@ -31,7 +31,7 @@
 - Explicitly add R version 4.4 to the CI test pipeline (c8e6f45111e487fadbe7f0a13c7595eb23f3af6e)
 - Refactor function `construct.edge.list.from.key.value.list` to be more readable (PR #263, 05c3bc09cb1d396fd59c34a88030cdca58fd04dd)
 - Update necessary `igraph` version to 2.1.0 in `README.md` (PR #274, 6c3bcd1a2366d0d3a176d9fde95b8356b0158da3)
-- Include core/peripheral classification in the `README.md` (PR #276, )
+- Include core/peripheral classification in the `README.md` (PR #276, 6101e11f5c4ac1b5883e85cebd01a3cd7c76e056, c6744c00d3dc0d4e45a96c2d80ae78727e22cce2, 5fc2da5ece6604a6a87d8dd5f79237a82fb2b5ca)
 
 ### Fixed
 
