@@ -404,27 +404,27 @@ In this section, we provide descriptions of the different algorithms we provide 
 
 ##### Network-based metrics
 
-In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks.
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks. Note that the provided methods can be used for any network and not just author networks. The classification would then occur regarding the type of the vertices, i.e. an artifact network would result in a classification of the artifacts based on their importance in the network.
 - `network.degree`
-    * calculates scores for authors based on the vertex degrees in an author network
+    * calculates scores based on the vertex degrees in a network
     * the degree of a vertex is the number of adjacent edges
 - `network.eigen`
-    * calculates scores for authors based on the eigenvector centralities in an author network
+    * calculates scores based on the eigenvector centralities in a network
     * eigenvector centrality measures the importance of vertices within a network by awarding scores for adjacent edges proportional to the score of the connected vertex
 - `network.hierarchy`
-    * calculates scores for authors based on the hierarchy found within an author network
+    * calculates scores based on the hierarchy found within a network
     * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
 - `network.betweenness`
-    * calculates scores for authors based on the betweenness of vertices in an author network
+    * calculates scores based on the betweenness of vertices in a network
     * betweenness measures the number of shortest paths between any two vertices that go through each vertex
 - `network.closeness`
-    * calculates scores for authors based on the closeness of vertices in an author network
+    * calculates scores based on the closeness of vertices in a network
     * closeness measures how close vertices are to each other by calculating the sum of their shortest paths to all other vertices
 - `network.pagerank`
-    * calculates scores for authors based on the pagerank of vertices in an author network
+    * calculates scores based on the pagerank of vertices in a network
     * pagerank refers to the pagerank algorithm employed by google, which is closely related to eigenvector centrality
 - `network.eccentricity`
-    * calculates scores for authors based on the eccentricity of vertices in an author network
+    * calculates scores based on the eccentricity of vertices in a network
     * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
 
 ### How-to
