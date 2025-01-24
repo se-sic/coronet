@@ -902,6 +902,13 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
         }
     }
 
+    ## Track whether to remove numeric edge attributes after splitting.
+    ## Numeric attributes cannot be correctly separated when they
+    ## appear in multi-partial edges removing their semantic meaning
+    numeric.attrs = edge.attr.names[EDGE.ATTR.HANDLING[edge.attr.names] == "sum" & edge.attr.names != "weight"]
+    ignore.numeric.attrs = length(numeric.attrs) == 0
+    ignore.weight.attr   = !("weight" %in% edge.attr.names)
+
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
         logging::logdebug("Splitting network: bin %s", bin)
@@ -911,19 +918,17 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
             vertices   = c(),
             attributes = c()
         )
+        subnet.vertices = network.vertices
 
         ## construct (partial-)edges in the current bin
         for (i in edges.per.bins[[bin]]) {
             edge = network.edges[i, ]
 
-            ## edge is singular
-            if (length(bins.vector[[i]]) == 1) {
+            ## edge belongs completely to the current bin
+            if (all(bins.vector[[i]] == bin)) {
 
-                ## if edge belongs to the current bin
-                if (bins.vector[[i]] == bin) {
-                    subnet.edges[["vertices"]]   = c(subnet.edges[["vertices"]], edge[["from"]], edge[["to"]])
-                    subnet.edges[["attributes"]] = rbind(subnet.edges[["attributes"]], edge[edge.attr.names])
-                }
+                subnet.edges[["vertices"]]   = c(subnet.edges[["vertices"]], edge[["from"]], edge[["to"]])
+                subnet.edges[["attributes"]] = rbind(subnet.edges[["attributes"]], edge[edge.attr.names])
             }
 
             ## edge contains multiple partials
@@ -932,6 +937,18 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
                 ## extract partials of the edge that belong to the current bin
                 which = bins.vector[[i]] == bin
                 partial.edge = edge
+
+                ## Numeric attributes cannot be correctly separated when they
+                ## appear in multi-partial edges removing their semantic meaning.
+                if (!ignore.numeric.attrs) {
+                    ignore.numeric.attrs = TRUE
+                }
+
+                ## If the weight attribute is not equal to the number of partials,
+                ## then the weight attribute cannot be meaningfully separated
+                if (!ignore.weight.attr && partial.edge["weight"] != length(bins.vector[[i]])) {
+                    ignore.weight.attr = TRUE
+                }
 
                 ## extract all edge attributes and build new edge
                 for (attr in edge.attr.names) {
@@ -942,6 +959,11 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
                     if (is.list(attr.values)) {
                         partial.edge[[attr]][[1]] = attr.values[[1]][which]
                     }
+
+                    ## assume equal distribution of weights across partials
+                    else if (attr == "weight") {
+                        partial.edge[[attr]] = sum(which)
+                    }
                 }
 
                 ## add edge to subnet
@@ -950,8 +972,20 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
             }
         }
 
+        ## remove numeric attributes if necessary
+        if (ignore.numeric.attrs && length(numeric.attrs) > 0) {
+            subnet.edges[["attributes"]] = subnet.edges[["attributes"]][ !colnames(subnet.edges[["attributes"]]) %in% numeric.attrs ]
+            subnet.vertices = igraph::delete_edge_attr(subnet.vertices, numeric.attrs)
+        }
+
+        ## remove weight attribute if necessary
+        if (ignore.weight.attr && "weight" %in% edge.attr.names) {
+            subnet.edges[["attributes"]] = subnet.edges[["attributes"]][ colnames(subnet.edges[["attributes"]]) != "weight" ]
+            subnet.vertices = igraph::delete_edge_attr(subnet.vertices, "weight")
+        }
+
         ## create network based on the current set of edges
-        subnet = igraph::add_edges(network.vertices, subnet.edges[["vertices"]], attr = subnet.edges[["attributes"]])
+        subnet = igraph::add_edges(subnet.vertices, subnet.edges[["vertices"]], attr = subnet.edges[["attributes"]])
         if (remove.isolates) {
             subnet = igraph::delete_vertices(subnet, which(igraph::degree(subnet) == 0))
         }
