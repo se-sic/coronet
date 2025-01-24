@@ -241,7 +241,7 @@ get.author.class.by.type = function(network = NULL,
         ## between them. In this case, we have no way of determining what the hierarchy
         ## value should be without looking further into the connected clusters. We
         ## assume that the case where hierarchy is set to 0 even though it should
-        ## be a high value rarely occurs.
+        ## be a high value occurs rarely.
         hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
 
         ## Construct centrality dataframe
