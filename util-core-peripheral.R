@@ -236,10 +236,12 @@ get.author.class.by.type = function(network = NULL,
         ## is 'Inf'. We do not get any complications here because there are no authors with
         ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
         ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
-        ## Note that this could lead to authors who should be high up in the hierarchy
-        ## being set to hierarchy 0 because they interact with clusters that
-        ## have no connection between them. We accept this because the case should
-        ## almost never occur in all but the smallest networks.
+        ## Note that this could lead to authors who should have a high hierarchy value
+        ## being set to 0 because they interact with clusters that have no connection
+        ## between them. In this case, we have no way of determining what the hierarchy
+        ## value should be without looking further into the connected clusters. We
+        ## assume that the case where hierarchy is set to 0 even though it should
+        ## be a high value rarely occurs.
         hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
 
         ## Construct centrality dataframe
