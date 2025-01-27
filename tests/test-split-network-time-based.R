@@ -627,3 +627,159 @@ patrick::with_parameters_test_that("Split a list of networks time-based with equ
         "pasta, synchronicity: TRUE" = list(test.pasta = TRUE, test.synchronicity = TRUE)
     )
 ))
+
+
+## * * simplified networks ----------------------------------------------------
+
+test_that("Split network with singular and simplified edges", {
+
+    ## construct network
+    edges = data.frame(comb.1. = c("A", "A", "A", "A", "C"),
+                       comb.2. = c("B", "B", "D", "D", "D"),
+                       date = get.date.from.string(c("2025-01-01 12:00:00", "2025-01-01 12:00:00",
+                                                     "2025-01-01 12:00:00", "2025-01-01 12:03:00",
+                                                     "2025-01-01 12:03:00")),
+                       thread = c("<thread-1#1>", "<thread-2#1>", "<thread-3#1>", "<thread-4#1>", "<thread-5#1>"))
+    network = igraph::graph_from_data_frame(edges, vertices = c("A", "B", "C", "D"))
+    network = simplify.network(convert.edge.attributes.to.list(network))
+    splits = split.network.time.based(network, time.period = "1 mins")
+
+    ## construct expected networks
+    edges = igraph::as_data_frame(network, "edges")
+    expected = list(
+        "2025-01-01 12:00:00-2025-01-01 12:01:00" = subnet.with.new.edges(network, rbind(edges[1, ],
+                                                                                         extract.partial.edge(edges[2, ], 1))),
+        "2025-01-01 12:01:00-2025-01-01 12:02:00" = subnet.with.new.edges(network),
+        "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[2, ], 2),
+                                                                                         edges[3, ]))
+    )
+
+    ## check networks
+    check.identical = mapply(splits, expected, FUN = function(s, e) {
+        igraph::identical_graphs(s, e)
+    })
+    expect_true(all(check.identical), info = "Network equality.")
+
+})
+
+test_that("Split network with numeric edge attributes", {
+
+    ## construct network
+    edges = data.frame(comb.1. = c("A", "A", "A", "A", "C", "E"),
+                       comb.2. = c("B", "B", "D", "D", "D", "D"),
+                       date = get.date.from.string(c("2025-01-01 12:00:00", "2025-01-01 12:00:00",
+                                                     "2025-01-01 12:01:00", "2025-01-01 12:03:00",
+                                                     "2025-01-01 12:00:00", "2025-01-01 12:03:00")),
+                       thread = c("<thread-1#1>", "<thread-2#1>", "<thread-3#1>", "<thread-4#1>", "<thread-5#1>", "<thread-6#1>"),
+                       diff.size = c(0, 12, 777, 1337, 42, 91))
+    network = igraph::graph_from_data_frame(edges, vertices = c("A", "B", "C", "D", "E"))
+    network = simplify.network(convert.edge.attributes.to.list(network))
+    splits = split.network.time.based(network, time.period = "1 mins")
+
+    ## construct expected networks
+    edges = igraph::as_data_frame(network, "edges")
+    expected = list(
+        "2025-01-01 12:00:00-2025-01-01 12:01:00" = subnet.with.new.edges(network, rbind(edges[1, ],
+                                                                                         edges[3, ])),
+        "2025-01-01 12:01:00-2025-01-01 12:02:00" = subnet.with.new.edges(network, extract.partial.edge(edges[2, ], 1)),
+        "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[2, ], 2),
+                                                                                         edges[4, ]))
+    )
+    ## remove the 'diff.size' attribute from subnets 2 and 3 as
+    ## they contain splits of previously simplifed edges
+    expected[[2]] = igraph::delete_edge_attr(expected[[2]], "diff.size")
+    expected[[3]] = igraph::delete_edge_attr(expected[[3]], "diff.size")
+
+    ## check networks
+    check.identical = mapply(splits, expected, FUN = function(s, e) {
+        igraph::identical_graphs(s, e)
+    })
+    expect_true(all(check.identical), info = "Network equality.")
+
+})
+
+test_that("Split network with arbitrarily set weight attribute (basic)", {
+
+    ## construct network
+    edges = data.frame(comb.1. = c("A", "A", "A", "A", "C"),
+                       comb.2. = c("B", "B", "D", "D", "D"),
+                       date = get.date.from.string(c("2025-01-01 12:00:00", "2025-01-01 12:01:00",
+                                                     "2025-01-01 12:01:00", "2025-01-01 12:03:00",
+                                                     "2025-01-01 12:03:00")),
+                       thread = c("<thread-1#1>", "<thread-2#1>", "<thread-3#1>", "<thread-4#1>", "<thread-5#1>"),
+                       weight = c(3, 4, 1, 1, 3))
+    network = igraph::graph_from_data_frame(edges, vertices = c("A", "B", "C", "D"))
+    network = simplify.network(convert.edge.attributes.to.list(network))
+    splits = split.network.time.based(network, time.period = "1 mins")
+
+    ## construct expected networks
+    edges = igraph::as_data_frame(network, "edges")
+    expected = list(
+        "2025-01-01 12:00:00-2025-01-01 12:01:00" = subnet.with.new.edges(network, extract.partial.edge(edges[1, ], 1)),
+        "2025-01-01 12:01:00-2025-01-01 12:02:00" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[1, ], 2),
+                                                                                         extract.partial.edge(edges[2, ], 1))),
+        "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[2, ], 2),
+                                                                                         edges[3, ]))
+    )
+
+    ## Remove weight from subnet 1 and 2 as both include one partial of A -- B
+    ## which has a non-standard weight.
+    ## Do not remove weight from subnet 3 as it only contains a partial from A -- D
+    ## which is correctly weighted and the complete edge C -- D.
+    expected[[1]] = igraph::delete_edge_attr(expected[[1]], "weight")
+    expected[[2]] = igraph::delete_edge_attr(expected[[2]], "weight")
+
+    ## check networks
+    check.identical = mapply(splits, expected, FUN = function(s, e) {
+        igraph::identical_graphs(s, e)
+    })
+    expect_true(all(check.identical), info = "Network equality.")
+
+})
+
+test_that("Split network with arbitrarily set weight attribute (complex)", {
+
+    ## construct network
+    edges = data.frame(comb.1. = c("A", "A", "A", "A", "C", "E"),
+                       comb.2. = c("B", "B", "D", "D", "D", "D"),
+                       date = get.date.from.string(c("2025-01-01 12:00:00", "2025-01-01 12:00:00",
+                                                     "2025-01-01 12:01:00", "2025-01-01 12:03:00",
+                                                     "2025-01-01 12:00:00", "2025-01-01 12:03:00")),
+                       thread = c("<thread-1#1>", "<thread-2#1>", "<thread-3#1>", "<thread-4#1>", "<thread-5#1>", "<thread-6#1>"),
+                       diff.size = c(0, 12, 777, 1337, 42, 91),
+                       weight = c(1, 2, 0, 2, 1, 2))
+    network = igraph::graph_from_data_frame(edges, vertices = c("A", "B", "C", "D", "E"))
+    network = simplify.network(convert.edge.attributes.to.list(network))
+    splits = split.network.time.based(network, time.period = "1 mins")
+
+    ## construct expected networks
+    edges = igraph::as_data_frame(network, "edges")
+    expected = list(
+        "2025-01-01 12:00:00-2025-01-01 12:01:00" = subnet.with.new.edges(network, rbind(edges[1, ],
+                                                                                         edges[3, ])),
+        "2025-01-01 12:01:00-2025-01-01 12:02:00" = subnet.with.new.edges(network, extract.partial.edge(edges[2, ], 1)),
+        "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[2, ], 2),
+                                                                                         edges[4, ]))
+    )
+
+    ## Verify that numeric attributes can be removed independently of
+    ## the weight attribue:
+    ## remove the 'diff.size' attribute from subnets 2 and 3 as
+    ## they contain splits of previously simplifed edges
+    expected[[2]] = igraph::delete_edge_attr(expected[[2]], "diff.size")
+    expected[[3]] = igraph::delete_edge_attr(expected[[3]], "diff.size")
+
+    ## Do not remove weight from first subnet as it only contains complete edges
+    ## even though the weight attribute is non-standard.
+    ## Do not remove weight from second subnet as the implementation has to assume
+    ## that A -- D has default weights (even though that is not the case) and
+    ## therefore split them equally.
+    ## Remove weight from third subnet as it contains splits of previously simplified edges.
+
+    ## check networks
+    check.identical = mapply(splits, expected, FUN = function(s, e) {
+        igraph::identical_graphs(s, e)
+    })
+    expect_true(all(check.identical), info = "Network equality.")
+
+})
