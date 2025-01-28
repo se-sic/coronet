@@ -50,7 +50,9 @@ packages = c(
     "purrr",
     "testthat",
     "patrick",
-    "covr"
+    "covr",
+    "tm",
+    "SnowballC"
 )
 
 

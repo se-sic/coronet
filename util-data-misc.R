@@ -28,6 +28,8 @@
 
 requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("logging") # for logging
+requireNamespace("tm") # for NLP functionalities
+requireNamespace("SnowballC") # for stemming
 
 #' Helper function to mask all issues in the issue data frame.
 #'
@@ -767,4 +769,57 @@ get.issue.is.pull.request = function(proj.data) {
     names(issue.id.to.is.pr) = issue.data[["issue.id"]]
     logging::logdebug("get.issue.is.pull.request: finished")
     return(issue.id.to.is.pr)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit Message Functionalities ------------------------------------------
+
+#'
+#'
+get.stemmed.commit.messages = function(proj.data, commit.hashes = NULL, preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
+    preprocessing = match.arg.or.default(preprocessing, several.ok = TRUE)
+    stemmed.messages = create.empty.data.frame(c("hash", "stemmed.message"))
+    ## get commit message data of the given hashes
+    ## if no hashes are given consider all commits
+    commit.message.data = proj.data$get.commit.messages()
+    if (!is.null(commit.hashes)) {
+        commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
+    }
+
+    ## if data is empty, abort process
+    if (nrow(commit.message.data) < 1) {
+        return(stemmed.messages)
+    }
+
+    ## create a corpus with all selected commit messages
+    messages = c()
+    for (i in seq_len(nrow(commit.message.data))) {
+        messages = c(messages, paste(commit.message.data[i, "title"], commit.message.data[i, "message"]))
+    }
+    corpus = tm::Corpus(tm::VectorSource(messages))
+
+    ## preprocessing steps
+    if ("lowercase" %in% preprocessing) {
+        ## convert to lowercase
+        corpus = tm::tm_map(corpus, tm::content_transformer(tolower))
+    }
+    if ("punctuation" %in% preprocessing) {
+        ## remove punctuation
+        corpus = tm::tm_map(corpus, tm::removePunctuation)
+    }
+    if ("stopwords" %in% preprocessing) {
+        ## remove stopwords
+        corpus = tm::tm_map(corpus, tm::removeWords, tm::stopwords("english"))
+    }
+    if ("whitespaces" %in% preprocessing) {
+        ## remove excess whitespaces
+        corpus = tm::tm_map(corpus, tm::stripWhitespace)
+    }
+    ## apply stemming
+    corpus = tm::tm_map(corpus, tm::stemDocument)
+    ## create output dataframe
+    for (i in seq_len(nrow(commit.message.data))) {
+        stemmed.messages[i,] = c(commit.message.data[["hash"]][i], corpus$content[i])
+    }
+    return(stemmed.messages)
 }
