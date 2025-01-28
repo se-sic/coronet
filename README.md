@@ -380,7 +380,7 @@ In some cases, it is not necessary to build a network to get the information you
 
 #### Core/Peripheral classification
 
-Core/Peripheral classification descibes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute most of the work in a given project. The concrete threshold can be configured in `CORE.THRESHOLD` and is set to 80%  per default, a value commonly used in literature. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired split is achieved.
+Core/Peripheral classification describes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute most of the work in a given project. The concrete threshold can be configured in `CORE.THRESHOLD` and is set to 80% per default, a value commonly used in literature. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired split is achieved.
 
 ##### Count-based metrics
 

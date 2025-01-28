@@ -264,10 +264,10 @@ get.author.class.by.type = function(network = NULL,
                                           centrality = as.vector(pagerank.centrality.vec))
     } else if (type == "network.eccentricity") {
         eccentricity.vec = igraph::eccentricity(network)
-        ## since core developers are expected to have a lower eccentricity,
+        ## Since core developers are expected to have a lower eccentricity,
         ## we need to invert all non-zero values.
-        ## all entries with value zero are isolated vertices, so the expected value is also zero.
-        ## thus, they should not be inverted.
+        ## All entries with value zero are isolated vertices, so the expected value is also zero.
+        ## Thus, they should not be inverted.
         indices = which(eccentricity.vec > 0)
         eccentricity.vec[indices] = max(eccentricity.vec) - eccentricity.vec[indices]
         ## Construct centrality dataframe
@@ -716,7 +716,7 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL,
 #' Classify authors into "core" and "peripheral" based on the betweenness-centrality of author vertices in the network
 #' and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param network the network containing the authors to classify
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
@@ -751,7 +751,7 @@ get.author.class.network.betweenness = function(network, result.limit = NULL,
 #' Classify authors into "core" and "peripheral" based on the closeness-centrality of author vertices in the network
 #' and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param network the network containing the authors to classify
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
@@ -786,7 +786,7 @@ get.author.class.network.closeness = function(network, result.limit = NULL,
 #' Classify authors into "core" and "peripheral" based on the pagerank-centrality of author vertices in the network
 #' and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param network the network containing the authors to classify
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
@@ -821,7 +821,7 @@ get.author.class.network.pagerank = function(network, result.limit = NULL,
 #' Classify authors into "core" and "peripheral" based on the eccentricity of author vertices in the network
 #' and return the classification result.
 #'
-#' The details of the classification algorithm is explained in the documentation of \code{get.author.class.by.type}.
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
 #'
 #' @param network the network containing the authors to classify
 #' @param result.limit the maximum number of authors contained in the classification result. Only the top
