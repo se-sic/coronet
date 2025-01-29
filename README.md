@@ -34,6 +34,9 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
       - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
       - [Handling data independently](#handling-data-independently)
+      - [Core/Peripheral classification](#coreperipheral-classification)
+           - [Count-based metrics](#count-based-metrics)
+           - [Network-based metrics](#network-based-metrics)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -374,6 +377,55 @@ Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very f
 #### Handling data independently
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
+
+#### Core/Peripheral classification
+
+Core/Peripheral classification describes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute most of the work in a given project. The concrete threshold can be configured in `CORE.THRESHOLD` and is set to 80% per default, a value commonly used in literature. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired split is achieved.
+
+##### Count-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using count-based metrics.
+- `commit.count`
+    * calculates scores based on the number of commits per author
+- `loc.count`
+    * calculates scores based on the number of lines of code changed by each author
+- `mail.count`
+    * calculates scores based on the number of mails sent per author
+- `mail.thread.count`
+    * calculates scores based on the number of mail threads each author participated in
+- `issue.count`
+    * calculates scores based on the number of issues each author participated in
+- `issue.comment.count`
+    * calculates scores based on the number of comments each author made in issues
+- `issue.commented.in.count`
+    * calculates scores based on the number of issues each author commented in
+- `issue.created.count`
+    * calculates scores based on the number of issues each author created
+
+##### Network-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks. Note that the provided methods can be used for any network and not just author networks. The classification would then occur regarding the type of the vertices, e.g. an artifact network would result in a classification of the artifacts based on their centrality in the network.
+- `network.degree`
+    * calculates scores based on the vertex degrees in a network
+    * the degree of a vertex is the number of adjacent edges
+- `network.eigen`
+    * calculates scores based on the eigenvector centralities in a network
+    * eigenvector centrality measures the importance of vertices within a network by awarding scores for adjacent edges proportional to the score of the connected vertex
+- `network.hierarchy`
+    * calculates scores based on the hierarchy found within a network
+    * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
+- `network.betweenness`
+    * calculates scores based on the betweenness of vertices in a network
+    * betweenness measures the number of shortest paths between any two vertices that go through each vertex
+- `network.closeness`
+    * calculates scores based on the closeness of vertices in a network
+    * closeness measures how close vertices are to each other by calculating the sum of their shortest paths to all other vertices
+- `network.pagerank`
+    * calculates scores based on the pagerank of vertices in a network
+    * pagerank refers to the pagerank algorithm, which is closely related to eigenvector centrality
+- `network.eccentricity`
+    * calculates scores based on the eccentricity of vertices in a network
+    * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
 
 ### How-to
 

@@ -22,6 +22,7 @@
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
+## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -59,6 +60,10 @@ CLASSIFICATION.TYPE.TO.CATEGORY = list(
     "network.degree"            = "network",
     "network.eigen"             = "network",
     "network.hierarchy"         = "network",
+    "network.betweenness"       = "network",
+    "network.closeness"         = "network",
+    "network.pagerank"          = "network",
+    "network.eccentricity"      = "network",
     "commit.count"              = "count",
     "loc.count"                 = "count",
     "mail.count"                = "count",
@@ -126,7 +131,8 @@ CLASSIFICATION.TYPE.TO.CATEGORY = list(
 #'         first column and their centrality values in the second column.
 get.author.class.by.type = function(network = NULL,
                                     proj.data = NULL,
-                                    type = c("network.degree", "network.eigen", "network.hierarchy",
+                                    type = c("network.degree", "network.eigen", "network.hierarchy", "network.betweenness",
+                                             "network.closeness", "network.pagerank", "network.eccentricity",
                                              "commit.count", "loc.count", "mail.count", "mail.thread.count",
                                              "issue.count", "issue.comment.count", "issue.commented.in.count",
                                              "issue.created.count"),
@@ -144,6 +150,10 @@ get.author.class.by.type = function(network = NULL,
                          "network.degree" = "vertex.degree",
                          "network.eigen" = "eigen.centrality",
                          "network.hierarchy" = "hierarchy",
+                         "network.betweenness" = "betweenness.centrality",
+                         "network.closeness" = "closeness.centrality",
+                         "network.pagerank" = "pagerank.centrality",
+                         "network.eccentricity" = "eccentricity",
                          "commit.count" = "commit.count",
                          "loc.count" = "loc.count",
                          "mail.count" = "mail.count",
@@ -226,11 +236,43 @@ get.author.class.by.type = function(network = NULL,
         ## is 'Inf'. We do not get any complications here because there are no authors with
         ## degree == 0 and a CC > 0 (i.e., the hierarchy value would really be 0). Authors with
         ## a CC == NaN (degree < 2) will stay with their hierarchy value of NaN, accordingly.
+        ## Note that this could lead to authors who should have a high hierarchy value
+        ## being set to 0 because they interact with clusters that have no connection
+        ## between them. In this case, we have no way of determining what the hierarchy
+        ## value should be without looking further into the connected clusters. We
+        ## assume that the case where hierarchy is set to 0 even though it should
+        ## be a high value occurs rarely.
         hierarchy.calculated[is.infinite(hierarchy.calculated)] = 0
 
         ## Construct centrality dataframe
         centrality.dataframe = data.frame(author.name = row.names(hierarchy.base.df),
                                           centrality = hierarchy.calculated)
+    } else if (type == "network.betweenness") {
+        betweenness.centrality.vec = igraph::betweenness(network, directed = TRUE)
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(betweenness.centrality.vec),
+                                          centrality = as.vector(betweenness.centrality.vec))
+    } else if (type == "network.closeness") {
+        closeness.centrality.vec = igraph::closeness(network, mode = "all")
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(closeness.centrality.vec),
+                                          centrality = as.vector(closeness.centrality.vec))
+    } else if (type == "network.pagerank") {
+        pagerank.centrality.vec = igraph::page_rank(network, directed = TRUE)[["vector"]]
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(pagerank.centrality.vec),
+                                          centrality = as.vector(pagerank.centrality.vec))
+    } else if (type == "network.eccentricity") {
+        eccentricity.vec = igraph::eccentricity(network)
+        ## Since core developers are expected to have a lower eccentricity,
+        ## we need to invert all non-zero values.
+        ## All entries with value zero are isolated vertices, so the expected value is also zero.
+        ## Thus, they should not be inverted.
+        indices = which(eccentricity.vec > 0)
+        eccentricity.vec[indices] = max(eccentricity.vec) - eccentricity.vec[indices]
+        ## Construct centrality dataframe
+        centrality.dataframe = data.frame(author.name = names(eccentricity.vec),
+                                          centrality = as.vector(eccentricity.vec))
     } else if (type == "commit.count") {
         ## Construct centrality dataframe
         centrality.dataframe = get.author.commit.count(proj.data)
@@ -666,6 +708,146 @@ get.author.class.network.hierarchy = function(network, result.limit = NULL,
                                       restrict.classification.to.authors = restrict.classification.to.authors)
 
     logging::logdebug("get.author.class.network.hierarchy: finished.")
+    return(result)
+}
+
+## * Betweenness-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the betweenness-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.betweenness = function(network, result.limit = NULL,
+                                                restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.network.betweenness: starting.")
+
+    result = get.author.class.by.type(network = network, type = "network.betweenness", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.network.betweenness: finished.")
+    return(result)
+}
+
+## * Closeness-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the closeness-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.closeness = function(network, result.limit = NULL,
+                                              restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.network.closeness: starting.")
+
+    result = get.author.class.by.type(network = network, type = "network.closeness", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.network.closeness: finished.")
+    return(result)
+}
+
+## * Pagerank-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the pagerank-centrality of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their centrality values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.pagerank = function(network, result.limit = NULL,
+                                             restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.network.pagerank: starting.")
+
+    result = get.author.class.by.type(network = network, type = "network.pagerank", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.network.pagerank: finished.")
+    return(result)
+}
+
+## * Eccentricity-based classification --------------------------------------
+
+#' Classify authors into "core" and "peripheral" based on the eccentricity of author vertices in the network
+#' and return the classification result.
+#'
+#' The details of the classification algorithms are explained in the documentation of \code{get.author.class.by.type}.
+#'
+#' @param network the network containing the authors to classify
+#' @param result.limit the maximum number of authors contained in the classification result. Only the top
+#'                     \code{result.limit} authors of the classification stack will be contained within the returned
+#'                     classification result. \code{NULL} means that all authors will be returned. [default: NULL]
+#' @param restrict.classification.to.authors a vector of author names. Only authors that are contained within this
+#'                                           vector are to be classified. Authors that appear in the vector but are not
+#'                                           part of the classification result (i.e., they are not present in the
+#'                                           underlying data) will be added to it afterwards (with a centrality value
+#'                                           of \code{NA}). \code{NULL} means that no restriction is made.
+#'                                           [default: NULL]
+#'
+#' @return the classification result, that is, a list containing two named list members \code{core} and
+#'         \code{peripheral}, each of which holding the authors classified as core or peripheral, respectively. Both
+#'         entries in this list (\code{core} and \code{peripheral) are dataframes containing the authors' names in the
+#'         first column and their eccentricity values in the second column.
+#'
+#' @seealso get.author.class.by.type
+get.author.class.network.eccentricity = function(network, result.limit = NULL,
+                                                 restrict.classification.to.authors = NULL) {
+    logging::logdebug("get.author.class.network.eccentricity: starting.")
+
+    result = get.author.class.by.type(network = network, type = "network.eccentricity", result.limit = result.limit,
+                                      restrict.classification.to.authors = restrict.classification.to.authors)
+
+    logging::logdebug("get.author.class.network.eccentricity: finished.")
     return(result)
 }
 
