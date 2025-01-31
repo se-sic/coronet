@@ -457,7 +457,8 @@ test_that("Network construction of the undirected simplified author-cochange net
                           list("Base_Feature", "Base_Feature"))),
         weight = 2,
         type = TYPE.EDGES.INTRA,
-        relation = "cochange"
+        relation = I(list(list("cochange", "cochange"), list("cochange", "cochange"),
+                          list("cochange", "cochange"), list("cochange", "cochange")))
     )
 
     ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
@@ -466,6 +467,7 @@ test_that("Network construction of the undirected simplified author-cochange net
     data[["hash"]] = unclass(data[["hash"]])
     data[["file"]] = unclass(data[["file"]])
     data[["artifact"]] = unclass(data[["artifact"]])
+    data[["relation"]] = unclass(data[["relation"]])
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
