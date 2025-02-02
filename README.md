@@ -202,6 +202,8 @@ There are two distinguishable types of data sources that are both handled by the
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
+    * Commit-interaction data (see also the parameter `commit.interactions` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
+        * Commit interactions represent data-flow interactions between two commits (i.e., there is a data flow between the changed source-code parts of the two commits).
     * Custom event timestamps, which have to be specified manually (see also the parameter `custom.event.timestamps.file` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
 
 
@@ -240,7 +242,7 @@ There are four types of networks that can be built using this library: author ne
 - Commit networks
      * The vertices in a commit network denote any commits in the data. All vertices
      are uniquely identifyable by the hash of the commit. There are only unipartite edges among commits in this type of network.
-     * The relations (i.e., the edges' meaning and source) can be configured using the [`networkConf`](#networkconf) attribute `commit.relation`. The relation also describes the type of data used for network construction (`cochange` uses commit data, `commit.interaction` uses commit interaction data).
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`networkConf`](#networkconf) attribute `commit.relation`. The relation also describes the type of data used for network construction (`cochange` uses commit data, `commit.interaction` uses commit-interaction data).
 
 - Bipartite networks
      * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
@@ -277,7 +279,7 @@ Relations determine which information is used to construct edges among the verti
 
 - `commit.interaction`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to interacting commits are connected with an edge.
-    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that occur in the artifacts.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that change these artifacts.
     * For commit networks (configured via `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected when they interact in the commit-interaction data.
     * This relation does not apply for bipartite networks.
 
@@ -667,7 +669,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * Allow construction of author and artifact networks using commit-interaction data
     * [`TRUE`, *`FALSE`*]
 - `commit.interactions.filter.global`:
-    * Filter out entries from commit interaction data that are not matched to a specific function or file
+    * Filter out entries from commit-interaction data that are not matched to a specific function or file
     * [*`TRUE`*, `FALSE`]
 
 ### NetworkConf
