@@ -59,7 +59,6 @@ EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
-    relation = function(relation) sort(unique(relation)),
 
     ## commit data
     changed.files = "sum",
@@ -937,7 +936,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 return(network)
             })
@@ -1003,7 +1002,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
                 vertex.kind = private$get.vertex.kind.for.relation(relation)
@@ -1049,7 +1048,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 return(network)
             })
@@ -1842,7 +1841,7 @@ create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
     if (add.attributes) {
         mandatory.edge.attributes.classes = list(
             date = "list", artifact.type = "list", weight = "numeric",
-            type = "character", relation = "character"
+            type = "character", relation = "list"
         )
         mandatory.vertex.attributes.classes = list(name = "character", kind = "character", type = "character")
 

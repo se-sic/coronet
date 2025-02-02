@@ -81,8 +81,7 @@ test_that("Network construction of the undirected author network with relation =
                                      as.list(rep(NA, 4)))),
                       weight = 1,
                       type = TYPE.EDGES.INTRA,
-                      relation = c(rep("cochange", 8),
-                                   rep("mail", 4)),
+                      relation = I(c(as.list(rep("cochange", 8)), as.list(rep("mail", 4)))),
                       message.id = I(c(as.list(rep(NA, 8)),
                                        "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                        "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
@@ -98,6 +97,7 @@ test_that("Network construction of the undirected author network with relation =
     data[["hash"]] = unclass(data[["hash"]])
     data[["file"]] = unclass(data[["file"]])
     data[["artifact"]] = unclass(data[["artifact"]])
+    data[["relation"]] = unclass(data[["relation"]])
     data[["message.id"]] = unclass(data[["message.id"]])
     data[["thread"]] = unclass(data[["thread"]])
 
@@ -205,7 +205,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
                                    as.list(rep(NA, 16)))),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
-                  relation = c(rep("issue", 24), rep("mail", 16))
+                  relation = I(c(as.list(rep("issue", 24)), as.list(rep("mail", 16))))
     )
 
     ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
@@ -215,6 +215,7 @@ test_that("Construction of the bipartite network for the feature artifact with a
     network.expected.data[["thread"]]     = unclass(network.expected.data[["thread"]])
     network.expected.data[["issue.id"]]   = unclass(network.expected.data[["issue.id"]])
     network.expected.data[["event.name"]] = unclass(network.expected.data[["event.name"]])
+    network.expected.data[["relation"]]   = unclass(network.expected.data[["relation"]])
 
     ## 3) build expected network
     network.expected = igraph::graph_from_data_frame(network.expected.data, vertices = vertices,
@@ -309,8 +310,8 @@ test_that("Construction of the multi network for the feature artifact with autho
                                       as.list(rep(NA, 21)))),
                        weight = 1,
                        type = c(rep(TYPE.EDGES.INTRA, 13), rep(TYPE.EDGES.INTER, 27)),
-                       relation = c(rep("cochange", 8), rep("mail", 4), rep("cochange", 1), rep("cochange", 6),
-                                    rep("issue", 21)),
+                       relation = I(c(as.list(rep("cochange", 8)), as.list(rep("mail", 4)), as.list(rep("cochange", 1)), as.list(rep("cochange", 6)),
+                                    as.list(rep("issue", 21)))),
                        message.id = I(c(as.list(rep(NA, 8)),
                                         "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                         "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
@@ -335,6 +336,7 @@ test_that("Construction of the multi network for the feature artifact with autho
     edges[["hash"]] = unclass(edges[["hash"]])
     edges[["file"]] = unclass(edges[["file"]])
     edges[["artifact"]] = unclass(edges[["artifact"]])
+    edges[["relation"]] = unclass(edges[["relation"]])
     edges[["message.id"]] = unclass(edges[["message.id"]])
     edges[["thread"]] = unclass(edges[["thread"]])
     edges[["author.name"]] = unclass(edges[["author.name"]])
@@ -425,7 +427,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
         artifact = I(c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", as.list(rep(NA, 24)))),
         weight = c(rep(1, 30)),
         type = c(rep("Bipartite", 30)),
-        relation = c(rep("cochange", 6), rep("issue", 24)),
+        relation = I(c(as.list(rep("cochange", 6)), as.list(rep("issue", 24)))),
         issue.id = I(c(as.list(rep(NA, 6)),
                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                        "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
@@ -444,6 +446,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     edges[["hash"]] = unclass(edges[["hash"]])
     edges[["file"]] = unclass(edges[["file"]])
     edges[["artifact"]] = unclass(edges[["artifact"]])
+    edges[["relation"]] = unclass(edges[["relation"]])
     edges[["issue.id"]] = unclass(edges[["issue.id"]])
     edges[["event.name"]] = unclass(edges[["event.name"]])
 
@@ -518,7 +521,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
            artifact = I(c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", as.list(rep(NA, 16)))),
            weight = rep(1,22),
            type = rep("Bipartite", 22),
-           relation = c(rep("cochange", 6), rep("mail", 16)),
+           relation = I(c(as.list(rep("cochange", 6)), as.list(rep("mail", 16)))),
            message.id = I(c(as.list(rep(NA, 6)), "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>",
                             "<1107974989.17910.6.camel@jmcmullan>", "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                             "<jlkjsdgihwkfjnvbjwkrbnwe@mail.gmail.com>", "<dfhglkjdgjkhnwrd@mail.gmail.com>",
@@ -540,6 +543,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     edges[["hash"]] = unclass(edges[["hash"]])
     edges[["file"]] = unclass(edges[["file"]])
     edges[["artifact"]] = unclass(edges[["artifact"]])
+    edges[["relation"]] = unclass(edges[["relation"]])
     edges[["message.id"]] = unclass(edges[["message.id"]])
     edges[["thread"]] = unclass(edges[["thread"]])
 
@@ -630,7 +634,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
            event.name = I(c(rep("commented", 24), as.list(rep(NA, 16)))),
            weight = rep(1, 40),
            type = rep("Bipartite", 40),
-           relation = c(rep("issue", 24), rep("mail", 16)),
+           relation = I(c(as.list(rep("issue", 24)), as.list(rep("mail", 16)))),
            message.id = I(c(as.list(rep(NA, 24)),
                             "<adgkljsdfhkwafdkbhjasfcjn@mail.gmail.com>", "<1107974989.17910.6.camel@jmcmullan>",
                             "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
@@ -651,6 +655,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     edges[["artifact.type"]] = unclass(edges[["artifact.type"]])
     edges[["issue.id"]] = unclass(edges[["issue.id"]])
     edges[["event.name"]] = unclass(edges[["event.name"]])
+    edges[["relation"]] = unclass(edges[["relation"]])
     edges[["message.id"]] = unclass(edges[["message.id"]])
     edges[["thread"]] = unclass(edges[["thread"]])
 
@@ -750,7 +755,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
            artifact = I(c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo", as.list(rep(NA, 40)))),
            weight = rep(1, 46),
            type = rep("Bipartite", 46),
-           relation = c(rep("cochange", 6), rep("issue", 24), rep("mail", 16)),
+           relation = I(c(as.list(rep("cochange", 6)), as.list(rep("issue", 24)), as.list(rep("mail", 16)))),
            issue.id = I(c(as.list(rep(NA, 6)), "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                         "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>", "<issue-jira-ZEPPELIN-328>",
                         "<issue-jira-ZEPPELIN-328>", "<issue-github-2>", "<issue-jira-ZEPPELIN-332>",
@@ -781,6 +786,7 @@ test_that("Construction of the multi-artifact bipartite network with artifact re
     edges[["hash"]] = unclass(edges[["hash"]])
     edges[["file"]] = unclass(edges[["file"]])
     edges[["artifact"]] = unclass(edges[["artifact"]])
+    edges[["relation"]] = unclass(edges[["relation"]])
     edges[["issue.id"]] = unclass(edges[["issue.id"]])
     edges[["event.name"]] = unclass(edges[["event.name"]])
     edges[["message.id"]] = unclass(edges[["message.id"]])
