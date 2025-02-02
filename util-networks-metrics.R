@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2015, 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2021, 2023-2025 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
@@ -94,7 +94,7 @@ metrics.vertex.degrees = function(network, sort = TRUE, sort.decreasing = TRUE, 
 #'
 #' @return The density of the network.
 metrics.density = function(network) {
-    density = igraph::graph.density(network)
+    density = igraph::edge_density(network)
     return(c(density = density))
 }
 
@@ -110,7 +110,7 @@ metrics.density = function(network) {
 #'
 #' @return The average path length of the given network.
 metrics.avg.pathlength = function(network, directed = TRUE, unconnected = TRUE) {
-    avg.pathlength = igraph::average.path.length(network, directed = directed, unconnected = unconnected)
+    avg.pathlength = igraph::mean_distance(network, directed = directed, unconnected = unconnected)
     return(c(avg.pathlength = avg.pathlength))
 }
 
@@ -164,7 +164,7 @@ metrics.modularity = function(network, community.detection.algorithm = igraph::c
 #' @return The smallworldness value of the network.
 metrics.smallworldness = function(network) {
     ## first check whether the network is simplified
-    if (!is.simple(network)) {
+    if (!is_simple(network)) {
         ## if this is not the case, raise an error and stop the execution
         error.message = "The input network has too many edges. Try again with a simplified network."
         logging::logerror(error.message)
@@ -173,17 +173,16 @@ metrics.smallworldness = function(network) {
 
     ## else construct Erdös-Renyi network 'h' with same number of vertices and edges as the given network 'network',
     ## as the requirement of the function is fulfilled
-    h = igraph::erdos.renyi.game(n = igraph::vcount(network),
-                                 p.or.m = igraph::ecount(network),
-                                 type = "gnm",
-                                 directed = FALSE)
+    h = igraph::sample_gnm(n = igraph::vcount(network),
+                           m = igraph::ecount(network),
+                           directed = FALSE)
 
     ## compute clustering coefficients
     g.cc = igraph::transitivity(network, type = "global")
     h.cc = igraph::transitivity(h, type = "global")
     ## compute average shortest-path length
-    g.l = igraph::average.path.length(network, unconnected = TRUE)
-    h.l = igraph::average.path.length(h, unconnected = TRUE)
+    g.l = igraph::mean_distance(network, unconnected = TRUE)
+    h.l = igraph::mean_distance(h, unconnected = TRUE)
 
     ## binary decision
     ## intermediate variables
