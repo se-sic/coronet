@@ -14,7 +14,7 @@
 ## Copyright 2017-2018, 2020 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2020-2021 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2020-2021, 2025 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -168,8 +168,8 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
 
         ## scale edges (colors and styles)
         ggraph::scale_edge_linetype(name = "Relation Types") +
-        ggplot2::discrete_scale(name = "Relations", "edge_colour", "viridis",
-                                viridis::viridis_pal(option = "viridis", end = 0.8, begin = 0.25)) +
+        ggplot2::discrete_scale(name = "Relations", aesthetics = "edge_colour",
+                                palette = viridis::viridis_pal(option = "viridis", end = 0.8, begin = 0.25)) +
         ## BROKEN RIGHT NOW due to bug in scale_edge_colour_viridis():
         # ggraph::scale_edge_colour_viridis(name = "Relations", option = "magma", discrete = TRUE,
         #                                   end = 0.85, begin = 0, direction = 1) +

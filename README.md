@@ -137,14 +137,14 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `reshape2`: For reshaping of data
 - `testthat`: For the test suite
 - `patrick`: For the test suite
-- `ggplot2`: For plotting of data
+- `ggplot2`: For plotting of data (package version `3.5.0` or higher is required)
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
 - `rTensor`: For calculating EDCPTD centrality
-- `Matrix`: For sparse matrix representation of large adjacency matrices (package version `1.3.0` or higher is mandatory)
+- `Matrix`: For sparse matrix representation of large adjacency matrices (package version `1.3.0` or higher is required)
 - `fastmap`: For fast implementation of a map
 - `purrr`: For fast implementation of a mapping function
 
