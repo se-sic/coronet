@@ -14,7 +14,7 @@
 ## Copyright 2016-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020-2022 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2022, 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
@@ -25,6 +25,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -42,6 +43,9 @@ requireNamespace("plyr")
 requireNamespace("digest") # for sha1 hashing of IDs
 requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("data.table") # for faster data.frame processing
+requireNamespace("yaml") # for reading commit interaction data
+requireNamespace("fastmap") # for fast implementation of a map
+requireNamespace("purrr") # for fast mapping function
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Helper functions --------------------------------------------------------
@@ -64,6 +68,16 @@ remove.deleted.and.empty.user = function(data, columns = c("author.name")) {
         data = data[tolower(data[, column]) != "deleted user" & data[, column] != "", ]
     }
     return(data)
+}
+
+#' Concatenate function and file name, i.e. 'file::function'
+#'
+#' @param file.name the name of the file
+#' @param function.name the name of the function
+#'
+#' @return the concatenated function name
+prefix.function.with.file.name = function(file.name, function.name) {
+    return(paste(file.name, function.name, sep = "::"))
 }
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -164,7 +178,7 @@ read.commits = function(data.path, artifact) {
     ## (we have proximity-based data as foundation)
     if (artifact == "function") {
         ## artifact = file name + "::" . function name
-        artifacts.new = paste(commit.data[["file"]], commit.data[["artifact"]], sep = "::")
+        artifacts.new = prefix.function.with.file.name(commit.data[["file"]], commit.data[["artifact"]])
 
         ## clean up empty artifacts and File_Level artifact
         artifacts.new = gsub("^::$", "", artifacts.new)
@@ -841,6 +855,125 @@ read.pasta = function(data.path) {
 #' @return the empty dataframe
 create.empty.pasta.list = function() {
     return(create.empty.data.frame(PASTA.LIST.COLUMNS, PASTA.LIST.DATA.TYPES))
+}
+
+## * Commit interaction data -----------------------------------------------
+
+## column names of a dataframe containing commit interaction data (see function \code{read.commit.interactions})
+COMMIT.INTERACTION.LIST.COLUMNS = c(
+    "func", "commit.hash", "file",
+    "base.hash", "base.func", "base.file",
+    "base.author", "interacting.author",
+    "artifact.type"
+)
+
+## declare the datatype for each column in the constant 'COMMIT.INTERACTION.LIST.COLUMNS'
+COMMIT.INTERACTION.LIST.DATA.TYPES = c(
+    "character", "character", "character",
+    "character", "character", "character",
+    "character", "character", "character"
+)
+
+COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME = "GLOBAL"
+
+#' Read and parse the commit-interaction data. This data is present in a `.yaml` file which
+#' needs to be broken down. Within the yaml file, there are different lists in which each
+#' commit (hash) gets mapped to all commits it interacts with and the file/function because of
+#' which they interact.
+#'
+#' @param data.path the path to the commit-interaction data
+#'
+#' @return the read and parsed commit-interaction data
+read.commit.interactions = function(data.path = NULL) {
+
+    file = file.path(data.path, "commit-interactions.yaml")
+
+    commit.interaction.base = try(yaml::read_yaml(file = file,
+                                                  handlers = list(int = function(x) {as.character(x)})),
+                                  silent = TRUE)
+
+    ## handle the case that the list of commit-interactions is empty
+    if (inherits(commit.interaction.base, "try-error")) {
+        logging::logwarn("There are no commit-interactions available for the current environment.")
+        logging::logwarn("Datapath: %s", data.path)
+
+        # return a dataframe with the correct columns but zero rows
+        return(create.empty.commit.interaction.list())
+    }
+
+    ## extract the top level list of the yaml file which is called 'result-map'
+    result.map = commit.interaction.base[["result-map"]]
+
+    ## extract a mapping of functions to files to be able to determine what file the current interaction is
+    ## based on
+    ## 1) create an empty map
+    file.name.map = fastmap::fastmap()
+    ## 2) create a mapping between functions and files as a named list
+    ##    which can be directly converted to a map
+    function.file.list = purrr::map(result.map, "file")
+    ## 3) set the map using the list
+    file.name.map$mset(.list = function.file.list)
+    list.names = names(result.map)
+
+    ## build the result dataframe by iterating over the 'result-map' list
+    commit.interaction.data = data.table::setDF(data.table::rbindlist(
+                                                parallel::mcmapply(result.map,
+                                                                   list.names,
+                                                                   SIMPLIFY = FALSE,
+                                                                   FUN = function(current.interaction, function.name) {
+        ## get all commits that interact with the current one
+        insts = current.interaction[["insts"]]
+        interactions = data.table::setDF(data.table::rbindlist(lapply(insts, function(current.inst) {
+            base.hash = current.inst[["base-hash"]][["commit"]]
+            interacting.hashes = current.inst[["interacting-hashes"]]
+            interacting.hashes.df = data.table::setDF(data.table::rbindlist(lapply(interacting.hashes, function(hash) {
+                ## if there is no function name in the current interaction, we set the function name to 'GLOBAL'
+                ## as this is most likely code outside of functions, else we set the function name
+                if (!"function" %in% names(hash)) {
+                    return(data.frame(func = COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME,
+                                      commit.hash = hash[["commit"]],
+                                      file = COMMIT.INTERACTION.GLOBAL.FILE.FUNCTION.NAME))
+                } else if (is.null(file.name.map$get(hash[["function"]]))) {
+                    ## This case should never occur if the data was generated correctly!
+                    warning("An interacting hash specifies a function that does not exist in the data!")
+                    return(data.frame(matrix(nrow = 3, ncol = 0)))
+                } else {
+                    file.name = file.name.map$get(hash[["function"]])
+                    func.name = prefix.function.with.file.name(file.name, hash[("function")])
+                    return(data.frame(func = func.name, commit.hash = hash[["commit"]], file = file.name))
+                }
+            })))
+            base.file.name = file.name.map$get(function.name)
+            interacting.hashes.df[["base.hash"]] = base.hash
+            interacting.hashes.df[["base.func"]] = prefix.function.with.file.name(base.file.name, function.name)
+            interacting.hashes.df[["base.file"]] = base.file.name
+            return(interacting.hashes.df)
+        })))
+        ## Return an empty data frame if the current interaction is empty (i.e., if an interaction is not existent).
+        if (nrow(interactions) == 0) {
+          return(data.frame())
+        }
+        ## Initialize author data as 'NA', since it is not available from the commit-interaction data.
+        ## Author data will be merged from commit data in \code{update.commit.interactions}.
+        interactions["base.author"] = NA_character_
+        interactions["interacting.author"] = NA_character_
+        interactions["artifact.type"] = ARTIFACT.COMMIT.INTERACTION
+        return(interactions)
+    })))
+
+    ## remove all duplicate entries from the resulting dataframe
+    commit.interaction.data = commit.interaction.data[!duplicated(commit.interaction.data), ]
+    verify.data.frame.columns(commit.interaction.data, COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES)
+    return(commit.interaction.data)
+}
+
+#' Create an empty dataframe which has the same shape as a dataframe containing commit interaction data.
+#' The dataframe has the column names and column datatypes defined in \code{COMMIT.INTERACTION.LIST.COLUMNS}
+#' and \code{COMMIT.INTERACTION.LIST.DATA.TYPES}, respectively.
+#'
+#' @return the empty dataframe
+create.empty.commit.interaction.list = function() {
+    return (create.empty.data.frame(COMMIT.INTERACTION.LIST.COLUMNS, COMMIT.INTERACTION.LIST.DATA.TYPES))
 }
 
 ## * Synchronicity data ----------------------------------------------------

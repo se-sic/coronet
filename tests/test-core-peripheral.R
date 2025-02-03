@@ -17,7 +17,8 @@
 ## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -37,6 +38,7 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 ## Prepare global setting
 proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+proj.conf$update.value("issues.from.source", c("jira", "github"))
 proj.conf$update.value("issues.only.comments", FALSE)
 proj.data = ProjectData$new(proj.conf)
 
@@ -104,7 +106,141 @@ test_that("Eigenvector classification", {
     expect_equal(expected, result, tolerance = 0.0001)
 })
 
-# TODO: Add a test for hierarchy classification
+test_that("Trivial hierarchy classification", {
+
+    vertices = data.frame(
+        name = c("Olaf", "Thomas", "Karl"),
+        kind = TYPE.AUTHOR,
+        type = TYPE.AUTHOR
+        )
+    edges = data.frame(
+        from = c("Olaf", "Thomas", "Karl", "Thomas"),
+        to = c("Thomas", "Karl", "Olaf", "Thomas"),
+        func = c("GLOBAL", "test2.c::test2", "GLOBAL", "test2.c::test2"),
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526",
+                 "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                 "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                 "d01921773fae4bed8186b0aa411d6a2f7a6626e6"),
+        file = c("GLOBAL", "test2.c", "GLOBAL", "test2.c"),
+        base.hash = c("3a0ed78458b3976243db6829f63eba3eead26774",
+                      "0a1a5c523d835459c42f33e863623138555e2526",
+                      "1143db502761379c2bfcecc2007fc34282e7ee61",
+                      "0a1a5c523d835459c42f33e863623138555e2526"),
+        base.func = c("test2.c::test2", "test2.c::test2",
+                      "test3.c::test_function", "test2.c::test2"),
+        base.file = c("test2.c", "test2.c", "test3.c", "test2.c"),
+        artifact.type = c("CommitInteraction", "CommitInteraction", "CommitInteraction", "CommitInteraction"),
+        weight = c(1, 1, 1, 1),
+        type = c(TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA, TYPE.EDGES.INTRA),
+        relation = c("commit.interaction", "commit.interaction", "commit.interaction", "commit.interaction")
+        )
+    test.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+
+    ## Act
+    result = get.author.class.network.hierarchy(test.network)
+    ## Assert
+    expected.core = data.frame(author.name = c("Thomas"),
+                               hierarchy = c(4))
+    expected.peripheral = data.frame(author.name = c("Olaf", "Karl"),
+                                     hierarchy = c(2, 2))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Non-trivial hierarchy classification", {
+
+    vertices = data.frame(
+        name = c("Heinz", "Olaf", "Thomas", "Karl", "Christian", "Maxi", "Leo")
+        )
+    edges = data.frame(
+        from = c("Heinz", "Heinz", "Olaf", "Karl", "Karl", "Karl", "Christian", "Christian", "Maxi", "Christian", "Leo", "Christian"),
+        to = c("Karl", "Olaf", "Karl", "Olaf", "Karl", "Thomas", "Thomas", "Maxi", "Leo", "Leo", "Maxi", "Karl")
+        )
+    test.network = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+
+    ## Act
+    result = get.author.class.network.hierarchy(test.network)
+    ## Assert
+    expected.core = data.frame(author.name = c("Karl", "Christian"),
+                               hierarchy = c(21, 12))
+    expected.peripheral = data.frame(author.name = c("Olaf", "Maxi", "Leo", "Heinz", "Thomas"),
+                                     hierarchy = c(3, 3, 3, 2, 2))
+
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Betweenness classification", {
+
+    ## Act
+    result = get.author.class.network.betweenness(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               betweenness.centrality = c(1))
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Thomas", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     betweenness.centrality = c(0, 0, 0, 0, 0, 0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
+
+test_that("Closeness classification", {
+
+    ## Act
+    result = get.author.class.network.closeness(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               closeness.centrality = c(0.5))
+    expected.peripheral = data.frame(author.name = c("Björn", "Thomas", "udo", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     closeness.centrality = c(0.33333, 0.33333, 0.0, 0.0, 0.0, 0.0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result, tolerance = 0.0001)
+})
+
+test_that("Pagerank classification", {
+
+    ## Act
+    result = get.author.class.network.pagerank(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               pagerank.centrality = c(0.40541))
+    expected.peripheral = data.frame(author.name = c("Björn", "Thomas", "udo", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     pagerank.centrality = c(0.21396, 0.21396, 0.041667, 0.041667, 0.041667, 0.041667))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result, tolerance = 0.0001)
+})
+
+test_that("Eccentricity classification", {
+
+    ## Act
+    result = get.author.class.network.eccentricity(network)
+
+    ## Assert
+    expected.core = data.frame(author.name = c("Olaf"),
+                               eccentricity = c(1))
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Thomas", "Fritz fritz@example.org",
+                                                     "georg", "Hans"),
+                                     eccentricity = c(0, 0, 0, 0, 0, 0))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
+    row.names(result[["core"]]) = NULL
+    row.names(result[["peripheral"]]) = NULL
+    expect_equal(expected, result)
+})
 
 test_that("Commit-count classification using 'result.limit'" , {
 
@@ -301,7 +437,7 @@ test_that("Core classification of cochange author networks with vertices but no 
     ## create network with one author and no edges
     authors = data.frame(author.name = "A", kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     edges = create.empty.edge.list()
-    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+    network = igraph::graph_from_data_frame(edges, directed = TRUE, vertices = authors)
 
     ## classify the authors into core/peripheral
     classification = get.author.class.by.type(network, type = "network.eigen")
@@ -311,7 +447,7 @@ test_that("Core classification of cochange author networks with vertices but no 
     ## create network with several authors and no edges
     authors = data.frame(author.name = LETTERS[1:5], kind = TYPE.AUTHOR, type = TYPE.AUTHOR)
     edges = create.empty.edge.list()
-    network = igraph::graph.data.frame(edges, directed = TRUE, vertices = authors)
+    network = igraph::graph_from_data_frame(edges, directed = TRUE, vertices = authors)
 
     ## classify the authors into core/peripheral
     classification = get.author.class.by.type(network, type = "network.eigen")

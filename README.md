@@ -6,7 +6,7 @@
 
 Have you ever wanted to build socio-technical developer networks the way you want? Here, you are in the right place. Using this network library, you are able to construct such networks based on various data sources (commits, e-mails, issues) in a configurable and modular way. Additionally, we provide, e.g., analysis methods for network motifs, network metrics, and developer classification.
 
-The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [[https://github.com/siemens/codeface](https://github.com/siemens/codeface)] and its companion tool `codeface-extraction` [[https://github.com/se-sic/codeface-extraction](https://github.com/se-sic/codeface-extraction)]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
+The network library `coronet` can be used to construct analyzable networks based on data extracted from `Codeface` [[https://github.com/se-sic/codeface](https://github.com/se-sic/codeface)] (originally developed by Siemens) and its companion tool `codeface-extraction` [[https://github.com/se-sic/codeface-extraction](https://github.com/se-sic/codeface-extraction)]. The library reads the written/extracted data from disk and constructs intermediate data structures for convenient data handling, either *data containers* or, more importantly, *developer networks*.
 
 If you wonder: The name `coronet` derives as an acronym from the words "configurable", "reproducible", and, most importantly, "network". The name says it all and very much conveys our goal.
 
@@ -34,6 +34,9 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Splitting data and networks based on defined time windows](#splitting-data-and-networks-based-on-defined-time-windows)
       - [Cutting data to unified date ranges](#cutting-data-to-unified-date-ranges)
       - [Handling data independently](#handling-data-independently)
+      - [Core/Peripheral classification](#coreperipheral-classification)
+           - [Count-based metrics](#count-based-metrics)
+           - [Network-based metrics](#network-based-metrics)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -59,14 +62,14 @@ While using the package, we require the following infrastructure.
 
 #### [`R`](https://www.r-project.org/)
 
-Minimum requirement is `R` version `3.4.4`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
+Minimum requirement is `R` version `4.0.5`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
 
-We currently *recommend* `R` version `4.1.1` or `3.6.3` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
+We currently *recommend* `R` version `4.1.1` or `4.3.0` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
 The local package manager of `R` enables the user to store all needed `R` packages for this repository inside the repository itself.
-All `R` tools and IDEs should provide a  more sophisticated interface for the interaction with `packrat`([RStudio](https://www.rstudio.com/) does).
+All `R` tools and IDEs should provide a more sophisticated interface for the interaction with `packrat`([RStudio](https://www.rstudio.com/) does).
 
 #### Folder structure of the input data
 
@@ -112,7 +115,7 @@ While `proximity` triggers a file/function-based commit analysis in `Codeface`, 
 When using this network library, the user only needs to give the `artifact` parameter to the [`ProjectConf`](#projectconf) constructor, which automatically ensures that the correct tagging is selected.
 
 The configuration files `{project-name}_{tagging}.conf` are mandatory and contain some basic configuration regarding a performed `Codeface` analysis (e.g., project name, name of the corresponding repository, name of the mailing list, etc.).
-For further details on those files, please have a look at some [example files](https://github.com/siemens/codeface/tree/master/conf) in the `Codeface` repository.
+For further details on those files, please have a look at some [example files](https://github.com/se-sic/codeface/tree/infosaar-updates/conf) in the `Codeface` repository.
 
 All the `*.list` files listed above are output files of `codeface-extraction` and contain meta data of, e.g., commits or e-mails to the mailing list, etc., in CSV format.
 This network library lazily loads and processes these files when needed.
@@ -125,7 +128,7 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 
 - `yaml`: To read YAML configuration files (i.e., Codeface configuration files)
 - `R6`: For proper classes
-- `igraph`: For the construction of networks (package version `1.3.0` or higher is recommended)
+- `igraph`: For the construction of networks (package version `2.1.0` or higher is required)
 - `plyr`: For the `dlply` splitting-function and `rbind.fill`
 - `parallel`: For parallelization
 - `logging`: Logging
@@ -134,14 +137,16 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `reshape2`: For reshaping of data
 - `testthat`: For the test suite
 - `patrick`: For the test suite
-- `ggplot2`: For plotting of data
+- `ggplot2`: For plotting of data (package version `3.5.0` or higher is required)
 - `ggraph`: For plotting of networks (needs `udunits2` system library, e.g., `libudunits2-dev` on Ubuntu!)
 - `markovchain`: For core/peripheral transition probabilities
 - `lubridate`: For convenient date conversion and parsing
 - `viridis`: For plotting of networks with nice colors
 - `jsonlite`: For parsing the issue data
 - `rTensor`: For calculating EDCPTD centrality
-- `Matrix`: For sparse matrix representation of large adjacency matrices
+- `Matrix`: For sparse matrix representation of large adjacency matrices (package version `1.3.0` or higher is required)
+- `fastmap`: For fast implementation of a map
+- `purrr`: For fast implementation of a mapping function
 
 ### Submodule
 
@@ -197,6 +202,8 @@ There are two distinguishable types of data sources that are both handled by the
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
     * Synchronicity information on commits (see also the parameter `synchronicity` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
         * Synchronous commits are commits that change a source-code artifact that has also been changed by another author within a reasonable time-window.
+    * Commit-interaction data (see also the parameter `commit.interactions` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
+        * Commit interactions represent data-flow interactions between two commits (i.e., there is a data flow between the changed source-code parts of the two commits).
     * Custom event timestamps, which have to be specified manually (see also the parameter `custom.event.timestamps.file` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)
 
 
@@ -232,6 +239,11 @@ There are four types of networks that can be built using this library: author ne
      * The vertices in an artifact network denote any kind of artifact, e.g., source-code artifact (such as features or files) or communication artifact (such as mail threads or issues). All artifact-type vertices are uniquely identifiable by their name. There are only unipartite edges among artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`. The relation also describes which kinds of artifacts are represented as vertices in the network. (For example, if "mail" is selected as `artifact.relation`, only mail-thread vertices are included in the network.)
 
+- Commit networks
+     * The vertices in a commit network denote any commits in the data. All vertices
+     are uniquely identifyable by the hash of the commit. There are only unipartite edges among commits in this type of network.
+     * The relations (i.e., the edges' meaning and source) can be configured using the [`networkConf`](#networkconf) attribute `commit.relation`. The relation also describes the type of data used for network construction (`cochange` uses commit data, `commit.interaction` uses commit-interaction data).
+
 - Bipartite networks
      * The vertices in a bipartite network denote both authors and artifacts. There are only bipartite edges from authors to artifacts in this type of network.
      * The relations (i.e., the edges' meaning and source) can be configured using the [`NetworkConf`](#networkconf) attribute `artifact.relation`.
@@ -247,6 +259,7 @@ Relations determine which information is used to construct edges among the verti
 - `cochange`
     * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who change the same source-code artifact are connected with an edge.
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts that are concurrently changed in the same commit are connected with an edge.
+    * For commit networks (configured vie `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected if they change the same artifact.
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits.
 
 - `mail`
@@ -264,7 +277,13 @@ Relations determine which information is used to construct edges among the verti
     * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), source-code artifacts are connected when they reference each other (i.e., one artifact calls a function contained in the other artifact).
     * For bipartite networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), authors get linked to all source-code artifacts they have changed in their respective commits (same as for the relation `cochange`).
 
-#### Edge-construction algorithms for author networks
+- `commit.interaction`
+    * For author networks (configured via `author.relation` in the [`NetworkConf`](#networkconf)), authors who contribute to interacting commits are connected with an edge.
+    * For artifact networks (configured via `artifact.relation` in the [`NetworkConf`](#networkconf)), artifacts are connected when there is an interaction between two commits that change these artifacts.
+    * For commit networks (configured via `commit.relation` in the [`NetworkConf`](#networkconf)), commits are connected when they interact in the commit-interaction data.
+    * This relation does not apply for bipartite networks.
+
+#### Edge-construction algorithms for networks
 
 When constructing author networks, we use events in time (i.e., commits, e-mails, issue events) to model interactions among authors on the same artifact as edges. Therefore, we group the events on artifacts, based on the configured relation (see the [previous section](#relations)).
 
@@ -304,7 +323,7 @@ Based on the above raw data, we get the following author networks with relation 
   </tr>
 </table>
 
-When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread from the answer's author to the senders of every previous e-mail in this mail thread. Note that this can lead to duplicated edges if an author has sent several previous e-mails to the mail thread (see the duplicated edges `A –(3)– B` in the above example). This also leads to loop edges if an author of an answer has already sent an e-mail to this thread before (see the edge `A –(2)– A`).
+When constructing author networks with respecting the temporal order, there is one edge for each answer in a mail thread from the answer's author to the senders of every previous e-mail in this mail thread. Note that this can lead to duplicated edges if an author has sent several previous e-mails to the mail thread (see the duplicated edges `A –(3)– B` in the above example). These may be conflated again using the `remove.duplicate.edges` function. Furthermore, respecting the temporal order also leads to loop edges if an author of an answer has already sent an e-mail to this thread before (see the edge `A –(2)– A`).
 
 If the temporal order is not respected, for each e-mail in a mail thread, there is an edge from the sender of the e-mail to every other author participating in this mail thread (regardless of in which order the e-mails were sent). In this case, no loop edges are contained in the network. However, it is possible that there are several edges (having different timestamps) between two authors (see the edges `A –(1)– B` and `A –(2)– B` in the example above). If directedness is configured, the edges are directed from the sender of an e-mail to the other authors.
 
@@ -360,6 +379,55 @@ Analogously, the `NetworkConf` parameter `unify.date.ranges` enables this very f
 #### Handling data independently
 
 In some cases, it is not necessary to build a network to get the information you need. Therefore, please remember that we offer the possibility to get the raw data or mappings between, e.g., authors and the files they edited. The data inside an instance of `ProjectData` can be accessed independently. Examples can be found in the file `showcase.R`.
+
+#### Core/Peripheral classification
+
+Core/Peripheral classification describes the process of dividing the authors of a project into either `core` or `peripheral` developers based on the principle that the core developers contribute most of the work in a given project. The concrete threshold can be configured in `CORE.THRESHOLD` and is set to 80% per default, a value commonly used in literature. In practice, this is done by assigning scores to developers to approximate their importance in a project and then dividing the authors into `core` or `peripheral` based on these scores such that the desired split is achieved.
+
+##### Count-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using count-based metrics.
+- `commit.count`
+    * calculates scores based on the number of commits per author
+- `loc.count`
+    * calculates scores based on the number of lines of code changed by each author
+- `mail.count`
+    * calculates scores based on the number of mails sent per author
+- `mail.thread.count`
+    * calculates scores based on the number of mail threads each author participated in
+- `issue.count`
+    * calculates scores based on the number of issues each author participated in
+- `issue.comment.count`
+    * calculates scores based on the number of comments each author made in issues
+- `issue.commented.in.count`
+    * calculates scores based on the number of issues each author commented in
+- `issue.created.count`
+    * calculates scores based on the number of issues each author created
+
+##### Network-based metrics
+
+In this section, we provide descriptions of the different algorithms we provide for classifying authors into core or peripheral authors using metrics that are used on author networks. Note that the provided methods can be used for any network and not just author networks. The classification would then occur regarding the type of the vertices, e.g. an artifact network would result in a classification of the artifacts based on their centrality in the network.
+- `network.degree`
+    * calculates scores based on the vertex degrees in a network
+    * the degree of a vertex is the number of adjacent edges
+- `network.eigen`
+    * calculates scores based on the eigenvector centralities in a network
+    * eigenvector centrality measures the importance of vertices within a network by awarding scores for adjacent edges proportional to the score of the connected vertex
+- `network.hierarchy`
+    * calculates scores based on the hierarchy found within a network
+    * hierarchical scores are calculated by dividing the vertex degree by the clustering coefficient of each vertex
+- `network.betweenness`
+    * calculates scores based on the betweenness of vertices in a network
+    * betweenness measures the number of shortest paths between any two vertices that go through each vertex
+- `network.closeness`
+    * calculates scores based on the closeness of vertices in a network
+    * closeness measures how close vertices are to each other by calculating the sum of their shortest paths to all other vertices
+- `network.pagerank`
+    * calculates scores based on the pagerank of vertices in a network
+    * pagerank refers to the pagerank algorithm, which is closely related to eigenvector centrality
+- `network.eccentricity`
+    * calculates scores based on the eccentricity of vertices in a network
+    * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
 
 ### How-to
 
@@ -567,7 +635,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * [*`TRUE`*, `FALSE`]
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
-    * [*`github`, `jira`*]
+    * [*`github`*, `jira`]
 - `issues.locked`
     * Lock issues to prevent them from being read if not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]
@@ -597,6 +665,12 @@ There is no way to update the entries, except for the revision-based parameters.
 - `custom.event.timestamps.locked`:
     * Lock custom event timestamps to prevent them from being read if empty or not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]
+- `commit.interactions`:
+    * Allow construction of author and artifact networks using commit-interaction data
+    * [`TRUE`, *`FALSE`*]
+- `commit.interactions.filter.global`:
+    * Filter out entries from commit-interaction data that are not matched to a specific function or file
+    * [*`TRUE`*, `FALSE`]
 
 ### NetworkConf
 
@@ -610,7 +684,7 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `author.relation`
     * The relation(s) among authors, encoded as edges in an author network
     * **Note**: The  author--artifact relation in bipartite and multi networks is configured by `artifact.relation`!
-    * possible values: [*`"mail"`*, `"cochange"`, `"issue"`]
+    * possible values: [*`"mail"`*, `"cochange"`, `"issue"`, `"commit.interaction"`]
 - `author.directed`
     * The directedness of edges in an author network
     * [`TRUE`, *`FALSE`*]
@@ -629,11 +703,17 @@ Updates to the parameters can be done by calling `NetworkConf$update.variables(.
 - `artifact.relation`
     * The relation(s) among artifacts, encoded as edges in an artifact network
     * **Note**: Additionally, this relation configures also the author--artifact relation in bipartite and multi networks!
-    * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`]
+    * possible values: [*`"cochange"`*, `"callgraph"`, `"mail"`, `"issue"`, `"commit.interaction"`]
 - `artifact.directed`
     * The directedness of edges in an artifact network
     * **Note**: This parameter does only affect the `issue` relation, as the `cochange` relation is always undirected, while the `callgraph` relation is always directed. For the `mail`, we currently do not have data available to exhibit edge information.
   * [`TRUE`, *`FALSE`*]
+- `commit.relation`
+    * The relation(s) among commits, encoded as edges in a commit network
+    * possible values: [*`"cochange"`*, `"commit.interaction"`]
+- `commit.directed`
+    * The directedness of edges in a commit network
+    * [`TRUE`, *`FALSE`*]
 - `edge.attributes`
     * The list of edge-attribute names and information
     * a subset of the following as a single vector:

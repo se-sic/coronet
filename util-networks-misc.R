@@ -19,6 +19,7 @@
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2019-2020 by Anselm Fehnker <anselm@muenster.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -134,10 +135,10 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
 
         if (weighted) {
             ## get the weighted adjacency matrix for the current network
-            matrix.data = igraph::get.adjacency(network, attr = "weight")
+            matrix.data = igraph::as_adjacency_matrix(network, attr = "weight")
         } else {
             ## get the unweighted sparse adjacency matrix for the current network
-            matrix.data = igraph::get.adjacency(network)
+            matrix.data = igraph::as_adjacency_matrix(network)
         }
 
         network.authors.num = nrow(matrix.data)
@@ -151,7 +152,7 @@ get.expanded.adjacency = function(network, authors, weighted = FALSE) {
             # write a warning with the number of authors from the network that we ignore
             warning.string = sprintf("The network had %d authors that will not be displayed in the matrix!",
                                      network.authors.num - nrow(matrix.data))
-            warning(warning.string)
+            logging::logwarn(warning.string)
         }
 
         ## save the activity data per author

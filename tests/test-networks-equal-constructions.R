@@ -15,6 +15,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -39,21 +40,21 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 compare.edge.and.vertex.lists = function(split.networks.one, split.networks.two) {
 
     for (i in seq_along(split.networks.one)) {
-        edges.one = igraph::get.data.frame(split.networks.one[[i]], what = "edges")
+        edges.one = igraph::as_data_frame(split.networks.one[[i]], what = "edges")
         ordering = order(edges.one[["from"]], edges.one[["to"]],
-                         edges.one[["date"]])
+                         as.vector(edges.one[["date"]], "numeric"))
         edges.one = edges.one[ordering, ]
         rownames(edges.one) = seq_len(nrow(edges.one))
-        edges.two = igraph::get.data.frame(split.networks.two[[i]], what = "edges")
+        edges.two = igraph::as_data_frame(split.networks.two[[i]], what = "edges")
         ordering = order(edges.two[["from"]], edges.two[["to"]],
-                         edges.two[["date"]])
+                         as.vector(edges.two[["date"]], "numeric"))
         edges.two = edges.two[ordering, ]
         rownames(edges.two) = seq_len(nrow(edges.two))
-        vertices.one = igraph::get.data.frame(split.networks.one[[i]], what = "vertices")
+        vertices.one = igraph::as_data_frame(split.networks.one[[i]], what = "vertices")
         ordering = order(vertices.one[["name"]])
         vertices.one = vertices.one[ordering, ]
         rownames(vertices.one) = seq_len(nrow(vertices.one))
-        vertices.two = igraph::get.data.frame(split.networks.two[[i]], what = "vertices")
+        vertices.two = igraph::as_data_frame(split.networks.two[[i]], what = "vertices")
         ordering = order(vertices.two[["name"]])
         vertices.two = vertices.two[ordering, ]
         rownames(vertices.two) = seq_len(nrow(vertices.two))

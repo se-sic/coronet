@@ -15,7 +15,7 @@
 ## Copyright 2016 by Wolfgang Mauerer <wolfgang.mauerer@oth-regensburg.de>
 ## Copyright 2017 by Raphael Nömmer <noemmer@fim.uni-passau.de>
 ## Copyright 2017-2018 by Christian Hechtl <hechtl@fim.uni-passau.de>
-## Copyright 2020-2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
+## Copyright 2020-2021, 2024 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
@@ -26,6 +26,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
+## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -61,6 +62,8 @@ ARTIFACT.CODEFACE = list(
     "function" = "Function",
     "file"     = "File"
 )
+
+ARTIFACT.COMMIT.INTERACTION = "CommitInteraction"
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -421,9 +424,9 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed.number = 1
             ),
             issues.from.source = list(
-                default = c("jira", "github"),
+                default = "github",
                 type = "character",
-                allowed = c("jira", "github"),
+                allowed = c("github", "jira"),
                 allowed.number = Inf
             ),
             issues.locked = list(
@@ -464,6 +467,18 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             ),
             pasta = list(
                 default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commit.interactions = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commit.interactions.filter.global = list(
+                default = TRUE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),
                 allowed.number = 1
@@ -629,6 +644,9 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
             conf$datapath.synchronicity = private$get.results.folder(data, selection.process, casestudy, "synchronicity")
             ## store path to PaStA data
             conf$datapath.pasta = private$get.results.folder(data, selection.process, casestudy, "pasta")
+            ## store path to commit interaction data
+            conf$datapath.commit.interaction =
+                private$get.results.folder(data, selection.process, casestudy, tagging, subfolder = tagging)
             ## store path to gender data
             conf$datapath.gender = private$get.results.folder(data, selection.process, casestudy, "gender")
             ## store path to issue data
@@ -781,7 +799,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             author.relation = list(
                 default = "mail",
                 type = "character",
-                allowed = c("mail", "cochange", "issue"),
+                allowed = c("mail", "cochange", "issue", "commit.interaction"),
                 allowed.number = Inf
             ),
             author.directed = list(
@@ -812,10 +830,22 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
             artifact.relation = list(
                 default = "cochange",
                 type = "character",
-                allowed = c("cochange", "callgraph", "mail", "issue"),
+                allowed = c("cochange", "callgraph", "mail", "issue", "commit.interaction"),
                 allowed.number = Inf
             ),
             artifact.directed = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            commit.relation = list(
+                default = "cochange",
+                type = "character",
+                allowed = c("cochange", "commit.interaction"),
+                allowed.number = Inf
+            ),
+            commit.directed = list(
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),

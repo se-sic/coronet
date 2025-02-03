@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
+## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -55,7 +56,7 @@ collect.multi.networks = function(project.conf, network.conf, step = 1) {
         multi.network = network.builder$get.multi.network()
 
         ## set range attribute
-        multi.network = igraph::set.graph.attribute(multi.network, "range", range)
+        multi.network = igraph::set_graph_attr(multi.network, "range", range)
         attr(multi.network, "range") = range
 
         # add to global list
@@ -98,7 +99,7 @@ collect.bipartite.networks = function(project.conf, network.conf, step = 1) {
         bp.network = network.builder$get.bipartite.network()
 
         ## set range attribute
-        bp.network = igraph::set.graph.attribute(bp.network, "range", range)
+        bp.network = igraph::set_graph_attr(bp.network, "range", range)
         attr(bp.network, "range") = range
 
         # add to global list
@@ -141,7 +142,7 @@ collect.author.networks = function(project.conf, network.conf, step = 1) {
         author.network = network.builder$get.author.network()
 
         ## set range attribute
-        author.network = igraph::set.graph.attribute(author.network, "range", range)
+        author.network = igraph::set_graph_attr(author.network, "range", range)
         attr(author.network, "range") = range
 
         # add to global list
@@ -184,7 +185,7 @@ collect.artifact.networks = function(project.conf, network.conf, step = 1) {
         artifact.network = network.builder$get.artifact.network()
 
         ## set range attribute
-        artifact.network = igraph::set.graph.attribute(artifact.network, "range", range)
+        artifact.network = igraph::set_graph_attr(artifact.network, "range", range)
         attr(artifact.network, "range") = range
 
         # add to global list

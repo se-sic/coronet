@@ -15,7 +15,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -82,16 +82,21 @@ test_that("Construction of the multi network for the feature artifact with autho
                            "0a1a5c523d835459c42f33e863623138555e2526"),
                   file = c("test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c",
                            "test2.c", "test.c", "test.c", "test2.c", "test3.c", "test2.c", "test2.c"),
-                  artifact = c("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
-                               "Base_Feature", NA, "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
-                               "foo"),
+                  artifact = I(list("A", "A", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature", "Base_Feature",
+                                  "Base_Feature", NA, "A", "A", "Base_Feature", "Base_Feature", "Base_Feature",
+                                  "foo")),
                   weight = 1,
                   type = c(rep(TYPE.EDGES.INTRA, 9), rep(TYPE.EDGES.INTER, 6)),
                   relation = "cochange",
-                  author.name = c(NA, NA, NA, NA, NA, NA, NA, NA, "Thomas", NA, NA, NA, NA, NA, NA)
+                  author.name = I(list(NA, NA, NA, NA, NA, NA, NA, NA, "Thomas", NA, NA, NA, NA, NA, NA))
               )
 
-              network.expected = igraph::graph.data.frame(edges, directed = FALSE, vertices = vertices)
+              ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
+              edges[["artifact"]] = unclass(edges[["artifact"]])
+              edges[["author.name"]] = unclass(edges[["author.name"]])
+
+              network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+              network.expected = convert.edge.attributes.to.list(network.expected)
 
               assert.networks.equal(network.expected, network.built)
           })

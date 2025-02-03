@@ -47,10 +47,10 @@ requireNamespace("lubridate") # for date conversion
 #' @return the new edgelist
 get.edgelist.with.timestamps = function(net) {
   ## get edge list as data.frame
-  edges = as.data.frame(igraph::get.edgelist(net))
+  edges = as.data.frame(igraph::as_edgelist(net))
   colnames(edges) = c("from", "to")
   ## get timestamps
-  dates = igraph::get.edge.attribute(net, "date")
+  dates = igraph::edge_attr(net, "date")
   ## bind everything together
   edges = cbind(edges, date = dates)
 
@@ -522,12 +522,13 @@ get.time.period.by.amount = function(start.date, end.date, amount) {
 #' @param revs the revisions
 #' @param sliding.window whether sliding window splitting is enabled or not
 #'                       [default: FALSE]
+#' @param cumulative whether to construct cumulative ranges [default: FALSE]
 #' @param raw whether to return pairs of POSIXct objects or strings rather than
 #'            formatted strings [default: FALSE]
 #'
 #' @return the constructed ranges, either formatted or raw; the raw ranges are a named list,
 #'         for which the formatted ranges are the names
-construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
+construct.ranges = function(revs, sliding.window = FALSE, cumulative = FALSE, raw = FALSE) {
 
     ## make sure that, at least, two revisions are provided
     if (length(revs) < 2) {
@@ -544,8 +545,14 @@ construct.ranges = function(revs, sliding.window = FALSE, raw = FALSE) {
     if (sliding.window)
         offset = 2
 
-    ## extract sequences of revisions
-    seq1 = revs[ 1:(length(revs) - offset) ]
+    ## extract start of ranges
+    if (cumulative) {
+        seq1 = rep(revs[1], length(revs) - offset)
+    } else {
+        seq1 = revs[ 1:(length(revs) - offset) ]
+    }
+
+    ## extract end of ranges
     if ((offset + 1) <= length(revs)) {
         seq2 = revs[ (offset + 1):length(revs) ]
     } else {

@@ -75,7 +75,7 @@ test_that("Simplify network with more than one relation", {
     expect_error(simplify.network(g), NA) # expect that no error occurs
     expect_identical(igraph::V(simplify.network(g))$name, c("A", "B", "C", "Base_Feature")) # vertices
     expect_identical(igraph::ecount(simplify.network(g)), 1) # edges
-    expect_true(igraph::are.connected(simplify.network(g), "A", "Base_Feature")) # specific edge
+    expect_true(igraph::are_adjacent(simplify.network(g), "A", "Base_Feature")) # specific edge
 
 })
 
@@ -90,8 +90,8 @@ test_that("Simplify basic multi-relational network", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
     for (i in 1:3) {
-        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network = igraph::add.edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
     }
 
     network.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
@@ -135,37 +135,37 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                                   "Björn", "Olaf"), # mail
                       comb.2. = c("Olaf", "Karl", "Thomas", "Thomas", # cochange
                                   "Olaf", "Thomas")) # mail
-    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45")),
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")),
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32")), # cochange
-                     get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:58:50")),
-                     get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37"))) # mail
-    data$artifact.type = list(c("Feature", "Feature"), c("Feature", "Feature"),
-                              c("Feature", "Feature"), c("Feature", "Feature"), # cochange
-                              c("Mail", "Mail"), c("Mail", "Mail")) # mail
-    data$hash = list(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
-                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
-                     as.character(c(NA, NA)), as.character(c(NA, NA)))
-    data$file = list(c("test.c", "test.c"), c("test2.c", "test3.c"), c("test2.c", "test2.c"), c("test3.c", "test2.c"),
-                     as.character(c(NA, NA)), as.character(c(NA, NA)))
-    data$artifact = list(c("A", "A"), c("Base_Feature", "Base_Feature"), c("Base_Feature", "Base_Feature"), 
-                         c("Base_Feature", "Base_Feature"), as.character(c(NA, NA)), as.character(c(NA, NA)))
+    data$date = list(as.list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32"))), # cochange
+                     as.list(get.date.from.string(c("2016-07-12 15:58:40", "2016-07-12 15:58:50"))),
+                     as.list(get.date.from.string(c("2016-07-12 16:04:40", "2016-07-12 16:05:37")))) # mail
+    data$artifact.type = list(list("Feature", "Feature"), list("Feature", "Feature"),
+                              list("Feature", "Feature"), list("Feature", "Feature"), # cochange
+                              list("Mail", "Mail"), list("Mail", "Mail")) # mail
+    data$hash = list(list("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     list("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"),
+                     as.list(rep(NA, 2)), as.list(rep(NA, 2)))
+    data$file = list(list("test.c", "test.c"), list("test2.c", "test3.c"), list("test2.c", "test2.c"), list("test3.c", "test2.c"),
+                     as.list(rep(NA, 2)), as.list(rep(NA, 2)))
+    data$artifact = list(list("A", "A"), list("Base_Feature", "Base_Feature"), list("Base_Feature", "Base_Feature"),
+                         list("Base_Feature", "Base_Feature"), as.list(rep(NA, 2)), as.list(rep(NA, 2)))
     data$weight = rep(2, 6)
     data$type = rep(TYPE.EDGES.INTRA, 6)
     data$relation = c(rep("cochange", 4), rep("mail", 2))
-    data$message.id = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
-                           c("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
-                             "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
-                           c("<65a1sf31sagd684dfv31@mail.gmail.com>",
-                             "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"))
-    data$thread = list(as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)), as.character(c(NA, NA)),
-                       c("<thread-13#8>", "<thread-13#8>"), c("<thread-13#9>", "<thread-13#9>"))
+    data$message.id = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
+                           list("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                                "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
+                           list("<65a1sf31sagd684dfv31@mail.gmail.com>",
+                                "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"))
+    data$thread = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
+                       list("<thread-13#8>", "<thread-13#8>"), list("<thread-13#9>", "<thread-13#9>"))
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, vertices = authors,
+    network.expected = igraph::graph_from_data_frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
     ## build simplified network
@@ -179,40 +179,41 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     data = data.frame(comb.1. = c("Björn", "Olaf", "Olaf", "Karl"),
                       comb.2. = c("Olaf", "Karl", "Thomas", "Thomas"))
 
-    data$date = list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",   # cochange
-                                            "2016-07-12 15:58:40", "2016-07-12 15:58:50")), # mail
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10")), # cochange
-                     get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32",   # cochange
-                                            "2016-07-12 16:04:40", "2016-07-12 16:05:37")), # mail
-                     get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32"))) # cochange
-    data$artifact.type = list(c("Feature", "Feature", "Mail", "Mail"),
-                              c("Feature", "Feature"),
-                              c("Feature", "Feature", "Mail", "Mail"),
-                              c("Feature", "Feature"))
-    data$hash = list(as.character(c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", NA, NA)),
-                     c("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
-                     as.character(c("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526", NA, NA)),
-                     c("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))
-    data$file = list(as.character(c("test.c", "test.c", NA, NA)), c("test2.c", "test3.c"),
-                     as.character(c("test2.c", "test2.c", NA, NA)), c("test3.c", "test2.c"))
-    data$artifact = list(as.character(c("A", "A", NA, NA)), c("Base_Feature", "Base_Feature"),
-                         as.character(c("Base_Feature", "Base_Feature", NA, NA)), c("Base_Feature", "Base_Feature"))
+    data$date = list(as.list(get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:00:45",    # cochange
+                                                    "2016-07-12 15:58:40", "2016-07-12 15:58:50"))), # mail
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:10"))), # cochange
+                     as.list(get.date.from.string(c("2016-07-12 16:05:41", "2016-07-12 16:06:32",    # cochange
+                                                    "2016-07-12 16:04:40", "2016-07-12 16:05:37"))), # mail
+                     as.list(get.date.from.string(c("2016-07-12 16:06:10", "2016-07-12 16:06:32")))) # cochange
+    data$artifact.type = list(list("Feature", "Feature", "Mail", "Mail"),
+                              list("Feature", "Feature"),
+                              list("Feature", "Feature", "Mail", "Mail"),
+                              list("Feature", "Feature"))
+
+    data$hash = list(list("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "5a5ec9675e98187e1e92561e1888aa6f04faa338", NA, NA),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "1143db502761379c2bfcecc2007fc34282e7ee61"),
+                     list("3a0ed78458b3976243db6829f63eba3eead26774", "0a1a5c523d835459c42f33e863623138555e2526", NA, NA),
+                     list("1143db502761379c2bfcecc2007fc34282e7ee61", "0a1a5c523d835459c42f33e863623138555e2526"))
+    data$file = list(list("test.c", "test.c", NA, NA), list("test2.c", "test3.c"),
+                     list("test2.c", "test2.c", NA, NA), list("test3.c", "test2.c"))
+    data$artifact = list(list("A", "A", NA, NA), list("Base_Feature", "Base_Feature"),
+                         list("Base_Feature", "Base_Feature", NA, NA), list("Base_Feature", "Base_Feature"))
     data$weight = c(4, 2, 4, 2)
     data$type = rep(TYPE.EDGES.INTRA, 4)
     data$relation = list(c("cochange", "mail"), c("cochange"), c("cochange", "mail"), c("cochange"))
-    data$message.id = list(as.character(c(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
-                                          "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>")),
-                           as.character(c(NA, NA)),
-                           as.character(c(NA, NA, "<65a1sf31sagd684dfv31@mail.gmail.com>",
-                                          "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>")),
-                           as.character(c(NA, NA)))
-    data$thread = list(as.character(c(NA, NA, "<thread-13#8>", "<thread-13#8>")),
-                       as.character(c(NA, NA)),
-                       as.character(c(NA, NA, "<thread-13#9>", "<thread-13#9>")),
-                       as.character(c(NA, NA)))
+    data$message.id = list(list(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
+                                        "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
+                           list(NA, NA),
+                           list(NA, NA, "<65a1sf31sagd684dfv31@mail.gmail.com>",
+                                        "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>"),
+                           list(NA, NA))
+    data$thread = list(list(NA, NA, "<thread-13#8>", "<thread-13#8>"),
+                       list(NA, NA),
+                       list(NA, NA, "<thread-13#9>", "<thread-13#9>"),
+                       list(NA, NA))
 
     ## build expected network
-    network.expected = igraph::graph.data.frame(data, vertices = authors,
+    network.expected = igraph::graph_from_data_frame(data, vertices = authors,
                                                 directed = net.conf$get.value("author.directed"))
 
     ## build simplified network
@@ -237,11 +238,16 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
     for (i in 1:3) {
-        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.A = igraph::add.edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
-        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.B = igraph::add.edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
     }
+
+    ## add graph attributes
+    network.A = igraph::set_graph_attr(network.A, "name", "network.A")
+    network.B = igraph::set_graph_attr(network.B, "name", "network.B")
+    networks = list(A = network.A, B = network.B)
 
     network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
@@ -251,7 +257,6 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
         igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
-    networks = list(A = network.A, B = network.B)
 
     ## simplify networks without simplifying multiple relations into single edges
     networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
@@ -269,6 +274,101 @@ test_that("Simplify multiple basic multi-relational networks", {
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
         expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
     }
+
+    ## verify graph attributes
+    expect_identical(igraph::graph_attr(networks.simplified[["A"]], "name"), "network.A")
+    expect_identical(igraph::graph_attr(networks.simplified[["B"]], "name"), "network.B")
+})
+
+test_that("Remove isolated vertices", {
+
+    ## construct network
+    edges = c("A", "A", "D", "C", "E", "C")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F") +
+        igraph::edges(edges, relation = "cochange")
+
+    ## remove isolate vertices
+    network = delete.isolates(network)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network, "name"), c("A", "C", "D", "E"))
+
+})
+
+test_that("Remove isolated authors given a specific edge type", {
+
+    ## construct network
+    edges_inter = c("A", "A", "D", "C", "E", "C")
+    edges_intra = c("F", "D", "A", "E", "D", "B")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D", "E", "F", type = TYPE.AUTHOR) +
+        igraph::edges(edges_inter, relation = "cochange", type = TYPE.EDGES.INTER) +
+        igraph::edges(edges_intra, relation = "cochange", type = TYPE.EDGES.INTRA)
+
+    ## remove isolate vertices
+    network.without.isolates.inter = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTER)
+    network.without.isolates.intra = delete.authors.without.specific.edges(network, specific.edge.type = TYPE.EDGES.INTRA)
+
+    ## check correctness
+    expect_identical(igraph::vertex_attr(network.without.isolates.inter, "name"), c("A", "C", "D", "E"))
+    expect_identical(igraph::vertex_attr(network.without.isolates.intra, "name"), c("A", "B", "D", "E", "F"))
+
+})
+
+test_that("Remove duplicate edges", {
+
+    ##
+    ## Remove duplicate edges from a network
+    ##
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    net.conf = NetworkConf$new()
+    net.conf$update.values(list("author.respect.temporal.order" = TRUE, author.directed = FALSE))
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+    network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
+
+    ## construct data for expected network
+    edges = data.frame(comb.1. = c("Björn", "Olaf", rep("Hans", 5)),
+                       comb.2. = c("Olaf", "Thomas", rep("Hans", 5)),
+                       date = get.date.from.string(c("2016-07-12 15:58:50", "2016-07-12 16:05:37",
+                                                     "2010-07-12 12:05:41", "2010-07-12 12:05:42",
+                                                     "2010-07-12 12:05:43", "2010-07-12 12:05:44",
+                                                     "2010-07-12 12:05:45")),
+                       artifact.type = rep("Mail", 7),
+                       message.id = c("<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>",
+                                      "<9b06e8d20801220234h659c18a3g95c12ac38248c7e0@mail.gmail.com>",
+                                      "<hans2@mail.gmail.com>", "<hans3@mail.gmail.com>",
+                                      "<hans4@mail.gmail.com>", "<hans5@mail.gmail.com>",
+                                      "<hans6@mail.gmail.com>"),
+                       thread = c("<thread-13#8>", "<thread-13#9>", rep("<thread-42#6>", 5)),
+                       weight = rep(1, 7),
+                       type = rep(TYPE.EDGES.INTRA, 7),
+                       relation = rep("mail", 7))
+    vertices = data.frame(name = c("Björn", "udo", "Olaf", "Thomas", "Fritz fritz@example.org", "georg", "Hans"),
+                          kind = rep("Author", 7),
+                          type = rep("Author", 7))
+
+    ## build expected network
+    network.expected = igraph::graph_from_data_frame(edges, directed = FALSE, vertices = vertices)
+    network.expected = convert.edge.attributes.to.list(network.expected)
+
+    ## build network with unique edges
+    network = network.builder$get.author.network()
+    network.built = remove.duplicate.edges(network)
+
+    assert.networks.equal(network.expected, network.built)
+
+    ##
+    ## Attempt to remove non-existent duplicate edges should not change anything
+    ##
+
+    assert.networks.equal(network.built, remove.duplicate.edges(network.built))
+
 })
 
 
@@ -314,7 +414,7 @@ test_that("Extraction of sub-networks", {
     author.net.built = extract.author.network.from.network(base.net, remove.isolates = FALSE)
 
     ## construct expected author network (by removing artifact vertices and adjacent edges)
-    author.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[7:12])
+    author.net.expected = igraph::delete_vertices(base.net, igraph::V(base.net)[7:12])
 
     expect_true(igraph::identical_graphs(author.net.built, author.net.expected), info = "author-network extraction")
 
@@ -326,8 +426,8 @@ test_that("Extraction of sub-networks", {
     bip.net.built = extract.bipartite.network.from.network(base.net, remove.isolates = TRUE)
 
     ## construct expected bipartite network (by removing unipartite edges and isolate vertices)
-    bip.net.expected = igraph::delete.edges(base.net, igraph::E(base.net)[1:9])
-    bip.net.expected = igraph::delete.vertices(bip.net.expected, "A2")
+    bip.net.expected = igraph::delete_edges(base.net, igraph::E(base.net)[1:9])
+    bip.net.expected = igraph::delete_vertices(bip.net.expected, "A2")
 
     expect_true(igraph::identical_graphs(bip.net.built, bip.net.expected), info = "bipartite-network extraction")
 
@@ -339,7 +439,7 @@ test_that("Extraction of sub-networks", {
     art.net.built = extract.artifact.network.from.network(base.net, remove.isolates = FALSE)
 
     ## construct expected artifact network (by removing author vertices and adjacent edges)
-    art.net.expected = igraph::delete.vertices(base.net, igraph::V(base.net)[1:6])
+    art.net.expected = igraph::delete_vertices(base.net, igraph::V(base.net)[1:6])
 
     expect_true(igraph::identical_graphs(art.net.built, art.net.expected), info = "artifact-network extraction")
 
@@ -527,14 +627,14 @@ test_that("Construction of networks from empty edge list (with vertices)", {
     ## construct edgeless network
     net.edgeless = create.empty.network(directed = directed) + igraph::vertices(vertices.as.sequence)
     ## add attribute 'weight' which is always added by 'construct.network.from.edge.list'
-    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
+    net.edgeless = igraph::set_edge_attr(net.edgeless, "weight", value = 1)
 
     ##
     ## normal network
     ##
 
     net.constructed = construct.network.from.edge.list(vertices, edge.list, net.conf)
-    net.expected = igraph::graph.empty(n = 0, directed = directed) +
+    net.expected = igraph::make_empty_graph(n = 0, directed = directed) +
         igraph::vertices(vertices.as.sequence) +
         igraph::edges(edge.list.as.sequence, weight = 1)
 
@@ -574,8 +674,8 @@ test_that("Construction of networks from empty edge list (without vertices)", {
     ## construct edgeless network
     net.edgeless = create.empty.network(directed = directed)
     ## add attributes 'name' and 'weight' which is always added by 'construct.network.from.edge.list'
-    net.edgeless = igraph::set.vertex.attribute(net.edgeless, "name", value = "name")
-    net.edgeless = igraph::set.edge.attribute(net.edgeless, "weight", value = 1)
+    net.edgeless = igraph::set_vertex_attr(net.edgeless, "name", value = "name")
+    net.edgeless = igraph::set_edge_attr(net.edgeless, "weight", value = 1)
 
     ##
     ## vertices: NULL
@@ -763,7 +863,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "cochange"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – cochange")
 
@@ -772,7 +872,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "mail"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – mail")
 
@@ -781,7 +881,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(author.relation = "issue"))
     network.built = network.builder$get.author.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "author network – issue")
 
@@ -794,7 +894,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = c("cochange")))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – cochange")
 
@@ -803,7 +903,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – mail")
 
@@ -812,7 +912,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
     network.built = network.builder$get.bipartite.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "bipartite network – issue")
 
@@ -825,7 +925,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "cochange"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – cochange")
 
@@ -834,7 +934,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "mail"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – mail")
 
@@ -843,7 +943,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(updated.values = list(artifact.relation = "issue"))
     network.built = network.builder$get.artifact.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_true(igraph::identical_graphs(network.built, network.expected), info = "artifact network – issue")
 
@@ -856,7 +956,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "cochange", author.relation = "cochange"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),
@@ -869,7 +969,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "mail", author.relation = "mail"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),
@@ -882,7 +982,7 @@ test_that("Addition of edge attributes with data", {
     network.builder$update.network.conf(list(artifact.relation = "issue", author.relation = "cochange"))
     network.built = network.builder$get.multi.network()
     ## 2) remove all vertices since we only care about the attributes
-    network.built = igraph::delete.vertices(network.built, seq_len(igraph::vcount(network.built)))
+    network.built = igraph::delete_vertices(network.built, seq_len(igraph::vcount(network.built)))
     ## 3) check attributes against expected network
     expect_identical(
         igraph::as_data_frame(network.built, what = "both"),
@@ -891,6 +991,54 @@ test_that("Addition of edge attributes with data", {
     )
 
 })
+
+
+patrick::with_parameters_test_that("Convert edge attributes to list", {
+
+    ## configure edge attributes
+    edge.attributes = c("date", "message.id", "thread", "weight", "type", "relation")
+    attribute.defaults = list(get.date.from.string("2020-01-01 00:00:00"), "abc", "def", 1, TYPE.EDGES.INTRA, "mail")
+
+    ## construct network
+    network =
+        igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", "C", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
+        igraph::edges("A", "B", "B", "C", "C", "A")
+
+    ## assign edge attributes
+    for (i in seq_along(edge.attributes)) {
+        network = igraph::set_edge_attr(network, edge.attributes[i], value = attribute.defaults[[i]])
+    }
+
+    ## convert specified edge attributes to list
+    if (is.null(remain.as.is)) {
+        network.listified = convert.edge.attributes.to.list(network)
+
+        ## set 'remain.as.is' to the default of 'convert.edge.attributes.to.list'
+        ## for later use in the validation process
+        remain.as.is = names(EDGE.ATTR.HANDLING)
+    } else {
+        network.listified = convert.edge.attributes.to.list(network, remain.as.is = remain.as.is)
+    }
+
+    ## check edge attributes
+    for (attr in igraph::edge_attr_names(network)) {
+        conversion.function = ifelse(attr %in% remain.as.is, identity, as.list)
+        expect_equal(
+            conversion.function(igraph::edge_attr(network, attr)),
+            igraph::edge_attr(network.listified, attr),
+            info = paste("edge attribute", attr, "values")
+        )
+    }
+
+}, patrick::cases(
+    "remain.as.is: weight" = list(remain.as.is = c("weight")),
+    "remain.as.is: date" = list(remain.as.is = c("date")),
+    "remain.as.is: weight, date" = list(remain.as.is = c("weight", "date")),
+    "remain.as.is: default" = list(remain.as.is = NULL)
+))
+
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Extract data sources ----------------------------------------------------

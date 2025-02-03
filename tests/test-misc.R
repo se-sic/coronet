@@ -20,6 +20,35 @@
 
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Network data ------------------------------------------------------------
+
+test_that("Get edgelist augmented with timestamps", {
+
+    ## construct network
+    edges = list(list("A", "A"), list("D", "C"), list("C", "A"), list("B", "C"))
+    timestamps = c("2016-12-07 15:30:02", "2016-08-07 15:37:02", "2016-07-12 15:59:25", "2016-07-12 15:59:59")
+    network =
+        igraph::make_empty_graph(n = 0, directed = TRUE) +
+        igraph::vertices("A", "B", "C", "D") +
+        igraph::edges(edges, relation = "mail", date = timestamps)
+
+
+    ## get edgelist augmented with timestamps
+    edgelist = get.edgelist.with.timestamps(network)
+
+    ## check correctness
+    expect_equal(names(edgelist), c("from", "to", "date"))
+    expect_equal(nrow(edgelist), 4)
+    lapply(1:4, function(i) {
+        actual = edgelist[i, ]
+        expect_equal(actual[["from"]], edges[[i]][[1]])
+        expect_equal(actual[["to"]], edges[[i]][[2]])
+        expect_equal(actual[["date"]], timestamps[i])
+    })
+})
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Parameter verification --------------------------------------------------
 
 ##
@@ -350,6 +379,44 @@ test_that("Generate a date sequence.", {
 ## Range construction and handling -----------------------------------------
 
 ##
+## Construct ranges from revisions.
+##
+
+test_that("Construct ranges from revisions", {
+
+    revisions = c("2016-12-07 15:30:02", "2016-11-09 09:37:45", "2016-19-10 15:59:25", "2016-07-12 20:14:45")
+
+    ## wihtout sliding windows
+    expected.ranges = c(paste0(revisions[1], "-", revisions[2]),
+                        paste0(revisions[2], "-", revisions[3]),
+                        paste0(revisions[3], "-", revisions[4]))
+    ranges = construct.ranges(revs = revisions, sliding.window = FALSE)
+    expect_identical(ranges, expected.ranges, info = "No sliding windows.")
+
+    ## raw ranges (without sliding windows)
+    expected.ranges.raw = list(c(revisions[1], revisions[2]),
+                               c(revisions[2], revisions[3]),
+                               c(revisions[3], revisions[4]))
+    names(expected.ranges.raw) = expected.ranges
+    ranges = construct.ranges(revs = revisions, raw = TRUE)
+    expect_identical(ranges, expected.ranges.raw, info = "Raw ranges without sliding windows.")
+
+    ## with sliding windows (combine each second revision)
+    expected.ranges = c(paste0(revisions[1], "-", revisions[3]),
+                        paste0(revisions[2], "-", revisions[4]))
+    ranges = construct.ranges(revs = revisions, sliding.window = TRUE)
+    expect_identical(ranges, expected.ranges, info = "Sliding windows.")
+
+    ## raw ranges (with sliding windows)
+    expected.ranges.raw = list(c(revisions[1], revisions[3]),
+                               c(revisions[2], revisions[4]))
+    names(expected.ranges.raw) = expected.ranges
+    ranges = construct.ranges(revs = revisions, sliding.window = TRUE, raw = TRUE)
+    expect_identical(ranges, expected.ranges.raw, info = "Raw ranges with sliding windows.")
+
+})
+
+##
 ## Construct consecutive and overlapping ranges.
 ##
 
@@ -474,6 +541,40 @@ test_that("Construct consecutive and overlapping ranges.", {
 ##
 ## Construct cumulative ranges.
 ##
+
+test_that("Construct cumulative ranges from revisions", {
+
+    revisions = c("2016-12-07 15:30:02", "2016-11-09 09:37:45", "2016-19-10 15:59:25", "2016-07-12 20:14:45")
+
+    ## wihtout sliding windows
+    expected.ranges = c(paste0(revisions[1], "-", revisions[2]),
+                        paste0(revisions[1], "-", revisions[3]),
+                        paste0(revisions[1], "-", revisions[4]))
+    ranges = construct.ranges(revs = revisions, sliding.window = FALSE, cumulative = TRUE)
+    expect_identical(ranges, expected.ranges, info = "No sliding windows.")
+
+    ## raw ranges (with sliding windows)
+    expected.ranges.raw = list(c(revisions[1], revisions[2]),
+                               c(revisions[1], revisions[3]),
+                               c(revisions[1], revisions[4]))
+    names(expected.ranges.raw) = expected.ranges
+    ranges = construct.ranges(revs = revisions, sliding.window = FALSE, cumulative = TRUE, raw = TRUE)
+    expect_identical(ranges, expected.ranges.raw, info = "Raw cumulative ranges without sliding windows.")
+
+    ## with sliding windows (combine each second revision)
+    expected.ranges = c(paste0(revisions[1], "-", revisions[3]),
+                        paste0(revisions[1], "-", revisions[4]))
+    ranges = construct.ranges(revs = revisions, sliding.window = TRUE, cumulative = TRUE)
+    expect_identical(ranges, expected.ranges, info = "Sliding windows.")
+
+    ## raw ranges (with sliding windows)
+    expected.ranges.raw = list(c(revisions[1], revisions[3]),
+                               c(revisions[1], revisions[4]))
+    names(expected.ranges.raw) = expected.ranges
+    ranges = construct.ranges(revs = revisions, sliding.window = TRUE, cumulative = TRUE, raw = TRUE)
+    expect_identical(ranges, expected.ranges.raw, info = "Raw cumulative ranges with sliding windows.")
+
+})
 
 test_that("Construct cumulative ranges.", {
 
