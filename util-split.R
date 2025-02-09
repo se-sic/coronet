@@ -935,20 +935,12 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
             else {
 
                 ## extract partials of the edge that belong to the current bin
-                which = bins.vector[[i]] == bin
+                which.partials = bins.vector[[i]] == bin
                 partial.edge = edge
 
-                ## Numeric attributes cannot be correctly separated when they
-                ## appear in multi-partial edges removing their semantic meaning.
-                if (!ignore.numeric.attrs) {
-                    ignore.numeric.attrs = TRUE
-                }
-
-                ## If the weight attribute is not equal to the number of partials,
-                ## then the weight attribute cannot be meaningfully separated
-                if (!ignore.weight.attr && partial.edge["weight"] != length(bins.vector[[i]])) {
-                    ignore.weight.attr = TRUE
-                }
+                ## numeric attributes cannot be correctly separated when they
+                ## appear in multi-partial edges removing their semantic meaning
+                ignore.numeric.attrs = TRUE
 
                 ## extract all edge attributes and build new edge
                 for (attr in edge.attr.names) {
@@ -957,12 +949,12 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
                     ## if attribute is a list, extract only the values that belong to the current bin
                     ## else, the attribute is a single value and does not need to be adjusted
                     if (is.list(attr.values)) {
-                        partial.edge[[attr]][[1]] = attr.values[[1]][which]
+                        partial.edge[[attr]][[1]] = attr.values[[1]][which.partials]
                     }
 
                     ## assume equal distribution of weights across partials
                     else if (attr == "weight") {
-                        partial.edge[[attr]] = sum(which)
+                        partial.edge[[attr]] = sum(which.partials)
                     }
                 }
 
@@ -972,26 +964,32 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
             }
         }
 
-        ## remove numeric attributes if necessary
-        if (ignore.numeric.attrs && length(numeric.attrs) > 0) {
-            subnet.edges[["attributes"]] = subnet.edges[["attributes"]][ !colnames(subnet.edges[["attributes"]]) %in% numeric.attrs ]
-            subnet.vertices = igraph::delete_edge_attr(subnet.vertices, numeric.attrs)
-        }
-
-        ## remove weight attribute if necessary
-        if (ignore.weight.attr && "weight" %in% edge.attr.names) {
-            subnet.edges[["attributes"]] = subnet.edges[["attributes"]][ colnames(subnet.edges[["attributes"]]) != "weight" ]
-            subnet.vertices = igraph::delete_edge_attr(subnet.vertices, "weight")
-        }
-
-        ## create network based on the current set of edges
+        ## construct sub-network based on the current set of edges
         subnet = igraph::add_edges(subnet.vertices, subnet.edges[["vertices"]], attr = subnet.edges[["attributes"]])
         if (remove.isolates) {
             subnet = igraph::delete_vertices(subnet, which(igraph::degree(subnet) == 0))
         }
 
-        return(subnet)
+        ## return subnet and information about numeric attributes
+        subnet.information = list(
+            "subnet"               = subnet,
+            "ignore.numeric.attrs" = ignore.numeric.attrs
+        )
+
+        return(subnet.information)
     })
+
+    ## unpack information
+    ignore.numeric.attrs = any(sapply(nets, `[[`, "ignore.numeric.attrs"))
+    nets = lapply(nets, function(net) net[["subnet"]])
+
+    ## remove numeric attributes if necessary
+    if (ignore.numeric.attrs && length(numeric.attrs) > 0) {
+        nets = lapply(nets, function(subnet) {
+            subnet = igraph::delete_edge_attr(subnet, numeric.attrs)
+            return(subnet)
+        })
+    }
 
     ## set 'bins' attribute, if specified
     if (!is.null(bins.date)) {
