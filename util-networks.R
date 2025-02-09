@@ -1946,25 +1946,57 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     ## save network attributes, otherwise they get lost
     network.attributes = igraph::graph_attr(network)
 
-    if (!simplify.multiple.relations && length(unique(igraph::edge_attr(network, "relation"))) > 1) {
+    if (!simplify.multiple.relations && length(unique(unlist(igraph::edge_attr(network, "relation")))) > 1) {
         ## data frame of the network
         edge.data = igraph::as_data_frame(network, what = "edges")
         vertex.data = igraph::as_data_frame(network, what = "vertices")
 
-        ## select edges of one relation, build the network and simplify this network
-        networks = lapply(unique(edge.data[["relation"]]),
-                             function(relation) {
-                                network.data = edge.data[edge.data[["relation"]] == relation, ]
-                                net = igraph::graph_from_data_frame(d = network.data,
-                                                                    vertices = vertex.data,
-                                                                    directed = igraph::is_directed(network))
+        ## helper function to check if two edges can be simplified
+        relations.match = function(relation.A, relation.B) {
+            diff = setdiff(sort(unique(unlist(relation.A))), sort(unique(unlist(relation.B))))
+            return(length(diff) == 0)
+        }
 
-                                ## simplify networks (contract edges and remove loops)
-                                net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
-                                                       remove.multiple = remove.multiple,
-                                                       remove.loops = remove.loops)
-                                ## TODO perform simplification on edge list?
-                                return(net)
+        ## group all edges that can be simplified together
+        edges.by.relation = list()
+        for (i in seq_len(nrow(edge.data))) {
+
+            ## get relation of current edge
+            edge.relation = edge.data[i, ][["relation"]]
+            match = NULL
+
+            ## test if current edge can be simplified with any already seen edge
+            for (group in seq(edges.by.relation)) {
+                group.edge.index = edges.by.relation[[group]][1]
+                group.relation = edge.data[group.edge.index, ][["relation"]]
+                if (relations.match(edge.relation, group.relation)) {
+                    match = group
+                    break
+                }
+            }
+
+            ## add edge to existing group or create a new group
+            if (!is.null(match)) {
+                edges.by.relation[[match]] = c(edges.by.relation[[match]], i)
+            } else {
+                edges.by.relation[[length(edges.by.relation) + 1]] = i
+            }
+        }
+
+        ## select edges of one relation, build the network and simplify this network
+        networks = lapply(seq(edges.by.relation),
+                          function(group) {
+                              network.data = edge.data[edges.by.relation[[group]], ]
+                              net = igraph::graph_from_data_frame(d = network.data,
+                                                                  vertices = vertex.data,
+                                                                  directed = igraph::is_directed(network))
+
+                              ## simplify networks (contract edges and remove loops)
+                              net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
+                                                     remove.multiple = remove.multiple,
+                                                     remove.loops = remove.loops)
+                              ## TODO perform simplification on edge list?
+                              return(net)
         })
 
         ## merge the simplified networks
