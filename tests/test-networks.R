@@ -288,6 +288,55 @@ test_that("Simplify multiple basic multi-relational networks", {
     expect_identical(igraph::graph_attr(networks.simplified[["B"]], "name"), "network.B")
 })
 
+test_that("Simplify network with multi-relational edges", {
+
+    ## Note: Base network
+    ## A -- (cochange)             --> D
+    ## B -- (cochange)             --> E
+    ## B -- (mail)                 --> E
+    ## C -- (mail)                 --> F
+    ## B -- (mail, cochange)       --> E
+    ## B -- (mail, cochange, mail) --> E
+    ## B -- (mail, mail)           --> E
+    ## C -- (mail, mail)           --> F
+
+    ## create network with vertices connected by multi-relational edges
+    data = data.frame(comb.1. = c("A", "B", "B", "C", "B", "B", "B", "C"),
+                      comb.2. = c("D", "E", "E", "F", "E", "E", "E", "F"))
+    data$relation = list("cochange", "cochange",
+                         "mail", "mail",
+                         list("mail", "cochange"), list("mail", "cochange", "mail"),
+                         list("mail", "mail"), list("mail", "mail"))
+
+    ## build expected network
+    network.built = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                  directed = FALSE)
+
+    ## ---------------------- simplify.multiple.relations == FALSE -------------------------- ##
+
+    network.built = simplify.network(network.built, simplify.multiple.relations = FALSE)
+
+    ## Note: (mail) can be simplified with (mail, mail).
+    ##       (mail) and (mail, mail) cannot be simplified with (mail, cochange).
+    ##       (mail, cochange) can be simplified with (mail, cochange, mail).
+    ## A -- (cochange)                             --> D
+    ## B -- (cochange)                             --> E
+    ## B -- (mail, mail, mail)                     --> E
+    ## C -- (mail, mail, mail)                     --> F
+    ## B -- (mail, cochange, mail, cochange, mail) --> E
+
+    data = data.frame(comb.1. = c("A", "B", "B", "C", "B"),
+                      comb.2. = c("D", "E", "E", "F", "E"))
+    data$relation = list("cochange", "cochange",
+                         list("mail", "mail", "mail"), list("mail", "mail", "mail"),
+                         list("mail", "cochange", "mail", "cochange", "mail"))
+    network.expected = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                     directed = FALSE)
+
+    assert.networks.equal(network.built, network.expected)
+
+})
+
 test_that("Remove isolated vertices", {
 
     ## construct network
