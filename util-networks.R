@@ -68,7 +68,12 @@ EDGE.ATTR.HANDLING = list(
     artifact.diff.size = "sum",
 
     ## everything else
-    "concat"
+    function(attr) {
+        if (any(sapply(attr, is.list))) {
+            attr = do.call(base::c, attr)
+        }
+        return(attr)
+    }
 )
 
 
