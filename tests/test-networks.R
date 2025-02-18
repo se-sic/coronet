@@ -160,7 +160,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
     data$weight = rep(2, 6)
     data$type = rep(TYPE.EDGES.INTRA, 6)
     data$relation = list(list("cochange", "cochange"), list("cochange", "cochange"), list("cochange", "cochange"),
-                       list("cochange", "cochange"), list("mail", "mail"), list("mail", "mail"))
+                         list("cochange", "cochange"), list("mail", "mail"), list("mail", "mail"))
     data$message.id = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
                            list("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                 "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
@@ -303,18 +303,18 @@ test_that("Simplify network with multi-relational edges", {
     ## create network with vertices connected by multi-relational edges
     data = data.frame(comb.1. = c("A", "B", "B", "C", "B", "B", "B", "C"),
                       comb.2. = c("D", "E", "E", "F", "E", "E", "E", "F"))
-    data$relation = list("cochange", "cochange",
-                         "mail", "mail",
+    data$relation = list(list("cochange"), list("cochange"),
+                         list("mail"), list("mail"),
                          list("mail", "cochange"), list("mail", "cochange", "mail"),
                          list("mail", "mail"), list("mail", "mail"))
 
     ## build expected network
-    network.built = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+    network.base = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
                                                   directed = FALSE)
 
     ## ---------------------- simplify.multiple.relations == FALSE -------------------------- ##
 
-    network.built = simplify.network(network.built, simplify.multiple.relations = FALSE)
+    network.built = simplify.network(network.base, simplify.multiple.relations = FALSE)
 
     ## Note: (mail) can be simplified with (mail, mail).
     ##       (mail) and (mail, mail) cannot be simplified with (mail, cochange).
@@ -327,9 +327,29 @@ test_that("Simplify network with multi-relational edges", {
 
     data = data.frame(comb.1. = c("A", "B", "B", "C", "B"),
                       comb.2. = c("D", "E", "E", "F", "E"))
-    data$relation = list("cochange", "cochange",
+    data$relation = list(list("cochange"), list("cochange"),
                          list("mail", "mail", "mail"), list("mail", "mail", "mail"),
                          list("mail", "cochange", "mail", "cochange", "mail"))
+    network.expected = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                     directed = FALSE)
+
+    assert.networks.equal(network.built, network.expected)
+
+    ## ---------------------- simplify.multiple.relations == TRUE --------------------------- ##
+
+    network.built = simplify.network(network.base, simplify.multiple.relations = TRUE)
+
+    ## Note: The order of partials in the B--E edge is determined
+    ##       by collecting partials from all B--E source-edges top-down.
+    ## A -- (cochange)                                                         --> D
+    ## B -- (cochange, mail, mail, cochange, mail, cochange, mail, mail, mail) --> E
+    ## C -- (mail, mail, mail)                                                 --> F
+
+    data = data.frame(comb.1. = c("A", "B", "C"),
+                      comb.2. = c("D", "E", "F"))
+    data$relation = list(list("cochange"),
+                         list("cochange", "mail", "mail", "cochange", "mail", "cochange", "mail", "mail", "mail"),
+                         list("mail", "mail", "mail"))
     network.expected = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
                                                      directed = FALSE)
 
@@ -1079,8 +1099,9 @@ patrick::with_parameters_test_that("Convert edge attributes to list", {
     }
 
     ## check edge attributes
+    to.list = function(attr) return(as.list(lapply(attr, as.list)));
     for (attr in igraph::edge_attr_names(network)) {
-        conversion.function = ifelse(attr %in% remain.as.is, identity, as.list)
+        conversion.function = ifelse(attr %in% remain.as.is, identity, to.list)
         expect_equal(
             conversion.function(igraph::edge_attr(network, attr)),
             igraph::edge_attr(network.listified, attr),
