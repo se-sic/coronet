@@ -41,13 +41,16 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 
 #' Construct a (sub-)network with the same vertices and new edges
 #'
-#' Note: This method is an adoption of \code{split.network.by.bins} with less functionality.
+#' Note: This method is partially adopted from \code{split.network.by.bins}.
+#'       It replicates the way how new edges are set between the vertices
+#'       of an exisiting network (which is a useful functionality when testing
+#'       network splitting), but it does not perform any splitting logic.
 #'
-#' @param network The network to extract the vertices from
-#' @param edges The edges to add to the network [default: NULL]
-#' @param remove.isolates Whether to remove isolated vertices [default: TRUE]
+#' @param network the network to extract the vertices from
+#' @param edges the edges to add to the network [default: NULL]
+#' @param remove.isolates whether to remove isolated vertices [default: TRUE]
 #'
-#' @return The partial edge
+#' @return a new network with the vertices of the input network connnected by the new edges
 #'
 #' @seealso \code{split.network.by.bins}
 subnet.with.new.edges = function(network, edges = NULL, remove.isolates = TRUE) {
@@ -80,12 +83,15 @@ subnet.with.new.edges = function(network, edges = NULL, remove.isolates = TRUE) 
 
 #' Extract a partial edge from a simplified edge with multiple components
 #'
-#' Note: This method is an adoption of \code{split.network.by.bins} with less functionality.
+#' Note: This method is partially adopted from \code{split.network.by.bins}.
+#'       It replicates how partial edges can be extracted from a larger
+#'       multi-partial edge but it does so based on the indicees of
+#'       partials in the source edge instead of time-based bins.
 #'
-#' @param edge The edge to extract the partial edge from
-#' @param partials The indicess of the partial edge to extract
+#' @param edge the edge to extract the partial edge from
+#' @param partials the indicess of the partial edge to extract
 #'
-#' @return The partial edge
+#' @return the partial edge
 #'
 #' @seealso \code{split.network.by.bins}
 extract.partial.edge = function(edge, partials) {
