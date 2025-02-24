@@ -1274,13 +1274,15 @@ split.unify.range.names = function(ranges) {
 #' Note: As the last bound of a bin is exclusive, the end of the last bin is always
 #' set to \code{max(dates) + 1} to include the last date!
 #'
-#' @param dates the dates that are to be split into several bins
+#' @param dates the dates that are to be split into several bins either as a vector or as a (nested) list
 #' @param time.period the time period each bin lasts
 #' @param number.windows the number of consecutive time windows to get from this function. If set,
 #'                       the 'time.period' parameter is ignored. [default: NULL]
 #'
 #' @return a list,
-#'         the item 'vector': the bins each item in 'dates' belongs to,
+#'         the item 'vector': the bins each item in 'dates' belongs to. If 'dates' is
+#'             a nested list, the nesting structure is preserved and reflected in
+#'             the structure of the 'vector',
 #'         the item 'bins': the bin labels, each spanning the length of 'time.period';
 #'             each item in the vector indicates the start of a bin, although the last
 #'             item indicates the end of the last bin

@@ -55,6 +55,9 @@ TYPE.EDGES.INTER = "Bipartite"
 ## Edge-attribute handling during simplification ---------------------------
 
 ## Edge-attribute contraction: configure handling of attributes by name
+## Attention: If attributes are added or change to new aggregation strategies, this
+##            may influence logic in \code{split.network.by.bins}. For additional
+##            documentation, see \link{https://github.com/se-sic/coronet/pull/278}.
 EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
