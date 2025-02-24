@@ -1309,6 +1309,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(u, "range") = private$proj.data$get.range()
             }
 
+            u = convert.edge.attributes.to.list(u)
             return(u)
         }
 
@@ -1672,9 +1673,9 @@ merge.network.data = function(vertex.data, edge.data) {
     all.columns = Reduce(union, lapply(edge.data.filtered, colnames))
     edge.data.filtered = lapply(edge.data.filtered, function(edges) {
         missing.columns = setdiff(all.columns, colnames(edges))
-        for (column in missing.columns) {
-            edges[[column]] = NA
-        }
+        edges[missing.columns] = lapply(missing.columns, function(column) {
+            return(list(list(NA)))
+        })
         return(edges)
     })
     ## 3) call rbind
@@ -1814,7 +1815,12 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         edge.attrs = names(extra.edge.attributes)
         which.attrs = !(edge.attrs %in% names(EDGE.ATTR.HANDLING))
         for (attr in edge.attrs[which.attrs]) {
-            extra.edge.attributes[[attr]] = as.list(extra.edge.attributes[[attr]])
+            list.attr = as.list(extra.edge.attributes[[attr]])
+            list.values = sapply(list.attr, is.list)
+            if (!all(list.values)) {
+                list.attr[!list.values] = lapply(list.attr[!list.values], as.list)
+            }
+            extra.edge.attributes[[attr]] = list.attr
         }
 
         ## add the vertex sequences as edges to the network
@@ -2004,6 +2010,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
                                                      remove.multiple = remove.multiple,
                                                      remove.loops = remove.loops)
                               ## TODO perform simplification on edge list?
+                              net = convert.edge.attributes.to.list(net)
                               return(net)
         })
 
@@ -2012,6 +2019,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     } else {
         network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
                                    remove.multiple = remove.multiple, remove.loops = remove.loops)
+        network = convert.edge.attributes.to.list(network)
     }
 
     ## re-apply all network attributes
@@ -2236,6 +2244,14 @@ convert.edge.attributes.to.list = function(network, remain.as.is = names(EDGE.AT
     ## convert edge attributes to list type
     for (attr in edge.attrs[which.attrs]) {
         list.attr = as.list(igraph::edge_attr(network, attr))
+
+        ## convert individual values to list
+        listed.values = sapply(list.attr, is.list)
+        if (!all(listed.values)) {
+            list.attr[!listed.values] = lapply(list.attr[!listed.values], as.list)
+        }
+
+        ## replace attribute
         network = igraph::set_edge_attr(network, attr, value = list.attr)
     }
 

@@ -714,7 +714,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                      number.edges, number.windows)
 
     ## get dates in a data.frame for splitting purposes
-    dates = do.call(base::c, igraph::edge_attr(network, "date"))
+    dates = unlist(igraph::edge_attr(network, "date"))
     df = data.frame(
         date = get.date.from.unix.timestamp(dates),
         my.unique.id = seq_len(edge.count) # as a unique identifier only
