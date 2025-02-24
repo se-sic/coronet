@@ -67,7 +67,10 @@ EDGE.ATTR.HANDLING = list(
     diff.size = "sum",
     artifact.diff.size = "sum",
 
-    ## everything else
+    ## everything else:
+    ##
+    ## this helper function concatenates attribute
+    ## values together into a single list
     function(attr) {
         if (any(sapply(attr, is.list))) {
             attr = do.call(base::c, attr)

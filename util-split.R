@@ -1303,15 +1303,17 @@ split.get.bins.time.based = function(dates, time.period, number.windows = NULL) 
     ## find bins for given dates
     if (is.list(dates)) {
 
-        ## split each sublist of dates by the dates.breaks
+        ## split each sublist of dates by the 'dates.breaks'
         dates.bins = lapply(dates, function(date) {
             intervals = findInterval(date, dates.breaks, all.inside = FALSE)
             ## convert to character factor and set factor's levels appropriately
-            factor(dates.breaks.chr[intervals], levels = dates.breaks.chr)
+            factors = factor(dates.breaks.chr[intervals], levels = dates.breaks.chr)
+            return(factors)
         })
+
     } else {
 
-        ## split dates by the dates.breaks
+        ## split dates by the 'dates.breaks'
         dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
         ## convert to character factor and set factor's levels appropriately
         dates.bins = factor(dates.breaks.chr[dates.bins], levels = dates.breaks.chr)

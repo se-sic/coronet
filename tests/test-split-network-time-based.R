@@ -83,7 +83,7 @@ subnet.with.new.edges = function(network, edges = NULL, remove.isolates = TRUE) 
 #' Note: This method is an adoption of \code{split.network.by.bins} with less functionality.
 #'
 #' @param edge The edge to extract the partial edge from
-#' @param partial The indicess of the partial edge to extract
+#' @param partials The indicess of the partial edge to extract
 #'
 #' @return The partial edge
 #'
@@ -689,7 +689,7 @@ test_that("Split network with numeric edge attributes", {
         "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, rbind(extract.partial.edge(edges[2, ], 2),
                                                                                          edges[4, ]))
     )
-    ## remove the 'diff.size' attribute as subnet 2 and 3
+    ## remove the 'diff.size' attribute as subnets 2 and 3
     ## contain splits of previously simplifed edges
     expected = lapply(expected, function(net) {
         net = igraph::delete_edge_attr(net, "diff.size")
@@ -725,8 +725,8 @@ test_that("Split network with numeric edge attributes", {
         "2025-01-01 12:01:00-2025-01-01 12:02:00" = subnet.with.new.edges(network, edges[2, ]),
         "2025-12-01 12:02:00-2025-01-01 12:03:01" = subnet.with.new.edges(network, edges[4, ])
     )
-    ## do not the remove the 'diff.size' attribute as all subnet
-    ## only contain complete edges
+    ## do not the remove the 'diff.size' attribute as all subnets
+    ## contain only complete edges
 
     ## check networks
     check.identical = mapply(splits, expected, FUN = function(s, e) {
