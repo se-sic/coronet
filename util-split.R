@@ -906,8 +906,7 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
     ## Numeric attributes cannot be correctly separated when they
     ## appear in multi-partial edges removing their semantic meaning
     numeric.attrs = edge.attr.names[EDGE.ATTR.HANDLING[edge.attr.names] == "sum" & edge.attr.names != "weight"]
-    ignore.numeric.attrs = length(numeric.attrs) == 0
-    ignore.weight.attr   = !("weight" %in% edge.attr.names)
+    ignore.numeric.attrs = FALSE
 
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
@@ -940,7 +939,9 @@ split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, r
 
                 ## numeric attributes cannot be correctly separated when they
                 ## appear in multi-partial edges removing their semantic meaning
-                ignore.numeric.attrs = TRUE
+                if (!all(which.partials)) {
+                    ignore.numeric.attrs = TRUE
+                }
 
                 ## extract all edge attributes and build new edge
                 for (attr in edge.attr.names) {
