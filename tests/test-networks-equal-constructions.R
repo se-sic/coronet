@@ -15,7 +15,7 @@
 ## Copyright 2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2020 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -39,27 +39,30 @@ if (!dir.exists(CF.DATA)) CF.DATA = file.path(".", "tests", "codeface-data")
 #' @param split.networks.two the second list of split networks
 compare.edge.and.vertex.lists = function(split.networks.one, split.networks.two) {
 
-    for (i in seq_along(split.networks.one)) {
-        edges.one = igraph::as_data_frame(split.networks.one[[i]], what = "edges")
-        ordering = order(edges.one[["from"]], edges.one[["to"]],
-                         as.vector(edges.one[["date"]], "numeric"))
-        edges.one = edges.one[ordering, ]
-        rownames(edges.one) = seq_len(nrow(edges.one))
-        edges.two = igraph::as_data_frame(split.networks.two[[i]], what = "edges")
-        ordering = order(edges.two[["from"]], edges.two[["to"]],
-                         as.vector(edges.two[["date"]], "numeric"))
-        edges.two = edges.two[ordering, ]
-        rownames(edges.two) = seq_len(nrow(edges.two))
-        vertices.one = igraph::as_data_frame(split.networks.one[[i]], what = "vertices")
-        ordering = order(vertices.one[["name"]])
-        vertices.one = vertices.one[ordering, ]
-        rownames(vertices.one) = seq_len(nrow(vertices.one))
-        vertices.two = igraph::as_data_frame(split.networks.two[[i]], what = "vertices")
-        ordering = order(vertices.two[["name"]])
-        vertices.two = vertices.two[ordering, ]
-        rownames(vertices.two) = seq_len(nrow(vertices.two))
+    ## helper function to order edges
+    order.edges = function(edges) {
+        ordering = order(edges[["from"]], edges[["to"]],
+                         sapply(edges[["date"]], function(date) sum(unlist(date), rm.na = TRUE)))
+        edges = edges[ordering, ]
+        rownames(edges) = seq_len(nrow(edges))
+        return(edges)
+    }
 
+    # helper function to order vertices
+    order.vertices = function(vertices) {
+        ordering = order(vertices[["name"]])
+        vertices = vertices[ordering, ]
+        rownames(vertices) = seq_len(nrow(vertices))
+        return(vertices)
+    }
+
+    for (i in seq_along(split.networks.one)) {
+        edges.one = order.edges(igraph::as_data_frame(split.networks.one[[i]], what = "edges"))
+        edges.two = order.edges(igraph::as_data_frame(split.networks.two[[i]], what = "edges"))
         expect_identical(edges.one, edges.two)
+
+        vertices.one = order.vertices(igraph::as_data_frame(split.networks.one[[i]], what = "vertices"))
+        vertices.two = order.vertices(igraph::as_data_frame(split.networks.two[[i]], what = "vertices"))
         expect_identical(vertices.one, vertices.two)
     }
 }

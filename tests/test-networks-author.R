@@ -21,7 +21,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 
 ## All Rights Reserved.
@@ -457,7 +457,8 @@ test_that("Network construction of the undirected simplified author-cochange net
                           list("Base_Feature", "Base_Feature"))),
         weight = 2,
         type = TYPE.EDGES.INTRA,
-        relation = "cochange"
+        relation = I(list(list("cochange", "cochange"), list("cochange", "cochange"),
+                          list("cochange", "cochange"), list("cochange", "cochange")))
     )
 
     ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
@@ -466,6 +467,7 @@ test_that("Network construction of the undirected simplified author-cochange net
     data[["hash"]] = unclass(data[["hash"]])
     data[["file"]] = unclass(data[["file"]])
     data[["artifact"]] = unclass(data[["artifact"]])
+    data[["relation"]] = unclass(data[["relation"]])
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)
