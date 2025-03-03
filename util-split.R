@@ -546,13 +546,9 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
         sliding.window = FALSE
         ## find bins for given dates
         bins.date = get.date.from.string(bins)
-        if (is.list(dates)) {
-            bins.vector = lapply(dates, function(date) {
-                findInterval(date, bins.date, all.inside = FALSE)
-            })
-        } else {
-            bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
-        }
+        bins.vector = lapply(dates, function(date) {
+            findInterval(date, bins.date, all.inside = FALSE)
+        })
         bins = seq_len(length(bins.date) - 1) # the last item just closes the last bin
     }
 
