@@ -365,3 +365,22 @@ test_that("Commit message keyword search: at least 2 match, multiple strings", {
     ## Assert
     expect_equal(expected, result)
 })
+
+test_that("Commit message token counts", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result = get.commit.message.counts(proj.data)
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774",
+                                   "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                   "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                   "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                   "0a1a5c523d835459c42f33e863623138555e2526"),
+                          count = c("2", "4", "8", "6", "2", "6", "0"))
+
+    ## Assert
+    expect_equal(expected, result)
+})
