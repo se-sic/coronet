@@ -287,3 +287,81 @@ test_that("Commit message lemmatization: All preprocesing", {
     ## Assert
     expect_equal(expected, result)
 })
+
+test_that("Commit message keyword search: any match, single string", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = "add")
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff ",
+                                      "I added important things the things are\nnothing"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: any match, multiple strings", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"))
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774",
+                                   "418d1dc4929ad1df251d2aeb833dd45757b04a6f"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff ",
+                                      "I added important things the things are\nnothing",
+                                      "Wish intensifies"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: all match, multiple strings, no result", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"), match = all)
+
+    ## Act
+    expected = create.empty.data.frame(c("hash", "message"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: all match, multiple strings", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "stuff"), match = all)
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff "))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: at least 2 match, multiple strings", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "stuff", "I "),
+    match = function(x) {
+        return (sum(unlist(x)) >= 2)
+    })
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff ",
+                                      "I added important things the things are\nnothing"))
+    ## Assert
+    expect_equal(expected, result)
+})
