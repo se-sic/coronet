@@ -19,7 +19,7 @@
 ## Copyright 2020-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
-## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8@maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
@@ -52,7 +52,8 @@ packages = c(
     "patrick",
     "covr",
     "tm",
-    "SnowballC"
+    "SnowballC",
+    "textstem"
 )
 
 
