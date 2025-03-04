@@ -826,6 +826,9 @@ get.preprocessed.messages = function(proj.data, commit.hashes = NULL, preprocess
         corpus = tm::tm_map(corpus, tm::stripWhitespace)
     }
 
+    ## trim leading and trailing spaces
+    corpus = tm::tm_map(corpus, trimws)
+
     ## create output dataframe
     for (i in seq_len(nrow(commit.message.data))) {
         preprocessed.messages[i,] = c(commit.message.data[["hash"]][i], corpus$content[i])

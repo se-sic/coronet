@@ -48,12 +48,12 @@ packages = c(
     "Matrix",
     "fastmap",
     "purrr",
+    "tm",
+    "textstem",
+    "SnowballC",
     "testthat",
     "patrick",
-    "covr",
-    "tm",
-    "SnowballC",
-    "textstem"
+    "covr"
 )
 
 

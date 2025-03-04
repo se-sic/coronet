@@ -45,14 +45,13 @@ test_that("Commit message preprocessing steps: Whitespace removal", {
                                    "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
                                    "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                    "0a1a5c523d835459c42f33e863623138555e2526"),
-                          preprocessed.message = c("Add stuff ",
-                                                    "Add some more stuff ",
-                                                    "I added important things the things are nothing",
-                                                    "I wish it would work now ",
-                                                    "Wish intensifies",
-                                                    "... still doesn't work as expected",
-                                                    " "))
+                          preprocessed.message = c("Add stuff",
+                                                   "Add some more stuff",
+                                                   "I added important things the things are nothing",
+                                                   "I wish it would work now",
+                                                   "Wish intensifies",
+                                                   "... still doesn't work as expected",
+                                                   ""))
     ## Assert
-    
     expect_equal(expected, result)
 })
