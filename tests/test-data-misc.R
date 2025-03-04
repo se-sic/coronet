@@ -222,3 +222,20 @@ test_that("Commit message stemming: All preprocesing", {
     ## Assert
     expect_equal(expected, result)
 })
+
+test_that("Commit message tokenization", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.tokenized.commit.messages(proj.data)
+
+    ## Act
+    expected = list(c("Add", "stuff"),
+                    c("Add", "some", "more", "stuff"),
+                    c("I", "added", "important", "things", "the", "things", "are", "nothing"),
+                    c("I", "wish", "it", "would", "work", "now"),
+                    c("Wish", "intensifies"),
+                    c("...", "still", "doesn't", "work", "as", "expected"),
+                    character(0))
+    ## Assert
+    expect_equal(expected, result)
+})
