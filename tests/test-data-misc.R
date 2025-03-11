@@ -35,7 +35,7 @@ proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
 test_that("Commit message preprocessing steps: Lowercase transformation", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, preprocessing = "lowercase")
+    result = get.preprocessed.commit.messages(proj.data, preprocessing = "lowercase")
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -60,7 +60,7 @@ test_that("Commit message preprocessing steps: Lowercase transformation", {
 test_that("Commit message preprocessing steps: Lowercase transformation, only title", {
     proj.conf$update.value("commit.messages", "title")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, preprocessing = "lowercase")
+    result = get.preprocessed.commit.messages(proj.data, preprocessing = "lowercase")
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -85,7 +85,7 @@ test_that("Commit message preprocessing steps: Lowercase transformation, only ti
 test_that("Commit message preprocessing steps: Punctuation removal", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, preprocessing = "punctuation")
+    result = get.preprocessed.commit.messages(proj.data, preprocessing = "punctuation")
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -109,7 +109,7 @@ test_that("Commit message preprocessing steps: Punctuation removal", {
 test_that("Commit message preprocessing steps: Stopword removal", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, preprocessing = "stopwords")
+    result = get.preprocessed.commit.messages(proj.data, preprocessing = "stopwords")
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -134,7 +134,7 @@ test_that("Commit message preprocessing steps: Stopword removal", {
 test_that("Commit message preprocessing steps: Whitespace removal", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, preprocessing = "whitespaces")
+    result = get.preprocessed.commit.messages(proj.data, preprocessing = "whitespaces")
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -158,7 +158,7 @@ test_that("Commit message preprocessing steps: Whitespace removal", {
 test_that("Commit message preprocessing steps: All preprocesing", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data)
+    result = get.preprocessed.commit.messages(proj.data)
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -182,7 +182,7 @@ test_that("Commit message preprocessing steps: All preprocesing", {
 test_that("Commit message preprocessing steps: limited commit number", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
-    result = get.preprocessed.messages(proj.data, commit.hashes = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+    result = get.preprocessed.commit.messages(proj.data, commit.hashes = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
                                                                     "5a5ec9675e98187e1e92561e1888aa6f04faa338",
                                                                     "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                                                     "0a1a5c523d835459c42f33e863623138555e2526"))

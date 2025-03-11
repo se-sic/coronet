@@ -782,7 +782,7 @@ get.issue.is.pull.request = function(proj.data) {
 #' @param preprocessing the preprocessing steps to be executed (all enabled by default)
 #'
 #' @return a dataframe containing the hashes and preprocesessed messages
-get.preprocessed.messages = function(proj.data, commit.hashes = NULL, preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
+get.preprocessed.commit.messages = function(proj.data, commit.hashes = NULL, preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
     preprocessing = match.arg.or.default(preprocessing, several.ok = TRUE)
     preprocessed.messages = create.empty.data.frame(c("hash", "preprocessed.message"))
     ## get commit message data of the given hashes
@@ -846,7 +846,7 @@ get.preprocessed.messages = function(proj.data, commit.hashes = NULL, preprocess
 #' @return a dataframe containing the hashes and stemmed messages
 get.stemmed.commit.messages = function(proj.data, commit.hashes = NULL, preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
     ## apply preprocessing
-    preprocessed.messages = get.preprocessed.messages(proj.data, commit.hashes, preprocessing)
+    preprocessed.messages = get.preprocessed.commit.messages(proj.data, commit.hashes, preprocessing)
     stemmed.messages = create.empty.data.frame(c("hash", "stemmed.message"))
     ## build corpus
     corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[,"preprocessed.message"]))
@@ -894,7 +894,7 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
 #' @return a dataframe containing the hashes and lemmatized messages
 get.lemmatized.commit.messages = function(proj.data, commit.hashes = NULL, preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
     ## apply preprocessing
-    preprocessed.messages = get.preprocessed.messages(proj.data, commit.hashes, preprocessing)
+    preprocessed.messages = get.preprocessed.commit.messages(proj.data, commit.hashes, preprocessing)
     lemmatized.messages = create.empty.data.frame(c("hash", "lemmatized.message"))
     ## build corpus
     corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[,"preprocessed.message"]))
