@@ -37,6 +37,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Core/Peripheral classification](#coreperipheral-classification)
            - [Count-based metrics](#count-based-metrics)
            - [Network-based metrics](#network-based-metrics)
+      - [Commit message functionalities](#commit-message-functionalities)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -428,6 +429,12 @@ In this section, we provide descriptions of the different algorithms we provide 
 - `network.eccentricity`
     * calculates scores based on the eccentricity of vertices in a network
     * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
+
+#### Commit message functionalities
+
+In this section, we give an overview of the functionalities we offer regarding commit messages. These consist of basic NLP tasks, such as stemming (`get.stemmed.commit.messages`), tokenization (`get.tokenized.commit.messages`), and 
+lemmatization (`get.lemmatized.commit.messages`), as well as preprocessing steps (`get.preprocessed.commit.messages`) such as lowercase transformation and removal of punctuation, stopwords and extra whitespaces. Apart from these,
+there is the option of using a set of strings to search for matching commits (`get.commit.messages.by.strings`) as well as getting token counts for commit messages (`get.commit.message.counts`).
 
 ### How-to
 
