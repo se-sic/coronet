@@ -81,8 +81,8 @@ if (length(p) > 0) {
     Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
     if (compareVersion(Matrix.version, "1.5.0") == -1) {
         print("WARNING: Matrix version 1.5.0 or higher is necessary for using coronet. Re-install package Matrix...")
-        matrix.1.5.4.url = "https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.5-4.tar.gz"
-        install.packages(matrix.1.5.4.url, repos = NULL, dependencies = NA, verbose = TRUE, quiet = TRUE)
+        matrix.1.5.0.url = "https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.5-0.tar.gz"
+        install.packages(matrix.1.5.0.url, repos = NULL, dependencies = NA, verbose = TRUE, quiet = TRUE)
         ## redo installation of textstem, which fails if matrix is outdated or not present
         install.packages("textstem", dependencies = NA, verbose = TRUE, quiet = TRUE)
         Matrix.version = installed.packages()[rownames(installed.packages()) == "Matrix", "Version"]
