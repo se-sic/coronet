@@ -57,6 +57,31 @@ test_that("Commit message preprocessing steps: Lowercase transformation", {
     expect_equal(expected, result)
 })
 
+test_that("Commit message preprocessing steps: Lowercase transformation, only title", {
+    proj.conf$update.value("commit.messages", "title")
+    proj.data = ProjectData$new(proj.conf)
+    result = get.preprocessed.messages(proj.data, preprocessing = "lowercase")
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774",
+                                   "1143db502761379c2bfcecc2007fc34282e7ee61",
+                                   "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
+                                   "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
+                                   "0a1a5c523d835459c42f33e863623138555e2526"),
+                          preprocessed.message = c("add stuff",
+                                                   "add some more stuff",
+                                                   "i added important things",
+                                                   "i wish it would work now",
+                                                   "wish",
+                                                   "...",
+                                                   ""))
+
+    ## Assert
+    expect_equal(expected, result)
+})
+
 test_that("Commit message preprocessing steps: Punctuation removal", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
@@ -240,6 +265,24 @@ test_that("Commit message tokenization", {
     expect_equal(expected, result)
 })
 
+test_that("Commit message tokenization, only title", {
+    proj.conf$update.value("commit.messages", "title")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.tokenized.commit.messages(proj.data)
+
+    ## Act
+    expected = list(c("Add", "stuff"),
+                    c("Add", "some", "more", "stuff"),
+                    c("I", "added", "important", "things"),
+                    c("I", "wish", "it", "would", "work", "now"),
+                    c("Wish"),
+                    c("..."),
+                    character(0))
+
+    ## Assert
+    expect_equal(expected, result)
+})
+
 test_that("Commit message lemmatization: only lowercase preprocessing", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
@@ -318,6 +361,22 @@ test_that("Commit message keyword search: any match, multiple strings", {
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing",
                                       "Wish intensifies"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: any match, multiple strings, only title", {
+    proj.conf$update.value("commit.messages", "title")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"))
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338",
+                                   "3a0ed78458b3976243db6829f63eba3eead26774"),
+                          message = c("Add stuff",
+                                      "Add some more stuff",
+                                      "I added important things"))
     ## Assert
     expect_equal(expected, result)
 })
