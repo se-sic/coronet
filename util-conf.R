@@ -898,7 +898,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                type = "logical",
                allowed = c(TRUE, FALSE),
                allowed.number = 1
-           ),
+            ),
             skip.threshold = list(
                 default = Inf,
                 type = "numeric",

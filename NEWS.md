@@ -2,6 +2,18 @@
 
 # coronet – Changelog
 
+## unversioned
+
+### Added
+
+- Add the possibility to split networks that contain simplified edges (PR #278, 9798d33512dcdf50d3b88a1223fc4913a2a88eeb, 0ed437c14423c1917f1ba470e7e55db4626d380b, 67a6651b94d50cb7c2ab4a74888b0556d607b102, 98ef83158204be2a67b115cb25df5ba375cccf60, 7ec4d83fdeb308a24a350acd808941807b9511f1, 637d62ab70f098f26f241e588a99cdc49d10f56a, 2c70666f128f96a3a573f29a0cbbef14d803d193, 1cbc6fa36859d6db3a7ff4493ef19763e87d2de3, 41788ff029d038969bfc6b5773e919201c5ac595, b042c0dd08e2229514ccd25dee7a119f25b1ab45, 36d23d657f412aa1953c4773076e593273f19d8e, 402c256d9a05e4ffb297d4ea1fc25d0230787bc0, 54af2b19a112070f10d191b98b055482748426a7, 894414a4a970822b9ecd59c0b6c480860707f636, 0fe32a259ef703c2de79135bfa6932a595fdc1c5)
+
+### Changed/Improved
+
+- For consistency reasons: Ensure that the values of edge attributes are always lists even when they represent singular values (PR #278, 6fae1843740ed8e48c89c2ee4e61f995b5d0b8f5, 416c817998540fc0b82d9959574838b571b4d6fb)
+
+### Fixed
+
 ## 5.0
 
 ### Announcement

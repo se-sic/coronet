@@ -55,11 +55,13 @@ TYPE.EDGES.INTER = "Bipartite"
 ## Edge-attribute handling during simplification ---------------------------
 
 ## Edge-attribute contraction: configure handling of attributes by name
+## Attention: If attributes are added or change to new aggregation strategies, this
+##            may influence logic in \code{split.network.by.bins}. For additional
+##            documentation, see \link{https://github.com/se-sic/coronet/pull/278}.
 EDGE.ATTR.HANDLING = list(
     ## network-analytic data
     weight = "sum",
     type = "first",
-    relation = function(relation) sort(unique(relation)),
 
     ## commit data
     changed.files = "sum",
@@ -68,8 +70,16 @@ EDGE.ATTR.HANDLING = list(
     diff.size = "sum",
     artifact.diff.size = "sum",
 
-    ## everything else
-    "concat"
+    ## everything else:
+    ##
+    ## this helper function concatenates attribute
+    ## values together into a single list
+    function(attr) {
+        if (any(sapply(attr, is.list))) {
+            attr = do.call(base::c, attr)
+        }
+        return(attr)
+    }
 )
 
 
@@ -937,7 +947,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 return(network)
             })
@@ -1003,7 +1013,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
                 vertex.kind = private$get.vertex.kind.for.relation(relation)
@@ -1049,7 +1059,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
                 ## set edge attributes on all edges
                 igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = relation
+                igraph::E(network)$relation = list(relation)
 
                 return(network)
             })
@@ -1302,6 +1312,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(u, "range") = private$proj.data$get.range()
             }
 
+            u = convert.edge.attributes.to.list(u)
             return(u)
         }
 
@@ -1665,9 +1676,9 @@ merge.network.data = function(vertex.data, edge.data) {
     all.columns = Reduce(union, lapply(edge.data.filtered, colnames))
     edge.data.filtered = lapply(edge.data.filtered, function(edges) {
         missing.columns = setdiff(all.columns, colnames(edges))
-        for (column in missing.columns) {
-            edges[[column]] = NA
-        }
+        edges[missing.columns] = lapply(missing.columns, function(column) {
+            return(list(list(NA)))
+        })
         return(edges)
     })
     ## 3) call rbind
@@ -1807,7 +1818,12 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         edge.attrs = names(extra.edge.attributes)
         which.attrs = !(edge.attrs %in% names(EDGE.ATTR.HANDLING))
         for (attr in edge.attrs[which.attrs]) {
-            extra.edge.attributes[[attr]] = as.list(extra.edge.attributes[[attr]])
+            list.attr = as.list(extra.edge.attributes[[attr]])
+            list.values = sapply(list.attr, is.list)
+            if (!all(list.values)) {
+                list.attr[!list.values] = lapply(list.attr[!list.values], as.list)
+            }
+            extra.edge.attributes[[attr]] = list.attr
         }
 
         ## add the vertex sequences as edges to the network
@@ -1842,7 +1858,7 @@ create.empty.network = function(directed = TRUE, add.attributes = FALSE) {
     if (add.attributes) {
         mandatory.edge.attributes.classes = list(
             date = "list", artifact.type = "list", weight = "numeric",
-            type = "character", relation = "character"
+            type = "character", relation = "list"
         )
         mandatory.vertex.attributes.classes = list(name = "character", kind = "character", type = "character")
 
@@ -1947,25 +1963,58 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     ## save network attributes, otherwise they get lost
     network.attributes = igraph::graph_attr(network)
 
-    if (!simplify.multiple.relations && length(unique(igraph::edge_attr(network, "relation"))) > 1) {
+    if (!simplify.multiple.relations && length(unique(unlist(igraph::edge_attr(network, "relation")))) > 1) {
         ## data frame of the network
         edge.data = igraph::as_data_frame(network, what = "edges")
         vertex.data = igraph::as_data_frame(network, what = "vertices")
 
-        ## select edges of one relation, build the network and simplify this network
-        networks = lapply(unique(edge.data[["relation"]]),
-                             function(relation) {
-                                network.data = edge.data[edge.data[["relation"]] == relation, ]
-                                net = igraph::graph_from_data_frame(d = network.data,
-                                                                    vertices = vertex.data,
-                                                                    directed = igraph::is_directed(network))
+        ## helper function to check if two edges can be simplified
+        relations.match = function(relation.A, relation.B) {
+            diff = setdiff(sort(unique(unlist(relation.A))), sort(unique(unlist(relation.B))))
+            return(length(diff) == 0)
+        }
 
-                                ## simplify networks (contract edges and remove loops)
-                                net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
-                                                       remove.multiple = remove.multiple,
-                                                       remove.loops = remove.loops)
-                                ## TODO perform simplification on edge list?
-                                return(net)
+        ## group all edges that can be simplified together
+        edges.by.relation = list()
+        for (i in seq_len(nrow(edge.data))) {
+
+            ## get relation of current edge
+            edge.relation = edge.data[i, ][["relation"]]
+            match = NULL
+
+            ## test if current edge can be simplified with any already seen edge
+            for (group in seq(edges.by.relation)) {
+                group.edge.index = edges.by.relation[[group]][1]
+                group.relation = edge.data[group.edge.index, ][["relation"]]
+                if (relations.match(edge.relation, group.relation)) {
+                    match = group
+                    break
+                }
+            }
+
+            ## add edge to existing group or create a new group
+            if (!is.null(match)) {
+                edges.by.relation[[match]] = c(edges.by.relation[[match]], i)
+            } else {
+                edges.by.relation[[length(edges.by.relation) + 1]] = i
+            }
+        }
+
+        ## select edges of one relation, build the network and simplify this network
+        networks = lapply(seq(edges.by.relation),
+                          function(group) {
+                              network.data = edge.data[edges.by.relation[[group]], ]
+                              net = igraph::graph_from_data_frame(d = network.data,
+                                                                  vertices = vertex.data,
+                                                                  directed = igraph::is_directed(network))
+
+                              ## simplify networks (contract edges and remove loops)
+                              net = igraph::simplify(net, edge.attr.comb = EDGE.ATTR.HANDLING,
+                                                     remove.multiple = remove.multiple,
+                                                     remove.loops = remove.loops)
+                              ## TODO perform simplification on edge list?
+                              net = convert.edge.attributes.to.list(net)
+                              return(net)
         })
 
         ## merge the simplified networks
@@ -1973,6 +2022,7 @@ simplify.network = function(network, remove.multiple = TRUE, remove.loops = TRUE
     } else {
         network = igraph::simplify(network, edge.attr.comb = EDGE.ATTR.HANDLING,
                                    remove.multiple = remove.multiple, remove.loops = remove.loops)
+        network = convert.edge.attributes.to.list(network)
     }
 
     ## re-apply all network attributes
@@ -2197,6 +2247,14 @@ convert.edge.attributes.to.list = function(network, remain.as.is = names(EDGE.AT
     ## convert edge attributes to list type
     for (attr in edge.attrs[which.attrs]) {
         list.attr = as.list(igraph::edge_attr(network, attr))
+
+        ## convert individual values to list
+        listed.values = sapply(list.attr, is.list)
+        if (!all(listed.values)) {
+            list.attr[!listed.values] = lapply(list.attr[!listed.values], as.list)
+        }
+
+        ## replace attribute
         network = igraph::set_edge_attr(network, attr, value = list.attr)
     }
 
