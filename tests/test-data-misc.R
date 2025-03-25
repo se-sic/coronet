@@ -179,6 +179,17 @@ test_that("Commit message preprocessing steps: All preprocesing", {
     expect_equal(expected, result)
 })
 
+test_that("Commit message preprocessing steps: All preprocesing but nonexisting commit", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result = get.preprocessed.commit.messages(proj.data, commit.hashes = c("1234567890123456789012345678901234567890"))
+
+    ## Act
+    expected = create.empty.data.frame(c("hash", "preprocessed.message"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
 test_that("Commit message preprocessing steps: limited commit number", {
     proj.conf$update.value("commit.messages", "message")
     proj.data = ProjectData$new(proj.conf)
@@ -265,6 +276,19 @@ test_that("Commit message tokenization", {
     expect_equal(expected, result)
 })
 
+test_that("Commit message tokenization, only 2 commits", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.tokenized.commit.messages(proj.data, c("3a0ed78458b3976243db6829f63eba3eead26774",
+                                                         "1143db502761379c2bfcecc2007fc34282e7ee61"))
+
+    ## Act
+    expected = list(c("I", "added", "important", "things", "the", "things", "are", "nothing"),
+                    c("I", "wish", "it", "would", "work", "now"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
 test_that("Commit message tokenization, only title", {
     proj.conf$update.value("commit.messages", "title")
     proj.data = ProjectData$new(proj.conf)
@@ -343,6 +367,23 @@ test_that("Commit message keyword search: any match, single string", {
                           message = c("Add stuff ",
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing"))
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: any match, single string, only 2 commits", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data,
+                                             strings = "add",
+                                             commit.hashes = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                                               "5a5ec9675e98187e1e92561e1888aa6f04faa338"))
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff "))
     ## Assert
     expect_equal(expected, result)
 })
@@ -439,6 +480,21 @@ test_that("Commit message token counts", {
                                    "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                    "0a1a5c523d835459c42f33e863623138555e2526"),
                           count = c("2", "4", "8", "6", "2", "6", "0"))
+
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message token counts, omly 2 commits", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result = get.commit.message.counts(proj.data, c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                                    "5a5ec9675e98187e1e92561e1888aa6f04faa338"))
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                          count = c("2", "4"))
 
     ## Assert
     expect_equal(expected, result)
