@@ -15,7 +15,7 @@
 ## All Rights Reserved.
 
 
-context("Tests for the file 'util-core-peripheral.R'")
+context("Tests for the file 'util-data-misc.R'")
 
 ##
 ## Context
@@ -479,7 +479,7 @@ test_that("Commit message token counts", {
                                    "418d1dc4929ad1df251d2aeb833dd45757b04a6f",
                                    "d01921773fae4bed8186b0aa411d6a2f7a6626e6",
                                    "0a1a5c523d835459c42f33e863623138555e2526"),
-                          count = c("2", "4", "8", "6", "2", "6", "0"))
+                          count = c(2, 4, 8, 6, 2, 6, 0))
 
     ## Assert
     expect_equal(expected, result)
@@ -494,7 +494,7 @@ test_that("Commit message token counts, omly 2 commits", {
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
                                    "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
-                          count = c("2", "4"))
+                          count = c(2, 4))
 
     ## Assert
     expect_equal(expected, result)
