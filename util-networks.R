@@ -1888,22 +1888,11 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         extra.edge.attributes["type"] = TYPE.EDGES.INTER # add egde type
         extra.edge.attributes["relation"] = relation # add relation type
 
-        ## Convert edge attributes to list similarly to 'convert.edge.attributes.to.list'.
-        ## We cannot use 'convert.edge.attributes.to.list', as we operate on edge
-        ## data directly, instead of a network.
-        edge.attrs = names(extra.edge.attributes)
-        which.attrs = !(edge.attrs %in% names(EDGE.ATTR.HANDLING))
-        for (attr in edge.attrs[which.attrs]) {
-            list.attr = as.list(extra.edge.attributes[[attr]])
-            list.values = sapply(list.attr, is.list)
-            if (!all(list.values)) {
-                list.attr[!list.values] = lapply(list.attr[!list.values], as.list)
-            }
-            extra.edge.attributes[[attr]] = list.attr
-        }
+        ## convert the edge attributes to list format
+        edge.attributes = convert.edge.list.attributes.to.list(extra.edge.attributes)
 
         ## add the vertex sequences as edges to the network
-        net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = extra.edge.attributes)
+        net = igraph::add_edges(net, unlist(vertex.sequence.for.edges), attr = edge.attributes)
 
         ## replace NULLs in edge attributes with NAs for consistency
         net = Reduce(function(net, attr) {
