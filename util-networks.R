@@ -2277,6 +2277,47 @@ convert.edge.attributes.to.list = function(network, remain.as.is = names(EDGE.AT
     return(network)
 }
 
+#' Convert attributes in edge list to list type.
+#'
+#' @param edge.list the edge list either as a data frame or as a list of which
+#'                  the attributes are to be converted
+#' @param remain.as.is the attributes to remain as they are
+#'                  [default: names(EDGE.ATTR.HANDLING)]
+#'
+#' @return the edge list with converted attributes as a data frame
+#'
+#' @seealso convert.edge.attributes.to.list
+convert.edge.list.attributes.to.list = function(edge.list, remain.as.is = names(EDGE.ATTR.HANDLING)) {
+
+    ## the 'from' and to 'to' columns must always remain as they are
+    remain.as.is = c(remain.as.is, "from", "to")
+
+    ## if edge list is in list format, convert to data frame
+    if (is.list(edge.list)) {
+        edge.list = as.data.frame(edge.list, stringsAsFactors = FALSE)
+    }
+
+    ## get edge attributes
+    edge.attrs = colnames(edge.list)
+    which.attrs = !(edge.attrs %in% remain.as.is)
+
+    ## convert edge attributes to list type
+    for (attr in edge.attrs[which.attrs]) {
+        list.attr = as.list(edge.list[[attr]])
+
+        ## convert individual values to list
+        listed.values = sapply(list.attr, is.list)
+        if (!all(listed.values)) {
+            list.attr[!listed.values] = lapply(list.attr[!listed.values], as.list)
+        }
+
+        ## replace attribute
+        edge.list[[attr]] = list.attr
+    }
+
+    return(edge.list)
+
+}
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
