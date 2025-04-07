@@ -124,17 +124,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         proj.data.original = NULL,
         network.conf = NULL,
 
-        ## * * network caching ---------------------------------------------
+        ## * * network data caching ----------------------------------------
 
-        authors.network.mail = NULL, # igraph
-        authors.network.cochange = NULL, # igraph
-        authors.network.issue = NULL, #igraph
-        artifacts.network.cochange = NULL, # igraph
-        artifacts.network.callgraph = NULL, # igraph
-        artifacts.network.mail = NULL, # igraph
-        artifacts.network.issue = NULL, # igraph
-        commits.network.commit.interaction = NULL, #igraph
-        commits.network.cochange = NULL, #igraph
+        author.network.mail.data = NULL,
+        author.network.cochange.data = NULL,
+        author.network.issue.data = NULL,
+        artifact.network.cochange.data = NULL,
+        artifact.network.callgraph.data = NULL,
+        artifact.network.mail.data = NULL,
+        artifact.network.issue.data = NULL,
+        artifact.network.commit.interaction.data = NULL,
+        commit.network.commit.interaction.data = NULL,
+        commit.network.cochange.data = NULL,
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -895,15 +896,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Reset the current environment in order to rebuild it.
         #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
-            private$authors.network.cochange = NULL
-            private$authors.network.issue = NULL
-            private$authors.network.mail = NULL
-            private$artifacts.network.callgraph = NULL
-            private$artifacts.network.cochange = NULL
-            private$artifacts.network.issue = NULL
-            private$artifacts.network.mail = NULL
-            private$commits.network.commit.interaction = NULL
-            private$commits.network.cochange = NULL
+            private$author.network.cochange.data = NULL
+            private$author.network.issue.data = NULL
+            private$author.network.mail.data = NULL
+            private$artifact.network.callgraph.data = NULL
+            private$artifact.network.cochange.data = NULL
+            private$artifact.network.issue.data = NULL
+            private$artifact.network.mail.data = NULL
+            private$commit.network.commit.interaction.data = NULL
+            private$commit.network.cochange.data = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
