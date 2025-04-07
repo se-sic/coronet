@@ -176,6 +176,47 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(data.sources)
         },
 
+        ## * * helper functions --------------------------------------------
+
+        #' Construct a network data object from (possibly empty) vertex and edge data.
+        construct.network.data = function(vertex.data, edge.data, allowed.edge.attributes) {
+
+            all.edge.attributes = private$network.conf$get.value("edge.attributes")
+
+            ## add missing vertex attributes
+            if (is.null(vertex.data) || nrow(vertex.data) == 0) {
+                vertex.data = data.frame(name = character(0))
+            }
+
+            ## add missing edge attributes if edgelist was empty
+            if (is.null(edge.data) || nrow(edge.data) == 0) {
+
+                ## determine edge attributes to add
+                allowed.edge.attributes = lapply(allowed.edge.attributes, function(attr) attr[1])
+                required.edge.attributes = all.edge.attributes[all.edge.attributes %in% names(allowed.edge.attributes)]
+
+                ## construct empty edges with required edge attributes
+                edge.data = create.empty.data.frame(
+                    c("from", "to", required.edge.attributes),
+                    c("character", "character", allowed.edge.attributes[required.edge.attributes])
+                )
+            }
+
+            ## convert edge attributes to list type
+            edge.data = convert.edge.list.attributes.to.list(edge.data)
+
+            ## add weight attribute to edges
+            edge.data[["weight"]] = rep(1, nrow(edge.data))
+
+            ## construct network data
+            network.data = list(
+                vertices = vertex.data,
+                edges = edge.data
+            )
+
+            return(network.data)
+        },
+
         ## * * author networks ---------------------------------------------
 
         #' Get the co-change-based author relation as network.
