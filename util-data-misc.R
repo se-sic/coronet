@@ -806,13 +806,10 @@ get.preprocessed.commit.messages = function(proj.data,
     }
 
     ## create a corpus with all selected commit messages
-    messages = do.call(function(title, message, ...) {
-        if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-            return (paste(title, message))
-        } else {
-            return (title)
-        }
-    }, commit.message.data)
+    messages = commit.message.data$title
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        messages = paste(messages, commit.message.data$message)
+    }
     corpus = tm::Corpus(tm::VectorSource(messages))
 
     ## preprocessing steps
@@ -884,13 +881,10 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
         commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
     }
 
-    messages = do.call(function(title, message, ...) {
-        if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-            return (paste(title, message))
-        } else {
-            return (title)
-        }
-    }, commit.message.data)
+    messages = commit.message.data$title
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        messages = paste(messages, commit.message.data$message)
+    }
     tokens = lapply(messages, tm::Boost_tokenizer)
 
     return(tokens)
@@ -940,21 +934,20 @@ get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strin
         commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
     }
 
-    for (i in seq_len(nrow(commit.message.data))) {
-        ## get the title of the message, as it is should always be present
-        current = commit.message.data[i, "title"]
-        ## if config parameter is set to 'message', also append the message body
-        if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-            current = paste(current, commit.message.data[i, "message"])
-        }
-        ## check if message contains 'strings'
-        check = lapply(strings, function(word) {
-            return (grepl(word, current, ignore.case = TRUE))
-        })
-        if (match(check)) {
-            messages[nrow(messages) + 1, ] = c(commit.message.data[["hash"]][i], current)
-        }
+    ## prepare the dataframe for searching commit messages by merging the 'title' and 'message' columns if desired
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        commit.message.data$message = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        commit.message.data$message = commit.message.data[["title"]]
     }
+    commit.message.data = commit.message.data[c("hash", "message")]
+    ## filter the messages by searching for all the keywords in 'strings'
+    ## and applying the match function once per message
+    messages = commit.message.data[unlist(lapply(commit.message.data$message, function(msg) {
+                                       match(lapply(strings, function(word) {
+                                           return (grepl(word, msg, ignore.case = TRUE))
+                                       }))
+                                   })), ]
     return(messages)
 }
 

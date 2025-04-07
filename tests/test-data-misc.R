@@ -402,6 +402,7 @@ test_that("Commit message keyword search: any match, multiple strings", {
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing",
                                       "Wish intensifies"))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -409,7 +410,7 @@ test_that("Commit message keyword search: any match, multiple strings", {
 test_that("Commit message keyword search: any match, multiple strings, only title", {
     proj.conf$update.value("commit.messages", "title")
     proj.data = ProjectData$new(proj.conf)
-    result =  get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"))
+    result = get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"))
 
     ## Act
     expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
@@ -428,7 +429,7 @@ test_that("Commit message keyword search: all match, multiple strings, no result
     result =  get.commit.messages.by.strings(proj.data, strings = c("add", "intensifies"), match = all)
 
     ## Act
-    expected = create.empty.data.frame(c("hash", "message"))
+    expected = create.empty.data.frame(c("hash", "message"), c("character", "character"))
     ## Assert
     expect_equal(expected, result)
 })
