@@ -1549,6 +1549,8 @@ construct.edges.temporal.order = function(set, network.conf, edge.attributes, ke
         } else {
             combinations = expand.grid(item.vertex, vertices.processed.set, stringsAsFactors = FALSE)
         }
+        colnames(combinations)[colnames(combinations) == "Var1"] = "from"
+        colnames(combinations)[colnames(combinations) == "Var2"] = "to"
 
         if (nrow(combinations) > 0 && nrow(item.edge.attrs) == 1) {
             combinations = cbind(combinations, item.edge.attrs, row.names = NULL) # add edge attributes
