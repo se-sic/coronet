@@ -228,9 +228,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.author.network.cochange: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$authors.network.cochange)) {
+            if (!is.null(private$author.network.cochange.data)) {
                 logging::logdebug("get.author.network.cochange: finished. (already existing)")
-                return(private$authors.network.cochange)
+                return(private$author.network.cochange.data)
             }
 
             ## Get a list of all artifacts extracted from the commit data. Each artifact in this group is again a list
@@ -264,29 +264,33 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             authors = authors["author.name"]
             ## 3) rename single column to "name" to correct mapping to vertex attribute "name"
             colnames(authors) = "name"
-            ## 4) set author list as vertices
-            author.net.data[["vertices"]] = authors
 
-            ## construct network from obtained data
-            author.net = construct.network.from.edge.list(
-                author.net.data[["vertices"]],
-                author.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = authors,
+                edge.data = author.net.data[["edges"]],
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
-            ## store network
-            private$authors.network.cochange = author.net
+            ## store network data
+            private$author.network.cochange.data = network.data
             logging::logdebug("get.author.network.cochange: finished.")
 
-            return(author.net)
+            return(network.data)
         },
 
         #' Build and get the author network with commit-interactions as the relation.
         #'
         #'  @return the commit-interaction author network
         get.author.network.commit.interaction = function() {
+            logging::logdebug("get.author.network.commit.interaction: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$author.network.commit.interaction.data)) {
+                logging::logdebug("get.author.network.commit.interaction: finished. (already existing)")
+                return(private$author.network.commit.interaction.data)
+            }
+
             ## get the authors that appear in the commit-interaction data as the vertices of the network
             vertices = unique(c(private$proj.data$get.commit.interactions()[["base.author"]],
                                 private$proj.data$get.commit.interactions()[["interacting.author"]]))
@@ -303,17 +307,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (nrow(edges) > 0) {
                 edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
             }
-            author.net.data = list(vertices = vertices, edges = edges)
-            ## construct the network
-            author.net = construct.network.from.edge.list(
-                author.net.data[["vertices"]],
-                author.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
-                available.edge.attributes = private$proj.data$
-                                            get.data.columns.for.data.source("commit.interactions")
+
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = vertices,
+                edge.data = edges,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
             )
-            return(author.net)
+
+            ## store network data
+            author.network.commit.interaction.data = network.data
+            logging::logdebug("get.author.network.commit.interaction: finished.")
+
+            return(network.data)
         },
 
         #' Get the thread-based author relation as network.
@@ -325,9 +331,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.author.network.mail: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$authors.network.mail)) {
+            if (!is.null(private$author.network.mail.data)) {
                 logging::logdebug("get.author.network.mail: finished. (already existing)")
-                return(private$authors.network.mail)
+                return(private$author.network.mail.data)
             }
 
             ## construct edge list based on thread2author data
@@ -338,29 +344,27 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
-            ## construct network from obtained data
-            author.net = construct.network.from.edge.list(
-                author.net.data[["vertices"]],
-                author.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = author.net.data[["vertices"]],
+                edge.data = author.net.data[["edges"]],
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
             )
 
-            ## store network
-            private$authors.network.mail = author.net
+            ## store network data
+            private$author.network.mail.data = network.data
             logging::logdebug("get.author.network.mail: finished.")
 
-            return(author.net)
+            return(network.data)
         },
 
         ##get the issue based author relation as network
         get.author.network.issue = function() {
             logging::logdebug("get.author.network.issue: starting.")
 
-            if (!is.null(private$authors.network.issue)) {
+            if (!is.null(private$author.network.issue.data)) {
                 logging::logdebug("get.author.network.issue: finished. (already existing)")
-                return(private$authors.network.issue)
+                return(private$author.network.issue.data)
             }
 
             ## construct edge list based on issue2author data
@@ -371,19 +375,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
-            ## construct network from obtained data
-            author.net = construct.network.from.edge.list(
-                author.net.data[["vertices"]],
-                author.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = author.net.data[["vertices"]],
+                edge.data = author.net.data[["edges"]],
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
             )
 
-            private$authors.network.issue = author.net
+            ## store network data
+            private$author.network.issue.data = network.data
             logging::logdebug("get.author.network.issue: finished.")
 
-            return(author.net)
+            return(network.data)
         },
 
         ## * * artifact networks -------------------------------------------
@@ -397,9 +400,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.cochange: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$artifacts.network.cochange)) {
+            if (!is.null(private$artifact.network.cochange.data)) {
                 logging::logdebug("get.artifact.network.cochange: finished. (already existing)")
-                return(private$artifacts.network.cochange)
+                return(private$artifact.network.cochange.data)
             }
 
             ## construct edge list based on commit--artifact data
@@ -413,85 +416,102 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.type = "artifact"
             )
 
-            ## construct network from obtained data
-            artifacts.net = construct.network.from.edge.list(
-                artifacts.net.data[["vertices"]],
-                artifacts.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = FALSE,
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
-            )
+            ## extract vertices and edges
+            vertices = artifacts.net.data[["vertices"]]
+            edges = artifacts.net.data[["edges"]]
 
             ## remove the artifact vertices stemming from untracked files if existing
-            if ("name" %in% igraph::vertex_attr_names(artifacts.net) &&
-                length(igraph::V(artifacts.net)[name == UNTRACKED.FILE.EMPTY.ARTIFACT]) > 0) {
-
-                artifacts.net = igraph::delete_vertices(artifacts.net, UNTRACKED.FILE.EMPTY.ARTIFACT)
+            if ("name" %in% names(vertices) && any(vertices[["name"]] == UNTRACKED.FILE.EMPTY.ARTIFACT)) {
+                vertices = vertices[vertices[["name"]] != UNTRACKED.FILE.EMPTY.ARTIFACT, , drop = FALSE]
+                edges = edges[!(edges[["from"]] == UNTRACKED.FILE.EMPTY.ARTIFACT |
+                        edges[["to"]] == UNTRACKED.FILE.EMPTY.ARTIFACT), ]
             }
 
-            ## store network
-            private$artifacts.network.cochange = artifacts.net
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = vertices,
+                edge.data = edges,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            )
+
+            ## store network data
+            private$artifact.network.cochange.data = network.data
             logging::logdebug("get.artifact.network.cochange: finished.")
 
-            return(artifacts.net)
+            return(network.data)
         },
 
         #' Build and get the commit-interaction based artifact network.
         #'
         #' @return the commit-interaction based artifact network
         get.artifact.network.commit.interaction = function() {
-          ## initialize the vertices. They will be set correctly depending on the used config.
-          vertices = c()
-          ## get the commit-interaction data as the edge data of the network
-          edges = private$proj.data$get.commit.interactions()
 
-          ## set 'to' and 'from' of the network according to the config
-          ## and order the dataframe accordingly
-          proj.conf.artifact = private$proj.data$get.project.conf.entry("artifact")
-          if (proj.conf.artifact == "file") {
-              ## change the vertices to the files from the commit-interaction data
-              vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
+            logging::logdebug("get.artifact.network.commit.interaction: starting.")
+
+            ## do not compute anything more than once
+            if (!is.null(private$artifact.network.commit.interaction.data)) {
+                logging::logdebug("get.artifact.network.commit.interaction: finished. (already existing)")
+                return(private$artifact.network.commit.interaction.data)
+            }
+
+            ## initialize the vertices. They will be set correctly depending on the used config.
+            vertices = c()
+
+            ## get the commit-interaction data as the edge data of the network
+            edges = private$proj.data$get.commit.interactions()
+
+            ## set 'to' and 'from' of the network according to the config
+            ## and order the dataframe accordingly
+            proj.conf.artifact = private$proj.data$get.project.conf.entry("artifact")
+            if (proj.conf.artifact == "file") {
+
+                ## change the vertices to the files from the commit-interaction data
+                vertices = unique(c(private$proj.data$get.commit.interactions()[["base.file"]],
                                     private$proj.data$get.commit.interactions()[["file"]]))
-              vertices = data.frame(name = vertices)
+                vertices = data.frame(name = vertices)
 
-              edges = edges[, c("file", "base.file", "func", "commit.hash",
-                                "base.hash", "base.func", "base.author", "interacting.author")]
-              if (nrow(edges) > 0) {
-                  edges[["artifact.type"]] = ARTIFACT.CODEFACE[[proj.conf.artifact]]
-              }
-              colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
-          } else if (proj.conf.artifact == "function") {
-             ## change the vertices to the functions from the commit-interaction data
-             vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
-                                 private$proj.data$get.commit.interactions()[["func"]]))
-             vertices = data.frame(name = vertices)
+                edges = edges[, c("file", "base.file", "func", "commit.hash",
+                                  "base.hash", "base.func", "base.author", "interacting.author")]
 
-             edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
-                               "base.file", "base.author", "interacting.author")]
-             if (nrow(edges) > 0) {
-                 edges[["artifact.type"]] = ARTIFACT.CODEFACE[[proj.conf.artifact]]
-             }
-             colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
-          } else {
-            ## If neither 'function' nor 'file' was configured, send a warning
-            ## and return an empty network
-            logging::logwarn("when creating a commit-interaction artifact network,
-                              the artifact should be either 'file' or 'function'!")
-            return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
-          }
-          colnames(edges)[1] = "to"
-          colnames(edges)[2] = "from"
-          artifact.net.data = list(vertices = vertices, edges = edges)
-          ## construct the network
-          artifact.net = construct.network.from.edge.list(
-            artifact.net.data[["vertices"]],
-            artifact.net.data[["edges"]],
-            network.conf = private$network.conf,
-            directed = private$network.conf$get.value("artifact.directed"),
-            available.edge.attributes = private$proj.data$
-                                        get.data.columns.for.data.source("commit.interactions")
-          )
-          return(artifact.net)
+            } else if (proj.conf.artifact == "function") {
+
+                ## change the vertices to the functions from the commit-interaction data
+                vertices = unique(c(private$proj.data$get.commit.interactions()[["base.func"]],
+                                    private$proj.data$get.commit.interactions()[["func"]]))
+                vertices = data.frame(name = vertices)
+
+                edges = edges[, c("func", "base.func", "commit.hash", "file", "base.hash",
+                                  "base.file", "base.author", "interacting.author")]
+
+            } else {
+
+                ## If neither 'function' nor 'file' was configured, send a warning
+                ## and return an empty network
+                logging::logwarn("when creating a commit-interaction artifact network,
+                                  the artifact should be either 'file' or 'function'!")
+                return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
+            }
+
+            if (nrow(edges) > 0) {
+                edges[["artifact.type"]] = ARTIFACT.CODEFACE[[proj.conf.artifact]]
+            }
+            colnames(edges)[colnames(edges) == "commit.hash"] = "hash"
+
+            colnames(edges)[1] = "to"
+            colnames(edges)[2] = "from"
+
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = vertices,
+                edge.data = edges,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
+            )
+
+            ## store network data
+            private$artifact.network.commit.interaction.data = network.data
+            logging::logdebug("get.artifact.network.commit.interaction: finished.")
+
+            return(network.data)
         },
 
         #' Get the call-graph-based artifact network.
@@ -504,9 +524,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.callgraph: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$artifacts.network.callgraph)) {
+            if (!is.null(private$artifact.network.callgraph.data)) {
                 logging::logdebug("get.artifact.network.callgraph: finished. (already existing)")
-                return(private$artifacts.network.callgraph)
+                return(private$artifact.network.callgraph.data)
             }
 
             ## check if revision for call-graphs is set
@@ -570,11 +590,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 value = private$proj.data$get.project.conf.entry("artifact.codeface")
             )
 
-            ## store network
-            private$artifacts.network.callgraph = artifacts.net
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = igraph::as_data_frame(artifacts.net, "vertices"),
+                edge.data = igraph::as_data_frame(artifacts.net, "edges"),
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            )
+
+            ## store network data
+            private$artifact.network.callgraph.data = network.data
             logging::logdebug("get.artifact.network.callgraph: finished.")
 
-            return(artifacts.net)
+            return(network.data)
+
         },
 
         #' Get the mail-based artifact network.
@@ -586,9 +614,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.mail: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$artifacts.network.mail)) {
+            if (!is.null(private$artifact.network.mail.data)) {
                 logging::logdebug("get.artifact.network.mail: finished. (already existing)")
-                return(private$artifacts.network.mail)
+                return(private$artifact.network.mail.data)
             }
 
             ## log warning as we do not have relations among threads right now
@@ -597,17 +625,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 "Return an edge-less network now."
             ))
 
-            ## construct edgeless network with mandatory edge and vertex attributes
-            directed = private$network.conf$get.value("artifact.directed")
-            artifacts = private$proj.data$get.artifacts("mails") # thread IDs
-            artifacts.net = create.empty.network(directed = directed, add.attributes = TRUE) +
-                igraph::vertices(artifacts)
+            ## construct edgeless network data
+            network.data = private$construct.network.data(
+                vertex.data = data.frame(name = private$proj.data$get.artifacts("mails")),
+                edge.data = NULL,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
+            )
 
-            ## store network
-            private$artifacts.network.mail = artifacts.net
+            ## store network data
+            private$artifact.network.mail.data = network.data
             logging::logdebug("get.artifact.network.mail: finished.")
 
-            return(artifacts.net)
+            return(network.data)
         },
 
         #' Get the issue-based artifact network.
@@ -619,9 +648,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.artifact.network.issue: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$artifacts.network.issue)) {
+            if (!is.null(private$artifact.network.issue.data)) {
                 logging::logdebug("get.artifact.network.issue: finished. (already existing)")
-                return(private$artifacts.network.issue)
+                return(private$artifact.network.issue.data)
             }
 
             if (private$proj.data$get.project.conf()$get.entry("issues.only.comments")) {
@@ -690,7 +719,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 logging::logwarn("Inconsistent issue data. Unequally many 'add_link' and 'referenced_by' issue-events.")
             }
 
-            vertices = unique(artifacts.net.data.raw["issue.id"])
+            vertices = unique(unlist(artifacts.net.data.raw["issue.id"]))
             edge.list = data.frame()
 
             # edges in artifact networks can not have the 'artifact' attribute but should instead have
@@ -720,27 +749,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 }
             }))
 
-            artifacts.net.data = list(
-                vertices = data.frame(
-                    name = vertices
-                ),
-                edges = edge.list
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = data.frame(name = vertices),
+                edge.data = edge.list,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
             )
 
-            ## construct network from obtained data
-            artifacts.net = construct.network.from.edge.list(
-                artifacts.net.data[["vertices"]],
-                artifacts.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("artifact.directed"),
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
-            )
-
-            ## store network
-            private$artifacts.network.issue = artifacts.net
+            ## store network data
+            private$artifact.network.issue.data = network.data
             logging::logdebug("get.artifact.network.issue: finished.")
 
-            return(artifacts.net)
+            return(network.data)
         },
 
         #' Build and get the commit network with commit-interactions as the relation.
@@ -751,9 +771,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.commit.network.commit.interaction: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$commits.network.commit.interaction)) {
+            if (!is.null(private$commit.network.commit.interaction.data)) {
                 logging::logdebug("get.commit.network.commit.interaction: finished. (already existing)")
-                return(private$commits.network.commit.interaction)
+                return(private$commit.network.commit.interaction.data)
             }
 
             ## get the hashes that appear in the commit-interaction data as the vertices of the network
@@ -771,21 +791,19 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
             colnames(edges)[1] = "to"
             colnames(edges)[2] = "from"
-            commit.net.data = list(vertices = vertices, edges = edges)
-            ## construct the network
-            commit.net = construct.network.from.edge.list(
-                commit.net.data[["vertices"]],
-                commit.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("commit.directed"),
-                available.edge.attributes = private$proj.data$
-                                            get.data.columns.for.data.source("commit.interactions")
+
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = vertices,
+                edge.data = edges,
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
             )
 
-            private$commits.network.commit.interaction = commit.net
+            ## store network data
+            private$commit.network.commit.interaction.data = network.data
             logging::logdebug("get.commit.network.commit.interaction: finished.")
 
-            return(commit.net)
+            return(network.data)
         },
 
         #' Get the cochange-based commit network,
@@ -797,9 +815,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::logdebug("get.commit.network.cochange: starting.")
 
             ## do not compute anything more than once
-            if (!is.null(private$commits.network.cochange)) {
+            if (!is.null(private$commit.network.cochange.data)) {
                 logging::logdebug("get.commit.network.cochange: finished. (already existing)")
-                return(private$commits.network.cochange)
+                return(private$commit.network.cochange.data)
             }
 
             ## construct edge list based on commit--artifact data
@@ -813,20 +831,18 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 network.type = "commit"
             )
 
-            ## construct network from obtained data
-            commit.net = construct.network.from.edge.list(
-                commit.net.data[["vertices"]],
-                commit.net.data[["edges"]],
-                network.conf = private$network.conf,
-                directed = private$network.conf$get.value("commit.directed"),
-                available.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+            ## construct network data
+            network.data = private$construct.network.data(
+                vertex.data = commit.net.data[["vertices"]],
+                edge.data = commit.net.data[["edges"]],
+                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
-            ## store network
-            private$commits.network.cochange = commit.net
+            ## store network data
+            private$commit.network.cochange.data = network.data
             logging::logdebug("get.commit.network.cochange: finished.")
 
-            return(commit.net)
+            return(network.data)
         },
 
         ## * * bipartite relations ------------------------------------------
