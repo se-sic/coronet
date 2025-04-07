@@ -992,8 +992,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("author.relation")
-            networks = lapply(relations, function(relation) {
-                network = switch(
+            network.data = lapply(relations, function(relation) {
+                network.data = switch(
                     relation,
                     cochange = private$get.author.network.cochange(),
                     commit.interaction = private$get.author.network.commit.interaction(),
@@ -1004,12 +1004,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 )
 
                 ## set edge attributes on all edges
-                igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = list(relation)
+                edge.count = nrow(network.data[["edges"]])
+                network.data[["edges"]][["type"]]     = rep(TYPE.EDGES.INTRA, edge.count)
+                network.data[["edges"]][["relation"]] = rep(list(list(relation)), edge.count)
 
-                return(network)
+                return(network.data)
             })
-            net = merge.networks(networks)
+            merged.network.data = merge.network.data(network.data)
+
+            ## construct graph from network data
+            net = igraph::graph_from_data_frame(
+                merged.network.data[["edges"]],
+                vertices = merged.network.data[["vertices"]],
+                directed = private$network.conf$get.value("author.directed")
+            )
 
             ## add all missing authors to the network if wanted
             if (private$network.conf$get.value("author.all.authors")) {
@@ -1046,7 +1054,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
-            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
@@ -1058,8 +1065,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("artifact.relation")
-            networks = lapply(relations, function(relation) {
-                network = switch(
+            network.data = lapply(relations, function(relation) {
+                network.data = switch(
                     relation,
                     cochange = private$get.artifact.network.cochange(),
                     callgraph = private$get.artifact.network.callgraph(),
@@ -1070,16 +1077,24 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 )
 
                 ## set edge attributes on all edges
-                igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = list(relation)
+                edge.count = nrow(network.data[["edges"]])
+                network.data[["edges"]][["type"]]     = rep(TYPE.EDGES.INTRA, edge.count)
+                network.data[["edges"]][["relation"]] = rep(list(list(relation)), edge.count)
 
                 ## set vertex attribute 'kind' on all edges, corresponding to relation
-                vertex.kind = private$get.vertex.kind.for.relation(relation)
-                network = igraph::set_vertex_attr(network, "kind", value = vertex.kind)
+                vertex.count = nrow(network.data[["vertices"]])
+                network.data[["vertices"]][["kind"]] = rep(private$get.vertex.kind.for.relation(relation), vertex.count)
 
-                return(network)
+                return(network.data)
             })
-            net = merge.networks(networks)
+            merged.network.data = merge.network.data(network.data)
+
+            ## construct graph from network data
+            net = igraph::graph_from_data_frame(
+                merged.network.data[["edges"]],
+                vertices = merged.network.data[["vertices"]],
+                directed = private$network.conf$get.value("artifact.directed")
+            )
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$type = TYPE.ARTIFACT
@@ -1095,7 +1110,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
-            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
@@ -1107,8 +1121,8 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("commit.relation")
-            networks = lapply(relations, function(relation) {
-                network = switch(
+            network.data = lapply(relations, function(relation) {
+                network.data = switch(
                     relation,
                     cochange = private$get.commit.network.cochange(),
                     commit.interaction = private$get.commit.network.commit.interaction(),
@@ -1116,12 +1130,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 )
 
                 ## set edge attributes on all edges
-                igraph::E(network)$type = TYPE.EDGES.INTRA
-                igraph::E(network)$relation = list(relation)
+                edge.count = nrow(network.data[["edges"]])
+                network.data[["edges"]][["type"]]     = rep(TYPE.EDGES.INTRA, edge.count)
+                network.data[["edges"]][["relation"]] = rep(list(list(relation)), edge.count)
 
-                return(network)
+                return(network.data)
             })
-            net = merge.networks(networks)
+            merged.network.data = merge.network.data(network.data)
+
+            ## construct graph from network data
+            net = igraph::graph_from_data_frame(
+                merged.network.data[["edges"]],
+                vertices = merged.network.data[["vertices"]],
+                directed = private$network.conf$get.value("commit.directed")
+            )
 
             ## set vertex and edge attributes for identifaction
             igraph::V(net)$kind = TYPE.COMMIT
@@ -1138,7 +1160,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 attr(net, "range") = private$proj.data$get.range()
             }
 
-            net = convert.edge.attributes.to.list(net)
             return(net)
         },
 
