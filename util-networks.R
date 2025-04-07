@@ -1126,7 +1126,10 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## Merge network data and construct a vertex-only network for now:
             ## 1) construct vertex data (without edges)
-            vertex.data = merge.network.data(vertex.data = vertex.data, edge.data = NULL)[["vertices"]]
+            network.data = lapply(vertex.data, function(vertices) {
+                return(list(vertices = vertices, edges = NULL))
+            })
+            vertex.data = merge.network.data(network.data)[["vertices"]]
             ## 2) remove empty artifact, if names are available
             if ("name" %in% colnames(vertex.data)) {
                 vertex.data = subset(vertex.data, !(name == UNTRACKED.FILE.EMPTY.ARTIFACT & type == TYPE.ARTIFACT))
@@ -1657,11 +1660,26 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #'
 #' @param vertex.data the list of vertex data frames, may be \code{NULL}
 #' @param edge.data the list of edge data frames, may be \code{NULL}
+#' @param network.data the vertex and edge data that should be merged. Each element
+#'                     should be a list with two elements: vertices' and 'edges', that
+#'                     contain the corresponding data for one network.
 #'
 #' @return list containing one edge data frame (name \code{edges}) and
 #'         one vertex data frame (named \code{vertices})
-merge.network.data = function(vertex.data, edge.data) {
+merge.network.data = function(network.data) {
     logging::logdebug("merge.network.data: starting.")
+
+    ## extract vertex and edge data
+    vertex.data = lapply(network.data, function(data) data[["vertices"]])
+    edge.data   = lapply(network.data, function(data) data[["edges"]])
+
+    if (length(network.data) == 1) {
+        logging::logdebug("Network data of only one network given, so a merge is not necessary")
+        return(list(
+            vertices = vertex.data[[1]],
+            edges = edge.data[[1]]
+        ))
+    }
 
     ## combine vertices and select only unique vertices
     vertices = plyr::rbind.fill(vertex.data)
@@ -1688,6 +1706,11 @@ merge.network.data = function(vertex.data, edge.data) {
         edges = create.empty.edge.list()
     }
 
+    ## catch case where no vertices (and no vertex attributes) are given
+    if (ncol(vertices) == 0) {
+        vertices = NULL # igraph::graph_from_data_frame fan handle this
+    }
+
     logging::logdebug("merge.network.data: finished.")
     return(list(
         vertices = vertices,
@@ -1711,23 +1734,16 @@ merge.networks = function(networks) {
         return(networks[[1]])
     }
 
-    ## list with all vertex data frames
-    vertex.data = lapply(networks, function(network) {
-        return(igraph::as_data_frame(network, what = "vertices"))
-    })
-
-    ## list of all edge data frames
-    edge.data = lapply(networks, function(network) {
-        return(igraph::as_data_frame(network, what = "edges"))
+    ## construct network data
+    network.data = lapply(networks, function(network) {
+        return(list(
+            vertices = igraph::as_data_frame(network, what = "vertices"),
+            edges = igraph::as_data_frame(network, what = "edges")
+        ))
     })
 
     ## merge all edge and vertex data frames
-    new.network.data = merge.network.data(vertex.data, edge.data)
-
-    ## catch case where no vertices (and no vertex attributes) are given
-    if (ncol(new.network.data[["vertices"]]) == 0) {
-        new.network.data[["vertices"]] = NULL # igraph::graph_from_data_frame can handle this
-    }
+    new.network.data = merge.network.data(network.data)
 
     ## build whole network form edge and vertex data frame
     whole.network = igraph::graph_from_data_frame(
