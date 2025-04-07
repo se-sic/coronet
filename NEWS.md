@@ -7,6 +7,7 @@
 ### Added
 
 - Add the possibility to split networks that contain simplified edges (PR #278, 9798d33512dcdf50d3b88a1223fc4913a2a88eeb, 0ed437c14423c1917f1ba470e7e55db4626d380b, 67a6651b94d50cb7c2ab4a74888b0556d607b102, 98ef83158204be2a67b115cb25df5ba375cccf60, 7ec4d83fdeb308a24a350acd808941807b9511f1, 637d62ab70f098f26f241e588a99cdc49d10f56a, 2c70666f128f96a3a573f29a0cbbef14d803d193, 1cbc6fa36859d6db3a7ff4493ef19763e87d2de3, 41788ff029d038969bfc6b5773e919201c5ac595, b042c0dd08e2229514ccd25dee7a119f25b1ab45, 36d23d657f412aa1953c4773076e593273f19d8e, 402c256d9a05e4ffb297d4ea1fc25d0230787bc0, 54af2b19a112070f10d191b98b055482748426a7, 894414a4a970822b9ecd59c0b6c480860707f636, 0fe32a259ef703c2de79135bfa6932a595fdc1c5)
+- Add functionality for commit-message content analysis, such as NLP tools including stemming, tokenization, and lemmatization, as well as a function to search for keywords in commit messages and a function to measure the length of the messages (PR #281, 5aa4e4193f0c00095fedf961c6060a5c035ef9c6, 99f0638566c0062b987617bc3fe3ace1db7729ee, e469d3a0cf2881c378469b6ccfea9c204d13f19b, 7d8fd39f164c776921e3fb36daf79256e7be7426, ef689f71f248059cc69be4792ca14ce3b95dcac8, 6e642242a3063663bcc3c7f5cca0650dfebb6bb4)
 
 ### Changed/Improved
 
