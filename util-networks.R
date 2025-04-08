@@ -126,16 +126,17 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
         ## * * network data caching ----------------------------------------
 
-        author.network.mail.data = NULL,
         author.network.cochange.data = NULL,
+        author.network.mail.data = NULL,
         author.network.issue.data = NULL,
+        author.network.commit.interaction.data = NULL,
         artifact.network.cochange.data = NULL,
-        artifact.network.callgraph.data = NULL,
         artifact.network.mail.data = NULL,
         artifact.network.issue.data = NULL,
         artifact.network.commit.interaction.data = NULL,
-        commit.network.commit.interaction.data = NULL,
+        artifact.network.callgraph.data = NULL,
         commit.network.cochange.data = NULL,
+        commit.network.commit.interaction.data = NULL,
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -913,14 +914,16 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Has to be called whenever the data or configuration get changed.
         reset.environment = function() {
             private$author.network.cochange.data = NULL
-            private$author.network.issue.data = NULL
             private$author.network.mail.data = NULL
-            private$artifact.network.callgraph.data = NULL
+            private$author.network.issue.data = NULL
+            private$author.network.commit.interaction.data = NULL
             private$artifact.network.cochange.data = NULL
-            private$artifact.network.issue.data = NULL
             private$artifact.network.mail.data = NULL
-            private$commit.network.commit.interaction.data = NULL
+            private$artifact.network.issue.data = NULL
+            private$artifact.network.commit.interaction.data = NULL
+            private$artifact.network.callgraph.data = NULL
             private$commit.network.cochange.data = NULL
+            private$commit.network.commit.interaction.data = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
