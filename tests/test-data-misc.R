@@ -367,6 +367,7 @@ test_that("Commit message keyword search: any match, single string", {
                           message = c("Add stuff ",
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing"))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -384,6 +385,7 @@ test_that("Commit message keyword search: any match, single string, only 2 commi
                                    "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
                           message = c("Add stuff ",
                                       "Add some more stuff "))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -419,6 +421,7 @@ test_that("Commit message keyword search: any match, multiple strings, only titl
                           message = c("Add stuff",
                                       "Add some more stuff",
                                       "I added important things"))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -430,6 +433,7 @@ test_that("Commit message keyword search: all match, multiple strings, no result
 
     ## Act
     expected = create.empty.data.frame(c("hash", "message"), c("character", "character"))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -444,6 +448,7 @@ test_that("Commit message keyword search: all match, multiple strings", {
                                    "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
                           message = c("Add stuff ",
                                       "Add some more stuff "))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })
@@ -463,6 +468,7 @@ test_that("Commit message keyword search: at least 2 match, multiple strings", {
                           message = c("Add stuff ",
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing"))
+    rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)
 })

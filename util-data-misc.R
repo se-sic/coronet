@@ -32,6 +32,7 @@ requireNamespace("logging") # for logging
 requireNamespace("tm") # for NLP functionalities
 requireNamespace("SnowballC") # for text stemming used by NLP package "tm"
 requireNamespace("textstem") # for lemmatization
+requireNamespace("parallel") # for parallelization of commit-message keyword search
 
 #' Helper function to mask all issues in the issue data frame.
 #'
@@ -776,11 +777,12 @@ get.issue.is.pull.request = function(proj.data) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit-Message Functionality ------------------------------------------
 
-#' Apply preprocessing steps to commit messages of given commits.
+#' Apply preprocessing steps to commit messages of given commits. Preprocessing steps are always performed in
+#' the following order: \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #' @param preprocessing the preprocessing steps to be executed
 #'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
 #'
@@ -797,7 +799,7 @@ get.preprocessed.commit.messages = function(proj.data,
     ## if no hashes are given consider all commits
     commit.message.data = proj.data$get.commit.messages()
     if (!is.null(commit.hashes)) {
-        commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
 
     ## if data is empty, abort process
@@ -806,9 +808,11 @@ get.preprocessed.commit.messages = function(proj.data,
     }
 
     ## create a corpus with all selected commit messages
-    messages = commit.message.data$title
+    messages = c()
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-        messages = paste(messages, commit.message.data$message)
+        messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        messages = commit.message.data[["title"]]
     }
     corpus = tm::Corpus(tm::VectorSource(messages))
 
@@ -841,10 +845,12 @@ get.preprocessed.commit.messages = function(proj.data,
 }
 
 #' Apply stemming to commit messages of given commits. Preprocessing will be executed as part of this.
+#' Preprocessing steps are always performed in the following order:
+#' \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #' @param preprocessing the preprocessing steps to be executed
 #'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
 #'
@@ -869,8 +875,8 @@ get.stemmed.commit.messages = function(proj.data,
 #' resulting tokens.
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #'
 #' @return a list of vectors containing the tokens from the commit messages
 get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
@@ -878,12 +884,14 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
     ## if no hashes are given consider all commits
     commit.message.data = proj.data$get.commit.messages()
     if (!is.null(commit.hashes)) {
-        commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
 
-    messages = commit.message.data$title
+    messages = c()
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-        messages = paste(messages, commit.message.data$message)
+        messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        messages = commit.message.data[["title"]]
     }
     tokens = lapply(messages, tm::Boost_tokenizer)
 
@@ -891,10 +899,12 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
 }
 
 #' Apply lemmatization to commit messages of given commits. Preprocessing will be executed as part of this.
+#' Preprocessing steps are always performed in the following order:
+#' \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #' @param preprocessing the preprocessing steps to be executed
 #'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
 #'
@@ -917,12 +927,12 @@ get.lemmatized.commit.messages = function(proj.data,
 #' Get commit messages that match given strings.
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #' @param strings the strings that are searched for
 #' @param match the function that describes how many of the strings need to be in a message in order for
 #'              that message to be returned. Can be any function that takes a list of logical values and
-#'              returns a single logical value, such as 'any', 'all' or anything in between [default: any]
+#'              returns a single logical value, such as \code{any}, \code{all} or anything in between [default: any]
 #'
 #' @return a dataframe containing the hashes and corresponding matching messages
 get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strings, match = any) {
@@ -931,19 +941,19 @@ get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strin
     ## if no hashes are given consider all commits
     commit.message.data = proj.data$get.commit.messages()
     if (!is.null(commit.hashes)) {
-        commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
 
     ## prepare the dataframe for searching commit messages by merging the 'title' and 'message' columns if desired
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
-        commit.message.data$message = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+        commit.message.data[["message"]] = paste(commit.message.data[["title"]], commit.message.data[["message"]])
     } else {
-        commit.message.data$message = commit.message.data[["title"]]
+        commit.message.data[["message"]] = commit.message.data[["title"]]
     }
-    commit.message.data = commit.message.data[c("hash", "message")]
+    commit.message.data = commit.message.data[, c("hash", "message")]
     ## filter the messages by searching for all the keywords in 'strings'
     ## and applying the match function once per message
-    messages = commit.message.data[unlist(lapply(commit.message.data$message, function(msg) {
+    messages = commit.message.data[unlist(parallel::mclapply(commit.message.data[["message"]], function(msg) {
                                        match(lapply(strings, function(word) {
                                            return (grepl(word, msg, ignore.case = TRUE))
                                        }))
@@ -955,8 +965,8 @@ get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strin
 #' Count tokens in given commit messages.
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
-#' @param commit.hashes the commit hashes that should be considered, if 'NULL' all commits are considered
-#'                      [default: 'NULL']
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
 #'
 #' @return a dataframe containing the hashes and corresponding token counts
 get.commit.message.counts = function(proj.data, commit.hashes = NULL) {
@@ -964,7 +974,7 @@ get.commit.message.counts = function(proj.data, commit.hashes = NULL) {
     ## if no hashes are given consider all commits
     commit.message.data = proj.data$get.commit.messages()
     if (!is.null(commit.hashes)) {
-        commit.message.data = commit.message.data[commit.message.data$hash %in% commit.hashes, ]
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
     ## get tokens
     tokens = get.tokenized.commit.messages(proj.data, commit.hashes)

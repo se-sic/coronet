@@ -504,10 +504,16 @@ get.unstable.authors.overview(author.class.overview = author.class.overview, sat
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Commit-message content analysis -----------------------------------------
 
-get.stemmed.commit.messages(y.data)
-
+## analyze all commit messages using tokenization, which does not employ any preprocessing steps
 get.tokenized.commit.messages(y.data)
 
+## analyze the commit message of a specific commit with only one preprocessing step
 get.lemmatized.commit.messages(y.data,
                                commit.hashes = c("3a0ed78458b3976243db6829f63eba3eead26774"),
-                               preprocessing = ('stopwords'))
+                               preprocessing = "stopwords")
+
+## analyze all commits using default preprocessing
+get.preprocessed.commit.messages(y.data)
+
+## analyze all commit messages with two preprocessing steps
+get.stemmed.commit.messages(y.data, preprocessing = c("whitespaces", "lowercase"))
