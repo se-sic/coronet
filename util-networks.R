@@ -726,7 +726,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 logging::logwarn("Inconsistent issue data. Unequally many 'add_link' and 'referenced_by' issue-events.")
             }
 
-            vertices = unique(unlist(artifacts.net.data.raw["issue.id"]))
+            vertices = unique(artifacts.net.data.raw[["issue.id"]])
             edge.list = data.frame()
 
             # edges in artifact networks can not have the 'artifact' attribute but should instead have
@@ -1796,7 +1796,7 @@ merge.network.data = function(network.data) {
 
     ## catch case where no vertices (and no vertex attributes) are given
     if (ncol(vertices) == 0) {
-        vertices = NULL # igraph::graph_from_data_frame fan handle this
+        vertices = NULL # igraph::graph_from_data_frame can handle this
     }
 
     logging::logdebug("merge.network.data: finished.")
