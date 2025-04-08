@@ -181,7 +181,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         ## * * helper functions --------------------------------------------
 
         #' Construct a network data object from (possibly empty) vertex and edge data.
-        construct.network.data = function(vertex.data, edge.data, allowed.edge.attributes) {
+        #'
+        #' @param vertex.data the vertex data frame
+        #' @param edge.data the edge data frame or NULL to represent an edgeless network [default: NULL]
+        #' @param allowed.edge.attributes a list of all attributes that are may be used in \code{edge.data}
+        #'                                depending on the data source of the represented network [default: NULL]
+        #'
+        #' @return the network data object
+        construct.network.data = function(vertex.data, edge.data = NULL, allowed.edge.attributes = NULL) {
 
             all.edge.attributes = private$network.conf$get.value("edge.attributes")
 
@@ -629,7 +636,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## construct edgeless network data
             network.data = private$construct.network.data(
                 vertex.data = data.frame(name = private$proj.data$get.artifacts("mails")),
-                edge.data = NULL,
                 allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
             )
 
@@ -1742,11 +1748,9 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
 #' Note that identical vertices are merged, whereas identical edges are not.
 #' This will lead to duplicated edges if you merge a network with itself.
 #'
-#' @param vertex.data the list of vertex data frames, may be \code{NULL}
-#' @param edge.data the list of edge data frames, may be \code{NULL}
-#' @param network.data the vertex and edge data that should be merged. Each element
-#'                     should be a list with two elements: vertices' and 'edges', that
-#'                     contain the corresponding data for one network.
+#' @param network.data the network-describing data that should be merged. Each element
+#'                     should be a list with two elements: \code{vertices} and \code{edges},
+#'                     that contain the corresponding data for one network.
 #'
 #' @return list containing one edge data frame (name \code{edges}) and
 #'         one vertex data frame (named \code{vertices})
