@@ -183,12 +183,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Construct a network data object from (possibly empty) vertex and edge data.
         #'
         #' @param vertex.data the vertex data frame
-        #' @param edge.data the edge data frame or NULL to represent an edgeless network [default: NULL]
-        #' @param allowed.edge.attributes a list of all attributes that are may be used in \code{edge.data}
-        #'                                depending on the data source of the represented network [default: NULL]
+        #' @param edge.data the edge data frame
+        #' @param allowed.edge.attributes a list of all attributes and their datatypes that should be present in
+        #'                                \code{edge.data} depending on the data source of the represented network
         #'
         #' @return the network data object
-        construct.network.data = function(vertex.data, edge.data = NULL, allowed.edge.attributes = NULL) {
+        construct.network.data = function(vertex.data, edge.data, allowed.edge.attributes) {
 
             all.edge.attributes = private$network.conf$get.value("edge.attributes")
 
@@ -636,6 +636,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## construct edgeless network data
             network.data = private$construct.network.data(
                 vertex.data = data.frame(name = private$proj.data$get.artifacts("mails")),
+                edge.data = NULL,
                 allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
             )
 
