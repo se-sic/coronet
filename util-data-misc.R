@@ -32,7 +32,7 @@ requireNamespace("logging") # for logging
 requireNamespace("tm") # for NLP functionalities
 requireNamespace("SnowballC") # for text stemming used by NLP package "tm"
 requireNamespace("textstem") # for lemmatization
-requireNamespace("parallel") # for parallelization of commit-message keyword search
+requireNamespace("parallel") # for for parallel computation
 
 #' Helper function to mask all issues in the issue data frame.
 #'
@@ -778,7 +778,7 @@ get.issue.is.pull.request = function(proj.data) {
 ## Commit-Message Functionality ------------------------------------------
 
 #' Apply preprocessing steps to commit messages of given commits. Preprocessing steps are always performed in
-#' the following order: \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
+#' the following order: \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -808,7 +808,6 @@ get.preprocessed.commit.messages = function(proj.data,
     }
 
     ## create a corpus with all selected commit messages
-    messages = c()
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
         messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
     } else {
@@ -846,7 +845,7 @@ get.preprocessed.commit.messages = function(proj.data,
 
 #' Apply stemming to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
+#' \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -887,7 +886,7 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
         commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
 
-    messages = c()
+
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
         messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
     } else {
@@ -900,7 +899,7 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
 
 #' Apply lemmatization to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{lowercase} -> \code{punctuation} -> \code{stopwords} -> \code{whitespaces}
+#' \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -915,7 +914,7 @@ get.lemmatized.commit.messages = function(proj.data,
     ## apply preprocessing
     preprocessed.messages = get.preprocessed.commit.messages(proj.data, commit.hashes, preprocessing)
     ## build corpus
-    corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[,"preprocessed.message"]))
+    corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[, "preprocessed.message"]))
     ## apply lemmatization
     corpus = tm::tm_map(corpus, textstem::lemmatize_strings)
     ## create output dataframe
