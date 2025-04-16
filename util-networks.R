@@ -184,13 +184,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @param vertex.data the vertex data frame
         #' @param edge.data the edge data frame
-        #' @param allowed.edge.attributes a list of all attributes and their datatypes that should be present in
-        #'                                \code{edge.data} depending on the data source of the represented network
+        #' @param possible.edge.attributes a list of all possible attributes and their datatypes that could be present
+        #'                                 in \code{edge.data} depending on the data source of the represented network.
+        #'                                 This list is only used if \code{edge.data} is \code{NULL} or empty.
         #'
         #' @return the network data object
-        construct.network.data = function(vertex.data, edge.data, allowed.edge.attributes) {
+        construct.network.data = function(vertex.data, edge.data, possible.edge.attributes) {
 
-            all.edge.attributes = private$network.conf$get.value("edge.attributes")
+            configured.edge.attributes = private$network.conf$get.value("edge.attributes")
 
             ## add missing vertex attributes
             if (is.null(vertex.data) || nrow(vertex.data) == 0) {
@@ -201,13 +202,14 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             if (is.null(edge.data) || nrow(edge.data) == 0) {
 
                 ## determine edge attributes to add
-                allowed.edge.attributes = lapply(allowed.edge.attributes, function(attr) attr[1])
-                required.edge.attributes = all.edge.attributes[all.edge.attributes %in% names(allowed.edge.attributes)]
+                possible.edge.attributes = lapply(possible.edge.attributes, function(attr) attr[1])
+                required.edge.attributes = configured.edge.attributes[configured.edge.attributes %in%
+                                                                      names(possible.edge.attributes)]
 
                 ## construct empty edges with required edge attributes
                 edge.data = create.empty.data.frame(
                     c("from", "to", required.edge.attributes),
-                    c("character", "character", allowed.edge.attributes[required.edge.attributes])
+                    c("character", "character", possible.edge.attributes[required.edge.attributes])
                 )
             }
 
@@ -277,7 +279,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = authors,
                 edge.data = author.net.data[["edges"]],
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
             ## store network data
@@ -320,7 +322,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = vertices,
                 edge.data = edges,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
             )
 
             ## store network data
@@ -356,7 +358,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = author.net.data[["vertices"]],
                 edge.data = author.net.data[["edges"]],
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
             )
 
             ## store network data
@@ -387,7 +389,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = author.net.data[["vertices"]],
                 edge.data = author.net.data[["edges"]],
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
             )
 
             ## store network data
@@ -439,7 +441,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = vertices,
                 edge.data = edges,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
             ## store network data
@@ -512,7 +514,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = vertices,
                 edge.data = edges,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
             )
 
             ## store network data
@@ -602,7 +604,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = igraph::as_data_frame(artifacts.net, "vertices"),
                 edge.data = igraph::as_data_frame(artifacts.net, "edges"),
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
             ## store network data
@@ -637,7 +639,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = data.frame(name = private$proj.data$get.artifacts("mails")),
                 edge.data = NULL,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("mails")
             )
 
             ## store network data
@@ -761,7 +763,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = data.frame(name = vertices),
                 edge.data = edge.list,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("issues")
             )
 
             ## store network data
@@ -804,7 +806,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = vertices,
                 edge.data = edges,
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commit.interactions")
             )
 
             ## store network data
@@ -843,7 +845,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             network.data = private$construct.network.data(
                 vertex.data = commit.net.data[["vertices"]],
                 edge.data = commit.net.data[["edges"]],
-                allowed.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
+                possible.edge.attributes = private$proj.data$get.data.columns.for.data.source("commits")
             )
 
             ## store network data
@@ -1224,7 +1226,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 vertex.data = subset(vertex.data, !(name == UNTRACKED.FILE.EMPTY.ARTIFACT & type == TYPE.ARTIFACT))
             }
             ## 3) obtain all possible data columns, i.e., edge attributes
-            available.edge.attributes = lapply(
+            possible.edge.attributes = lapply(
                 private$network.conf$get.variable("artifact.relation"),
                 function(relation) {
                     data.source = RELATION.TO.DATASOURCE[[relation]]
@@ -1232,9 +1234,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                     return(data.cols)
                 }
             )
-            available.edge.attributes = unlist(available.edge.attributes, recursive = FALSE)
-            available.edge.attributes = available.edge.attributes[
-                !duplicated(names(available.edge.attributes)) # remove duplicates based on names
+            possible.edge.attributes = unlist(possible.edge.attributes, recursive = FALSE)
+            possible.edge.attributes = possible.edge.attributes[
+                !duplicated(names(possible.edge.attributes)) # remove duplicates based on names
                 ]
             ## 4) construct network without edges
             vertex.network = construct.network.from.edge.list(
@@ -1242,7 +1244,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 edge.list = create.empty.edge.list(),
                 network.conf = private$network.conf,
                 directed = directed,
-                available.edge.attributes = available.edge.attributes
+                possible.edge.attributes = possible.edge.attributes
             )
 
             ## explicitly add vertex attributes if vertex data was empty
@@ -1257,7 +1259,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 vertex.network,
                 bipartite.relations = bipartite.relation.data,
                 private$network.conf,
-                available.edge.attributes = available.edge.attributes
+                possible.edge.attributes = possible.edge.attributes
             )
 
             ## remove vertices that are not committers if wanted
@@ -1698,7 +1700,7 @@ construct.edges.no.temporal.order = function(set, network.conf, edge.attributes,
 #'
 #' @return the built network
 construct.network.from.edge.list = function(vertices, edge.list, network.conf, directed = FALSE,
-                                            available.edge.attributes = list()) {
+                                            possible.edge.attributes = list()) {
     logging::logdebug("construct.network.from.edge.list: starting.")
     logging::loginfo("Construct network from edges.")
 
@@ -1728,10 +1730,11 @@ construct.network.from.edge.list = function(vertices, edge.list, network.conf, d
     ## add missing edge attributes if edge.list was empty (igraph::graph_from_data_frame does add them then)
     if (nrow(edge.list) == 0) {
         ## edge attributes
-        allowed.attributes = network.conf$get.value("edge.attributes")
-        needed.edge.attributes = allowed.attributes[allowed.attributes %in% names(available.edge.attributes)]
-        needed.edge.attributes.types = available.edge.attributes[needed.edge.attributes]
-        net = add.attributes.to.network(net, "edge", needed.edge.attributes.types)
+        configured.edge.attributes = network.conf$get.value("edge.attributes")
+        required.edge.attributes = configured.edge.attributes[configured.edge.attributes %in%
+                                                              names(possible.edge.attributes)]
+        required.edge.attributes.types = possible.edge.attributes[required.edge.attributes]
+        net = add.attributes.to.network(net, "edge", required.edge.attributes.types)
     }
 
     ## initialize edge weights
@@ -1852,12 +1855,12 @@ merge.networks = function(networks) {
 #' @param bipartite.relations the list of the vertex relations to add to the given network for
 #'                            all configured relations
 #' @param network.conf the network configuration
-#' @param available.edge.attributes a named vector/list of attribute classes, with their corresponding names
-#'                                  as names on the list [default: list()]
+#' @param possible.edge.attributes a named vector/list of attribute classes, with their corresponding names
+#'                                 as names on the list [default: list()]
 #'
 #' @return the adjusted network
 add.edges.for.bipartite.relation = function(net, bipartite.relations, network.conf,
-                                            available.edge.attributes = list()) {
+                                            possible.edge.attributes = list()) {
 
     ## iterate about all bipartite.relations depending on the relation type
     for (relation in names(bipartite.relations)) {
@@ -1879,10 +1882,10 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
         }, names(net1.to.net2), net1.to.net2, SIMPLIFY = FALSE)
 
         ## initialize edge attributes
-        allowed.edge.attributes = network.conf$get.value("edge.attributes")
-        available.edge.attributes = available.edge.attributes[names(available.edge.attributes)
-                                                              %in% allowed.edge.attributes]
-        net = add.attributes.to.network(net, "edge", allowed.edge.attributes)
+        configured.edge.attributes = network.conf$get.value("edge.attributes")
+        possible.edge.attributes = possible.edge.attributes[names(possible.edge.attributes)
+                                                            %in% configured.edge.attributes]
+        net = add.attributes.to.network(net, "edge", configured.edge.attributes)
 
         ## get extra edge attributes
         extra.edge.attributes.df = parallel::mcmapply(vertex.sequence = vertex.sequence.for.edges, a.df = net1.to.net2,
@@ -1908,8 +1911,8 @@ add.edges.for.bipartite.relation = function(net, bipartite.relations, network.co
             }
 
             ## select the allowed attributes from the edge data.frame's columns
-            cols.which = allowed.edge.attributes %in% colnames(constructed.edges)
-            return(constructed.edges[ , allowed.edge.attributes[cols.which], drop = FALSE])
+            cols.which = configured.edge.attributes %in% colnames(constructed.edges)
+            return(constructed.edges[ , configured.edge.attributes[cols.which], drop = FALSE])
         })
         extra.edge.attributes.df = plyr::rbind.fill(extra.edge.attributes.df)
         extra.edge.attributes = as.list(extra.edge.attributes.df)
