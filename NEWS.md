@@ -15,6 +15,7 @@
 - For consistency reasons: Ensure that the values of edge attributes are always lists even when they represent singular values (PR #278, 6fae1843740ed8e48c89c2ee4e61f995b5d0b8f5, 416c817998540fc0b82d9959574838b571b4d6fb)
 - Reduce the amount of redundantly built networks by caching network data internally. This should improve the performance of building multi-networks, especially, when parts of the multi-networks have been built before (#119, PR #282, 64ac42aa743e7f3a724a66bcd551e5b477e30293, 1eda73265a3553e7a785a180118b1c872aeec091, beed2cc9f75619065afce1992a62ecd8ae942ce3, e2dc9954a526eb7ccb1de87571400cbbb8abb76e, 6c3feb9071aa8aa4915825c90d6c3a758538fc8e, 231bc479f7bc04ce4048c6633bae1f1cb15307ca, a64835618f7868c93f6a0b42e196d56cedc799a7, 7537d800542d1bbdd6d3ebcc97472d58a73cbf77, 82fc4cf592c86b1a5ae161ab662433050ef5ce66, f8093033a697472679be045cabda6c1f0197b168, 9c739c0e837184f49d2fe4afb89b1eabf145d912, d6cccd7386cf0c44bfafbd684b454ab7bd1f21c2)
 - Internally cache commit-network data similarly to how we cache network data for author-, and artifact-networks (PR #282, 6c3feb9071aa8aa4915825c90d6c3a758538fc8e)
+- Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, ad3f8b3e82040a613e91a1744436a2fbdd74fe8d)
 
 ### Fixed
 
