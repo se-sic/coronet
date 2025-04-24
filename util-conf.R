@@ -27,6 +27,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -883,7 +884,7 @@ NetworkConf = R6::R6Class("NetworkConf", inherit = Conf,
                     "pasta",
                     # issue information
                     "issue.id", "issue.state", "creation.date", "closing.date", "is.pull.request",
-                    "author.name", "author.mail", "event.date", "event.name"
+                    "event.date", "event.name", "event.info.1", "event.info.2"
                 ),
                 allowed.number = Inf
             ),
