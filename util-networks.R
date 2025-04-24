@@ -1558,47 +1558,49 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         edge.attributes = edge.attributes[-cols.which]
     }
 
+    ## construct edges
     if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, construct.edges.temporal.order, network.conf,
                                             edge.attributes, keys, keys.number, network.type)
-
-        edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return(attr(data, "vertices.processed"))
-            }))
-
     } else {
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, construct.edges.no.temporal.order, network.conf,
                                             edge.attributes, keys, keys.number)
-
-        edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return(attr(data, "vertices.processed"))
-        }))
-
     }
+    edge.list = plyr::rbind.fill(edge.list.data)
+
+    ## extract names of vertices
+    vertex.names = unlist(parallel::mclapply(edge.list.data, function(data) {
+        return(attr(data, "vertices.processed"))
+    }))
 
     logging::logdebug("construct.edge.list.from.key.value.list: finished.")
 
     if (network.type == "commit") {
-        vertices.dates.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return (attr(data, "vertices.dates.processed"))
+
+        ## extract dates of vertices
+        vertex.dates = unlist(parallel::mclapply(edge.list.data, function(data) {
+            return(attr(data, "vertices.dates.processed"))
         }))
+
+        ## deduplicate vertices by name
+        vertices = data.frame(name = vertex.names, date = vertex.dates)
+        vertices = vertices[!duplicated(vertices[["name"]]), ]
+
         return(list(
             vertices = data.frame(
-                name = unique(vertices.processed),
-                date = get.date.from.string(unique(vertices.dates.processed))
+                name = vertices[["name"]],
+                date = get.date.from.string(vertices[["date"]])
             ),
             edges = edge.list
         ))
     } else {
         return(list(
             vertices = data.frame(
-                name = unique(vertices.processed)
+                name = unique(vertex.names)
             ),
             edges = edge.list
         ))
