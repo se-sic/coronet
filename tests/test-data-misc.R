@@ -173,7 +173,7 @@ test_that("Commit message preprocessing steps: All preprocesing", {
                                                    "added important things things nothing",
                                                    "wish work now",
                                                    "wish intensifies",
-                                                   "still doesnt work expected",
+                                                   "still work expected",
                                                    ""))
     ## Assert
     expect_equal(expected, result)
@@ -205,7 +205,7 @@ test_that("Commit message preprocessing steps: limited commit number", {
                                    "0a1a5c523d835459c42f33e863623138555e2526"),
                           preprocessed.message = c("add stuff",
                                                    "add stuff",
-                                                   "still doesnt work expected",
+                                                   "still work expected",
                                                    ""))
     ## Assert
     expect_equal(expected, result)
@@ -253,7 +253,7 @@ test_that("Commit message stemming: All preprocesing", {
                                               "ad import thing thing noth",
                                               "wish work now",
                                               "wish intensifi",
-                                              "still doesnt work expect",
+                                              "still work expect",
                                               ""))
     ## Assert
     expect_equal(expected, result)
@@ -349,7 +349,7 @@ test_that("Commit message lemmatization: All preprocesing", {
                                               "add important thing thing nothing",
                                               "wish work now",
                                               "wish intensify",
-                                              "still doesnt work expect",
+                                              "still work expect",
                                               ""))
     ## Assert
     expect_equal(expected, result)
@@ -404,6 +404,21 @@ test_that("Commit message keyword search: any match, multiple strings", {
                                       "Add some more stuff ",
                                       "I added important things the things are\nnothing",
                                       "Wish intensifies"))
+    rownames(result) = NULL
+    ## Assert
+    expect_equal(expected, result)
+})
+
+test_that("Commit message keyword search: any match, multiple strings, case sensitive", {
+    proj.conf$update.value("commit.messages", "message")
+    proj.data = ProjectData$new(proj.conf)
+    result =  get.commit.messages.by.strings(proj.data, strings = c("Add", "Intensifies"), ignore.case = FALSE)
+
+    ## Act
+    expected = data.frame(hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0",
+                                   "5a5ec9675e98187e1e92561e1888aa6f04faa338"),
+                          message = c("Add stuff ",
+                                      "Add some more stuff "))
     rownames(result) = NULL
     ## Assert
     expect_equal(expected, result)

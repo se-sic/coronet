@@ -778,7 +778,18 @@ get.issue.is.pull.request = function(proj.data) {
 ## Commit-Message Functionality ------------------------------------------
 
 #' Apply preprocessing steps to commit messages of given commits. Preprocessing steps are always performed in
-#' the following order: \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
+#' the following order: \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
+#'
+#' \code{'lowercase'} transforms all upper case characters into their lowercase counterparts
+#' \code{'stopwords'} removes all stopwords using a list of stopwords
+#'                    for the english language provided by the package 'tm'
+#' \code{'punctuaton'} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
+#'                     using the r-base \code{regex} functionality. This includes standard punctuation
+#'                     characters such as ',', '.', ':', etc. but also dashes, parantheses, mathematical
+#'                     symbols and special characters used in programming, such as '$', '#', or '&'.
+#'                     Intra-word dashes are kept.
+#' \code{'whitespaces'} removes superflous whitespace characters, such as '\t' or '\n', and replaces
+#'                      them with single whitespaces
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -820,13 +831,13 @@ get.preprocessed.commit.messages = function(proj.data,
         ## convert to lowercase
         corpus = tm::tm_map(corpus, tm::content_transformer(tolower))
     }
-    if ("punctuation" %in% preprocessing) {
-        ## remove punctuation
-        corpus = tm::tm_map(corpus, tm::removePunctuation)
-    }
     if ("stopwords" %in% preprocessing) {
         ## remove stopwords
         corpus = tm::tm_map(corpus, tm::removeWords, tm::stopwords("english"))
+    }
+    if ("punctuation" %in% preprocessing) {
+        ## remove punctuation
+        corpus = tm::tm_map(corpus, tm::removePunctuation, preserve_intra_word_dashes = TRUE)
     }
     if ("whitespaces" %in% preprocessing) {
         ## remove excess whitespaces
@@ -845,7 +856,7 @@ get.preprocessed.commit.messages = function(proj.data,
 
 #' Apply stemming to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
+#' \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -871,7 +882,8 @@ get.stemmed.commit.messages = function(proj.data,
 
 #' Apply tokenization to commit messages of given commits. This function does not allow for preprocessing,
 #' since it is supposed to extract all tokens from the text as is and preprocessing steps change the
-#' resulting tokens.
+#' resulting tokens. The text is split into tokens at any whitespace character.
+#' Special characters have no impact and are treated the same as any other non-whitespace character.
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -885,8 +897,6 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
     if (!is.null(commit.hashes)) {
         commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
     }
-
-
     if (proj.data$get.project.conf.entry("commit.messages") == "message") {
         messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
     } else {
@@ -899,7 +909,7 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
 
 #' Apply lemmatization to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{'lowercase'} -> \code{'punctuation'} -> \code{'stopwords'} -> \code{'whitespaces'}
+#' \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -932,9 +942,10 @@ get.lemmatized.commit.messages = function(proj.data,
 #' @param match the function that describes how many of the strings need to be in a message in order for
 #'              that message to be returned. Can be any function that takes a list of logical values and
 #'              returns a single logical value, such as \code{any}, \code{all} or anything in between [default: any]
+#' @param ignore.case whether the case should be ignored in the search [default: TRUE]
 #'
 #' @return a dataframe containing the hashes and corresponding matching messages
-get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strings, match = any) {
+get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strings, match = any, ignore.case = TRUE) {
     messages = create.empty.data.frame(c("hash", "message"))
     ## get commit-message data of the given hashes
     ## if no hashes are given consider all commits
@@ -954,7 +965,7 @@ get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strin
     ## and applying the match function once per message
     messages = commit.message.data[unlist(parallel::mclapply(commit.message.data[["message"]], function(msg) {
                                        match(lapply(strings, function(word) {
-                                           return (grepl(word, msg, ignore.case = TRUE))
+                                           return (grepl(word, msg, ignore.case = ignore.case))
                                        }))
                                    })), ]
     return(messages)
