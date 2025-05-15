@@ -1352,31 +1352,46 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(network)
         },
 
-        #' Get all networks as list.
-        #' Build unification to avoid null-pointers.
+        #' Get various networks in a list.
         #'
-        #' @return all networks in a list
-        get.networks = function() {
-            logging::loginfo("Constructing all networks.")
+        #' @param network.type the type(s) of network(s) to be constructed
+        #'                     [default: c("author", "artifact", "commit", "bipartite", "authors.to.artifacts")]
+        #'
+        #' @return networks in a list
+        get.networks = function(network.type = c("author", "artifact", "commit", "bipartite",
+                                                 "authors.to.artifacts")) {
+
+            logging::loginfo("Constructing networks.")
+
+            network.type = match.arg.or.default(network.type, several.ok = TRUE)
+            networks = list()
+
+            ## author relation
+            if ("author" %in% network.type) {
+                networks[["authors.net"]] = self$get.author.network()
+            }
+
+            ## artifact relation
+            if ("artifact" %in% network.type) {
+                networks[["artifacts.net"]] = self$get.artifact.network()
+            }
+
+            ## commit relation
+            if ("commit" %in% network.type) {
+                networks[["commits.net"]] = self$get.commit.network()
+            }
+
+            ## bipartite network
+            if ("bipartite" %in% network.type) {
+                networks[["bipartite.net"]] = self$get.bipartite.network()
+            }
 
             ## author-artifact relation
-            authors.to.artifacts = private$get.bipartite.relations()
-            ## bipartite network
-            bipartite.net = self$get.bipartite.network()
-            ## author relation
-            authors.net = self$get.author.network()
-            ## artifact relation
-            artifacts.net = self$get.artifact.network()
-            ## commit relation
-            commit.net = self$get.commit.network()
+            if ("authors.to.artifacts" %in% network.type) {
+                networks[["authors.to.artifacts"]] = private$get.bipartite.relations()
+            }
 
-            return(list(
-                "authors.to.artifacts" = authors.to.artifacts,
-                "bipartite.net" = bipartite.net,
-                "authors.net" = authors.net,
-                "artifacts.net" = artifacts.net,
-                "commits.net" = commit.net
-            ))
+            return(networks)
         },
 
         #' Get the multi network.
@@ -1395,7 +1410,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             directed = private$determine.directedness(c("author", "artifact"))
             private$network.conf$update.values(list(author.directed = directed,
                                                     artifact.directed = directed))
-            networks = self$get.networks()
+
+            ## construct the network parts we need for the multi network
+            networks = self$get.networks(network.type = c("author", "artifact", "authors.to.artifacts"))
 
             ## restore configured directedness
             private$network.conf$update.values(list(author.directed = configured.author.directedness,
