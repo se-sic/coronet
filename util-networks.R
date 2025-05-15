@@ -94,6 +94,14 @@ RELATION.TO.DATASOURCE = list(
     "issue"     = "issues"
 )
 
+## A value of \code{TRUE} indicates that the corresponding network will be built using the directed edge
+## construction algorithm analogous \code{FALSE} means the undirected edge construction algorithm is used
+ENFORCED.DIRECTEDNESS = list(
+    "author"   = list(),
+    "artifact" = list("cochange" = FALSE),
+    "commit"   = list()
+)
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## NetworkBuilder ----------------------------------------------------------
@@ -234,7 +242,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the author network with cochange relation
-        get.author.network.cochange = function() {
+        get.author.network.cochange = function(directed) {
             logging::logdebug("get.author.network.cochange: starting.")
 
             ## do not compute anything more than once
@@ -260,7 +268,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 author.groups,
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
+                directed = directed,
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
@@ -292,7 +300,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Build and get the author network with commit-interactions as the relation.
         #'
         #'  @return the commit-interaction author network
-        get.author.network.commit.interaction = function() {
+        get.author.network.commit.interaction = function(directed) {
             logging::logdebug("get.author.network.commit.interaction: starting.")
 
             ## do not compute anything more than once
@@ -336,7 +344,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the author network with mail relation
-        get.author.network.mail = function() {
+        get.author.network.mail = function(directed) {
 
             logging::logdebug("get.author.network.mail: starting.")
 
@@ -350,7 +358,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$group.authors.by.data.column("mails", "thread"),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
+                directed = directed,
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
@@ -369,7 +377,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         },
 
         ##get the issue based author relation as network
-        get.author.network.issue = function() {
+        get.author.network.issue = function(directed) {
             logging::logdebug("get.author.network.issue: starting.")
 
             if (!is.null(private$author.network.issue.data)) {
@@ -381,7 +389,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             author.net.data = construct.edge.list.from.key.value.list(
                 private$proj.data$group.authors.by.data.column("issues", "issue.id"),
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("author.directed"),
+                directed = directed,
                 respect.temporal.order = private$network.conf$get.value("author.respect.temporal.order")
             )
 
@@ -405,7 +413,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the artifact network with cochange realtion
-        get.artifact.network.cochange = function() {
+        get.artifact.network.cochange = function(directed) {
 
             logging::logdebug("get.artifact.network.cochange: starting.")
 
@@ -421,7 +429,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifacts.net.data = construct.edge.list.from.key.value.list(
                 artifacts.net.data.raw,
                 network.conf = private$network.conf,
-                directed = FALSE,
+                directed = directed,
                 respect.temporal.order = TRUE,
                 network.type = "artifact"
             )
@@ -454,7 +462,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Build and get the commit-interaction based artifact network.
         #'
         #' @return the commit-interaction based artifact network
-        get.artifact.network.commit.interaction = function() {
+        get.artifact.network.commit.interaction = function(directed) {
 
             logging::logdebug("get.artifact.network.commit.interaction: starting.")
 
@@ -499,7 +507,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 ## and return an empty network
                 logging::logwarn("when creating a commit-interaction artifact network,
                                   the artifact should be either 'file' or 'function'!")
-                return(create.empty.network(directed = private$network.conf$get.value("artifact.directed")))
+                return(create.empty.network(directed = directed))
             }
 
             if (nrow(edges) > 0) {
@@ -529,7 +537,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' IMPORTANT: This only works for range-level analyses!
         #'
         #' @return the artifact network with callgraph relation
-        get.artifact.network.callgraph = function() {
+        get.artifact.network.callgraph = function(directed) {
 
             logging::logdebug("get.artifact.network.callgraph: starting.")
 
@@ -619,7 +627,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the artifact network with mail relation
-        get.artifact.network.mail = function() {
+        get.artifact.network.mail = function(directed) {
 
             logging::logdebug("get.artifact.network.mail: starting.")
 
@@ -653,7 +661,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the artifact network with issue relation
-        get.artifact.network.issue = function() {
+        get.artifact.network.issue = function(directed) {
 
             logging::logdebug("get.artifact.network.issue: starting.")
 
@@ -683,7 +691,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## to the referencing issue, in addition to the correct events, linking the referencing issue to
             ## the referenced issue. We can only deduplicate them, if we build an undirected network, as otherwise,
             ## we would need to guess the correct direction.
-            if (!private$network.conf$get.entry("artifact.directed")) {
+            if (!directed) {
 
                 ## obtain 'add_link' events from jira
                 jira.add.links = add.links[add.links$issue.source == "jira", ]
@@ -776,7 +784,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' Build and get the commit network with commit-interactions as the relation.
         #'
         #'  @return the commit-interaction commit network
-        get.commit.network.commit.interaction = function() {
+        get.commit.network.commit.interaction = function(directed) {
 
             logging::logdebug("get.commit.network.commit.interaction: starting.")
 
@@ -820,7 +828,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #' If it does not already exist build it first.
         #'
         #' @return the commit network with cochange realtion
-        get.commit.network.cochange = function() {
+        get.commit.network.cochange = function(directed) {
 
             logging::logdebug("get.commit.network.cochange: starting.")
 
@@ -836,7 +844,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             commit.net.data = construct.edge.list.from.key.value.list(
                 commit.net.data.raw,
                 network.conf = private$network.conf,
-                directed = private$network.conf$get.value("commit.directed"),
+                directed = directed,
                 respect.temporal.order = TRUE,
                 network.type = "commit"
             )
@@ -1002,15 +1010,37 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.author.network = function() {
             logging::loginfo("Constructing author network.")
 
-            ## construct network
             relations = private$network.conf$get.value("author.relation")
+
+            ## Determine directedness
+            enforced.directedness = ENFORCE.DIRECTEDNESS[["author"]]
+            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
+
+            if (length(enforced.directedness) > 0) {
+
+                ## If at least one network enforces undirectedness, all networks need to be undirected
+                directed = all(enforced.directedness)
+
+                if (directed != private$network.conf$get.value("author.directed")) {
+                    notification.string = paste("The enforced directedness for the construction of the author",
+                                                "network differs from the configured directedness. Enforced",
+                                                "directedness: %s, configured directedness: %s")
+                    logging::logdebug(notification.string, directed, private$network.conf$get.value("author.directed"))
+                }
+
+            } else {
+                ## If no directedness is enforced, use the configured value
+                directed = private$network.conf$get.value("author.directed")
+            }
+
+            ## construct network
             network.data = lapply(relations, function(relation) {
                 network.data = switch(
                     relation,
-                    cochange = private$get.author.network.cochange(),
-                    commit.interaction = private$get.author.network.commit.interaction(),
-                    mail = private$get.author.network.mail(),
-                    issue = private$get.author.network.issue(),
+                    cochange = private$get.author.network.cochange(directed),
+                    commit.interaction = private$get.author.network.commit.interaction(directed),
+                    mail = private$get.author.network.mail(directed),
+                    issue = private$get.author.network.issue(directed),
                     stop(sprintf("The author relation '%s' does not exist.", rel))
                     ## TODO construct edge lists here and merge those (inline the private methods)
                 )
@@ -1028,7 +1058,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             net = igraph::graph_from_data_frame(
                 merged.network.data[["edges"]],
                 vertices = merged.network.data[["vertices"]],
-                directed = private$network.conf$get.value("author.directed")
+                directed = directed
             )
 
             ## add all missing authors to the network if wanted
@@ -1077,14 +1107,36 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("artifact.relation")
+
+            ## Determine directedness
+            enforced.directedness = ENFORCE.DIRECTEDNESS[["artifact"]]
+            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
+
+            if (length(enforced.directedness) > 0) {
+
+                ## If at least one network enforces undirectedness, all networks need to be undirected
+                directed = all(enforced.directedness)
+
+                if (directed != private$network.conf$get.value("artifact.directed")) {
+                    notification.string = paste("The enforced directedness for the construction of the artifact",
+                                                "network differs from the configured directedness. Enforced",
+                                                "directedness: %s, configured directedness: %s")
+                    logging::logdebug(notification.string, directed, private$network.conf$get.value("artifact.directed"))
+                }
+
+            } else {
+                ## If no directedness is enforced, use the configured value
+                directed = private$network.conf$get.value("artifact.directed")
+            }
+
             network.data = lapply(relations, function(relation) {
                 network.data = switch(
                     relation,
-                    cochange = private$get.artifact.network.cochange(),
-                    callgraph = private$get.artifact.network.callgraph(),
-                    mail = private$get.artifact.network.mail(),
-                    issue = private$get.artifact.network.issue(),
-                    commit.interaction = private$get.artifact.network.commit.interaction(),
+                    cochange = private$get.artifact.network.cochange(directed),
+                    callgraph = private$get.artifact.network.callgraph(directed),
+                    mail = private$get.artifact.network.mail(directed),
+                    issue = private$get.artifact.network.issue(directed),
+                    commit.interaction = private$get.artifact.network.commit.interaction(directed),
                     stop(sprintf("The artifact relation '%s' does not exist.", relation))
                 )
 
@@ -1105,7 +1157,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             net = igraph::graph_from_data_frame(
                 merged.network.data[["edges"]],
                 vertices = merged.network.data[["vertices"]],
-                directed = private$network.conf$get.value("artifact.directed")
+                directed = directed
             )
 
             ## set vertex and edge attributes for identifaction
@@ -1133,11 +1185,33 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("commit.relation")
+
+            ## Determine directedness
+            enforced.directedness = ENFORCE.DIRECTEDNESS[["commit"]]
+            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
+
+            if (length(enforced.directedness) > 0) {
+
+                ## If at least one network enforces undirectedness, all networks need to be undirected
+                directed = all(enforced.directedness)
+
+                if (directed != private$network.conf$get.value("commit.directed")) {
+                    notification.string = paste("The enforced directedness for the construction of the commit",
+                                                "network differs from the configured directedness. Enforced",
+                                                "directedness: %s, configured directedness: %s")
+                    logging::logdebug(notification.string, directed, private$network.conf$get.value("commit.directed"))
+                }
+
+            } else {
+                ## If no directedness is enforced, use the configured value
+                directed = private$network.conf$get.value("commit.directed")
+            }
+
             network.data = lapply(relations, function(relation) {
                 network.data = switch(
                     relation,
-                    cochange = private$get.commit.network.cochange(),
-                    commit.interaction = private$get.commit.network.commit.interaction(),
+                    cochange = private$get.commit.network.cochange(directed),
+                    commit.interaction = private$get.commit.network.commit.interaction(directed),
                     stop(sprintf("The commit relation '%s' does not exist.", relation))
                 )
 
@@ -1154,7 +1228,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             net = igraph::graph_from_data_frame(
                 merged.network.data[["edges"]],
                 vertices = merged.network.data[["vertices"]],
-                directed = private$network.conf$get.value("commit.directed")
+                directed = directed
             )
 
             ## set vertex and edge attributes for identifaction
@@ -1181,7 +1255,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.bipartite.network = function() {
             ## get data by the chosen relation
             bipartite.relation.data = private$get.bipartite.relations()
-            directed = private$network.conf$get.value("author.directed")
+            directed = private$determine.directedness("author")
 
             vertex.data = lapply(bipartite.relation.data, function(net.to.net) {
 
