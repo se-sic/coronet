@@ -1385,8 +1385,20 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.multi.network = function() {
             logging::loginfo("Constructing multi network.")
 
-            ## construct the network parts we need for the multi network
+            ## stash configured directedness
+            configured.author.directedness = private$network.conf$get.value("author.directed")
+            configured.artifact.directedness = private$network.conf$get.value("artifact.directed")
+
+            ## construct the network parts we need for the multi network with the given directedness
+            directed = private$determine.directedness(c("author", "artifact"))
+            private$network.conf$update.values(list(author.directed = directed,
+                                                    artifact.directed = directed))
             networks = self$get.networks()
+
+            ## restore configured directedness
+            private$network.conf$update.values(list(author.directed = configured.author.directedness,
+                                                    artifact.directed = configured.artifact.directedness))
+
             authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             igraph::V(authors.net)$kind = TYPE.AUTHOR
