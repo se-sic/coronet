@@ -236,6 +236,57 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             return(network.data)
         },
 
+        #' Determine the directedness a to-be-built network should have
+        #' based on the configured and enforced directedness
+        #'
+        #' @param network.type the type of network to build default: [c("author", "artifact", "commit")]
+        #'
+        #' @return the inferred directedness of the network
+        determine.directedness = function(network.type = c("author", "artifact", "commit")) {
+
+            network.type = match.arg.or.default(network.type, default = "author", several.ok = TRUE)
+
+            ## collect configured and enforced directedness
+            configured.directedness = list()
+            enforced.directedness = list()
+
+            for (type in network.type) {
+
+                ## get enforced directedness
+                relations = private$network.conf$get.value(paste0(type, ".relation"))
+                enforced = ENFORCED.DIRECTEDNESS[[type]]
+                enforced = enforced[names(enforced) %in% relations]
+                enforced.directedness[[type]] = enforced
+
+                ## get configured directedness
+                configured = private$network.conf$get.value(paste0(type, ".directed"))
+                configured.directedness[[type]] = configured
+            }
+
+            ## if at least one network enforces undirectedness all networks need to be undirected,
+            ## i.e., \code{directed} can only be \code{TRUE} if all enforced directedness are \code{TRUE}
+            if (any(sapply(enforced.directedness, length) > 0)) {
+                directed = all(unlist(enforced.directedness))
+            }
+
+            ## if no directedness is enforced, use the configured values
+            ## if at least one network is configured to be undirected all networks need to be undirected
+            else {
+                directed = all(unlist(configured.directedness))
+            }
+
+            ## print a warning if some configured directedness differ from the enforced directedness
+            overwritten.configurations = names(configured.directedness)[configured.directedness != directed]
+            if (length(overwritten.configurations) > 0) {
+                notification.string = paste("The enforced directedness for the construction of the %s",
+                                            "network(s) differs from the configured directedness. Enforced",
+                                            "directedness: %s, configured directedness: %s")
+                logging::logwarn(notification.string, overwritten.configurations, directed, !directed)
+            }
+
+            return(directed)
+        },
+
         ## * * author networks ---------------------------------------------
 
         #' Get the co-change-based author relation as network.
@@ -1011,27 +1062,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             logging::loginfo("Constructing author network.")
 
             relations = private$network.conf$get.value("author.relation")
-
-            ## Determine directedness
-            enforced.directedness = ENFORCE.DIRECTEDNESS[["author"]]
-            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
-
-            if (length(enforced.directedness) > 0) {
-
-                ## If at least one network enforces undirectedness, all networks need to be undirected
-                directed = all(enforced.directedness)
-
-                if (directed != private$network.conf$get.value("author.directed")) {
-                    notification.string = paste("The enforced directedness for the construction of the author",
-                                                "network differs from the configured directedness. Enforced",
-                                                "directedness: %s, configured directedness: %s")
-                    logging::logdebug(notification.string, directed, private$network.conf$get.value("author.directed"))
-                }
-
-            } else {
-                ## If no directedness is enforced, use the configured value
-                directed = private$network.conf$get.value("author.directed")
-            }
+            directed = private$determine.directedness("author")
 
             ## construct network
             network.data = lapply(relations, function(relation) {
@@ -1107,27 +1138,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("artifact.relation")
-
-            ## Determine directedness
-            enforced.directedness = ENFORCE.DIRECTEDNESS[["artifact"]]
-            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
-
-            if (length(enforced.directedness) > 0) {
-
-                ## If at least one network enforces undirectedness, all networks need to be undirected
-                directed = all(enforced.directedness)
-
-                if (directed != private$network.conf$get.value("artifact.directed")) {
-                    notification.string = paste("The enforced directedness for the construction of the artifact",
-                                                "network differs from the configured directedness. Enforced",
-                                                "directedness: %s, configured directedness: %s")
-                    logging::logdebug(notification.string, directed, private$network.conf$get.value("artifact.directed"))
-                }
-
-            } else {
-                ## If no directedness is enforced, use the configured value
-                directed = private$network.conf$get.value("artifact.directed")
-            }
+            directed = private$determine.directedness("artifact")
 
             network.data = lapply(relations, function(relation) {
                 network.data = switch(
@@ -1185,27 +1196,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
 
             ## construct network
             relations = private$network.conf$get.value("commit.relation")
-
-            ## Determine directedness
-            enforced.directedness = ENFORCE.DIRECTEDNESS[["commit"]]
-            enforced.directedness = enforced.directedness[names(enforced.directedness) %in% relations]
-
-            if (length(enforced.directedness) > 0) {
-
-                ## If at least one network enforces undirectedness, all networks need to be undirected
-                directed = all(enforced.directedness)
-
-                if (directed != private$network.conf$get.value("commit.directed")) {
-                    notification.string = paste("The enforced directedness for the construction of the commit",
-                                                "network differs from the configured directedness. Enforced",
-                                                "directedness: %s, configured directedness: %s")
-                    logging::logdebug(notification.string, directed, private$network.conf$get.value("commit.directed"))
-                }
-
-            } else {
-                ## If no directedness is enforced, use the configured value
-                directed = private$network.conf$get.value("commit.directed")
-            }
+            directed = private$determine.directedness("commit")
 
             network.data = lapply(relations, function(relation) {
                 network.data = switch(
@@ -2473,6 +2464,7 @@ convert.edge.list.attributes.to.list = function(edge.list, remain.as.is = names(
     return(edge.list)
 
 }
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Sample network ----------------------------------------------------------
