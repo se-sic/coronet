@@ -1167,3 +1167,108 @@ test_that("Get the data sources from a network with multiple relations on a sing
 
     expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: commits, mails")
 })
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Directedness ------------------------------------------------------------
+
+test_that("Enforcement of directedness in sub-networks", {
+
+    get.directedness = function(network.type, configured, relations) {
+
+        ## configuration
+        proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+        net.conf = NetworkConf$new()
+        update = list()
+        update[paste0(network.type, ".directed")] = configured
+        update[[paste0(network.type, ".relation")]] = relations
+        net.conf$update.values(update)
+
+        ## build network
+        network.builder = NetworkBuilder$new(project.data = ProjectData$new(project.conf = proj.conf), network.conf = net.conf)
+        switch(network.type,
+            "author"   = { network = network.builder$get.author.network() },
+            "artifact" = { network = network.builder$get.artifact.network() }
+        )
+        return(igraph::is_directed(network))
+    }
+
+    assert.directedness = function(network.type, expected, configured, relations) {
+        actual = get.directedness(network.type, configured, relations)
+        info.string = paste0("network type: ", network.type, ", configured-directedness: ", configured,
+                             ", data sources: ", paste(relations, collapse=", "))
+        expect_equal(expected, actual, info=info.string)
+    }
+
+    ## assume \code{ENFORCED.DIRECTEDNESS} to be empty for author and commit networks
+    ## and enforce undirectedness for \code{artifact.cochange} networks
+
+    ##
+    ## Without enforced directedness (expected always matches configured directedness)
+    ##
+
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("mail"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("mail"))
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("cochange"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("cochange"))
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("mail", "cochange"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("mail", "cochange"))
+
+    ##
+    ## With enforced directedness (expected is not always configured directedness)
+    ##
+
+    assert.directedness(network.type="artifact", expected=TRUE,  configured=TRUE,  relations=c("mail"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("mail"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=TRUE,  relations=c("cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=TRUE,  relations=c("mail", "cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("mail", "cochange"))
+
+})
+
+test_that("Enforcement of directedness in multi-networks", {
+
+    get.directedness = function(author.directed, artifact.directed, artifact.relations) {
+
+        ## configuration
+        proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+        net.conf = NetworkConf$new()
+        net.conf$update.values(list(author.directed = author.directed,
+                                    artifact.directed = artifact.directed,
+                                    author.relation = c("cochange"),
+                                    artifact.relation = artifact.relations))
+
+        ## build mutli-network
+        network.builder = NetworkBuilder$new(project.data = ProjectData$new(project.conf = proj.conf), network.conf = net.conf)
+        network = network.builder$get.multi.network()
+        return(igraph::is_directed(network))
+    }
+
+    assert.directedness = function(expected, author.directed, artifact.directed, artifact.relations) {
+        actual = get.directedness(author.directed, artifact.directed, artifact.relations)
+        info.string = paste0("author directed: ", author.directed, ", artifact directed: ", artifact.directed,
+                             ", artifact relation(s): ", paste(artifact.relations, collapse=", "))
+        expect_equal(expected, actual, info=info.string)
+    }
+
+    ## assume \code{ENFORCED.DIRECTEDNESS} to be empty for author and commit networks
+    ## and enforce undirectedness for \code{artifact.cochange} networks
+
+    ##
+    ## Without enforced directedness from sub-networks (expect directedness of multi-network to be
+    ## \code{author.directedness && artifact.directedness})
+    ##
+
+    assert.directedness(expected=TRUE,  author.directed=TRUE,  artifact.directed=TRUE,  artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=TRUE,  artifact.directed=FALSE, artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=FALSE, artifact.directed=TRUE,  artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=FALSE, artifact.directed=FALSE, artifact.relations=c("mail"))
+
+    ##
+    ## With enforced directedness from sub-networks (expect enforced directedness to propagate to multi-network)
+    ##
+
+    assert.directedness(expected=FALSE,  author.directed=TRUE,  artifact.directed=TRUE, artifact.relations=c("cochange"))
+    assert.directedness(expected=FALSE,  author.directed=TRUE,  artifact.directed=TRUE, artifact.relations=c("mail", "cochange"))
+
+})
