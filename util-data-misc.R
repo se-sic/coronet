@@ -778,17 +778,17 @@ get.issue.is.pull.request = function(proj.data) {
 ## Commit-Message Functionality ------------------------------------------
 
 #' Apply preprocessing steps to commit messages of given commits. Preprocessing steps are always performed in
-#' the following order: \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
+#' the following order: \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
 #'
-#' \code{'lowercase'} transforms all upper case characters into their lowercase counterparts
-#' \code{'stopwords'} removes all stopwords using a list of stopwords
-#'                    for the english language provided by the package 'tm'
-#' \code{'punctuaton'} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
+#' \code{"lowercase"} transforms all upper case characters into their lowercase counterparts
+#' \code{"stopwords"} removes all stopwords using a list of stopwords
+#'                    for the english language provided by the package \code{tm}
+#' \code{"punctuaton"} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
 #'                     using the r-base \code{regex} functionality. This includes standard punctuation
-#'                     characters such as ',', '.', ':', etc. but also dashes, parantheses, mathematical
-#'                     symbols and special characters used in programming, such as '$', '#', or '&'.
+#'                     characters such as ",", ".", ":", etc. but also dashes, parantheses, mathematical
+#'                     symbols and special characters used in programming, such as "$", "#", or "&".
 #'                     Intra-word dashes are kept.
-#' \code{'whitespaces'} removes superflous whitespace characters, such as '\t' or '\n', and replaces
+#' \code{"whitespaces"} removes superflous whitespace characters, such as "\t" or "\n", and replaces
 #'                      them with single whitespaces
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
@@ -856,7 +856,7 @@ get.preprocessed.commit.messages = function(proj.data,
 
 #' Apply stemming to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
+#' \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
@@ -909,7 +909,7 @@ get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
 
 #' Apply lemmatization to commit messages of given commits. Preprocessing will be executed as part of this.
 #' Preprocessing steps are always performed in the following order:
-#' \code{'lowercase'} -> \code{'stopwords'} -> \code{'punctuation'} -> \code{'whitespaces'}
+#' \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
 #'
 #' @param proj.data the \code{ProjectData} containing the commit-message data
 #' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
