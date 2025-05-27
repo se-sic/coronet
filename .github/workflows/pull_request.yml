@@ -13,6 +13,7 @@
 ##
 ## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 name: Build Status
@@ -37,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r-version: ['4.0', '4.1', '4.2', '4.3', '4.4', 'latest']
+        r-version: ['4.1', '4.2', '4.3', '4.4', '4.5', 'latest']
 
     steps:
       - name: Checkout Repo
