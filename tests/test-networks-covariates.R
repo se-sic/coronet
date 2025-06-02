@@ -22,7 +22,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021-2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -1679,10 +1679,6 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "first.occurrence")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1737,10 +1733,6 @@ test_that("Test add.vertex.attribute.artifact.last.edited", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "last.edited")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1911,10 +1903,6 @@ test_that("Test add.vertex.attribute.mail.thread.start.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.start.date")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1963,10 +1951,6 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.end.date")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -2410,9 +2394,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only, actual.attributes)
     })
 
@@ -2424,9 +2405,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only, actual.attributes)
     })
 
@@ -2438,9 +2416,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both, actual.attributes)
     })
 })
@@ -2510,9 +2485,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only, actual.attributes)
     })
 
@@ -2524,9 +2496,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only, actual.attributes)
     })
 
@@ -2538,9 +2507,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both, actual.attributes)
     })
 })
@@ -2653,9 +2619,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
 
@@ -2667,9 +2630,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
 
@@ -2681,9 +2641,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
 })
