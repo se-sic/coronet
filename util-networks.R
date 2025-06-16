@@ -145,6 +145,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifact.network.callgraph.data = NULL,
         commit.network.cochange.data = NULL,
         commit.network.commit.interaction.data = NULL,
+        bipartite.relations = NULL,
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -929,6 +930,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.bipartite.relations = function() {
             logging::logdebug("get.bipartite.relations: starting.")
 
+            ## do not compute anything more than once
+            if (!is.null(private$bipartite.relations)) {
+                logging::logdebug("get.bipartite.relations: finished. (already existing)")
+                return(private$bipartite.relations)
+            }
+
             relations = private$network.conf$get.variable("artifact.relation")
             logging::logdebug("Using bipartite relations '%s'.", relations)
 
@@ -944,6 +951,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(bip.relation)
             })
             names(bip.relations) = relations
+            private$bipartite.relations = bip.relations
 
             logging::logdebug("get.bipartite.relations: finished.")
             return(bip.relations)
@@ -994,6 +1002,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifact.network.callgraph.data = NULL
             private$commit.network.cochange.data = NULL
             private$commit.network.commit.interaction.data = NULL
+            private$bipartite.relations = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
@@ -1246,6 +1255,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the bipartite network
         get.bipartite.network = function() {
+
             ## get data by the chosen relation
             bipartite.relation.data = private$get.bipartite.relations()
             directed = private$determine.directedness("author")
@@ -1349,17 +1359,17 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             network = convert.edge.attributes.to.list(network)
+
             return(network)
         },
 
         #' Get various networks in a list.
         #'
         #' @param network.type the type(s) of network(s) to be constructed
-        #'                     [default: c("author", "artifact", "commit", "bipartite", "authors.to.artifacts")]
+        #'                     [default: c("author", "artifact", "commit", "bipartite")]
         #'
         #' @return networks in a list
-        get.networks = function(network.type = c("author", "artifact", "commit", "bipartite",
-                                                 "authors.to.artifacts")) {
+        get.networks = function(network.type = c("author", "artifact", "commit", "bipartite")) {
 
             logging::loginfo("Constructing networks.")
 
@@ -1386,11 +1396,6 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 networks[["bipartite.net"]] = self$get.bipartite.network()
             }
 
-            ## author-artifact relation
-            if ("authors.to.artifacts" %in% network.type) {
-                networks[["authors.to.artifacts"]] = private$get.bipartite.relations()
-            }
-
             return(networks)
         },
 
@@ -1412,13 +1417,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                                                     artifact.directed = directed))
 
             ## construct the network parts we need for the multi network
-            networks = self$get.networks(network.type = c("author", "artifact", "authors.to.artifacts"))
+            networks = self$get.networks(network.type = c("author", "artifact"))
+            authors.to.artifacts = private$get.bipartite.relations()
 
             ## restore configured directedness
             private$network.conf$update.values(list(author.directed = configured.author.directedness,
                                                     artifact.directed = configured.artifact.directedness))
 
-            authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             igraph::V(authors.net)$kind = TYPE.AUTHOR
             artifacts.net = networks[["artifacts.net"]]
