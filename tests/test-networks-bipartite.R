@@ -67,16 +67,18 @@ test_that("Construction of the bipartite network for the feature artifact with a
     vertices = plyr::rbind.fill(authors, artifacts)
     ## 2) construct expected edge attributes
     network.expected.data = data.frame(
-        from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas"),
-        to   = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
+        from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas"),
+        to   = c("A", "Base_Feature", "A", "Base_Feature", "foo", "foo", "Base_Feature", "foo"),
         date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                      "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-        artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
+                                      "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                      "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+        artifact.type = "Feature",
         hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                  "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                 "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                  "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-        file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c"),
-        artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
+        file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+        artifact = c("A", "Base_Feature", "A", "Base_Feature", "foo", "foo", "Base_Feature", "foo"),
         weight = 1,
         type = TYPE.EDGES.INTER,
         relation = "cochange"
@@ -121,16 +123,18 @@ test_that("Construction of the bipartite network for the file artifact with auth
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
-                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas"),
+                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("File", "File", "File", "File", "File"),
+                                                "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                                "2016-07-12 16:06:32")),
+                  artifact.type = "File",
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                            "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -168,23 +172,27 @@ test_that("Construction of the bipartite network for the function artifact with 
                   type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("File_Level", "test3.c::test_function"),
+                  name = c("File_Level", "test3.c::test_function", "test2.c::test_function"),
                   kind = "Function",
                   type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
-                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas"),
+                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level",
+                           "test2.c::test_function", "test3.c::test_function", "File_Level"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("Function", "Function", "Function", "Function", "Function"),
+                                                "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                                "2016-07-12 16:06:32")),
+                  artifact.type = "Function",
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                            "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level",
+                               "test2.c::test_function", "test3.c::test_function", "File_Level"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -350,16 +358,18 @@ test_that("Construction of the directed bipartite network for the feature artifa
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas"),
-                  to   = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas", "Thomas"),
+                  to   = c("A", "Base_Feature", "A", "Base_Feature", "foo", "foo", "Base_Feature", "foo"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
-                  artifact.type = c("Feature", "Feature", "Feature", "Feature", "Feature", "Feature"),
+                                                "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                                "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                  artifact.type = "Feature",
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                            "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test2.c"),
-                  artifact = c("A", "Base_Feature", "A", "Base_Feature", "Base_Feature", "foo"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+                  artifact = c("A", "Base_Feature", "A", "Base_Feature", "foo", "foo", "Base_Feature", "foo"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -404,16 +414,18 @@ test_that("Construction of the directed bipartite network for the file artifact 
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
-                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas"),
+                  to   = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("File", "File", "File", "File", "File"),
+                                                "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                                "2016-07-12 16:06:32")),
+                  artifact.type = "File",
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                            "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                  artifact = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"
@@ -452,23 +464,27 @@ test_that("Construction of the directed bipartite network for the function artif
                   type = TYPE.AUTHOR
               )
               artifacts = data.frame(
-                  name = c("File_Level", "test3.c::test_function"),
+                  name = c("File_Level", "test3.c::test_function", "test2.c::test_function"),
                   kind = "Function",
                   type = TYPE.ARTIFACT
               )
               vertices = plyr::rbind.fill(authors, artifacts)
               ## 2) construct expected edge attributes
               network.expected.data = data.frame(
-                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas"),
-                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  from = c("Björn", "Karl", "Olaf", "Olaf", "Thomas", "Thomas", "Thomas"),
+                  to   = c("File_Level", "test3.c::test_function", "File_Level", "File_Level",
+                           "test2.c::test_function", "test3.c::test_function", "File_Level"),
                   date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 16:06:10", "2016-07-12 16:00:45",
-                                                "2016-07-12 16:05:41", "2016-07-12 16:06:32")),
-                  artifact.type = c("Function", "Function", "Function", "Function", "Function"),
+                                                "2016-07-12 16:05:41", "2016-07-12 16:06:20", "2016-07-12 16:06:20",
+                                                "2016-07-12 16:06:32")),
+                  artifact.type = "Function",
                   hash = c("72c8dd25d3dd6d18f46e2b26a5f5b1e2e8dc28d0", "1143db502761379c2bfcecc2007fc34282e7ee61",
                            "5a5ec9675e98187e1e92561e1888aa6f04faa338", "3a0ed78458b3976243db6829f63eba3eead26774",
+                           "7d5219c4ba15b8962203f0ae37f9854167914915", "7d5219c4ba15b8962203f0ae37f9854167914915",
                            "0a1a5c523d835459c42f33e863623138555e2526"),
-                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c"),
-                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level", "File_Level"),
+                  file = c("test.c", "test3.c", "test.c", "test2.c", "test2.c", "test3.c", "test2.c"),
+                  artifact = c("File_Level", "test3.c::test_function", "File_Level", "File_Level",
+                               "test2.c::test_function", "test3.c::test_function", "File_Level"),
                   weight = 1,
                   type = TYPE.EDGES.INTER,
                   relation = "cochange"

@@ -44,12 +44,12 @@ test_that("Network construction of the undirected artifact-cochange network", {
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = "Base_Feature",
-        to = "foo",
-        date = get.date.from.string("2016-07-12 16:06:32"),
+        from = c("Base_Feature", "foo"),
+        to = c("foo", "foo"),
+        date = get.date.from.string(c("2016-07-12 16:06:32", "2016-07-12 16:06:20")),
         artifact.type = "Feature",
-        hash = "0a1a5c523d835459c42f33e863623138555e2526",
-        file = "test2.c",
+        hash = c("0a1a5c523d835459c42f33e863623138555e2526", "7d5219c4ba15b8962203f0ae37f9854167914915"),
+        file = c("test2.c", "test3.c"),
         author.name = "Thomas",
         weight = 1,
         type = TYPE.EDGES.INTRA,
