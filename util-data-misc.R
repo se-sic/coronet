@@ -21,6 +21,7 @@
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
@@ -28,6 +29,10 @@
 
 requireNamespace("sqldf") # for SQL-selections on data.frames
 requireNamespace("logging") # for logging
+requireNamespace("tm") # for NLP functionalities
+requireNamespace("SnowballC") # for text stemming used by NLP package "tm"
+requireNamespace("textstem") # for lemmatization
+requireNamespace("parallel") # for parallel computation
 
 #' Helper function to mask all issues in the issue data frame.
 #'
@@ -767,4 +772,226 @@ get.issue.is.pull.request = function(proj.data) {
     names(issue.id.to.is.pr) = issue.data[["issue.id"]]
     logging::logdebug("get.issue.is.pull.request: finished")
     return(issue.id.to.is.pr)
+}
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit-Message Functionality ------------------------------------------
+
+#' Apply preprocessing steps to commit messages of given commits. Preprocessing steps are always performed in
+#' the following order: \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
+#'
+#' \code{"lowercase"} transforms all upper case characters into their lowercase counterparts
+#' \code{"stopwords"} removes all stopwords using a list of stopwords
+#'                    for the english language provided by the package \code{tm}
+#' \code{"punctuation"} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
+#'                     using the r-base \code{regex} functionality. This includes standard punctuation
+#'                     characters such as ",", ".", ":", etc. but also dashes, parentheses, mathematical
+#'                     symbols and special characters used in programming, such as "$", "#", or "&".
+#'                     Intra-word dashes are kept.
+#' \code{"whitespaces"} removes superflous whitespace characters, such as "\t" or "\n", and replaces
+#'                      them with single whitespaces
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#' @param preprocessing the preprocessing steps to be executed
+#'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
+#'
+#' @return a dataframe containing the hashes and corresponding preprocesessed messages
+get.preprocessed.commit.messages = function(proj.data,
+                                            commit.hashes = NULL,
+                                            preprocessing = c("lowercase",
+                                                              "punctuation",
+                                                              "stopwords",
+                                                              "whitespaces")) {
+    preprocessing = match.arg.or.default(preprocessing, several.ok = TRUE)
+    preprocessed.messages = create.empty.data.frame(c("hash", "preprocessed.message"))
+    ## get commit-message data of the given hashes
+    ## if no hashes are given consider all commits
+    commit.message.data = proj.data$get.commit.messages()
+    if (!is.null(commit.hashes)) {
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
+    }
+
+    ## if data is empty, abort process
+    if (nrow(commit.message.data) < 1) {
+        return(preprocessed.messages)
+    }
+
+    ## create a corpus with all selected commit messages
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        messages = commit.message.data[["title"]]
+    }
+    corpus = tm::Corpus(tm::VectorSource(messages))
+
+    ## preprocessing steps
+    if ("lowercase" %in% preprocessing) {
+        ## convert to lowercase
+        corpus = tm::tm_map(corpus, tm::content_transformer(tolower))
+    }
+    if ("stopwords" %in% preprocessing) {
+        ## remove stopwords
+        corpus = tm::tm_map(corpus, tm::removeWords, tm::stopwords("english"))
+    }
+    if ("punctuation" %in% preprocessing) {
+        ## remove punctuation
+        corpus = tm::tm_map(corpus, tm::removePunctuation, preserve_intra_word_dashes = TRUE)
+    }
+    if ("whitespaces" %in% preprocessing) {
+        ## remove excess whitespaces
+        corpus = tm::tm_map(corpus, tm::stripWhitespace)
+    }
+
+    ## trim leading and trailing spaces
+    corpus = tm::tm_map(corpus, trimws)
+
+    ## create output dataframe
+    preprocessed.messages = data.frame(hash = commit.message.data[["hash"]],
+                                       preprocessed.message = corpus$content)
+
+    return(preprocessed.messages)
+}
+
+#' Apply stemming to commit messages of given commits. Preprocessing will be executed as part of this.
+#' Preprocessing steps are always performed in the following order:
+#' \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#' @param preprocessing the preprocessing steps to be executed
+#'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
+#'
+#' @return a dataframe containing the hashes and corresponding stemmed messages
+get.stemmed.commit.messages = function(proj.data,
+                                       commit.hashes = NULL,
+                                       preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
+    ## apply preprocessing
+    preprocessed.messages = get.preprocessed.commit.messages(proj.data, commit.hashes, preprocessing)
+    ## build corpus
+    corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[, "preprocessed.message"]))
+    ## apply stemming
+    corpus = tm::tm_map(corpus, tm::stemDocument)
+    ## create output dataframe
+    stemmed.messages = data.frame(hash = preprocessed.messages[["hash"]],
+                                  stemmed.message = corpus$content)
+    return(stemmed.messages)
+}
+
+#' Apply tokenization to commit messages of given commits. This function does not allow for preprocessing,
+#' since it is supposed to extract all tokens from the text as is and preprocessing steps change the
+#' resulting tokens. The text is split into tokens at any whitespace character.
+#' Special characters have no impact and are treated the same as any other non-whitespace character.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#'
+#' @return a list of vectors containing the tokens from the commit messages
+get.tokenized.commit.messages = function(proj.data, commit.hashes = NULL) {
+    ## get commit-message data of the given hashes
+    ## if no hashes are given consider all commits
+    commit.message.data = proj.data$get.commit.messages()
+    if (!is.null(commit.hashes)) {
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
+    }
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        messages = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        messages = commit.message.data[["title"]]
+    }
+    tokens = lapply(messages, tm::Boost_tokenizer)
+
+    return(tokens)
+}
+
+#' Apply lemmatization to commit messages of given commits. Preprocessing will be executed as part of this.
+#' Preprocessing steps are always performed in the following order:
+#' \code{"lowercase"} -> \code{"stopwords"} -> \code{"punctuation"} -> \code{"whitespaces"}
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#' @param preprocessing the preprocessing steps to be executed
+#'                      [default: c("lowercase", "punctuation", "stopwords", "whitespaces")]
+#'
+#' @return a dataframe containing the hashes and corresponding lemmatized messages
+get.lemmatized.commit.messages = function(proj.data,
+                                          commit.hashes = NULL,
+                                          preprocessing = c("lowercase", "punctuation", "stopwords", "whitespaces")) {
+    ## apply preprocessing
+    preprocessed.messages = get.preprocessed.commit.messages(proj.data, commit.hashes, preprocessing)
+    ## build corpus
+    corpus = tm::Corpus(tm::VectorSource(preprocessed.messages[, "preprocessed.message"]))
+    ## apply lemmatization
+    corpus = tm::tm_map(corpus, textstem::lemmatize_strings)
+    ## create output dataframe
+    lemmatized.messages = data.frame(hash = preprocessed.messages[["hash"]],
+                                     lemmatized.message = corpus$content)
+    return(lemmatized.messages)
+}
+
+#' Get commit messages that match given strings.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#' @param strings the strings that are searched for
+#' @param match the function that describes how many of the strings need to be in a message in order for
+#'              that message to be returned. Can be any function that takes a list of logical values and
+#'              returns a single logical value, such as \code{any}, \code{all} or anything in between [default: any]
+#' @param ignore.case whether the case should be ignored in the search [default: TRUE]
+#'
+#' @return a dataframe containing the hashes and corresponding matching messages
+get.commit.messages.by.strings = function(proj.data, commit.hashes = NULL, strings, match = any, ignore.case = TRUE) {
+    messages = create.empty.data.frame(c("hash", "message"))
+    ## get commit-message data of the given hashes
+    ## if no hashes are given consider all commits
+    commit.message.data = proj.data$get.commit.messages()
+    if (!is.null(commit.hashes)) {
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
+    }
+
+    ## prepare the dataframe for searching commit messages by merging the 'title' and 'message' columns if desired
+    if (proj.data$get.project.conf.entry("commit.messages") == "message") {
+        commit.message.data[["message"]] = paste(commit.message.data[["title"]], commit.message.data[["message"]])
+    } else {
+        commit.message.data[["message"]] = commit.message.data[["title"]]
+    }
+    commit.message.data = commit.message.data[, c("hash", "message")]
+    ## filter the messages by searching for all the keywords in 'strings'
+    ## and applying the match function once per message
+    messages = commit.message.data[unlist(parallel::mclapply(commit.message.data[["message"]], function(msg) {
+                                       match(lapply(strings, function(word) {
+                                           return (grepl(word, msg, ignore.case = ignore.case))
+                                       }))
+                                   })), ]
+    return(messages)
+}
+
+
+#' Count tokens in given commit messages.
+#'
+#' @param proj.data the \code{ProjectData} containing the commit-message data
+#' @param commit.hashes the commit hashes that should be considered, if \code{NULL} all commits are considered
+#'                      [default: NULL]
+#'
+#' @return a dataframe containing the hashes and corresponding token counts
+get.commit.message.counts = function(proj.data, commit.hashes = NULL) {
+    ## get commit-message data of the given hashes
+    ## if no hashes are given consider all commits
+    commit.message.data = proj.data$get.commit.messages()
+    if (!is.null(commit.hashes)) {
+        commit.message.data = commit.message.data[commit.message.data[["hash"]] %in% commit.hashes, ]
+    }
+    ## get tokens
+    tokens = get.tokenized.commit.messages(proj.data, commit.hashes)
+
+    hashes = commit.message.data[["hash"]]
+    counts = unlist(lapply(tokens, length))
+    messages = data.frame(hash = hashes,
+                          count = counts)
+    return(messages)
 }
