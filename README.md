@@ -435,7 +435,7 @@ In this section, we provide descriptions of the different algorithms we provide 
 
 #### Commit-message content analysis
 
-In this section, we give an overview of the functionalities we offer regarding the textual analysis of commit messages. These consist of basic NLP tasks, such as stemming (`get.stemmed.commit.messages`), tokenization (`get.tokenized.commit.messages`), and lemmatization (`get.lmmatized.commit.messages`), as well as preprocessing steps (`get.preprocessed.commit.messages`) such as lowercase transformation and removal of punctuation, stopwords, and extra whitespaces. Apart from these, there is the option of searching for a set of strings in commit messages for matching commits (`get.commit.messages.by.strings`) as well as getting token counts for commit messages (`get.commit.message.counts`).
+In this section, we give an overview of the functionalities we offer regarding the textual analysis of commit messages. These consist of basic NLP tasks, such as stemming (`get.stemmed.commit.messages`), tokenization (`get.tokenized.commit.messages`), and lemmatization (`get.lemmatized.commit.messages`), as well as preprocessing steps (`get.preprocessed.commit.messages`) such as lowercase transformation and removal of punctuation, stopwords, and extra whitespaces. Apart from these, there is the option of searching for a set of strings in commit messages for matching commits (`get.commit.messages.by.strings`) as well as getting token counts for commit messages (`get.commit.message.counts`).
 
 ### How-to
 

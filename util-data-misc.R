@@ -32,7 +32,7 @@ requireNamespace("logging") # for logging
 requireNamespace("tm") # for NLP functionalities
 requireNamespace("SnowballC") # for text stemming used by NLP package "tm"
 requireNamespace("textstem") # for lemmatization
-requireNamespace("parallel") # for for parallel computation
+requireNamespace("parallel") # for parallel computation
 
 #' Helper function to mask all issues in the issue data frame.
 #'
@@ -783,9 +783,9 @@ get.issue.is.pull.request = function(proj.data) {
 #' \code{"lowercase"} transforms all upper case characters into their lowercase counterparts
 #' \code{"stopwords"} removes all stopwords using a list of stopwords
 #'                    for the english language provided by the package \code{tm}
-#' \code{"punctuaton"} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
+#' \code{"punctuation"} removes all punctuation, as described in the ASCII \code{[:punct:]} class,
 #'                     using the r-base \code{regex} functionality. This includes standard punctuation
-#'                     characters such as ",", ".", ":", etc. but also dashes, parantheses, mathematical
+#'                     characters such as ",", ".", ":", etc. but also dashes, parentheses, mathematical
 #'                     symbols and special characters used in programming, such as "$", "#", or "&".
 #'                     Intra-word dashes are kept.
 #' \code{"whitespaces"} removes superflous whitespace characters, such as "\t" or "\n", and replaces
