@@ -49,7 +49,7 @@ test_that("Read the raw commit data with the feature artifact.", {
     commit.data.read = read.commits(proj.conf$get.value("datapath"), proj.conf$get.value("artifact"))
 
     ## build the expected data.frame
-    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32715, 32716,
+    commit.data.expected = data.frame(commit.id = format.commit.ids(c(32712, 32712, 32713, 32713, 32710, 32710, 32714, 32707, 32709,
                                                                            32711, 32711)),
                                       date = get.date.from.string(c("2016-07-12 15:58:59", "2016-07-12 15:58:59", "2016-07-12 16:00:45",
                                                         "2016-07-12 16:00:45", "2016-07-12 16:05:41", "2016-07-12 16:05:41",
