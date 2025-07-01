@@ -17,6 +17,7 @@
 - Internally cache commit-network data similarly to how we cache network data for author-, and artifact-networks (PR #282, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0)
 - Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 - Ensure that configured or implicitly-enforced undirectedness in partial networks is always dominant over configured or implicitly-enforced directedness. Furthermore, ensure consistency in the directedness used for edge generation and as a network attribute, especially in networks that consist of multiple partial networks such as multi-networks (PR #282, 65ead39b7b971e5a0acbaee4e787efcf194aafc4, a776caf72256200e1bfa5578106a9b53547b00e7, 257a1c8a6a9b1c3e2a72960cc4051a87950753ee, 41cff01cf141a377c96048f0645e05fb200138e9)
+- Allow the issue data attributes `event.info.1` and `event.info.2` on network edges (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 
 ### Fixed
 
