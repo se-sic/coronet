@@ -13,6 +13,11 @@
 ### Changed/Improved
 
 - For consistency reasons: Ensure that the values of edge attributes are always lists even when they represent singular values (PR #278, 6fae1843740ed8e48c89c2ee4e61f995b5d0b8f5, 416c817998540fc0b82d9959574838b571b4d6fb)
+- Reduce the amount of redundantly built networks by caching network data internally. This should improve the performance of building multi-networks, especially, when parts of the multi-networks have been built before (#119, PR #282, 06a814c945f0b20af842d20247126083523cde55, 4793eab02e8792b0640fad88a90018292b1b2ab9, 8ba907fff0534c6fef39bd289ab163c90b053530, 28d22902e32e93c0d4990576da2ef3de88fdffbd, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0, b30c7f2b5b0a6d12e8024fafada5490170530ebe, 1fa340d6347090a327b4c32ece705c1f700234e5, 40cd55423be7b6521e2fc35f5aa200ff0594e77c, 8fcc74439c28b1592e964dd753bfc1cd57c062be, ca348f1de8e3b4e5786a6d2726ca14e530446896, 1d233af734f79e677d3388f7c3589ce186cc3a8d, 5dd5fc18940ce9ac9598902f175193167b471966)
+- Internally cache commit-network data similarly to how we cache network data for author-, and artifact-networks (PR #282, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0)
+- Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
+- Ensure that configured or implicitly-enforced undirectedness in partial networks is always dominant over configured or implicitly-enforced directedness. Furthermore, ensure consistency in the directedness used for edge generation and as a network attribute, especially in networks that consist of multiple partial networks such as multi-networks (PR #282, 65ead39b7b971e5a0acbaee4e787efcf194aafc4, a776caf72256200e1bfa5578106a9b53547b00e7, 257a1c8a6a9b1c3e2a72960cc4051a87950753ee, 41cff01cf141a377c96048f0645e05fb200138e9)
+- Allow the issue data attributes `event.info.1` and `event.info.2` on network edges (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 
 ### Fixed
 
