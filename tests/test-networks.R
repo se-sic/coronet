@@ -1272,3 +1272,67 @@ test_that("Enforcement of directedness in multi-networks", {
     assert.directedness(expected=FALSE,  author.directed=TRUE,  artifact.directed=TRUE, artifact.relations=c("mail", "cochange"))
 
 })
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constructing multiple networks ------------------------------------------
+
+test_that("Construct multiple different networks at once", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    net.conf = NetworkConf$new()
+    net.conf$update.value("commit.relation", "commit.interaction")
+
+    ## construct network builder
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    # available network types
+    available.network.types = c("author", "artifact", "commit", "bipartite")
+    network.type.map = list(
+        author    = "authors.net",
+        artifact  = "artifacts.net",
+        commit    = "commits.net",
+        bipartite = "bipartite.net"
+    )
+
+    assert.correct.networks = function(network.builder, network.type) {
+
+        if (is.null(network.type)) {
+            # get all available networks
+            networks = network.builder$get.networks()
+            network.type = available.network.types
+
+        } else {
+            # get specified networks
+            networks = network.builder$get.networks(network.type = network.type)
+        }
+
+        expected.network.types = unname(sapply(network.type, function(type) network.type.map[[type]]))
+        actual.network.types = names(networks)
+
+        expect_identical(expected.network.types, actual.network.types,
+            info = paste0("all networks (",
+                          paste(names(networks), collapse=", "),
+                          ") are of the requested type (",
+                          paste(expected.network.types, collapse = ", "),
+                          ")"))
+    }
+
+    # get all subset combinations of an input list
+    get.subsets = function(input.list) {
+        output.list = list(NULL)
+        for (i in seq_along(input.list)) {
+            sublist = combn(input.list, i, simplify = FALSE)
+            output.list = c(output.list, sublist)
+        }
+        return(output.list)
+    }
+
+    # test all combinations of network types
+    for (network.type in get.subsets(available.network.types)) {
+        assert.correct.networks(network.builder, network.type = network.type)
+    }
+
+})
+
