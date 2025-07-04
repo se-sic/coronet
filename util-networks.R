@@ -858,11 +858,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set the commits as the 'to' and 'from' of the network and order the dataframe
             edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
                               "file", "base.author", "base.func", "base.file")]
-            if (nrow(edges) > 0) {
-                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+            if (!is.null(edges)) {
+                if (nrow(edges) > 0) {
+                    edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+                }
+                colnames(edges)[1] = "to"
+                colnames(edges)[2] = "from"
             }
-            colnames(edges)[1] = "to"
-            colnames(edges)[2] = "from"
 
             ## construct network data
             network.data = private$construct.network.data(
