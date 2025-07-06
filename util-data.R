@@ -361,9 +361,16 @@ ProjectData = R6::R6Class("ProjectData",
                     ## get a vector with the column names in the right order
                     col.names = unique(c(colnames(private$commits.unfiltered), colnames(commit.messages)))
 
+                    ## store ordering
+                    private$commits.unfiltered[["row.order"]] = seq_len(nrow(private$commits.unfiltered))
+
                     ## merge them into the commit data
                     private$commits.unfiltered = merge(private$commits.unfiltered, commit.messages,
-                                            by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+                                                       by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+
+                    ## restore previous order because 'merge' disturbs the order
+                    private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["row.order"]]), ]
+                    private$commits.unfiltered[["row.order"]] = NULL
 
                     ## adjust the column order
                     private$commits.unfiltered = private$commits.unfiltered[col.names]
@@ -388,9 +395,18 @@ ProjectData = R6::R6Class("ProjectData",
 
                     ## get a vector with the column names in the right order
                     col.names = unique(c(colnames(private$commits), colnames(commit.messages)))
+
+                    ## store ordering
+                    private$commits[["row.order"]] = seq_len(nrow(private$commits))
+
                     ## merge them into the commit data
                     private$commits = merge(private$commits, commit.messages,
                                             by = c("commit.id", "hash"), all.x = TRUE, sort = FALSE)
+
+                    ## restore previous order because 'merge' disturbs the order
+                    private$commits = private$commits[order(private$commits[["row.order"]]), ]
+                    private$commits[["row.order"]] = NULL
+
                     ## adjust the column order
                     private$commits = private$commits[col.names]
                 }
@@ -589,17 +605,19 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
             ## we want to just remove the columns above)
             if (private$project.conf$get.value("pasta")) {
+                ## store ordering
+                private$commits.unfiltered[["row.order"]] = seq_len(nrow(private$commits.unfiltered))
+
                 ## merge PaStA data
                 private$commits.unfiltered = merge(private$commits.unfiltered, private$pasta.commits,
-                                    by = "hash", all.x = TRUE, sort = FALSE)
+                                                   by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]], decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["row.order"]]), ]
+                private$commits.unfiltered[["row.order"]] = NULL
 
                 ## remove duplicated revision set ids
-                private$commits.unfiltered[["revision.set.id"]] = lapply(private$commits.unfiltered[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                private$commits.unfiltered[["revision.set.id"]] = lapply(private$commits.unfiltered[["revision.set.id"]], unique)
             }
 
             ## remove previous PaStA data
@@ -609,17 +627,19 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
             ## we want to just remove the columns above)
             if (private$project.conf$get.value("pasta")) {
+                ## store ordering
+                private$commits[["row.order"]] = seq_len(nrow(private$commits))
+
                 ## merge PaStA data
                 private$commits = merge(private$commits, private$pasta.commits,
                                         by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["row.order"]]), ]
+                private$commits[["row.order"]] = NULL
 
                 ## remove duplicated revision set ids
-                private$commits[["revision.set.id"]] = lapply(private$commits[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                private$commits[["revision.set.id"]] = lapply(private$commits[["revision.set.id"]], unique)
             }
 
             logging::logdebug("update.pasta.commit.data: finished.")
@@ -637,19 +657,19 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
             ## we want to just remove the columns above)
             if (private$project.conf$get.value("pasta")) {
+                ## store ordering
+                private$mails.unfiltered[["row.order"]] = seq_len(nrow(private$mails.unfiltered))
+
                 ## merge PaStA data
                 private$mails.unfiltered = merge(private$mails.unfiltered, private$pasta.mails,
                                                  by = "message.id", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["date"]],
-                                                                          decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$mails.unfiltered = private$mails.unfiltered[order(private$mails.unfiltered[["row.order"]]), ]
+                private$mails.unfiltered[["row.order"]] = NULL
 
                 ## remove duplicated revision set ids
-                private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]],
-                                                                       function(rev.id) {
-                    return(unique(rev.id))
-                })
+                private$mails.unfiltered[["revision.set.id"]] = lapply(private$mails.unfiltered[["revision.set.id"]], unique)
             }
 
             ## remove previous PaStA data
@@ -659,17 +679,19 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if pasta has been configured (it could also be changed to 'FALSE' in which case
             ## we want to just remove the columns above)
             if (private$project.conf$get.value("pasta")) {
+                ## store ordering
+                private$mails[["row.order"]] = seq_len(nrow(private$mails))
+
                 ## merge PaStA data
                 private$mails = merge(private$mails, private$pasta.mails,
                                       by = "message.id", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$mails = private$mails[order(private$mails[["date"]], decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$mails = private$mails[order(private$mails[["row.order"]]), ]
+                private$mails[["row.order"]] = NULL
 
                 ## remove duplicated revision set ids
-                private$mails[["revision.set.id"]] = lapply(private$mails[["revision.set.id"]], function(rev.id) {
-                    return(unique(rev.id))
-                })
+                private$mails[["revision.set.id"]] = lapply(private$mails[["revision.set.id"]], unique)
             }
 
             logging::logdebug("update.pasta.mail.data: finished.")
@@ -729,13 +751,16 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
             ## which case we want to just remove the columns above)
             if (private$project.conf$get.value("synchronicity")) {
+                ## store ordering
+                private$commits.unfiltered[["row.order"]] = seq_len(nrow(private$commits.unfiltered))
+
                 ## merge synchronicity data
                 private$commits.unfiltered = merge(private$commits.unfiltered, private$synchronicity,
                                                    by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["date"]],
-                                                                              decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$commits.unfiltered = private$commits.unfiltered[order(private$commits.unfiltered[["row.order"]]), ]
+                private$commits.unfiltered[["row.order"]] = NULL
             }
             ## remove previous synchronicity data
             private$commits["synchronicity"] = NULL
@@ -743,12 +768,16 @@ ProjectData = R6::R6Class("ProjectData",
             ## only merge new data if synchronicity has been configured (it could also be changed to 'FALSE' in
             ## which case we want to just remove the columns above)
             if (private$project.conf$get.value("synchronicity")) {
+                ## store ordering
+                private$commits[["row.order"]] = seq_len(nrow(private$commits))
+
                 ## merge synchronicity data
                 private$commits = merge(private$commits, private$synchronicity,
                                         by = "hash", all.x = TRUE, sort = FALSE)
 
-                ## sort by date again because 'merge' disturbs the order
-                private$commits = private$commits[order(private$commits[["date"]], decreasing = FALSE), ]
+                ## restore previous order because 'merge' disturbs the order
+                private$commits = private$commits[order(private$commits[["row.order"]]), ]
+                private$commits[["row.order"]] = NULL
             }
 
             ## get the caller function as a string
