@@ -145,6 +145,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         artifact.network.callgraph.data = NULL,
         commit.network.cochange.data = NULL,
         commit.network.commit.interaction.data = NULL,
+        bipartite.relations = NULL,
 
         ## * * relation-to-vertex-kind mapping -----------------------------
 
@@ -797,7 +798,9 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             artifact.index = match("artifact", edge.attributes, nomatch = NA)
             if (!is.na(artifact.index)) {
                 edge.attributes = edge.attributes[-artifact.index]
-                edge.attributes = c(edge.attributes, c("author.name"))
+                if (!("author.name" %in% edge.attributes)) {
+                    edge.attributes = c(edge.attributes, c("author.name"))
+                }
             }
 
             ## connect corresponding add_link and referenced_by issue-events
@@ -855,11 +858,13 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             ## set the commits as the 'to' and 'from' of the network and order the dataframe
             edges = edges[, c("base.hash", "commit.hash", "func", "interacting.author",
                               "file", "base.author", "base.func", "base.file")]
-            if (nrow(edges) > 0) {
-                edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+            if (!is.null(edges)) {
+                if (nrow(edges) > 0) {
+                    edges[["artifact.type"]] = ARTIFACT.COMMIT.INTERACTION
+                }
+                colnames(edges)[1] = "to"
+                colnames(edges)[2] = "from"
             }
-            colnames(edges)[1] = "to"
-            colnames(edges)[2] = "from"
 
             ## construct network data
             network.data = private$construct.network.data(
@@ -927,6 +932,12 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         get.bipartite.relations = function() {
             logging::logdebug("get.bipartite.relations: starting.")
 
+            ## do not compute anything more than once
+            if (!is.null(private$bipartite.relations)) {
+                logging::logdebug("get.bipartite.relations: finished. (already existing)")
+                return(private$bipartite.relations)
+            }
+
             relations = private$network.conf$get.variable("artifact.relation")
             logging::logdebug("Using bipartite relations '%s'.", relations)
 
@@ -942,6 +953,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
                 return(bip.relation)
             })
             names(bip.relations) = relations
+            private$bipartite.relations = bip.relations
 
             logging::logdebug("get.bipartite.relations: finished.")
             return(bip.relations)
@@ -992,6 +1004,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             private$artifact.network.callgraph.data = NULL
             private$commit.network.cochange.data = NULL
             private$commit.network.commit.interaction.data = NULL
+            private$bipartite.relations = NULL
             private$proj.data = private$proj.data.original
             if (private$network.conf$get.value("unify.date.ranges")) {
                 private$cut.data.to.same.timestamps()
@@ -1244,6 +1257,7 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
         #'
         #' @return the bipartite network
         get.bipartite.network = function() {
+
             ## get data by the chosen relation
             bipartite.relation.data = private$get.bipartite.relations()
             directed = private$determine.directedness("author")
@@ -1347,34 +1361,44 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             }
 
             network = convert.edge.attributes.to.list(network)
+
             return(network)
         },
 
-        #' Get all networks as list.
-        #' Build unification to avoid null-pointers.
+        #' Get various networks in a list.
         #'
-        #' @return all networks in a list
-        get.networks = function() {
-            logging::loginfo("Constructing all networks.")
+        #' @param network.type the type(s) of network(s) to be constructed
+        #'                     [default: c("author", "artifact", "commit", "bipartite")]
+        #'
+        #' @return networks in a list
+        get.networks = function(network.type = c("author", "artifact", "commit", "bipartite")) {
 
-            ## author-artifact relation
-            authors.to.artifacts = private$get.bipartite.relations()
-            ## bipartite network
-            bipartite.net = self$get.bipartite.network()
+            logging::loginfo("Constructing networks.")
+
+            network.type = match.arg.or.default(network.type, several.ok = TRUE)
+            networks = list()
+
             ## author relation
-            authors.net = self$get.author.network()
-            ## artifact relation
-            artifacts.net = self$get.artifact.network()
-            ## commit relation
-            commit.net = self$get.commit.network()
+            if ("author" %in% network.type) {
+                networks[["authors.net"]] = self$get.author.network()
+            }
 
-            return(list(
-                "authors.to.artifacts" = authors.to.artifacts,
-                "bipartite.net" = bipartite.net,
-                "authors.net" = authors.net,
-                "artifacts.net" = artifacts.net,
-                "commits.net" = commit.net
-            ))
+            ## artifact relation
+            if ("artifact" %in% network.type) {
+                networks[["artifacts.net"]] = self$get.artifact.network()
+            }
+
+            ## commit relation
+            if ("commit" %in% network.type) {
+                networks[["commits.net"]] = self$get.commit.network()
+            }
+
+            ## bipartite network
+            if ("bipartite" %in% network.type) {
+                networks[["bipartite.net"]] = self$get.bipartite.network()
+            }
+
+            return(networks)
         },
 
         #' Get the multi network.
@@ -1393,13 +1417,15 @@ NetworkBuilder = R6::R6Class("NetworkBuilder",
             directed = private$determine.directedness(c("author", "artifact"))
             private$network.conf$update.values(list(author.directed = directed,
                                                     artifact.directed = directed))
-            networks = self$get.networks()
+
+            ## construct the network parts we need for the multi network
+            networks = self$get.networks(network.type = c("author", "artifact"))
+            authors.to.artifacts = private$get.bipartite.relations()
 
             ## restore configured directedness
             private$network.conf$update.values(list(author.directed = configured.author.directedness,
                                                     artifact.directed = configured.artifact.directedness))
 
-            authors.to.artifacts = networks[["authors.to.artifacts"]]
             authors.net = networks[["authors.net"]]
             igraph::V(authors.net)$kind = TYPE.AUTHOR
             artifacts.net = networks[["artifacts.net"]]
@@ -1547,7 +1573,9 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         artifact.index = match("artifact", edge.attributes, nomatch = NA)
         if (!is.na(artifact.index)) {
             edge.attributes = edge.attributes[-artifact.index]
-            edge.attributes = c(edge.attributes, c("author.name"))
+            if (!("author.name" %in% edge.attributes)) {
+                edge.attributes = c(edge.attributes, c("author.name"))
+            }
         }
     }
 
@@ -1558,47 +1586,49 @@ construct.edge.list.from.key.value.list = function(list, network.conf, directed 
         edge.attributes = edge.attributes[-cols.which]
     }
 
+    ## construct edges
     if (respect.temporal.order) {
 
         ## for all subsets (sets), connect all items in there with the previous ones
         edge.list.data = parallel::mclapply(list, construct.edges.temporal.order, network.conf,
                                             edge.attributes, keys, keys.number, network.type)
-
-        edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return(attr(data, "vertices.processed"))
-            }))
-
     } else {
 
         ## for all items in the sublists, construct the cartesian product
         edge.list.data = parallel::mclapply(list, construct.edges.no.temporal.order, network.conf,
                                             edge.attributes, keys, keys.number)
-
-        edge.list = plyr::rbind.fill(edge.list.data)
-        vertices.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return(attr(data, "vertices.processed"))
-        }))
-
     }
+    edge.list = plyr::rbind.fill(edge.list.data)
+
+    ## extract names of vertices
+    vertex.names = unlist(parallel::mclapply(edge.list.data, function(data) {
+        return(attr(data, "vertices.processed"))
+    }))
 
     logging::logdebug("construct.edge.list.from.key.value.list: finished.")
 
     if (network.type == "commit") {
-        vertices.dates.processed = unlist(parallel::mclapply(edge.list.data, function(data) {
-            return (attr(data, "vertices.dates.processed"))
+
+        ## extract dates of vertices
+        vertex.dates = unlist(parallel::mclapply(edge.list.data, function(data) {
+            return(attr(data, "vertices.dates.processed"))
         }))
+
+        ## deduplicate vertices by name
+        vertices = data.frame(name = vertex.names, date = vertex.dates)
+        vertices = vertices[!duplicated(vertices[["name"]]), ]
+
         return(list(
             vertices = data.frame(
-                name = unique(vertices.processed),
-                date = get.date.from.string(unique(vertices.dates.processed))
+                name = vertices[["name"]],
+                date = get.date.from.string(vertices[["date"]])
             ),
             edges = edge.list
         ))
     } else {
         return(list(
             vertices = data.frame(
-                name = unique(vertices.processed)
+                name = unique(vertex.names)
             ),
             edges = edge.list
         ))

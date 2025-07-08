@@ -21,7 +21,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -59,18 +59,19 @@ requireNamespace("igraph") # networks
 #' @param default.value The default value to add if a vertex has no matching value
 #' @param compute.attr The function to compute the attribute to add. Must return a named list
 #'                     with the names being the name of the vertex.
+#' @param flatten.values whether to flatten lists in the attribute values [default: TRUE]
 #'
 #' @return A list of networks with the added attribute
 split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.name,
                                           aggregation.level = c("range", "cumulative", "all.ranges",
                                                                 "project.cumulative", "project.all.ranges",
                                                                 "complete"),
-                                          default.value, compute.attr, list.attributes = FALSE) {
+                                          default.value, compute.attr, flatten.values = TRUE) {
     aggregation.level = match.arg.or.default(aggregation.level, default = "range")
 
     net.to.range.list = split.data.by.networks(list.of.networks, project.data, aggregation.level)
 
-    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr, list.attributes)
+    nets.with.attr = add.vertex.attribute(net.to.range.list, attr.name, default.value, compute.attr, flatten.values)
     return(nets.with.attr)
 }
 
@@ -86,9 +87,10 @@ split.and.add.vertex.attribute = function(list.of.networks, project.data, attr.n
 #' @param default.value The default value to add if a vertex has no matching value
 #' @param compute.attr The function to compute the attribute to add. Must return a named list
 #'                     with the names being the name of the vertex.
+#' @param flatten.values whether to flatten lists in the attribute values [default: TRUE]
 #'
 #' @return A list of networks with the added attribute
-add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr, list.attributes = FALSE) {
+add.vertex.attribute = function(net.to.range.list, attr.name, default.value, compute.attr, flatten.values = TRUE) {
 
     nets.with.attr = mapply(
         names(net.to.range.list), net.to.range.list,
@@ -123,13 +125,9 @@ add.vertex.attribute = function(net.to.range.list, attr.name, default.value, com
             attributes = lapply(igraph::V(current.network)$name,
                                 function(x) get.or.default(x, attrs.by.vertex.name, default.value))
 
-            ## simplify the list of attributes to a vector if all its elements are just vectors (not lists)
-            if (length(attributes) > 0 && !any(sapply(attributes, is.list))) {
-                attributes = unlist(attributes)
-            }
-            ## otherwise, the list of attributes contains lists, so we can only remove the outermost list
-            else if (!list.attributes) {
-                attributes = unlist(attributes, recursive = FALSE)
+            ## flatten lists in the attribute values if specified
+            if (flatten.values && length(attributes) > 0) {
+                attributes = do.call(base::c, attributes)
             }
 
             net.with.attr = igraph::set_vertex_attr(current.network, attr.name, value = attributes)
@@ -820,7 +818,7 @@ add.vertex.attribute.author.aggregated.activity = function(list.of.networks, pro
     }
 
     nets.with.attr = split.and.add.vertex.attribute(list.of.networks, project.data, name, aggregation.level,
-                                                    vertex.default, compute.attr, list.attributes = TRUE)
+                                                    vertex.default, compute.attr, flatten.values = FALSE)
     return(nets.with.attr)
 }
 
