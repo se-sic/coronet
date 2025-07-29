@@ -20,7 +20,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 context("Splitting functionality, time-based splitting of data.")

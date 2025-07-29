@@ -12,7 +12,7 @@
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
-## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 
 ## All Rights Reserved.
 

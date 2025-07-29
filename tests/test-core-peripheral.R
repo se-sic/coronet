@@ -17,7 +17,7 @@
 ## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
