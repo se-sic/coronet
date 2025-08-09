@@ -253,11 +253,11 @@ test_that("Read the author data.", {
 
     ## build the expected data.frame
     author.data.expected = data.frame(
-        author.id = as.character(c(4936, 4937, 4938, 4939, 4940, 4941, 4942, 4943, 4944)),
-        author.name = c("Thomas", "Olaf", "Björn", "udo", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max"),
-        author.email = c("thomas@example.org", "olaf@example.org", "bjoern@example.org", "udo@example.org",
-                         "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org", "max@example.org"),
-        is.bot = c(TRUE, NA, FALSE, NA, NA, NA, NA, NA, NA)
+        author.id = as.character(c(4938, 4940, 4941, 4942, 4943, 4944, 4937, 4936, 4939)),
+        author.name = c("Björn", "Fritz fritz@example.org", "georg", "Hans", "Karl", "Max", "Olaf", "Thomas", "udo"),
+        author.email = c("bjoern@example.org", "asd@sample.org", "heinz@example.org", "hans1@example.org", "karl@example.org",
+                         "max@example.org", "olaf@example.org", "thomas@example.org", "udo@example.org"),
+        is.bot = c(FALSE, NA, NA, NA, NA, NA, NA, TRUE, NA)
     )
 
     ## check the results
