@@ -20,6 +20,8 @@
 - Allow the issue data attributes `event.info.1` and `event.info.2` on network edges (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 - Add a `network.type` parameter to `get.networks` in which the caller can specify the types of networks to be constructed. This improves performance in cases where not all network types are needed, such as when building multi-networks (PR #285, bc2efd643d92da547d4677f9026540c25e730a03, e9a0c1681a0b63bd831fe7657ce25a9d50dc6e83)
 - Rename the `list.attributes` parameter in `add.vertex.attribute` and `split.and.add.vertex.attribute` to `flatten.values` with inverted semantics and introduce documentation for it to improve comprehensibility (PR #285, 7dab04a5251d89c9cb286452528ef8b6775a7347)
+- Enhance codeface testing data by ensuring that commit ids are unique between proximity and feature data and by adding commit data that includes (1) different commits that touch the same file / function, (2) commits that are authored at the same time by different authors (PR #286, 7481099af109e1897b9e5754beb1c7da9f39ffb9, 3e53285426010cf7bf48fa23daa484f29f80ac78)
+- Sort author data by `author.name` instead of `author.id` when reading it from a file (PR #286, 61b538b7cf81c4b6638951bfaf051e376d0986b3)
 
 ### Fixed
 
@@ -27,6 +29,7 @@
 - Fix a bug in network construction that could lead to edges having an unwanted `author.name.1` attribute (PR #285, 105fec1acc436378a9282c40fcae0eb0257f00be)
 - Ensure that POSIXct values are correctly handled in `add.vertex.attribute`, i.e., that they are not converted to numeric values (PR #285, 7dab04a5251d89c9cb286452528ef8b6775a7347, 4924ac23737dec6f915edaeb350a5cbaebbeec79)
 - Handle empty edges when constructing commit networks using commit-interaction data (PR #285, d5e1e4801230224e6272cd66873bd43bb7f04a00)
+- Correctly retain order of commit and mail data when merging it with PAStA, synchronicity, and commit message data (PR #286, 50b9b68effd49f853b8bcb335676357a854d1f97)
 
 ## 5.0
 

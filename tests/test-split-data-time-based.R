@@ -20,7 +20,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 context("Splitting functionality, time-based splitting of data.")
@@ -108,7 +108,7 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
         commits = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits[1:2, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$commits[0, ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:8, ]
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:10, ]
         ),
         commit.messages = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commit.messages,
@@ -455,8 +455,8 @@ patrick::with_parameters_test_that("Split a data object time-based (split.basis 
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commits[1:2, ],
             "2016-07-12 16:00:29-2016-07-12 16:03:29" = data$commits[2, ],
             "2016-07-12 16:01:59-2016-07-12 16:04:59" = data$commits[0, ],
-            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$commits[3:5, ],
-            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:8, ]
+            "2016-07-12 16:03:29-2016-07-12 16:06:29" = data$commits[3:7, ],
+            "2016-07-12 16:04:59-2016-07-12 16:06:33" = data$commits[3:10, ]
         ),
         commit.messages = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:59" = data$commit.messages,
@@ -1141,7 +1141,7 @@ patrick::with_parameters_test_that("Split a data object time-based using custom 
         commits = list(
             "2016-07-12 15:00:00-2016-07-12 16:00:00" = data$commits[1, ],
             "2016-07-12 16:00:00-2016-07-12 16:05:00" = data$commits[2, ],
-            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$commits[3:8, ],
+            "2016-07-12 16:05:00-2016-08-08 00:00:00" = data$commits[3:10, ],
             "2016-08-08 00:00:00-2016-10-05 09:00:00" = data$commits[0, ]
         ),
         commit.messages = list(
@@ -1380,7 +1380,7 @@ patrick::with_parameters_test_that("Split a data object time-based with equal-si
         commits = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$commits[1:2, ],
             "2016-07-12 16:01:30-2016-07-12 16:04:01" = data$commits[0, ],
-            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$commits[3:8, ]
+            "2016-07-12 16:04:01-2016-07-12 16:06:33" = data$commits[3:10, ]
         ),
         commit.messages = list(
             "2016-07-12 15:58:59-2016-07-12 16:01:30" = data$commit.messages,

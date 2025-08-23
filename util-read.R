@@ -24,7 +24,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2023, 2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -525,7 +525,6 @@ read.authors = function(data.path) {
     authors.df = try(read.table(file, header = FALSE, sep = ";", strip.white = TRUE,
                                 encoding = "UTF-8"), silent = TRUE)
 
-
     ## break if the list of authors is empty
     if (inherits(authors.df, "try-error") || nrow(authors.df) < 1) {
         logging::logerror("There are no authors available for the current environment.")
@@ -542,13 +541,16 @@ read.authors = function(data.path) {
     bot.data = read.bot.info(data.path)
     if (!is.null(bot.data)) {
         authors.df = merge(authors.df, bot.data, by = c("author.name", "author.email"), all.x = TRUE, sort = FALSE)
-        authors.df = authors.df[order(authors.df[["author.id"]]), ] # re-order after read
-        row.names(authors.df) = seq_len(nrow(authors.df))
     } else {
         ## if bot data is not available, add NA data, which is what would have happened
         ## if the file was empty
         authors.df[["is.bot"]] = NA
     }
+
+    ## order by author name
+    authors.df = authors.df[order(authors.df[["author.name"]]), ]
+    row.names(authors.df) = seq_len(nrow(authors.df))
+
     ## re-order the columns
     authors.df = authors.df[, AUTHORS.LIST.COLUMNS]
     authors.df = remove.deleted.and.empty.user(authors.df)
