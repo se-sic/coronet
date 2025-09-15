@@ -24,14 +24,17 @@
 
 test_that("Get edgelist augmented with timestamps", {
 
+    ##
+    ## Artifical network
+    ##
+
     ## construct network
-    edges = list(list("A", "A"), list("D", "C"), list("C", "A"), list("B", "C"))
+    edges = list(list("A", "A"), list("D", "C"), list("D", "C"), list("B", "C"))
     timestamps = c("2016-12-07 15:30:02", "2016-08-07 15:37:02", "2016-07-12 15:59:25", "2016-07-12 15:59:59")
     network =
         igraph::make_empty_graph(n = 0, directed = TRUE) +
         igraph::vertices("A", "B", "C", "D") +
         igraph::edges(edges, relation = "mail", date = timestamps)
-
 
     ## get edgelist augmented with timestamps
     edgelist = get.edgelist.with.timestamps(network)
@@ -45,6 +48,27 @@ test_that("Get edgelist augmented with timestamps", {
         expect_equal(actual[["to"]], edges[[i]][[2]])
         expect_equal(actual[["date"]], timestamps[i])
     })
+
+    ##
+    ## Authentic network
+    ##
+
+    ## make network authentic
+    network = igraph::set_edge_attr(network, "date", value = get.date.from.string(timestamps))
+    network = convert.edge.attributes.to.list(network)
+    network = simplify.network(network, remove.loops = FALSE)
+
+    ## get edgelist augmented with timestamps
+    edgelist = get.edgelist.with.timestamps(network)
+
+    ## construct expected result
+    expected.edges = data.frame(from = c("A", "B", "D"), to = c("A", "C", "C"))
+    expected.edges[["date"]] = list(as.list(get.date.from.string(timestamps[1])),
+                                    as.list(get.date.from.string(timestamps[4])),
+                                    as.list(get.date.from.string(c(timestamps[2], timestamps[3]))))
+
+    ## check correctness
+    expect_equal(edgelist, expected.edges, info = "Edgelist from authentic network.")
 })
 
 
