@@ -20,7 +20,7 @@
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2022-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -43,9 +43,12 @@ requireNamespace("lubridate") # for date conversion
 #' in order to avoid problems accessing it.
 #'
 #' @param net the given network
+#' @param unlist.timestamps.if.possible whether to unlist timestamps if they are given as lists.
+#'                                      Unlisting is not possible when \code{net} contains simplified edges.
+#'                                      [default: FALSE]
 #'
 #' @return the new edgelist
-get.edgelist.with.timestamps = function(net) {
+get.edgelist.with.timestamps = function(net, unlist.timestamps.if.possible = FALSE) {
 
     ## get edge list as data.frame
     edges = as.data.frame(igraph::as_edgelist(net))
@@ -53,6 +56,14 @@ get.edgelist.with.timestamps = function(net) {
 
     ## get timestamps
     dates = igraph::edge_attr(net, "date")
+
+    ## unlist timestamps
+    if (unlist.timestamps.if.possible && is.list(dates)) {
+        dates.flattened = do.call(base::c, unlist(dates, recursive = FALSE))
+        if (nrow(edges) == length(dates.flattened)) {
+            dates = dates.flattened
+        }
+    }
 
     ## bind everything together
     edges[["date"]] = dates
