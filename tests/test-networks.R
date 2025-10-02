@@ -13,7 +13,7 @@
 ##
 ## Copyright 2018-2019 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
-## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -90,24 +90,28 @@ test_that("Simplify basic multi-relational network", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature")
     for (i in 1:3) {
-        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = list("mail"))
+        network = igraph::add_edges(network, c("A", "B"), type = TYPE.EDGES.INTRA, relation = list("cochange"))
     }
 
     network.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
-        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
-        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "cochange")
+        igraph::edges("A", "B", "A", "B", type = TYPE.EDGES.INTRA, relation = list(as.list(rep("mail", 3)),
+                                                                                   as.list(rep("cochange", 3))))
 
     ## simplify network without simplifying multiple relations into single edges
     network.simplified = simplify.network(network, simplify.multiple.relations = FALSE)
     assert.networks.equal(network.simplified, network.expected)
 
+    network.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
+        igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
+        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = list(list("mail", "cochange",
+                                                                              "mail", "cochange",
+                                                                              "mail", "cochange")))
+
     ## simplify network with simplifying multiple relations into single edges
     network.simplified = simplify.network(network, simplify.multiple.relations = TRUE)
-    expect_identical(igraph::ecount(network.simplified), 1)
-    expect_identical(igraph::E(network.simplified)$type[[1]], "Unipartite")
-    expect_identical(igraph::E(network.simplified)$relation[[1]], c("cochange", "mail"))
+    assert.networks.equal(network.simplified, network.expected)
 })
 
 test_that("Simplify author-network with relation = c('cochange', 'mail') using both algorithms", {
@@ -155,7 +159,8 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                          list("Base_Feature", "Base_Feature"), as.list(rep(NA, 2)), as.list(rep(NA, 2)))
     data$weight = rep(2, 6)
     data$type = rep(TYPE.EDGES.INTRA, 6)
-    data$relation = c(rep("cochange", 4), rep("mail", 2))
+    data$relation = list(list("cochange", "cochange"), list("cochange", "cochange"), list("cochange", "cochange"),
+                         list("cochange", "cochange"), list("mail", "mail"), list("mail", "mail"))
     data$message.id = list(as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)), as.list(rep(NA, 2)),
                            list("<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                 "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
@@ -166,7 +171,7 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, vertices = authors,
-                                                directed = net.conf$get.value("author.directed"))
+                                                     directed = net.conf$get.value("author.directed"))
 
     ## build simplified network
     network.built = network.builder$get.author.network()
@@ -200,7 +205,8 @@ test_that("Simplify author-network with relation = c('cochange', 'mail') using b
                          list("Base_Feature", "Base_Feature", NA, NA), list("Base_Feature", "Base_Feature"))
     data$weight = c(4, 2, 4, 2)
     data$type = rep(TYPE.EDGES.INTRA, 4)
-    data$relation = list(c("cochange", "mail"), c("cochange"), c("cochange", "mail"), c("cochange"))
+    data$relation = list(list("cochange", "cochange", "mail", "mail"), list("cochange", "cochange"),
+                         list("cochange", "cochange", "mail", "mail"), list("cochange", "cochange"))
     data$message.id = list(list(NA, NA, "<4cbaa9ef0802201124v37f1eec8g89a412dfbfc8383a@mail.gmail.com>",
                                         "<6784529b0802032245r5164f984l342f0f0dc94aa420@mail.gmail.com>"),
                            list(NA, NA),
@@ -238,10 +244,10 @@ test_that("Simplify multiple basic multi-relational networks", {
         igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR)
     for (i in 1:3) {
-        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = "cochange")
-        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "mail")
-        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = "cochange")
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = list("mail"))
+        network.A = igraph::add_edges(network.A, c("A", "B"), type = TYPE.EDGES.INTRA, relation = list("cochange"))
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = list("mail"))
+        network.B = igraph::add_edges(network.B, c("C", "D"), type = TYPE.EDGES.INTRA, relation = list("cochange"))
     }
 
     ## add graph attributes
@@ -251,12 +257,14 @@ test_that("Simplify multiple basic multi-relational networks", {
 
     network.A.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("A", "B", type = TYPE.ARTIFACT, kind = "feature") +
-        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "mail") +
-        igraph::edges("A", "B", type = TYPE.EDGES.INTRA, relation = "cochange")
+        igraph::edges("A", "B", "A", "B", type = TYPE.EDGES.INTRA)
     network.B.expected = igraph::make_empty_graph(n = 0, directed = FALSE) +
         igraph::vertices("C", "D", type = TYPE.AUTHOR, kind = TYPE.AUTHOR) +
-        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "mail") +
-        igraph::edges("C", "D", type = TYPE.EDGES.INTRA, relation = "cochange")
+        igraph::edges("C", "D", "C", "D", type = TYPE.EDGES.INTRA)
+    network.A.expected = igraph::set_edge_attr(network.A.expected, "relation", value = list(list("mail", "mail", "mail"),
+                                                                                            list("cochange", "cochange", "cochange")))
+    network.B.expected = igraph::set_edge_attr(network.B.expected, "relation", value = list(list("mail", "mail", "mail"),
+                                                                                            list("cochange", "cochange", "cochange")))
 
     ## simplify networks without simplifying multiple relations into single edges
     networks.simplified = simplify.networks(networks, simplify.multiple.relations = FALSE)
@@ -272,12 +280,81 @@ test_that("Simplify multiple basic multi-relational networks", {
     for (i in 1:2) {
         expect_identical(igraph::ecount(networks.simplified[[i]]), 1)
         expect_identical(igraph::E(networks.simplified[[i]])$type[[1]], "Unipartite")
-        expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], c("cochange", "mail"))
+        expect_identical(igraph::E(networks.simplified[[i]])$relation[[1]], list("mail", "cochange", "mail", "cochange", "mail", "cochange"))
     }
 
     ## verify graph attributes
     expect_identical(igraph::graph_attr(networks.simplified[["A"]], "name"), "network.A")
     expect_identical(igraph::graph_attr(networks.simplified[["B"]], "name"), "network.B")
+})
+
+test_that("Simplify network with multi-relational edges", {
+
+    ## Note: Base network
+    ## A -- (cochange)             --> D
+    ## B -- (cochange)             --> E
+    ## B -- (mail)                 --> E
+    ## C -- (mail)                 --> F
+    ## B -- (mail, cochange)       --> E
+    ## B -- (mail, cochange, mail) --> E
+    ## B -- (mail, mail)           --> E
+    ## C -- (mail, mail)           --> F
+
+    ## create network with vertices connected by multi-relational edges
+    data = data.frame(comb.1. = c("A", "B", "B", "C", "B", "B", "B", "C"),
+                      comb.2. = c("D", "E", "E", "F", "E", "E", "E", "F"))
+    data$relation = list(list("cochange"), list("cochange"),
+                         list("mail"), list("mail"),
+                         list("mail", "cochange"), list("mail", "cochange", "mail"),
+                         list("mail", "mail"), list("mail", "mail"))
+
+    ## build expected network
+    network.base = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                  directed = FALSE)
+
+    ## ---------------------- simplify.multiple.relations == FALSE -------------------------- ##
+
+    network.built = simplify.network(network.base, simplify.multiple.relations = FALSE)
+
+    ## Note: (mail) can be simplified with (mail, mail).
+    ##       (mail) and (mail, mail) cannot be simplified with (mail, cochange).
+    ##       (mail, cochange) can be simplified with (mail, cochange, mail).
+    ## A -- (cochange)                             --> D
+    ## B -- (cochange)                             --> E
+    ## B -- (mail, mail, mail)                     --> E
+    ## C -- (mail, mail, mail)                     --> F
+    ## B -- (mail, cochange, mail, cochange, mail) --> E
+
+    data = data.frame(comb.1. = c("A", "B", "B", "C", "B"),
+                      comb.2. = c("D", "E", "E", "F", "E"))
+    data$relation = list(list("cochange"), list("cochange"),
+                         list("mail", "mail", "mail"), list("mail", "mail", "mail"),
+                         list("mail", "cochange", "mail", "cochange", "mail"))
+    network.expected = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                     directed = FALSE)
+
+    assert.networks.equal(network.built, network.expected)
+
+    ## ---------------------- simplify.multiple.relations == TRUE --------------------------- ##
+
+    network.built = simplify.network(network.base, simplify.multiple.relations = TRUE)
+
+    ## Note: The order of partials in the B--E edge is determined
+    ##       by collecting partials from all B--E source-edges top-down.
+    ## A -- (cochange)                                                         --> D
+    ## B -- (cochange, mail, mail, cochange, mail, cochange, mail, mail, mail) --> E
+    ## C -- (mail, mail, mail)                                                 --> F
+
+    data = data.frame(comb.1. = c("A", "B", "C"),
+                      comb.2. = c("D", "E", "F"))
+    data$relation = list(list("cochange"),
+                         list("cochange", "mail", "mail", "cochange", "mail", "cochange", "mail", "mail", "mail"),
+                         list("mail", "mail", "mail"))
+    network.expected = igraph::graph_from_data_frame(data, vertices = c("A", "B", "C", "D", "E", "F"),
+                                                     directed = FALSE)
+
+    assert.networks.equal(network.built, network.expected)
+
 })
 
 test_that("Remove isolated vertices", {
@@ -1022,8 +1099,9 @@ patrick::with_parameters_test_that("Convert edge attributes to list", {
     }
 
     ## check edge attributes
+    to.list = function(attr) return(as.list(lapply(attr, as.list)));
     for (attr in igraph::edge_attr_names(network)) {
-        conversion.function = ifelse(attr %in% remain.as.is, identity, as.list)
+        conversion.function = ifelse(attr %in% remain.as.is, identity, to.list)
         expect_equal(
             conversion.function(igraph::edge_attr(network, attr)),
             igraph::edge_attr(network.listified, attr),
@@ -1089,3 +1167,172 @@ test_that("Get the data sources from a network with multiple relations on a sing
 
     expect_identical(expected.data.sources, get.data.sources.from.relations(network), info = "data sources: commits, mails")
 })
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Directedness ------------------------------------------------------------
+
+test_that("Enforcement of directedness in sub-networks", {
+
+    get.directedness = function(network.type, configured, relations) {
+
+        ## configuration
+        proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+        net.conf = NetworkConf$new()
+        update = list()
+        update[paste0(network.type, ".directed")] = configured
+        update[[paste0(network.type, ".relation")]] = relations
+        net.conf$update.values(update)
+
+        ## build network
+        network.builder = NetworkBuilder$new(project.data = ProjectData$new(project.conf = proj.conf), network.conf = net.conf)
+        switch(network.type,
+            "author"   = { network = network.builder$get.author.network() },
+            "artifact" = { network = network.builder$get.artifact.network() }
+        )
+        return(igraph::is_directed(network))
+    }
+
+    assert.directedness = function(network.type, expected, configured, relations) {
+        actual = get.directedness(network.type, configured, relations)
+        info.string = paste0("network type: ", network.type, ", configured-directedness: ", configured,
+                             ", data sources: ", paste(relations, collapse=", "))
+        expect_equal(expected, actual, info=info.string)
+    }
+
+    ## assume \code{ENFORCED.DIRECTEDNESS} to be empty for author and commit networks
+    ## and enforce undirectedness for \code{artifact.cochange} networks
+
+    ##
+    ## Without enforced directedness (expected always matches configured directedness)
+    ##
+
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("mail"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("mail"))
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("cochange"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("cochange"))
+    assert.directedness(network.type="author", expected=TRUE,  configured=TRUE,  relations=c("mail", "cochange"))
+    assert.directedness(network.type="author", expected=FALSE, configured=FALSE, relations=c("mail", "cochange"))
+
+    ##
+    ## With enforced directedness (expected is not always configured directedness)
+    ##
+
+    assert.directedness(network.type="artifact", expected=TRUE,  configured=TRUE,  relations=c("mail"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("mail"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=TRUE,  relations=c("cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=TRUE,  relations=c("mail", "cochange"))
+    assert.directedness(network.type="artifact", expected=FALSE, configured=FALSE, relations=c("mail", "cochange"))
+
+})
+
+test_that("Enforcement of directedness in multi-networks", {
+
+    get.directedness = function(author.directed, artifact.directed, artifact.relations) {
+
+        ## configuration
+        proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+        net.conf = NetworkConf$new()
+        net.conf$update.values(list(author.directed = author.directed,
+                                    artifact.directed = artifact.directed,
+                                    author.relation = c("cochange"),
+                                    artifact.relation = artifact.relations))
+
+        ## build mutli-network
+        network.builder = NetworkBuilder$new(project.data = ProjectData$new(project.conf = proj.conf), network.conf = net.conf)
+        network = network.builder$get.multi.network()
+        return(igraph::is_directed(network))
+    }
+
+    assert.directedness = function(expected, author.directed, artifact.directed, artifact.relations) {
+        actual = get.directedness(author.directed, artifact.directed, artifact.relations)
+        info.string = paste0("author directed: ", author.directed, ", artifact directed: ", artifact.directed,
+                             ", artifact relation(s): ", paste(artifact.relations, collapse=", "))
+        expect_equal(expected, actual, info=info.string)
+    }
+
+    ## assume \code{ENFORCED.DIRECTEDNESS} to be empty for author and commit networks
+    ## and enforce undirectedness for \code{artifact.cochange} networks
+
+    ##
+    ## Without enforced directedness from sub-networks (expect directedness of multi-network to be
+    ## \code{author.directedness && artifact.directedness})
+    ##
+
+    assert.directedness(expected=TRUE,  author.directed=TRUE,  artifact.directed=TRUE,  artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=TRUE,  artifact.directed=FALSE, artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=FALSE, artifact.directed=TRUE,  artifact.relations=c("mail"))
+    assert.directedness(expected=FALSE, author.directed=FALSE, artifact.directed=FALSE, artifact.relations=c("mail"))
+
+    ##
+    ## With enforced directedness from sub-networks (expect enforced directedness to propagate to multi-network)
+    ##
+
+    assert.directedness(expected=FALSE,  author.directed=TRUE,  artifact.directed=TRUE, artifact.relations=c("cochange"))
+    assert.directedness(expected=FALSE,  author.directed=TRUE,  artifact.directed=TRUE, artifact.relations=c("mail", "cochange"))
+
+})
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Constructing multiple networks ------------------------------------------
+
+test_that("Construct multiple different networks at once", {
+
+    ## configurations
+    proj.conf = ProjectConf$new(CF.DATA, CF.SELECTION.PROCESS, CASESTUDY, ARTIFACT)
+    proj.data = ProjectData$new(project.conf = proj.conf)
+    net.conf = NetworkConf$new()
+    net.conf$update.value("commit.relation", "commit.interaction")
+
+    ## construct network builder
+    network.builder = NetworkBuilder$new(project.data = proj.data, network.conf = net.conf)
+
+    # available network types
+    available.network.types = c("author", "artifact", "commit", "bipartite")
+    network.type.map = list(
+        author    = "authors.net",
+        artifact  = "artifacts.net",
+        commit    = "commits.net",
+        bipartite = "bipartite.net"
+    )
+
+    assert.correct.networks = function(network.builder, network.type) {
+
+        if (is.null(network.type)) {
+            # get all available networks
+            networks = network.builder$get.networks()
+            network.type = available.network.types
+
+        } else {
+            # get specified networks
+            networks = network.builder$get.networks(network.type = network.type)
+        }
+
+        expected.network.types = unname(sapply(network.type, function(type) network.type.map[[type]]))
+        actual.network.types = names(networks)
+
+        expect_identical(expected.network.types, actual.network.types,
+            info = paste0("all networks (",
+                          paste(names(networks), collapse=", "),
+                          ") are of the requested type (",
+                          paste(expected.network.types, collapse = ", "),
+                          ")"))
+    }
+
+    # get all subset combinations of an input list
+    get.subsets = function(input.list) {
+        output.list = list(NULL)
+        for (i in seq_along(input.list)) {
+            sublist = combn(input.list, i, simplify = FALSE)
+            output.list = c(output.list, sublist)
+        }
+        return(output.list)
+    }
+
+    # test all combinations of network types
+    for (network.type in get.subsets(available.network.types)) {
+        assert.correct.networks(network.builder, network.type = network.type)
+    }
+
+})
+

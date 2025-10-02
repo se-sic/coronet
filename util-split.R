@@ -22,7 +22,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -524,8 +524,7 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
                                     number.windows = NULL,  sliding.window = FALSE,
                                     remove.isolates = TRUE) {
     ## extract date attributes from edges
-    dates = do.call(base::c, igraph::edge_attr(network, "date"))
-    dates = get.date.from.unix.timestamp(dates)
+    dates = igraph::edge_attr(network, "date")
 
     ## number of windows given (ignoring time period and bins)
     if (!is.null(number.windows)) {
@@ -545,9 +544,11 @@ split.network.time.based = function(network, time.period = "3 months", bins = NU
     } else {
         ## specific bins are given, do not use sliding windows
         sliding.window = FALSE
-        ## find bins for dates
+        ## find bins for given dates
         bins.date = get.date.from.string(bins)
-        bins.vector = findInterval(dates, bins.date, all.inside = FALSE)
+        bins.vector = lapply(dates, function(date) {
+            findInterval(date, bins.date, all.inside = FALSE)
+        })
         bins = seq_len(length(bins.date) - 1) # the last item just closes the last bin
     }
 
@@ -709,7 +710,7 @@ split.network.activity.based = function(network, number.edges = 5000, number.win
                      number.edges, number.windows)
 
     ## get dates in a data.frame for splitting purposes
-    dates = do.call(base::c, igraph::edge_attr(network, "date"))
+    dates = unlist(igraph::edge_attr(network, "date"))
     df = data.frame(
         date = get.date.from.unix.timestamp(dates),
         my.unique.id = seq_len(edge.count) # as a unique identifier only
@@ -877,19 +878,121 @@ split.dataframe.by.bins = function(df, bins) {
 #' @return a list of networks, with the length of 'unique(bins.vector)'
 split.network.by.bins = function(network, bins, bins.vector, bins.date = NULL, remove.isolates = TRUE) {
     logging::logdebug("split.network.by.bins: starting.")
+
+    ## initialize variables
+    network.vertices = igraph::subgraph_from_edges(network, c(), delete.vertices = FALSE)
+    network.edges = igraph::as_data_frame(network, "edges")
+    edge.attr.names = igraph::edge_attr_names(network)
+    edge.count = igraph::ecount(network)
+
+    ## pre-distribute edges into bins to optimize for performance
+    edges.per.bins = setNames(lapply(bins, function(bin) list()), bins)
+    for (i in seq_len(edge.count)) {
+
+        ## get all bins that the edge belongs to
+        edge.bins = bins.vector[[i]]
+
+        ## for all bins the edge belongs to, add the edge to the corresponding bin
+        for (bin in intersect(bins, unique(edge.bins))) {
+            edges.per.bins[[bin]] = c(edges.per.bins[[bin]], i)
+        }
+    }
+
+    ## Track whether to remove numeric edge attributes after splitting.
+    ## Numeric attributes cannot be correctly separated when they
+    ## appear in multi-partial edges removing their semantic meaning
+    numeric.attrs = edge.attr.names[EDGE.ATTR.HANDLING[edge.attr.names] == "sum" & edge.attr.names != "weight"]
+    ignore.numeric.attrs = FALSE
+
     ## create a network for each bin of edges
     nets = parallel::mclapply(bins, function(bin) {
         logging::logdebug("Splitting network: bin %s", bin)
-        ## identify edges in the current bin
-        edges = igraph::E(network)[ bins.vector == bin ]
-        ## create network based on the current set of edges
-        g = igraph::subgraph_from_edges(network, edges, delete.vertices = remove.isolates)
-        return(g)
+
+        ## empty edge data
+        subnet.edges = list(
+            vertices   = c(),
+            attributes = c()
+        )
+        subnet.vertices = network.vertices
+
+        ## construct (partial-)edges in the current bin
+        for (i in edges.per.bins[[bin]]) {
+            edge = network.edges[i, ]
+
+            ## edge belongs completely to the current bin
+            if (all(bins.vector[[i]] == bin)) {
+
+                subnet.edges[["vertices"]]   = c(subnet.edges[["vertices"]], edge[["from"]], edge[["to"]])
+                subnet.edges[["attributes"]] = rbind(subnet.edges[["attributes"]], edge[edge.attr.names])
+            }
+
+            ## edge contains multiple partials
+            else {
+
+                ## extract partials of the edge that belong to the current bin
+                which.partials = bins.vector[[i]] == bin
+                partial.edge = edge
+
+                ## numeric attributes cannot be correctly separated when they
+                ## appear in multi-partial edges removing their semantic meaning
+                if (!all(which.partials)) {
+                    ignore.numeric.attrs = TRUE
+                }
+
+                ## extract all edge attributes and build new edge
+                for (attr in edge.attr.names) {
+                    attr.values = partial.edge[[attr]]
+
+                    ## if attribute is a list, extract only the values that belong to the current bin
+                    ## else, the attribute is a single value and does not need to be adjusted
+                    if (is.list(attr.values)) {
+                        partial.edge[[attr]][[1]] = attr.values[[1]][which.partials]
+                    }
+
+                    ## assume equal distribution of weights across partials
+                    else if (attr == "weight") {
+                        partial.edge[[attr]] = sum(which.partials)
+                    }
+                }
+
+                ## add edge to subnet
+                subnet.edges[["vertices"]]   = c(subnet.edges[["vertices"]], partial.edge[["from"]], partial.edge[["to"]])
+                subnet.edges[["attributes"]] = rbind(subnet.edges[["attributes"]], partial.edge[edge.attr.names])
+            }
+        }
+
+        ## construct sub-network based on the current set of edges
+        subnet = igraph::add_edges(subnet.vertices, subnet.edges[["vertices"]], attr = subnet.edges[["attributes"]])
+        if (remove.isolates) {
+            subnet = igraph::delete_vertices(subnet, which(igraph::degree(subnet) == 0))
+        }
+
+        ## return subnet and information about numeric attributes
+        subnet.information = list(
+            "subnet"               = subnet,
+            "ignore.numeric.attrs" = ignore.numeric.attrs
+        )
+
+        return(subnet.information)
     })
+
+    ## unpack information
+    ignore.numeric.attrs = any(sapply(nets, `[[`, "ignore.numeric.attrs"))
+    nets = lapply(nets, function(net) net[["subnet"]])
+
+    ## remove numeric attributes if necessary
+    if (ignore.numeric.attrs && length(numeric.attrs) > 0) {
+        nets = lapply(nets, function(subnet) {
+            subnet = igraph::delete_edge_attr(subnet, numeric.attrs)
+            return(subnet)
+        })
+    }
+
     ## set 'bins' attribute, if specified
     if (!is.null(bins.date)) {
         attr(nets, "bins") = get.date.from.string(bins.date)
     }
+
     logging::logdebug("split.network.by.bins: finished.")
     return(nets)
 }
@@ -1167,34 +1270,53 @@ split.unify.range.names = function(ranges) {
 #' Note: As the last bound of a bin is exclusive, the end of the last bin is always
 #' set to \code{max(dates) + 1} to include the last date!
 #'
-#' @param dates the dates that are to be split into several bins
+#' @param dates the dates that are to be split into several bins either as a vector or as a (nested) list
 #' @param time.period the time period each bin lasts
 #' @param number.windows the number of consecutive time windows to get from this function. If set,
 #'                       the 'time.period' parameter is ignored. [default: NULL]
 #'
 #' @return a list,
-#'         the item 'vector': the bins each item in 'dates' belongs to,
+#'         the item 'vector': the bins each item in 'dates' belongs to. If 'dates' is
+#'             a nested list, the nesting structure is preserved and reflected in
+#'             the structure of the 'vector',
 #'         the item 'bins': the bin labels, each spanning the length of 'time.period';
 #'             each item in the vector indicates the start of a bin, although the last
 #'             item indicates the end of the last bin
 split.get.bins.time.based = function(dates, time.period, number.windows = NULL) {
     logging::logdebug("split.get.bins.time.based: starting.")
 
+    ## flatten dates
+    flat.dates = get.date.from.unix.timestamp(unlist(dates))
+
     ## generate date bins from given dates
     if (is.null(number.windows)) {
-        dates.breaks = generate.date.sequence(min(dates), max(dates), time.period)
+        dates.breaks = generate.date.sequence(min(flat.dates), max(flat.dates), time.period)
     } else {
-        dates.breaks = generate.date.sequence(min(dates), max(dates), length.out = number.windows)
+        dates.breaks = generate.date.sequence(min(flat.dates), max(flat.dates), length.out = number.windows)
     }
     ## as the last bin bound is exclusive, we need to add a second to it
-    dates.breaks[length(dates.breaks)] = max(dates) + 1
+    dates.breaks[length(dates.breaks)] = max(flat.dates) + 1
     ## generate charater strings for bins
     dates.breaks.chr = get.date.string(head(dates.breaks, -1))
 
     ## find bins for given dates
-    dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
-    ## convert to character factor and set factor's levels appropriately
-    dates.bins = factor(dates.breaks.chr[dates.bins], levels = dates.breaks.chr)
+    if (is.list(dates)) {
+
+        ## split each sublist of dates by the 'dates.breaks'
+        dates.bins = lapply(dates, function(date) {
+            intervals = findInterval(date, dates.breaks, all.inside = FALSE)
+            ## convert to character factor and set factor's levels appropriately
+            factors = factor(dates.breaks.chr[intervals], levels = dates.breaks.chr)
+            return(factors)
+        })
+
+    } else {
+
+        ## split dates by the 'dates.breaks'
+        dates.bins = findInterval(dates, dates.breaks, all.inside = FALSE)
+        ## convert to character factor and set factor's levels appropriately
+        dates.bins = factor(dates.breaks.chr[dates.bins], levels = dates.breaks.chr)
+    }
 
     logging::logdebug("split.get.bins.time.based: finished.")
 

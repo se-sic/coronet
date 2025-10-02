@@ -2,4 +2,6 @@
 32719;"2016-07-12 16:06:10";"Karl";"karl@example.org";"2016-07-12 16:06:10";"Karl";"karl@example.org";"1143db502761379c2bfcecc2007fc34282e7ee61";1;1;0;1;"test3.c";"test_function";"Function";1
 32715;"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"2016-07-12 16:06:32";"Thomas";"thomas@example.org";"0a1a5c523d835459c42f33e863623138555e2526";1;1;0;1;"test2.c";"File_Level";"Function";1
 32720;"2016-07-12 16:06:20";"Karl";"karl@example.org";"2016-07-12 16:06:20";"Karl";"karl@example.org";"418d1dc4929ad1df251d2aeb833dd45757b04a6f";1;1;0;1;"";"";"";0
+32722;"2016-07-12 16:06:20";"Thomas";"thomas@example.org";"2016-07-12 16:06:20";"Thomas";"thomas@example.org";"7d5219c4ba15b8962203f0ae37f9854167914915";2;3;1;2;"test2.c";"test_function";"Function";1
+32722;"2016-07-12 16:06:20";"Thomas";"thomas@example.org";"2016-07-12 16:06:20";"Thomas";"thomas@example.org";"7d5219c4ba15b8962203f0ae37f9854167914915";2;3;1;2;"test3.c";"test_function";"Function";2
 32721;"2016-07-12 16:06:30";"Thomas";"thomas@example.org";"2016-07-12 16:06:30";"Thomas";"thomas@example.org";"d01921773fae4bed8186b0aa411d6a2f7a6626e6";1;1;0;1;"";"";"";0

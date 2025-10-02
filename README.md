@@ -37,6 +37,7 @@ If you wonder: The name `coronet` derives as an acronym from the words "configur
       - [Core/Peripheral classification](#coreperipheral-classification)
            - [Count-based metrics](#count-based-metrics)
            - [Network-based metrics](#network-based-metrics)
+      - [Commit-message content analysis](#commit-message-content-analysis)
     - [How-to](#how-to)
     - [File/Module overview](#filemodule-overview)
   - [Configuration classes](#configuration-classes)
@@ -62,9 +63,9 @@ While using the package, we require the following infrastructure.
 
 #### [`R`](https://www.r-project.org/)
 
-Minimum requirement is `R` version `4.0.5`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
+Minimum requirement is `R` version `4.1.1`. Hence, later `R` versions also work. (Earlier `R` versions beginning from version `3.3.1` on should also work, but some packages are not available any more for these versions, so we do not test them any more in our CI pipeline.)
 
-We currently *recommend* `R` version `4.1.1` or `4.3.0` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
+We currently *recommend* `R` version `4.3.0` or `4.5.1` for reliability reasons and `packrat` compatibility, but also later `R` versions should work (and are tested using our CI script).
 
 #### [`packrat`](http://rstudio.github.io/packrat/) (recommended)
 
@@ -147,6 +148,9 @@ Alternatively, you can run `Rscript install.R` to install the packages.
 - `Matrix`: For sparse matrix representation of large adjacency matrices (package version `1.3.0` or higher is required)
 - `fastmap`: For fast implementation of a map
 - `purrr`: For fast implementation of a mapping function
+- `tm`: For NLP tasks used on commit messages
+- `textstem`: For lemmatization of commit messages
+- `SnowballC`: For text stemming, used by NLP package `tm`
 
 ### Submodule
 
@@ -428,6 +432,10 @@ In this section, we provide descriptions of the different algorithms we provide 
 - `network.eccentricity`
     * calculates scores based on the eccentricity of vertices in a network
     * eccentricity measures the length of the shortest path to each vertex's furthest reachable vertex
+
+#### Commit-message content analysis
+
+In this section, we give an overview of the functionalities we offer regarding the textual analysis of commit messages. These consist of basic NLP tasks, such as stemming (`get.stemmed.commit.messages`), tokenization (`get.tokenized.commit.messages`), and lemmatization (`get.lemmatized.commit.messages`), as well as preprocessing steps (`get.preprocessed.commit.messages`) such as lowercase transformation and removal of punctuation, stopwords, and extra whitespaces. Apart from these, there is the option of searching for a set of strings in commit messages for matching commits (`get.commit.messages.by.strings`) as well as getting token counts for commit messages (`get.commit.message.counts`).
 
 ### How-to
 

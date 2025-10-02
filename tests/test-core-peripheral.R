@@ -17,7 +17,7 @@
 ## Copyright 2022 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2019 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -248,7 +248,7 @@ test_that("Commit-count classification using 'result.limit'" , {
     result = get.author.class.commit.count(proj.data, result.limit = 3)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), commit.count = c(1, 1, 1))
+    expected.core = data.frame(author.name = c("Thomas", "Björn", "Olaf"), commit.count = c(2, 1, 1))
     expected = list(core = expected.core, peripheral = expected.core[0, ])
 
     row.names(result[["core"]]) = NULL
@@ -262,8 +262,9 @@ test_that("LOC-count classification" , {
     result = get.author.class.loc.count(proj.data)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Björn", "Olaf", "Thomas"), loc.count = c(2, 1, 1))
-    expected = list(core = expected.core, peripheral = expected.core[0, ])
+    expected.core = data.frame(author.name = c("Thomas", "Björn"), loc.count = c(5, 2))
+    expected.peripheral = data.frame(author.name = c("Olaf"), loc.count = c(1))
+    expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result[["core"]]) = NULL
     row.names(result[["peripheral"]]) = NULL

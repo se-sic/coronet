@@ -15,7 +15,7 @@
 ## Copyright 2017-2018 by Claus Hunsen <hunsen@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2023 by Thomas Bock <bockthom@cs.uni-saarland.de>
-## Copyright 2022-2023 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2022-2023, 2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -24,16 +24,19 @@
 
 test_that("Get edgelist augmented with timestamps", {
 
+    ##
+    ## Artifical network (without unlisting timestamps)
+    ##
+
     ## construct network
-    edges = list(list("A", "A"), list("D", "C"), list("C", "A"), list("B", "C"))
+    edges = list(list("A", "A"), list("D", "C"), list("D", "C"), list("B", "C"))
     timestamps = c("2016-12-07 15:30:02", "2016-08-07 15:37:02", "2016-07-12 15:59:25", "2016-07-12 15:59:59")
     network =
         igraph::make_empty_graph(n = 0, directed = TRUE) +
         igraph::vertices("A", "B", "C", "D") +
         igraph::edges(edges, relation = "mail", date = timestamps)
 
-
-    ## get edgelist augmented with timestamps
+    ## get edgelist with timestamps
     edgelist = get.edgelist.with.timestamps(network)
 
     ## check correctness
@@ -45,6 +48,66 @@ test_that("Get edgelist augmented with timestamps", {
         expect_equal(actual[["to"]], edges[[i]][[2]])
         expect_equal(actual[["date"]], timestamps[i])
     })
+
+    ##
+    ## Authentic network (without unlisting timestamps)
+    ##
+
+    ## make network authentic (dates as POSIXct in lists)
+    network = igraph::set_edge_attr(network, "date", value = get.date.from.string(timestamps))
+    network = convert.edge.attributes.to.list(network)
+
+    ## get edgelist with timestamps (without unlisting timestamps)
+    edgelist = get.edgelist.with.timestamps(network, unlist.timestamps.if.possible = FALSE)
+
+    ## check correctness
+    expect_equal(names(edgelist), c("from", "to", "date"))
+    expect_equal(nrow(edgelist), 4)
+    lapply(1:4, function(i) {
+        actual = edgelist[i, ]
+        expect_equal(actual[["from"]], edges[[i]][[1]])
+        expect_equal(actual[["to"]], edges[[i]][[2]])
+        expect_equal(actual[["date"]], list(get.date.from.string(as.list(timestamps[i]))))
+    })
+
+    ##
+    ## Authentic network (with unlisting timestamps)
+    ##
+
+    ## get edgelist with timestamps (with unlisting timestamps)
+    edgelist.unlisted.if.possible = get.edgelist.with.timestamps(network, unlist.timestamps.if.possible = TRUE)
+
+    ## check correctness
+    expect_equal(names(edgelist.unlisted.if.possible), c("from", "to", "date"))
+    expect_equal(nrow(edgelist.unlisted.if.possible), 4)
+    lapply(1:4, function(i) {
+        actual = edgelist.unlisted.if.possible[i, ]
+        expect_equal(actual[["from"]], edges[[i]][[1]])
+        expect_equal(actual[["to"]], edges[[i]][[2]])
+        expect_equal(actual[["date"]], get.date.from.string(timestamps[i]))
+    })
+
+    ##
+    ## Authentic network (attempt and fail to unlist timestamps)
+    ##
+
+    ## simplifying edges should make unlisting timestamps impossible
+    network = simplify.network(network, remove.loops = FALSE)
+
+    ## get edgelist with timestamps
+    edgelist = get.edgelist.with.timestamps(network, unlist.timestamps.if.possible = FALSE)
+    edgelist.unlisted.if.possible = get.edgelist.with.timestamps(network, unlist.timestamps.if.possible = TRUE)
+
+    ## construct expected result
+    expected.edges = data.frame(from = c("A", "B", "D"), to = c("A", "C", "C"))
+    expected.edges[["date"]] = list(as.list(get.date.from.string(timestamps[1])),
+                                    as.list(get.date.from.string(timestamps[4])),
+                                    as.list(get.date.from.string(c(timestamps[2], timestamps[3]))))
+
+    ## check correctness
+    expect_equal(edgelist, expected.edges, info = "Get edgelist with timestamps.")
+    expect_equal(edgelist.unlisted.if.possible, expected.edges,
+                 info = "Get edgelist with timestamps (attempt to unlist timestamps fails).")
 })
 
 

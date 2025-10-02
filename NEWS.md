@@ -2,6 +2,38 @@
 
 # coronet – Changelog
 
+## 5.1
+
+### Added
+
+- Add the possibility to split networks that contain simplified edges (PR #278, 9798d33512dcdf50d3b88a1223fc4913a2a88eeb, 0ed437c14423c1917f1ba470e7e55db4626d380b, 67a6651b94d50cb7c2ab4a74888b0556d607b102, 98ef83158204be2a67b115cb25df5ba375cccf60, 7ec4d83fdeb308a24a350acd808941807b9511f1, 637d62ab70f098f26f241e588a99cdc49d10f56a, 2c70666f128f96a3a573f29a0cbbef14d803d193, 1cbc6fa36859d6db3a7ff4493ef19763e87d2de3, 41788ff029d038969bfc6b5773e919201c5ac595, b042c0dd08e2229514ccd25dee7a119f25b1ab45, 36d23d657f412aa1953c4773076e593273f19d8e, 402c256d9a05e4ffb297d4ea1fc25d0230787bc0, 54af2b19a112070f10d191b98b055482748426a7, 894414a4a970822b9ecd59c0b6c480860707f636, 0fe32a259ef703c2de79135bfa6932a595fdc1c5)
+- Add functionality for commit-message content analysis, such as NLP tools including stemming, tokenization, and lemmatization, as well as a function to search for keywords in commit messages and a function to measure the length of the messages (PR #281, 5aa4e4193f0c00095fedf961c6060a5c035ef9c6, 99f0638566c0062b987617bc3fe3ace1db7729ee, e469d3a0cf2881c378469b6ccfea9c204d13f19b, 7d8fd39f164c776921e3fb36daf79256e7be7426, ef689f71f248059cc69be4792ca14ce3b95dcac8, 6e642242a3063663bcc3c7f5cca0650dfebb6bb4, f54439486115cada08dac23864b2f7605edca9ea, dd9246b2f4506d3d58f1c1f37fc198aaaafebb0d)
+- Add `unlist.timestamps.if.possible` parameter to `get.edgelist.with.timestamps` which allows callers to request a conversion of the timestamps from list to vector if possible, i.e., when there are no simplified edges in the network (PR #289, 39bf1ddc570057fcae093252d7631e13bc0b5a55)
+
+### Changed/Improved
+
+- For consistency reasons: Ensure that the values of edge attributes are always lists even when they represent singular values (PR #278, 6fae1843740ed8e48c89c2ee4e61f995b5d0b8f5, 416c817998540fc0b82d9959574838b571b4d6fb)
+- Reduce the amount of redundantly built networks by caching network data internally. This should improve the performance of building multi-networks, especially, when parts of the multi-networks have been built before (#119, PR #282, 06a814c945f0b20af842d20247126083523cde55, 4793eab02e8792b0640fad88a90018292b1b2ab9, 8ba907fff0534c6fef39bd289ab163c90b053530, 28d22902e32e93c0d4990576da2ef3de88fdffbd, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0, b30c7f2b5b0a6d12e8024fafada5490170530ebe, 1fa340d6347090a327b4c32ece705c1f700234e5, 40cd55423be7b6521e2fc35f5aa200ff0594e77c, 8fcc74439c28b1592e964dd753bfc1cd57c062be, ca348f1de8e3b4e5786a6d2726ca14e530446896, 1d233af734f79e677d3388f7c3589ce186cc3a8d, 5dd5fc18940ce9ac9598902f175193167b471966)
+- Internally cache commit-network data and bipartite-network data similarly to how we cache network data for author-, and artifact-networks (PR #282, PR #285, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0, aa7e3fae9f45df73054f7d9c6a96177575106c7d)
+- Ensure that configured or implicitly-enforced undirectedness in partial networks is always dominant over configured or implicitly-enforced directedness. Furthermore, ensure consistency in the directedness used for edge generation and as a network attribute, especially in networks that consist of multiple partial networks such as multi-networks (PR #282, 65ead39b7b971e5a0acbaee4e787efcf194aafc4, a776caf72256200e1bfa5578106a9b53547b00e7, 257a1c8a6a9b1c3e2a72960cc4051a87950753ee, 41cff01cf141a377c96048f0645e05fb200138e9)
+- Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
+- Allow the issue data attributes `event.info.1` and `event.info.2` on network edges (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
+- Add a `network.type` parameter to `get.networks` in which the caller can specify the types of networks to be constructed. This improves performance in cases where not all network types are needed, such as when building multi-networks (PR #285, bc2efd643d92da547d4677f9026540c25e730a03, e9a0c1681a0b63bd831fe7657ce25a9d50dc6e83)
+- Rename the `list.attributes` parameter in `add.vertex.attribute` and `split.and.add.vertex.attribute` to `flatten.values` with inverted semantics and introduce documentation for it to improve comprehensibility (PR #285, 7dab04a5251d89c9cb286452528ef8b6775a7347)
+- Sort author data by `author.name` instead of `author.id` when reading it from a file (PR #286, 61b538b7cf81c4b6638951bfaf051e376d0986b3)
+- Enhance codeface testing data by ensuring that commit ids are unique between proximity and feature data and by adding commit data that includes (1) different commits that touch the same file / function, (2) commits that are authored at the same time by different authors (PR #286, 7481099af109e1897b9e5754beb1c7da9f39ffb9, 3e53285426010cf7bf48fa23daa484f29f80ac78)
+- Deprecate support for R version 4.0 because of breaking dependencies (PR #281, 3dc91b155b3e0e2a55378592db448606381f902e)
+
+### Fixed
+
+- Fix a bug in `construct.edge.list.from.key.value.list` that could cause a crash when constructing a network where different vertices have identical associated timestamps (PR #285, d694a6847c36d32dfee60f7d5b082e1d3ba57e01)
+- Fix a bug in network construction that could lead to edges having an unwanted `author.name.1` attribute (PR #285, 105fec1acc436378a9282c40fcae0eb0257f00be)
+- Ensure that POSIXct values are correctly handled in `add.vertex.attribute`, i.e., that they are not converted to numeric values (PR #285, 7dab04a5251d89c9cb286452528ef8b6775a7347, 4924ac23737dec6f915edaeb350a5cbaebbeec79)
+- Handle empty edges when constructing commit networks using commit-interaction data (PR #285, d5e1e4801230224e6272cd66873bd43bb7f04a00)
+- Correctly retain order of commit and mail data when merging it with PAStA, synchronicity, and commit message data (PR #286, 50b9b68effd49f853b8bcb335676357a854d1f97)
+- Fix `get.edgelist.with.timestamps` to work correctly on networks with dates in default (list) format (PR #289, 35b34bf1d5049904d75122ace847debe0d1595f7)
+
+
 ## 5.0
 
 ### Announcement

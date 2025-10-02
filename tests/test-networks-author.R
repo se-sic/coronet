@@ -21,7 +21,7 @@
 ## Copyright 2018 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2018-2019 by Anselm Fehnker <fehnker@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 
 ## All Rights Reserved.
@@ -301,15 +301,19 @@ test_that("Network construction of the undirected but temorally ordered author-c
                          type = TYPE.AUTHOR)
 
     ## edge attributes
-    data = data.frame(comb.1. = c("Olaf", "Karl", "Thomas", "Thomas"),
-                      comb.2. = c("Björn", "Olaf", "Olaf", "Karl"),
+    data = data.frame(comb.1. = c("Olaf", "Karl", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas"),
+                      comb.2. = c("Björn", "Olaf", "Olaf", "Karl", "Thomas", "Thomas", "Thomas"),
                       date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10",
-                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:32")),
+                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:32",
+                                                    "2016-07-12 16:06:20", "2016-07-12 16:06:32",
+                                                    "2016-07-12 16:06:32")),
                       artifact.type = "Feature",
                       hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
-                              "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-                      file = c("test.c", "test3.c", "test2.c", "test2.c"),
-                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "7d5219c4ba15b8962203f0ae37f9854167914915", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", "foo", "foo"),
                       weight = 1,
                       type = TYPE.EDGES.INTRA,
                       relation = "cochange"
@@ -343,15 +347,18 @@ test_that("Network construction of the directed author-cochange network", {
                          type = TYPE.AUTHOR)
 
     ## edge attributes
-    data = data.frame(from = c("Olaf", "Karl", "Thomas", "Thomas"),
-                      to = c("Björn", "Olaf", "Olaf", "Karl"),
+    data = data.frame(from = c("Olaf", "Karl", "Thomas", "Thomas", "Thomas", "Thomas", "Thomas"),
+                      to = c("Björn", "Olaf", "Olaf", "Karl", "Thomas", "Thomas", "Thomas"),
                       date = get.date.from.string(c("2016-07-12 16:00:45", "2016-07-12 16:06:10", "2016-07-12 16:06:32",
+                                                    "2016-07-12 16:06:32", "2016-07-12 16:06:20", "2016-07-12 16:06:32",
                                                     "2016-07-12 16:06:32")),
                       artifact.type = "Feature",
                       hash = c("5a5ec9675e98187e1e92561e1888aa6f04faa338", "1143db502761379c2bfcecc2007fc34282e7ee61",
-                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526"),
-                      file = c("test.c", "test3.c", "test2.c", "test2.c"),
-                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature"),
+                               "0a1a5c523d835459c42f33e863623138555e2526", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "7d5219c4ba15b8962203f0ae37f9854167914915", "0a1a5c523d835459c42f33e863623138555e2526",
+                               "0a1a5c523d835459c42f33e863623138555e2526"),
+                      file = c("test.c", "test3.c", "test2.c", "test2.c", "test3.c", "test2.c", "test2.c"),
+                      artifact = c("A", "Base_Feature", "Base_Feature", "Base_Feature", "foo", "foo", "foo"),
                       weight = 1,
                       type = TYPE.EDGES.INTRA,
                       relation = "cochange"
@@ -457,7 +464,8 @@ test_that("Network construction of the undirected simplified author-cochange net
                           list("Base_Feature", "Base_Feature"))),
         weight = 2,
         type = TYPE.EDGES.INTRA,
-        relation = "cochange"
+        relation = I(list(list("cochange", "cochange"), list("cochange", "cochange"),
+                          list("cochange", "cochange"), list("cochange", "cochange")))
     )
 
     ## remove the 'AsIs' class from the edge attributes that have been inserted via `I(...)`
@@ -466,6 +474,7 @@ test_that("Network construction of the undirected simplified author-cochange net
     data[["hash"]] = unclass(data[["hash"]])
     data[["file"]] = unclass(data[["file"]])
     data[["artifact"]] = unclass(data[["artifact"]])
+    data[["relation"]] = unclass(data[["relation"]])
 
     ## build expected network
     network.expected = igraph::graph_from_data_frame(data, directed = FALSE, vertices = authors)

@@ -24,7 +24,7 @@
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
-## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -501,3 +501,19 @@ calculate.cohens.kappa(author.classification.list = author.class.overview,
 get.class.turnover.overview(author.class.overview = author.class.overview)
 get.unstable.authors.overview(author.class.overview = author.class.overview, saturation = 2)
 
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit-message content analysis -----------------------------------------
+
+## analyze all commit messages using tokenization, which does not employ any preprocessing steps
+get.tokenized.commit.messages(y.data)
+
+## analyze the commit message of a specific commit with only one preprocessing step
+get.lemmatized.commit.messages(y.data,
+                               commit.hashes = c("3a0ed78458b3976243db6829f63eba3eead26774"),
+                               preprocessing = "stopwords")
+
+## analyze all commits using default preprocessing
+get.preprocessed.commit.messages(y.data)
+
+## analyze all commit messages with two preprocessing steps
+get.stemmed.commit.messages(y.data, preprocessing = c("whitespaces", "lowercase"))

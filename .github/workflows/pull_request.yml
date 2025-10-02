@@ -11,8 +11,9 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ##
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 name: Build Status
@@ -37,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r-version: ['4.0', '4.1', '4.2', '4.3', '4.4', 'latest']
+        r-version: ['4.1', '4.2', '4.3', '4.4', '4.5', 'latest']
 
     steps:
       - name: Checkout Repo
@@ -89,17 +90,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
       - name: Load coverage report
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
 
       - name: Upload Report to CodeCov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: cobertura.xml
+          files: cobertura.xml
           disable_search: true
+          disable_telem: true
           fail_ci_if_error: true
           verbose: true
-

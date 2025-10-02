@@ -22,7 +22,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021-2022 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2023-2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -131,7 +131,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = NA,
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -164,7 +164,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -197,7 +197,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -230,7 +230,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -263,7 +263,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -296,7 +296,7 @@ get.expected.first.activity = function() {
                 ),
                 list(
                     mails = "2016-07-12 16:04:40 UTC",
-                    commits = "2016-07-12 16:06:32 UTC",
+                    commits = "2016-07-12 16:06:20 UTC",
                     issues = NA
                 )
             )
@@ -670,12 +670,12 @@ test_that("Test add.vertex.attribute.author.commit.count", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L,  1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 1L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 2L)),
+        complete = network.covariates.test.build.expected(c(1L), c(2L), c(2L, 1L, 2L))
     )
 
     ## Test
@@ -698,12 +698,12 @@ test_that("Test add.vertex.attribute.author.commit.count.committer.and.author", 
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 1L))
+        range = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 2L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  2L)),
+        all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L,  2L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 2L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 2L)),
+        complete = network.covariates.test.build.expected(c(1L), c(0L), c(0L, 1L, 2L))
     )
 
     ## Test
@@ -726,12 +726,12 @@ test_that("Test add.vertex.attribute.author.commit.count.committer.or.author", {
     networks.and.data = get.network.covariates.test.networks()
 
     expected.attributes = list(
-        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L)),
-        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  2L))
+        range = network.covariates.test.build.expected(c(1L), c(1L), c(1L, 1L, 3L)),
+        cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  3L)),
+        all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  3L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L), c(1L), c(2L, 1L,  3L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  3L)),
+        complete = network.covariates.test.build.expected(c(2L), c(2L), c(2L, 1L,  3L))
     )
 
     ## Test
@@ -1138,7 +1138,7 @@ test_that("Test add.vertex.attribute.author.first.activity with multiple types a
             list(list(all.activities = "2016-07-12 16:00:45 UTC")),
             list(list(all.activities = "2016-07-12 16:05:37 UTC"),
                  list(all.activities = "2016-07-12 16:06:10 UTC"),
-                 list(all.activities = "2016-07-12 16:06:32 UTC")
+                 list(all.activities = "2016-07-12 16:06:20 UTC")
             )
         ),
         cumulative = network.covariates.test.build.expected(
@@ -1488,47 +1488,47 @@ test_that("Test add.vertex.attribute.author.role.simple", {
                 c("core"), c("core"), c("core", "core", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "core")
+                c("core"), c("core"), c("peripheral", "core", "core")
             )
         ),
         cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             )
         ),
         all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             )
         ),
         project.cumulative = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             )
         ),
         project.all.ranges = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             )
         ),
         complete = list(
             commit.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             ),
             loc.count = network.covariates.test.build.expected(
-                c("core"), c("core"), c("core", "core", "peripheral")
+                c("core"), c("core"), c("core", "peripheral", "core")
             )
         )
     )
@@ -1639,27 +1639,27 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
     expected.attributes = list(
         range = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 16:00:45 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         ),
         cumulative = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 15:58:59 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         ),
         all.ranges = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 15:58:59 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         ),
         project.cumulative = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 15:58:59 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         ),
         project.all.ranges = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 15:58:59 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         ),
         complete = network.covariates.test.build.expected(
             c("2016-07-12 15:58:59 UTC"), c("2016-07-12 15:58:59 UTC"),
-            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:32 UTC")
+            c("2016-07-12 16:05:41 UTC", "2016-07-12 16:06:20 UTC")
         )
     )
 
@@ -1679,10 +1679,6 @@ test_that("Test add.vertex.attribute.artifact.first.occurrence", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "first.occurrence")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1737,10 +1733,6 @@ test_that("Test add.vertex.attribute.artifact.last.edited", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "last.edited")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1754,17 +1746,17 @@ test_that("Test add.vertex.attribute.artifact.change.count", {
 
     expected.attributes = list(
         range = network.covariates.test.build.expected(
-            c(1L), c(1L), c(3L, 1L)),
+            c(1L), c(1L), c(3L, 2L)),
         cumulative = network.covariates.test.build.expected(
-            c(1L), c(2L), c(3L, 1L)),
+            c(1L), c(2L), c(3L, 2L)),
         all.ranges = network.covariates.test.build.expected(
-            c(2L), c(2L), c(3L, 1L)),
+            c(2L), c(2L), c(3L, 2L)),
         project.cumulative = network.covariates.test.build.expected(
-            c(1L), c(2L), c(3L, 1L)),
+            c(1L), c(2L), c(3L, 2L)),
         project.all.ranges = network.covariates.test.build.expected(
-            c(2L), c(2L), c(3L, 1L)),
+            c(2L), c(2L), c(3L, 2L)),
         complete = network.covariates.test.build.expected(
-            c(2L), c(2L), c(3L, 1L))
+            c(2L), c(2L), c(3L, 2L))
     )
 
     ## Test
@@ -1911,10 +1903,6 @@ test_that("Test add.vertex.attribute.mail.thread.start.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.start.date")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -1963,10 +1951,6 @@ test_that("Test add.vertex.attribute.mail.thread.end.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "thread.end.date")
-
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_equal(expected.attributes[[level]], actual.attributes)
     })
 })
@@ -2410,9 +2394,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only, actual.attributes)
     })
 
@@ -2424,9 +2405,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only, actual.attributes)
     })
 
@@ -2438,9 +2416,6 @@ test_that("Test add.vertex.attribute.issue.opened.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.opened.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both, actual.attributes)
     })
 })
@@ -2510,9 +2485,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only, actual.attributes)
     })
 
@@ -2524,9 +2496,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only, actual.attributes)
     })
 
@@ -2538,9 +2507,6 @@ test_that("Test add.vertex.attribute.issue.closed.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.closed.date")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both, actual.attributes)
     })
 })
@@ -2653,9 +2619,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.issues.only[[level]], actual.attributes)
     })
 
@@ -2667,9 +2630,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
             type = "pull.requests")
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "pr.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.prs.only[[level]], actual.attributes)
     })
 
@@ -2681,9 +2641,6 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
         )
 
         actual.attributes = lapply(networks.with.attr, igraph::vertex_attr, name = "issue.last.activity")
-        ## convert UNIX timestamps to POSIXct
-        actual.attributes = lapply(actual.attributes, get.date.from.unix.timestamp)
-
         expect_identical(expected.attributes.both[[level]], actual.attributes)
     })
 })
@@ -2909,7 +2866,7 @@ test_that("Test get.first.activity.data with missing commits, mails, and issues"
         "Olaf" = list(commits = get.date.from.string("2016-07-12 16:00:45"),
                       mails = get.date.from.string("2016-07-12 15:58:50"),
                       issues = get.date.from.string("2013-05-25 03:25:06")),
-        "Thomas" = list(commits = get.date.from.string("2016-07-12 16:06:32"),
+        "Thomas" = list(commits = get.date.from.string("2016-07-12 16:06:20"),
                         mails = get.date.from.string("2016-07-12 16:04:40"),
                         issues = get.date.from.string("2013-04-21 23:52:09")),
         "Fritz fritz@example.org" = list(commits = get.date.from.string(NA),
