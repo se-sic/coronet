@@ -15,7 +15,7 @@
 ## Copyright 2018 by Barbara Eckl <ecklbarb@fim.uni-passau.de>
 ## Copyright 2018 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2020-2021, 2025 by Thomas Bock <bockthom@cs.uni-saarland.de>
-## Copyright 2024 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
+## Copyright 2024-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -167,7 +167,9 @@ plot.get.plot.for.network = function(network, labels = TRUE) {
                                      end = 0.8, begin = 0.05) +
 
         ## scale edges (colors and styles)
-        ggraph::scale_edge_linetype(name = "Relation Types") +
+        ggplot2::discrete_scale(name = "Relation Types", aesthetics = "edge_linetype", palette = scales::pal_linetype()) +
+        ## BROKEN RIGHT NOW due to bug in scale_linetype() internally invoked by scale_edge_linetype():
+        # ggraph::scale_edge_linetype(name = "Relation Types") +
         ggplot2::discrete_scale(name = "Relations", aesthetics = "edge_colour",
                                 palette = viridis::viridis_pal(option = "viridis", end = 0.8, begin = 0.25)) +
         ## BROKEN RIGHT NOW due to bug in scale_edge_colour_viridis():
