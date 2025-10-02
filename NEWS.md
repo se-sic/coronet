@@ -2,7 +2,7 @@
 
 # coronet – Changelog
 
-## unversioned
+## 5.1
 
 ### Added
 
@@ -15,13 +15,13 @@
 - For consistency reasons: Ensure that the values of edge attributes are always lists even when they represent singular values (PR #278, 6fae1843740ed8e48c89c2ee4e61f995b5d0b8f5, 416c817998540fc0b82d9959574838b571b4d6fb)
 - Reduce the amount of redundantly built networks by caching network data internally. This should improve the performance of building multi-networks, especially, when parts of the multi-networks have been built before (#119, PR #282, 06a814c945f0b20af842d20247126083523cde55, 4793eab02e8792b0640fad88a90018292b1b2ab9, 8ba907fff0534c6fef39bd289ab163c90b053530, 28d22902e32e93c0d4990576da2ef3de88fdffbd, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0, b30c7f2b5b0a6d12e8024fafada5490170530ebe, 1fa340d6347090a327b4c32ece705c1f700234e5, 40cd55423be7b6521e2fc35f5aa200ff0594e77c, 8fcc74439c28b1592e964dd753bfc1cd57c062be, ca348f1de8e3b4e5786a6d2726ca14e530446896, 1d233af734f79e677d3388f7c3589ce186cc3a8d, 5dd5fc18940ce9ac9598902f175193167b471966)
 - Internally cache commit-network data and bipartite-network data similarly to how we cache network data for author-, and artifact-networks (PR #282, PR #285, 3608214b9bcf1ac5edc0c47182993c4fcc95d8b0, aa7e3fae9f45df73054f7d9c6a96177575106c7d)
-- Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 - Ensure that configured or implicitly-enforced undirectedness in partial networks is always dominant over configured or implicitly-enforced directedness. Furthermore, ensure consistency in the directedness used for edge generation and as a network attribute, especially in networks that consist of multiple partial networks such as multi-networks (PR #282, 65ead39b7b971e5a0acbaee4e787efcf194aafc4, a776caf72256200e1bfa5578106a9b53547b00e7, 257a1c8a6a9b1c3e2a72960cc4051a87950753ee, 41cff01cf141a377c96048f0645e05fb200138e9)
+- Remove redundant entries from the list of allowed edge attributes and instead add `event.info.1` and `event.info.2` (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 - Allow the issue data attributes `event.info.1` and `event.info.2` on network edges (PR #282, 1b156c17f261d8b70d8d48c6cb94d3ee591559f3)
 - Add a `network.type` parameter to `get.networks` in which the caller can specify the types of networks to be constructed. This improves performance in cases where not all network types are needed, such as when building multi-networks (PR #285, bc2efd643d92da547d4677f9026540c25e730a03, e9a0c1681a0b63bd831fe7657ce25a9d50dc6e83)
 - Rename the `list.attributes` parameter in `add.vertex.attribute` and `split.and.add.vertex.attribute` to `flatten.values` with inverted semantics and introduce documentation for it to improve comprehensibility (PR #285, 7dab04a5251d89c9cb286452528ef8b6775a7347)
-- Enhance codeface testing data by ensuring that commit ids are unique between proximity and feature data and by adding commit data that includes (1) different commits that touch the same file / function, (2) commits that are authored at the same time by different authors (PR #286, 7481099af109e1897b9e5754beb1c7da9f39ffb9, 3e53285426010cf7bf48fa23daa484f29f80ac78)
 - Sort author data by `author.name` instead of `author.id` when reading it from a file (PR #286, 61b538b7cf81c4b6638951bfaf051e376d0986b3)
+- Enhance codeface testing data by ensuring that commit ids are unique between proximity and feature data and by adding commit data that includes (1) different commits that touch the same file / function, (2) commits that are authored at the same time by different authors (PR #286, 7481099af109e1897b9e5754beb1c7da9f39ffb9, 3e53285426010cf7bf48fa23daa484f29f80ac78)
 - Deprecate support for R version 4.0 because of breaking dependencies (PR #281, 3dc91b155b3e0e2a55378592db448606381f902e)
 
 ### Fixed
@@ -32,6 +32,7 @@
 - Handle empty edges when constructing commit networks using commit-interaction data (PR #285, d5e1e4801230224e6272cd66873bd43bb7f04a00)
 - Correctly retain order of commit and mail data when merging it with PAStA, synchronicity, and commit message data (PR #286, 50b9b68effd49f853b8bcb335676357a854d1f97)
 - Fix `get.edgelist.with.timestamps` to work correctly on networks with dates in default (list) format (PR #289, 35b34bf1d5049904d75122ace847debe0d1595f7)
+
 
 ## 5.0
 

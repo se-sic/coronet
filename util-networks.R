@@ -1802,8 +1802,8 @@ construct.edges.no.temporal.order = function(set, network.conf, edge.attributes,
 #' @param edge.list list of edges
 #' @param network.conf the network configuration
 #' @param directed whether or not the network should be directed [default: FALSE]
-#' @param available.edge.attributes a named vector/list of attribute classes, with their corresponding names
-#'                                  as names on the list [default: list()]
+#' @param possible.edge.attributes a named vector/list of attribute classes, with their corresponding names
+#'                                 as names on the list [default: list()]
 #'
 #' @return the built network
 construct.network.from.edge.list = function(vertices, edge.list, network.conf, directed = FALSE,
