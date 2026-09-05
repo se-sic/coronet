@@ -16,6 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
+## Copyright 2026 by Thomas bock <bockthom@cmu.edu>
 ## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
@@ -318,6 +319,29 @@ get.second.last.element = function(v) {
 is.single.na = function(x) {
     return(length(x) == 1 && is.na(x))
 }
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## String vector misc--------------------------------------------------------------
+
+# Base R replacement for stringr::str_match (vectorized, returns matrix like str_match)
+
+#' Match a regex pattern against a character vector and return the matches in a matrix.
+#'
+#' @param strings character vector to match against
+#' @param pattern regex pattern to match
+#'
+#' @return matrix of matches, with one row per string and one column per
+#'         capture group (including the full match)
+str.match.vectorized = function(strings, pattern) {
+  m = regexec(pattern, strings)
+  matches = regmatches(strings, m)
+  n.groups = max(lengths(matches), 1)  # +1 for full match
+  result = do.call(rbind, lapply(matches, function(x) {
+    if (length(x) == 0) rep(NA_character_, n.groups) else x
+  }))
+  return(result)
+}
+
 
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## Stacktrace --------------------------------------------------------------
@@ -1042,4 +1066,3 @@ get.data.from.range = function(range, data) {
         return(data.between)
     }
 }
-

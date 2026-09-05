@@ -21,6 +21,7 @@
 ## Copyright 2021 by Christian Hechtl <hechtl@cs.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2026 by Thomas Bock <bockthom@cmu.edu>
 ## Copyright 2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -995,3 +996,266 @@ get.commit.message.counts = function(proj.data, commit.hashes = NULL) {
                           count = counts)
     return(messages)
 }
+
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit-Message Tags -----------------------------------------------------
+
+#' Extract trailer tags (Signed-off-by, Reviewed-by, Acked-by, ...) from
+#' commit message bodies.
+#'
+#' Scan each commit's message body line by line for trailer-style lines
+#' ("Tag-Name: ...") and extract them into a data.frame -- one row per
+#' (commit, tag) pair. Commits with multiple tags produce multiple
+#' rows; commits with no matching tags are simply absent from the result.
+#'
+#' Two line shapes are recognized:
+#'   1. "Tag-Name: Some Person <email@example.com>"  -> name + e-mail
+#'   2. "Tag-Name: <rest>" with no <...>              -> rest is classified
+#'      as either an e-mail (if it looks like a bare e-mail address, for
+#'      example, "Cc: name@example.domain.org") or a name (everything else,
+#'      for example, "Cc: Some Person"), with the other field left \code{NA}.
+#'
+#' @param commits data.frame with one row per commit
+#' @param hash.col name of the column holding the commit hash
+#'                 [default: "hash"]
+#' @param body.col name of the column holding the commit-message body
+#'                 [default: "body"]
+#' @param allow.no.email if \code{TRUE}, also capture trailer-shaped
+#'                        lines that have no <e-mail> (see shape 2 above).
+#'                        If \code{FALSE}, only lines with an explicit <e-mail>
+#'                        are captured [default: TRUE]
+#'
+#' @return data.frame with columns "commit.hash", "tag", "name", "email"
+extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "body",
+                                       allow.no.email = TRUE) {
+
+  # Line has an explicit <e-mail>: "Tag-Name: Some Person <email@example.com>"
+  # group 1 = tag name, group 2 = person name, group 3 = e-mail
+  with.email.pattern = "^\\s*([A-Za-z][A-Za-z0-9-]*)\\s*:\\s*(.*?)\\s*<([^<>]+)>\\s*$"
+
+  # Fallback: any other trailer-shaped line "Tag-Name: <rest>"
+  # group 1 = tag name, group 2 = rest of the line
+  no.email.pattern = "^\\s*([A-Za-z][A-Za-z0-9-]*)\\s*:\\s*(.+?)\\s*$"
+
+  # A bare address with no surrounding <>, for example, "name@example.domain.org"
+  bare.email.pattern = "^[^\\s<>]+@[^\\s<>]+$"
+
+  empty.result = data.frame(commit.hash = character(0), tag = character(0),
+                            name = character(0), email = character(0),
+                            stringsAsFactors = FALSE)
+
+  # For each commit, extract all matching lines and return a data.frame of (commit, tag, name, e-mail) rows
+  result.list = parallel::mclapply(seq_len(nrow(commits)), function(i) {
+
+    # Get the commit hash and message body for this row
+    hash = commits[[hash.col]][i]
+    body = commits[[body.col]][i]
+
+    # Return empty if the body is 'NA' or empty
+    if (is.na(body) || !nzchar(body)) {
+      return(empty.result)
+    }
+
+    # Split the body into lines and match each line against the two patterns
+    lines = strsplit(body, "\r?\n")[[1]]
+
+    # --- lines with an explicit <e-mail> ---
+    with.email = str.match.vectorized(lines, with.email.pattern)
+    has.email = !is.na(with.email[, 1])
+
+    rows.with.email = if (any(has.email)) {
+      data.frame(
+        commit.hash = hash,
+        tag         = with.email[has.email, 2],
+        name        = with.email[has.email, 3],
+        email       = with.email[has.email, 4],
+        stringsAsFactors = FALSE
+      )
+    } else {
+      empty.result
+    }
+
+    # --- remaining lines: trailer-shaped but no <e-mail> ---
+    rows.no.email = if (allow.no.email) {
+      remaining = lines[!has.email]
+      no.email = str.match.vectorized(remaining, no.email.pattern)
+      valid.rows = !is.na(no.email[, 1])
+
+      if (any(valid.rows)) {
+        tag.names = no.email[valid.rows, 2]
+        rest      = no.email[valid.rows, 3]
+        is.bare   = grepl(bare.email.pattern, rest)
+
+        data.frame(
+          commit.hash = hash,
+          tag         = tag.names,
+          name        = ifelse(is.bare, NA_character_, rest),
+          email       = ifelse(is.bare, rest, NA_character_),
+          stringsAsFactors = FALSE
+        )
+      } else {
+        empty.result
+      }
+    } else {
+      empty.result
+    }
+
+    # Combine the two sets of rows and return
+    rbind(rows.with.email, rows.no.email)
+  })
+
+  # Combine all commits' results into a single data.frame
+  return(data.table::rbindlist(result.list))
+}
+
+
+#' Get summary statistics about extracted commit-message tags.
+#'
+#' Report how often each tag occurs, how many have an e-mail vs. not, and
+#' how many distinct commits/people are involved per tag.
+#'
+#' @param commit.message.tags data.frame as returned by \code{extract.commit.message.tags()}
+#'
+#' @return a data.frame with the per-tag counts
+#'
+#' @seealso extract.commit.message.tags
+get.commit.message.tag.statistics = function(commit.message.tags) {
+
+  # Convert to data.table for efficient processing
+  commit.message.tags.dt = data.table::as.data.table(commit.message.tags)
+
+  # Compute counts per tag: total occurrences, distinct commits, with/without e-mail, distinct people
+  tag.counts = commit.message.tags.dt[, .(
+    occurrences      = .N,
+    distinct.commits = data.table::uniqueN(commit.hash),
+    with.email       = sum(!is.na(email)),
+    without.email    = sum(is.na(email)),
+    distinct.people  = data.table::uniqueN(name)
+  ), by = tag]
+
+  # Sort by descending occurrence count
+  data.table::setorder(tag.counts, -occurrences)
+
+  logging::loginfo("Total tag occurrences: %d (across %d distinct commits)",
+                   nrow(commit.message.tags), data.table::uniqueN(commit.message.tags[["commit.hash"]]))
+
+  return(tag.counts)
+}
+
+
+#' Canonicalize spelling variants/typos of trailer tags of commit messages.
+#'
+#' Real-world commit trailers are full of typos and one-off variants of
+#' the same tag (e.g., "Sigend-off-by", "Singed-off-by", "Reviewd-by",
+#' "Ackec-by" all mean the same thing as "Signed-off-by", "Reviewed-by",
+#' "Acked-by"). This groups them together automatically using greedy
+#' frequency-ordered clustering:
+#'
+#'   1. Tags are first merged case-insensitively (as in
+#'      \code{get.tag.statistics()}).
+#'   2. Unique tags are sorted by occurrence count, most common first.
+#'   3. Processing in that order, each tag is compared (after stripping
+#'      non-letters and lowercasing) to every canonical "cluster
+#'      representative" chosen so far, using normalized string similarity
+#'      \code{(1 - edit_distance / max(length))}. If the best match is
+#'      \code{>= similarity.threshold}, the tag is folded into that
+#'      representative.
+#'      Otherwise the tag becomes a new cluster representative itself.
+#'
+#' Processing by descending frequency (rather than picking a fixed set of
+#' "seed" tags above some count) matters: a common typo (e.g.,
+#' "Signed-of-by" appearing 125 times) must never become its own
+#' unmergeable anchor just because it's frequent -- it should still fold
+#' into the far more common correct spelling ("Signed-off-by") if it is
+#' similar enough, since the true canonical spelling is processed first
+#' and made available as a match target.
+#'
+#' This is intentionally conservative: compound tags like
+#' "Reported-and-tested-by" are similar enough to "Reported-by" in
+#' meaning but NOT in edited string form, so they score low similarity
+#' and are correctly left alone rather than merged.
+#'
+#' @param commit.message.tags data.frame as returned by \code{extract.commit.message.tags()}
+#' @param similarity.threshold similarity cutoff for folding a tag into its
+#'                             nearest existing cluster representative
+#'                             [default: 0.7]
+#'
+#' @return \code{commit.message.tags} with an added \code{tag.clean} column holding the
+#'         canonical spelling for each row
+#'
+#' @seealso extract.commit.message.tags
+#' @seealso get.commit.message.tag.statistics
+canonicalize.commit.message.tags = function(commit.message.tags, similarity.threshold = 0.7) {
+
+  # Internal helper function to normalize a tag string for comparison:
+  # lowercase and strip non-letters
+  normalize = function(x) {
+    x = tolower(x)
+    x = gsub("[^a-z]", "", x)
+    return(x)
+  }
+
+  # Convert to data.table for efficient processing
+  commit.message.tags.dt = data.table::as.data.table(commit.message.tags)
+  commit.message.tags.dt[["tag.key"]] = tolower(trimws(commit.message.tags.dt[["tag"]]))
+
+  # Compute the most common display form of each 'tag.key' and
+  # the number of occurrences per 'tag.key'
+  tag.counts = commit.message.tags.dt[, .(
+    tag.display = as.character(names(sort(table(tag), decreasing = TRUE)))[1],
+    n           = .N
+  ), by = tag.key]
+
+  # Sort by descending occurrence count
+  data.table::setorder(tag.counts, -n)
+
+  # Create a normalized version of the display tag for similarity comparisons
+  tag.counts[["tag.norm"]] = normalize(tag.counts[["tag.display"]])
+
+  cluster.reps.norm = character(0)
+  cluster.reps.display = character(0)
+  tag.clean = character(nrow(tag.counts))
+
+  # Iterate over each tag in order of descending frequency and assign it to a cluster
+  for (i in seq_len(nrow(tag.counts))) {
+
+    # Get the normalized and display forms of the current tag
+    norm.i = tag.counts[["tag.norm"]][i]
+    disp.i = tag.counts[["tag.display"]][i]
+
+    # If there are no existing cluster representatives, this tag becomes the first representative
+    if (length(cluster.reps.norm) == 0) {
+      cluster.reps.norm = norm.i
+      cluster.reps.display = disp.i
+      tag.clean[i] = disp.i
+      next
+    }
+
+    # Compute the normalized edit distance to each existing cluster representative
+    dists = utils::adist(norm.i, cluster.reps.norm)[1, ]
+    max.len = pmax(nchar(norm.i), nchar(cluster.reps.norm))
+    similarity = 1 - dists / pmax(max.len, 1)
+    best = which.max(similarity)
+
+    # If the best match is above the similarity threshold, assign this tag to that cluster
+    if (similarity[best] >= similarity.threshold) {
+      tag.clean[i] = cluster.reps.display[best]
+    } else {
+      # Otherwise, this tag becomes a new cluster representative
+      cluster.reps.norm = c(cluster.reps.norm, norm.i)
+      cluster.reps.display = c(cluster.reps.display, disp.i)
+      tag.clean[i] = disp.i
+    }
+  }
+
+  tag.counts[["tag.clean"]] = tag.clean
+
+  # Merge the cleaned tag names back into the original commit-message tags data.table
+  result = merge(commit.message.tags.dt, tag.counts[, .(tag.key, tag.clean)],
+                 by = "tag.key", all.x = TRUE, sort = FALSE)
+  result[["tag.key"]] = NULL
+
+  return(result)
+}
+
