@@ -1042,8 +1042,7 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
   bare.email.pattern = "^[^\\s<>]+@[^\\s<>]+$"
 
   empty.result = data.frame(commit.hash = character(0), tag = character(0),
-                            name = character(0), email = character(0),
-                            stringsAsFactors = FALSE)
+                            name = character(0), email = character(0))
 
   # For each commit, extract all matching lines and return a data.frame of (commit, tag, name, e-mail) rows
   result.list = parallel::mclapply(seq_len(nrow(commits)), function(i) {
@@ -1061,7 +1060,7 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
     lines = strsplit(body, "\r?\n")[[1]]
 
     # --- lines with an explicit <e-mail> ---
-    with.email = str.match.vectorized(lines, with.email.pattern)
+    with.email = str.match.vectorized(lines, with.email.pattern, n.groups = 4) # groups: full match, tag, name, email
     has.email = !is.na(with.email[, 1])
 
     rows.with.email = if (any(has.email)) {
@@ -1069,8 +1068,7 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
         commit.hash = hash,
         tag         = with.email[has.email, 2],
         name        = with.email[has.email, 3],
-        email       = with.email[has.email, 4],
-        stringsAsFactors = FALSE
+        email       = with.email[has.email, 4]
       )
     } else {
       empty.result
@@ -1079,7 +1077,7 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
     # --- remaining lines: trailer-shaped but no <e-mail> ---
     rows.no.email = if (allow.no.email) {
       remaining = lines[!has.email]
-      no.email = str.match.vectorized(remaining, no.email.pattern)
+      no.email = str.match.vectorized(remaining, no.email.pattern, n.groups = 3) # groups: full match, tag, rest
       valid.rows = !is.na(no.email[, 1])
 
       if (any(valid.rows)) {
@@ -1091,8 +1089,7 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
           commit.hash = hash,
           tag         = tag.names,
           name        = ifelse(is.bare, NA_character_, rest),
-          email       = ifelse(is.bare, rest, NA_character_),
-          stringsAsFactors = FALSE
+          email       = ifelse(is.bare, rest, NA_character_)
         )
       } else {
         empty.result

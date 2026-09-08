@@ -439,7 +439,7 @@ In this section, we give an overview of the functionalities we offer regarding t
 
 #### Commit-message tag analysis
 
-To analyze standardized tags that are often used at the end of commit messages (such as "Signed-off-by: Name <e-mail>" or "Reviewed-by: Name <e-mail>, etc.), we provide the function `extract.commit.message.tags`, which extracts these tags from commit messages and returns a data frame with the commit hash, the tag, and the name and e-mail. With function `canonicalize.commit.message.tags`, we provide the possibility to canonicalize spelling variants of the extracted tags to handle typos that can occur due to manually written tags. To get an overview of which tags and how often they occur in the commit messages, we provide the function `get.commit.message.tag.statistics`.
+To analyze standardized tags that are often used at the end of commit messages (such as "Signed-off-by: Name <e-mail>" or "Reviewed-by: Name <e-mail>", etc.), we provide the function `extract.commit.message.tags`, which extracts these tags from commit messages and returns a data frame with the commit hash, the tag, and the name and e-mail. With function `canonicalize.commit.message.tags`, we provide the possibility to canonicalize spelling variants of the extracted tags to handle typos that can occur due to manually written tags. To get an overview of which tags and how often they occur in the commit messages, we provide the function `get.commit.message.tag.statistics`.
 
 ### How-to
 

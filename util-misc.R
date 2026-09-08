@@ -16,7 +16,7 @@
 ## Copyright 2017 by Christian Hechtl <hechtl@fim.uni-passau.de>
 ## Copyright 2017 by Felix Prasse <prassefe@fim.uni-passau.de>
 ## Copyright 2017-2018 by Thomas Bock <bockthom@fim.uni-passau.de>
-## Copyright 2026 by Thomas bock <bockthom@cmu.edu>
+## Copyright 2026 by Thomas Bock <bockthom@cmu.edu>
 ## Copyright 2020-2021, 2023-2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
 ## Copyright 2018-2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Niklas Schneider <s8nlschn@stud.uni-saarland.de>
@@ -323,19 +323,23 @@ is.single.na = function(x) {
 ## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ## String vector misc--------------------------------------------------------------
 
-# Base R replacement for stringr::str_match (vectorized, returns matrix like str_match)
-
 #' Match a regex pattern against a character vector and return the matches in a matrix.
 #'
 #' @param strings character vector to match against
 #' @param pattern regex pattern to match
+#' @param n.groups expected number of columns in the result matrix (including the full match).
+#                  This is only used when \code{strings} is empty, since in this case the number
+#'                 of capture groups cannot be determined from the matches. [default: 1]
 #'
 #' @return matrix of matches, with one row per string and one column per
 #'         capture group (including the full match)
-str.match.vectorized = function(strings, pattern) {
-  m = regexec(pattern, strings)
-  matches = regmatches(strings, m)
-  n.groups = max(lengths(matches), 1)  # +1 for full match
+str.match.vectorized = function(strings, pattern, n.groups = 1) {
+  if (length(strings) == 0) {
+    # Return a 0-row matrix with the specified number of columns
+    return(matrix(character(0), nrow = 0, ncol = n.groups))
+  }
+  matches = regmatches(strings, regexec(pattern, strings))
+  n.groups = max(lengths(matches), n.groups)
   result = do.call(rbind, lapply(matches, function(x) {
     if (length(x) == 0) rep(NA_character_, n.groups) else x
   }))
