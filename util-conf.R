@@ -26,7 +26,7 @@
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
-## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024, 2026 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## Copyright 2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2026 by Ritika Hiremath <rihi00002@stud.uni-saarland.de>
 ## All Rights Reserved.
@@ -420,6 +420,12 @@ ProjectConf = R6::R6Class("ProjectConf", inherit = Conf,
                 allowed.number = 1
             ),
             filter.bots = list(
+                default = FALSE,
+                type = "logical",
+                allowed = c(TRUE, FALSE),
+                allowed.number = 1
+            ),
+            filter.agents = list(
                 default = FALSE,
                 type = "logical",
                 allowed = c(TRUE, FALSE),

@@ -22,7 +22,7 @@
 ## Copyright 2019 by Thomas Bock <bockthom@fim.uni-passau.de>
 ## Copyright 2019 by Jakob Kronawitter <kronawij@fim.uni-passau.de>
 ## Copyright 2021 by Johannes Hostert <s8johost@stud.uni-saarland.de>
-## Copyright 2024-2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024-2026 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 ##
 ## This file is derived from following Codeface script:
@@ -228,6 +228,9 @@ get.author.class.by.type = function(network = NULL,
         ## Construct centrality dataframe
         centrality.dataframe = data.frame(author.name = names(eigen.centrality.vec),
                                           centrality = as.vector(eigen.centrality.vec))
+        ## Set centrality values for isolated nodes to 0
+        isolated.nodes = igraph::V(network)[igraph::degree(network) == 0]$name
+        centrality.dataframe[centrality.dataframe[["author.name"]] %in% isolated.nodes, "centrality"] = 0
     } else if (type == "network.hierarchy") {
         hierarchy.base.df = metrics.hierarchy(network)
         hierarchy.calculated = hierarchy.base.df[["deg"]] / hierarchy.base.df[["cc"]]

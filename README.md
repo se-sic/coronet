@@ -633,8 +633,13 @@ There is no way to update the entries, except for the revision-based parameters.
     * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
     * [*`none`*, `title`, `messages`]
 - `filter.bots`
-    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file.
+    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file; to be matched by this filter, an entry must use the classification value `Bot` in the third column of `bots.list`.
     * [`TRUE`, *`FALSE`*]
+    * **Note**: This only filters bots, and will leave known agents in the data. Consider setting the config parameter `filter.agents` as well to remove all non-human user interactions.
+- `filter.agents`
+    * Remove all commits, issues, and mails made by agents. Agents are identified using the `bots.list` file; to be matched by this filter, an entry must use the classification value `Agent` in the third column of `bots.list`.
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: This only filters agents, and will leave known bots in the data. Consider setting the config parameter `filter.bots` as well to remove all non-human user interactions.
 - `gender`
     * Read and add gender data to authors (column `gender`)
     * [`TRUE`, *`FALSE`*]

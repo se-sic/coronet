@@ -822,21 +822,21 @@ test_that("Test add.vertex.attribute.author.issue.count", {
     networks.and.data = get.network.covariates.test.networks(issues=TRUE, author.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(0L, 1L, 1L), c(2L, 1L, 1L, 2L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(1L, 1L, 1L), c(2L, 1L, 2L, 2L, 1L)),
-        all.ranges = network.covariates.test.build.expected(c(2L, 2L, 1L, 1L), c(1L, 2L, 2L), c(2L, 1L, 2L, 2L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 2L, 1L), c(2L, 2L, 2L), c(3L, 2L, 3L, 2L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L, 2L, 1L), c(2L, 3L, 3L), c(3L, 2L, 3L, 2L, 1L)),
-        complete = network.covariates.test.build.expected(c(4L, 2L, 3L, 1L), c(3L, 3L, 4L), c(3L, 3L, 4L, 2L, 1L))
+        range = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(0L, 1L, 1L), c(2L, 1L, 2L, 1L, 2L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(0L, 1L, 1L, 1L), c(1L, 1L, 1L), c(2L, 1L, 2L, 1L, 2L, 1L)),
+        all.ranges = network.covariates.test.build.expected(c(2L, 2L, 1L, 1L), c(1L, 2L, 2L), c(2L, 1L, 2L, 1L, 2L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 2L, 1L), c(2L, 2L, 2L), c(3L, 2L, 3L, 1L, 2L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(3L, 2L, 2L, 1L), c(2L, 3L, 3L), c(3L, 2L, 3L, 1L, 2L, 1L)),
+        complete = network.covariates.test.build.expected(c(4L, 2L, 3L, 1L), c(3L, 3L, 4L), c(3L, 3L, 4L, 1L, 2L, 1L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 1L, 0L), c(1L, 1L, 1L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 1L, 1L), c(2L, 3L, 2L, 0L, 0L)),
-        all.ranges = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 2L, 2L), c(2L, 3L, 2L, 0L, 0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 2L, 1L), c(3L, 3L, 2L, 0L, 0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 3L, 2L), c(3L, 3L, 2L, 0L, 0L)),
-        complete = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 3L, 2L), c(3L, 3L, 2L, 0L, 0L))
+        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 1L, 0L), c(1L, 1L, 2L, 1L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 1L, 1L), c(2L, 3L, 2L, 1L, 0L, 0L)),
+        all.ranges = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 2L, 2L), c(2L, 3L, 2L, 1L, 0L, 0L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(3L, 2L, 1L), c(3L, 3L, 2L, 1L, 0L, 0L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 3L, 2L), c(3L, 3L, 2L, 1L, 0L, 0L)),
+        complete = network.covariates.test.build.expected(c(2L, 0L, 3L, 0L), c(3L, 3L, 2L), c(3L, 3L, 2L, 1L, 0L, 0L))
     )
 
     expected.attributes.both = sum.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -886,21 +886,21 @@ test_that("Test add.vertex.attribute.author.issues.commented.count", {
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 0L, 0L, 1L)),
-        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 1L, 1L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 1L, 1L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 1L, 0L), c(1L, 2L, 2L), c(2L, 1L, 2L, 1L, 1L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L, 1L, 1L, 0L), c(1L, 2L, 2L), c(2L, 1L, 2L, 1L, 1L)),
-        complete = network.covariates.test.build.expected(c(2L, 1L, 1L, 0L), c(1L, 3L, 2L), c(3L, 1L, 2L, 1L, 1L))
+        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 0L, 0L, 0L, 1L)),
+        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 0L, 1L, 1L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 0L, 1L, 1L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 1L, 0L), c(1L, 2L, 2L), c(2L, 1L, 2L, 0L, 1L, 1L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L, 1L, 1L, 0L), c(1L, 2L, 2L), c(2L, 1L, 2L, 0L, 1L, 1L)),
+        complete = network.covariates.test.build.expected(c(2L, 1L, 1L, 0L), c(1L, 3L, 2L), c(3L, 1L, 2L, 0L, 1L, 1L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 0L), c(1L, 0L, 0L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 1L), c(1L, 2L, 1L, 0L, 0L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 1L, 1L), c(1L, 2L, 1L, 0L, 0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 1L, 1L), c(2L, 2L, 1L, 0L, 0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L)),
-        complete = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L))
+        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 0L), c(1L, 0L, 0L, 0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 1L), c(1L, 2L, 1L, 0L, 0L, 0L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 1L, 1L), c(1L, 2L, 1L, 0L, 0L, 0L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 1L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L)),
+        complete = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L))
     )
 
     expected.attributes.both = sum.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -949,21 +949,21 @@ test_that("Test add.vertex.attribute.author.issue.creation.count", {
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(0L, 0L, 0L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(1L, 0L, 0L, 1L, 0L)),
-        all.ranges = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(1L, 0L, 0L, 1L, 0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 1L, 0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 1L, 0L)),
-        complete = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 1L, 0L))
+        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(0L, 0L, 0L, 0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(1L, 0L, 0L, 0L, 1L, 0L)),
+        all.ranges = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 0L), c(1L, 0L, 0L, 0L, 1L, 0L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 0L, 1L, 0L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 0L, 1L, 0L)),
+        complete = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 1L, 0L, 1L, 0L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 0L, 0L), c(0L, 0L, 0L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 0L, 1L), c(0L, 1L, 1L, 0L, 0L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 0L, 1L), c(0L, 1L, 1L, 0L, 0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L)),
-        complete = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L))
+        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 0L, 0L), c(0L, 0L, 0L, 0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 0L, 1L), c(0L, 1L, 1L, 0L, 0L, 0L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 0L, 1L), c(0L, 1L, 1L, 0L, 0L, 0L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L, 0L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L, 0L)),
+        complete = network.covariates.test.build.expected(c(1L, 0L, 1L, 0L), c(1L, 1L, 1L), c(1L, 1L, 1L, 0L, 0L, 0L))
     )
 
     expected.attributes.both = sum.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -1012,21 +1012,21 @@ test_that("Test add.vertex.attribute.author.issue.comment.count", {
     networks.and.data = get.network.covariates.test.networks(issues = TRUE, author.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 0L, 0L, 3L)),
-        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(2L, 0L, 1L, 1L, 3L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 2L, 1L), c(2L, 0L, 1L, 1L, 3L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 4L, 0L), c(4L, 7L, 2L), c(8L, 4L, 2L, 1L, 3L)),
-        project.all.ranges = network.covariates.test.build.expected(c(2L, 1L, 4L, 0L), c(4L, 8L, 2L), c(8L, 4L, 2L, 1L, 3L)),
-        complete = network.covariates.test.build.expected(c(2L, 1L, 4L, 0L), c(4L, 9L, 2L), c(9L, 4L, 2L, 1L, 3L))
+        range = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(1L, 0L, 0L, 0L, 0L, 3L)),
+        cumulative = network.covariates.test.build.expected(c(0L, 1L, 0L, 0L), c(0L, 1L, 1L), c(2L, 0L, 1L, 0L, 1L, 3L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 1L, 0L, 0L), c(0L, 2L, 1L), c(2L, 0L, 1L, 0L, 1L, 3L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 1L, 4L, 0L), c(4L, 7L, 2L), c(8L, 4L, 2L, 0L, 1L, 3L)),
+        project.all.ranges = network.covariates.test.build.expected(c(2L, 1L, 4L, 0L), c(4L, 8L, 2L), c(8L, 4L, 2L, 0L, 1L, 3L)),
+        complete = network.covariates.test.build.expected(c(2L, 1L, 4L, 0L), c(4L, 9L, 2L), c(9L, 4L, 2L, 0L, 1L, 3L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 0L), c(1L, 0L, 0L, 0L, 0L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 1L), c(1L, 2L, 1L, 0L, 0L)),
-        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 1L, 1L), c(1L, 2L, 1L, 0L, 0L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 1L, 1L), c(2L, 2L, 1L, 0L, 0L)),
-        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L)),
-        complete = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L))
+        range = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 0L), c(1L, 0L, 0L, 0L, 0L, 0L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 0L, 1L), c(1L, 2L, 1L, 0L, 0L, 0L)),
+        all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 1L, 1L), c(1L, 2L, 1L, 0L, 0L, 0L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 0L, 0L, 0L), c(2L, 1L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L)),
+        project.all.ranges = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L)),
+        complete = network.covariates.test.build.expected(c(1L, 0L, 2L, 0L), c(2L, 2L, 1L), c(2L, 2L, 1L, 0L, 0L, 0L))
     )
 
     expected.attributes.both = sum.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -2023,21 +2023,21 @@ test_that("Test add.vertex.attribute.issue.contributor.count", {
     networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 1L, NA), c(NA, 3L, 2L, NA, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 3L, 2L, NA, 4L)),
-        all.ranges = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 3L, 2L, NA, 4L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 3L, 2L, NA, 4L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 3L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 3L, 2L, NA, 4L)),
-        complete = network.covariates.test.build.expected(c(5L, 3L, NA), c(NA, 3L, NA, 5L, NA), c(NA, 3L, 3L, NA, 5L))
+        range = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 1L, NA), c(NA, 4L, 2L, NA, 3L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 4L, 2L, NA, 4L)),
+        all.ranges = network.covariates.test.build.expected(c(4L, 4L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 4L, 2L, NA, 4L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 2L, NA), c(NA, 1L, NA, 2L, NA), c(NA, 4L, 2L, NA, 4L)),
+        project.all.ranges = network.covariates.test.build.expected(c(4L, 4L, NA), c(NA, 2L, NA, 4L, NA), c(NA, 4L, 2L, NA, 4L)),
+        complete = network.covariates.test.build.expected(c(5L, 4L, NA), c(NA, 3L, NA, 5L, NA), c(NA, 4L, 3L, NA, 5L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(NA, NA, 1L), c(1L, NA, 2L, NA, 1L), c(2L, NA, NA, 1L, NA)),
-        cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 1L), c(3L, NA, NA, 2L, NA)),
-        all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 2L), c(3L, NA, NA, 2L, NA)),
-        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 2L), c(3L, NA, NA, 3L, NA)),
-        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 3L), c(3L, NA, NA, 3L, NA)),
-        complete = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 3L), c(3L, NA, NA, 3L, NA))
+        range = network.covariates.test.build.expected(c(NA, NA, 1L), c(1L, NA, 2L, NA, 1L), c(3L, NA, NA, 2L, NA)),
+        cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 1L), c(3L, NA, NA, 3L, NA)),
+        all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 3L), c(3L, NA, NA, 3L, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 1L), c(2L, NA, 2L, NA, 2L), c(3L, NA, NA, 4L, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 4L), c(3L, NA, NA, 4L, NA)),
+        complete = network.covariates.test.build.expected(c(NA, NA, 3L), c(3L, NA, 2L, NA, 4L), c(3L, NA, NA, 4L, NA))
     )
 
     expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -2149,14 +2149,14 @@ test_that("Test add.vertex.attribute.issue.contributor.count with issues.only.co
     expected.attributes.issues.only = list(
         range = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 1L), c(NA, 2L)),
         cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
-        all.ranges = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 2L, 4L), c(NA, 2L)),
+        all.ranges = network.covariates.test.build.expected(c(NA, 4L), c(NA, NA, 2L, 4L), c(NA, 2L)),
         project.cumulative = network.covariates.test.build.expected(c(NA, 2L), c(NA, NA, 1L, 2L), c(NA, 2L)),
-        project.all.ranges = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 2L, 4L), c(NA, 2L)),
-        complete = network.covariates.test.build.expected(c(NA, 3L), c(NA, NA, 3L, 5L), c(NA, 3L))
+        project.all.ranges = network.covariates.test.build.expected(c(NA, 4L), c(NA, NA, 2L, 4L), c(NA, 2L)),
+        complete = network.covariates.test.build.expected(c(NA, 4L), c(NA, NA, 3L, 5L), c(NA, 3L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(1L, NA), c(1L, 2L, NA, NA), c(2L, NA)),
+        range = network.covariates.test.build.expected(c(1L, NA), c(1L, 2L, NA, NA), c(3L, NA)),
         cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 2L, NA, NA), c(3L, NA)),
         all.ranges = network.covariates.test.build.expected(c(3L, NA), c(3L, 2L, NA, NA), c(3L, NA)),
         project.cumulative = network.covariates.test.build.expected(c(1L, NA), c(2L, 2L, NA, NA), c(3L, NA)),
@@ -2211,21 +2211,21 @@ test_that("Test add.vertex.attribute.issue.event.count", {
     networks.and.data = get.network.covariates.test.networks("artifact", issues = TRUE, artifact.relation = "issue")
 
     expected.attributes.issues.only = list(
-        range = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 1L, NA), c(NA, 4L, 4L, NA, 2L)),
-        cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 7L, 6L, NA, 4L)),
-        all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 7L, 6L, NA, 4L)),
-        project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 7L, 6L, NA, 4L)),
-        project.all.ranges = network.covariates.test.build.expected(c(4L, 7L, NA), c(NA, 6L, NA, 4L, NA), c(NA, 7L, 6L, NA, 4L)),
-        complete = network.covariates.test.build.expected(c(9L, 8L, NA), c(NA, 7L, NA, 9L, NA), c(NA, 8L, 7L, NA, 9L))
+        range = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 1L, NA), c(NA, 9L, 4L, NA, 4L)),
+        cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 12L, 6L, NA, 6L)),
+        all.ranges = network.covariates.test.build.expected(c(6L, 12L, NA), c(NA, 6L, NA, 6L, NA), c(NA, 12L, 6L, NA, 6L)),
+        project.cumulative = network.covariates.test.build.expected(c(1L, 3L, NA), c(NA, 2L, NA, 2L, NA), c(NA, 12L, 6L, NA, 6L)),
+        project.all.ranges = network.covariates.test.build.expected(c(6L, 12L, NA), c(NA, 6L, NA, 6L, NA), c(NA, 12L, 6L, NA, 6L)),
+        complete = network.covariates.test.build.expected(c(11L, 13L, NA), c(NA, 7L, NA, 11L, NA), c(NA, 13L, 7L, NA, 11L))
     )
 
     expected.attributes.prs.only = list(
-        range = network.covariates.test.build.expected(c(NA, NA, 2L), c(1L, NA, 2L, NA, 1L), c(2L, NA, NA, 1L, NA)),
-        cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 1L), c(5L, NA, NA, 2L, NA)),
-        all.ranges = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 2L), c(5L, NA, NA, 2L, NA)),
-        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 2L), c(5L, NA, NA, 3L, NA)),
-        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 3L), c(5L, NA, NA, 3L, NA)),
-        complete = network.covariates.test.build.expected(c(NA, NA, 5L), c(5L, NA, 2L, NA, 3L), c(5L, NA, NA, 3L, NA))
+        range = network.covariates.test.build.expected(c(NA, NA, 2L), c(1L, NA, 2L, NA, 1L), c(4L, NA, NA, 2L, NA)),
+        cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 1L), c(7L, NA, NA, 3L, NA)),
+        all.ranges = network.covariates.test.build.expected(c(NA, NA, 7L), c(7L, NA, 2L, NA, 3L), c(7L, NA, NA, 3L, NA)),
+        project.cumulative = network.covariates.test.build.expected(c(NA, NA, 2L), c(3L, NA, 2L, NA, 2L), c(7L, NA, NA, 4L, NA)),
+        project.all.ranges = network.covariates.test.build.expected(c(NA, NA, 7L), c(7L, NA, 2L, NA, 4L), c(7L, NA, NA, 4L, NA)),
+        complete = network.covariates.test.build.expected(c(NA, NA, 7L), c(7L, NA, 2L, NA, 4L), c(7L, NA, NA, 4L, NA))
     )
 
     expected.attributes.both = merge.expected.attributes(expected.attributes.issues.only, expected.attributes.prs.only)
@@ -2546,53 +2546,53 @@ test_that("Test add.vertex.attribute.issue.last.activity.date", {
         range = network.covariates.test.build.expected(
             c(NA                   , NA                   , "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)),
         cumulative = network.covariates.test.build.expected(
             c(NA                   , NA                   , "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)),
         all.ranges = network.covariates.test.build.expected(
-            c(NA                   , NA                   , "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)),
+            c(NA                   , NA                   , "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)),
         project.cumulative = network.covariates.test.build.expected(
             c(NA                   , NA                   , "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", NA                   , "2016-07-12 16:02:02", NA                   , "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)),
         project.all.ranges = network.covariates.test.build.expected(
-            c(NA                   , NA                   , "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)),
+            c(NA                   , NA                   , "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)),
         complete = network.covariates.test.build.expected(
-            c(NA                   , NA                   , "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", NA                   , NA                   , "2016-08-07 15:30:00", NA)))
+            c(NA                   , NA                   , "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", NA                   , "2016-07-12 16:02:02", NA                   , "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", NA                   , NA                   , "2016-08-07 15:33:00", NA)))
 
     expected.attributes.both = list(
         range = network.covariates.test.build.expected(
             c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
+            c("2016-08-07 15:39:30", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:33:00", "2016-08-31 15:30:02")),
         cumulative = network.covariates.test.build.expected(
             c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
+            c("2016-08-07 15:39:30", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:33:00", "2016-08-31 15:30:02")),
         all.ranges = network.covariates.test.build.expected(
-            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:33:00", "2016-08-31 15:30:02")),
         project.cumulative = network.covariates.test.build.expected(
             c("2016-07-12 15:30:02", "2016-07-12 15:59:59", "2016-07-12 15:59:59"),
             c("2016-07-12 16:01:01", "2016-07-12 16:02:30", "2016-07-12 16:02:02", "2016-07-12 16:03:59", "2016-07-12 16:04:59"),
-            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
+            c("2016-08-07 15:39:30", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:33:00", "2016-08-31 15:30:02")),
         project.all.ranges = network.covariates.test.build.expected(
-            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:30:00", "2016-08-31 15:30:02")),
+            c("2016-08-31 15:30:02", "2016-08-31 16:45:09", "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", "2016-07-28 06:27:52", "2016-07-12 16:02:02", "2016-08-31 15:30:02", "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", "2016-08-31 16:45:09", "2016-07-28 06:27:52", "2016-08-07 15:33:00", "2016-08-31 15:30:02")),
         complete = network.covariates.test.build.expected(
-            c("2017-05-23 12:32:39", "2016-10-05 16:45:09", "2016-07-14 13:37:00"),
-            c("2016-07-14 13:37:00", "2017-05-21 12:00:00", "2016-07-12 16:02:02", "2017-05-23 12:32:39", "2016-08-07 15:30:00"),
-            c("2016-07-14 13:37:00", "2016-10-05 16:45:09", "2017-05-21 12:00:00", "2016-08-07 15:30:00", "2017-05-23 12:32:39")))
+            c("2017-05-23 12:32:39", "2016-10-05 16:45:09", "2016-08-07 15:39:30"),
+            c("2016-08-07 15:39:30", "2017-05-21 12:00:00", "2016-07-12 16:02:02", "2017-05-23 12:32:39", "2016-08-07 15:33:00"),
+            c("2016-08-07 15:39:30", "2016-10-05 16:45:09", "2017-05-21 12:00:00", "2016-08-07 15:33:00", "2017-05-23 12:32:39")))
 
     ## convert date strings to POSIXct
     expected.attributes.issues.only = lapply(expected.attributes.issues.only, function(times) {

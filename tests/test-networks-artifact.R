@@ -118,21 +118,25 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
                           type = TYPE.ARTIFACT)
     ## 2) edges
     edges = data.frame(
-        from = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
-        to = c("<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-332>"),
-        date = get.date.from.string(c("2016-08-07 15:30:00", "2016-08-07 15:37:02", "2017-05-21 12:00:00")),
-        artifact.type = c("IssueEvent", "IssueEvent", "IssueEvent"),
-        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>"),
-        event.name = c("add_link", "add_link", "add_link"),
-        author.name = c("Thomas", "Karl", "Thomas"),
-        weight = c(1, 1, 1),
+        from = c("<issue-github-3>", "<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>",
+                 "<issue-github-3>", "<issue-github-3>", "<issue-github-3>"),
+        to = c("<issue-github-2>", "<issue-github-2>", "<issue-github-6>", "<issue-jira-ZEPPELIN-332>",
+               "<issue-github-6>", "<issue-github-6>", "<issue-github-6>"),
+        date = get.date.from.string(c("2016-08-07 15:30:00", "2016-08-07 15:33:00", "2016-08-07 15:37:02",
+                                      "2017-05-21 12:00:00", "2016-08-07 15:41:00", "2016-08-07 16:22:00", "2016-08-07 16:22:00")),
+        artifact.type = c("IssueEvent", "IssueEvent", "IssueEvent", "IssueEvent", "IssueEvent", "IssueEvent", "IssueEvent"),
+        issue.id = c("<issue-github-3>", "<issue-github-3>", "<issue-github-3>", "<issue-jira-ZEPPELIN-328>",
+                     "<issue-github-3>", "<issue-github-3>", "<issue-github-6>"),
+        event.name = c("add_link", "add_link", "add_link", "add_link", "sub_issue_added", "connected", "connected"),
+        author.name = c("Thomas", "Copilot", "Karl", "Thomas", "Thomas", "Karl", "Karl"),
+        weight = c(1, 1, 1, 1, 1, 1, 1),
         type = TYPE.EDGES.INTRA,
         relation = "issue"
     )
 
     ## 3) when constructing directed networks, we cannot deduplicate jira edges
     if (test.directed) {
-        edges = rbind(edges, data.frame(
+        new.edge =  data.frame(
             from = "<issue-jira-ZEPPELIN-332>",
             to = "<issue-jira-ZEPPELIN-328>",
             date = get.date.from.string("2017-05-21 12:00:00"),
@@ -143,7 +147,22 @@ patrick::with_parameters_test_that("Network construction of an issue-based artif
             weight = 1,
             type = TYPE.EDGES.INTRA,
             relation = "issue"
-        ))
+        )
+        # insert new edge at position 5 (after the first jira edge)
+        edges = rbind(edges[1:4, ], new.edge, edges[5:nrow(edges), ])
+        changed.edge = data.frame(
+            from = "<issue-github-6>",
+            to = "<issue-github-3>",
+            date = get.date.from.string("2016-08-07 16:22:00"),
+            artifact.type = "IssueEvent",
+            issue.id = "<issue-github-6>",
+            event.name = "connected",
+            author.name = "Karl",
+            weight = 1,
+            type = TYPE.EDGES.INTRA,
+            relation = "issue"
+        )
+        edges[8,] = changed.edge[1,]
     }
 
     ## configurations
