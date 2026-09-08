@@ -9,7 +9,12 @@
 - Add Zulip as a supported issue source for `issues.from.source` (2bbc9525f35f2fc53c586dec1192517e57e040f5 , d7b47b7ddb943f918b631ef8c194bde6caa94537, 1f34ee061f59ae06588dc4c9e83ebbad8ad7ffe1)
 - Add subissues as a supported issue type for edge generation in issue networks (0d06d088b350713b7406fb699fb90505647af841)
 - Add connected events to the issue network generation (d96fade35a4f6992b6ece8b89c27b7c40a9f3b35)
-- Add agent handling similar to bots handling (0d06d088b350713b7406fb699fb90505647af841)
+- Add agent handling similar to bots handling (0d06d088b350713b7406fb699fb90505647af841, d96fade35a4f6992b6ece8b89c27b7c40a9f3b35)
+**Potentially breaking change:** Agents need to be filtered separately, filtering bots does not filter agents
+
+### Fixed
+
+- Isolate nodes now always get an eigenvector centrality of 0 and fix one eigenvector centrality test to avoid flakiness (64ed64f17f638f71c35bf0c79df9e68587a15934, 29dcede996cfe4b465c12e0fb00499b03ef589fd)
 
 ## 5.1
 
