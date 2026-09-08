@@ -67,15 +67,20 @@ test_that("Eigenvector classification", {
 
     ## Act
     set.seed(0)
-    result = get.author.class.network.eigen(network)
+
+    ## Add a dummy edge to the test network to remove flaky outcomes in the eigenvector classification
+    network.with.dummy.edge = igraph::add_edges(network, c("udo", "Thomas"), date = 0, artifact.type = "Mail",
+                                                message.id = "<dummy-id>", thread = "<dummy-thread>", weight = 1,
+                                                type = "Unipartite", relation = "mail")
+    result = get.author.class.network.eigen(network.with.dummy.edge)
 
     ## Assert
-    expected.core = data.frame(author.name = c("Olaf"),
-                               eigen.centrality = c(1.0))
-    expected.peripheral = data.frame(author.name = c("Thomas", "Björn", "udo", "Fritz fritz@example.org",
+    expected.core = data.frame(author.name = c("Olaf", "Thomas"),
+                               eigen.centrality = c(1.0, 0.7756632))
+    expected.peripheral = data.frame(author.name = c("Björn", "udo", "Fritz fritz@example.org",
                                                      "georg", "Hans"),
                                      ## the following values are only correct with igraph version 1.2.7 or higher
-                                     eigen.centrality = c(7.071068e-01, 7.071068e-01, 0, 0, 0, 0))
+                                     eigen.centrality = c(0.6847416, 0.2655644, 0, 0, 0))
     expected = list(core = expected.core, peripheral = expected.peripheral)
 
     row.names(result[["core"]]) = NULL
