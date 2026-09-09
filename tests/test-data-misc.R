@@ -570,7 +570,7 @@ test_that("Extract commit-message tags: multiple tags across two commits", {
                        sep = "\n"),
                  paste("Add new feature",
                        "",
-                       "Signed-off-by: John Doe <john@example.com>",
+                       "Signed-of-by: John Doe <john@example.com>",
                        "Cc: max@example.com",
                        "Acked-by: Someone Else",
                        sep = "\n"))
@@ -580,7 +580,7 @@ test_that("Extract commit-message tags: multiple tags across two commits", {
     ## Act
     expected = data.frame(
         commit.hash = c("hash1", "hash1", "hash2", "hash2", "hash2"),
-        tag         = c("Signed-off-by", "Reviewed-by", "Signed-off-by", "Cc", "Acked-by"),
+        tag         = c("Signed-off-by", "Reviewed-by", "Signed-of-by", "Cc", "Acked-by"),
         name        = c("John Doe", "Bob", "John Doe", NA_character_, "Someone Else"),
         email       = c("john@example.com", "bob@example.com", "john@example.com",
                         "max@example.com", NA_character_)
@@ -589,14 +589,13 @@ test_that("Extract commit-message tags: multiple tags across two commits", {
     ## Assert
     expect_equal(expected, as.data.frame(result))
 
-    ## Canonicalization: none of these four tags are similar enough to merge
-    ## (all pairwise similarities fall well below the 0.7 default threshold),
-    ## so 'tag.clean' should be an identity mapping of tag in this case
+    ## Canonicalization: Signed-off-by and Signed-of-by are similar enough to merge
+    ## (all other pairwise similarities should be below the default threshold of 0.7)
     result.clean = canonicalize.commit.message.tags(result)
 
     ## Act
     expected.clean = expected
-    expected.clean[["tag.clean"]] = expected.clean[["tag"]]
+    expected.clean[["tag.clean"]] = c("Signed-off-by", "Reviewed-by", "Signed-off-by", "Cc", "Acked-by")
 
     ## Assert
     expect_equal(expected.clean, as.data.frame(result.clean))

@@ -1150,7 +1150,7 @@ get.commit.message.tag.statistics = function(commit.message.tags) {
 #' frequency-ordered clustering:
 #'
 #'   1. Tags are first merged case-insensitively (as in
-#'      \code{get.tag.statistics()}).
+#'      \code{get.commit.message.tag.statistics()}).
 #'   2. Unique tags are sorted by occurrence count, most common first.
 #'   3. Processing in that order, each tag is compared (after stripping
 #'      non-letters and lowercasing) to every canonical "cluster

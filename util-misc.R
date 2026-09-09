@@ -328,7 +328,7 @@ is.single.na = function(x) {
 #' @param strings character vector to match against
 #' @param pattern regex pattern to match
 #' @param n.groups expected number of columns in the result matrix (including the full match).
-#                  This is only used when \code{strings} is empty, since in this case the number
+#'                 This is only used when \code{strings} is empty, since in this case the number
 #'                 of capture groups cannot be determined from the matches. [default: 1]
 #'
 #' @return matrix of matches, with one row per string and one column per
