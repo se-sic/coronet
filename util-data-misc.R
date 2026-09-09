@@ -1044,6 +1044,10 @@ extract.commit.message.tags = function(commits, hash.col = "hash", body.col = "b
   empty.result = data.frame(commit.hash = character(0), tag = character(0),
                             name = character(0), email = character(0))
 
+  if (nrow(commits) == 0) {
+     return(empty.result)
+  }
+
   # For each commit, extract all matching lines and return a data.frame of (commit, tag, name, e-mail) rows
   result.list = parallel::mclapply(seq_len(nrow(commits)), function(i) {
 
@@ -1128,7 +1132,7 @@ get.commit.message.tag.statistics = function(commit.message.tags) {
     distinct.commits = data.table::uniqueN(commit.hash),
     with.email       = sum(!is.na(email)),
     without.email    = sum(is.na(email)),
-    distinct.people  = data.table::uniqueN(name)
+    distinct.people  = data.table::uniqueN(ifelse(!is.na(name), name, email), na.rm = TRUE)
   ), by = tag]
 
   # Sort by descending occurrence count
