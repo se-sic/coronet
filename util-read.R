@@ -25,7 +25,8 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2023, 2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
-## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024, 2026 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2026 by Ritika Hiremath <rihi00002@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 ## Note:
@@ -339,10 +340,10 @@ ISSUES.LIST.DATA.TYPES = c(
 #' The original date of these events can always be found in the \code{"event.info.2"} column.
 #'
 #' @param data.path the path to the issue data
-#' @param issues.sources the sources of the issue data. One or both of \code{"jira"} and \code{"github"}.
+#' @param issues.sources the sources of the issue data. One or more of \code{"jira"}, \code{"github"}, and \code{"zulip"}.
 #'
 #' @return the read and parsed issue data
-read.issues = function(data.path, issues.sources = c("jira", "github")) {
+read.issues = function(data.path, issues.sources = c("jira", "github", "zulip")) {
     logging::logdebug("read.issues: starting.")
 
     ## check arguments
@@ -397,17 +398,34 @@ read.issues = function(data.path, issues.sources = c("jira", "github")) {
     issue.data[["issue.components"]] = I(unname(lapply(issue.data[["issue.components"]], jsonlite::fromJSON, simplifyVector = FALSE)))
     issue.data[["event.info.2"]] = I(unname(lapply(issue.data[["event.info.2"]], jsonlite::fromJSON, simplifyVector = FALSE)))
 
+    issue.data[["issue.components"]] = lapply(issue.data[["issue.components"]], function(numbers) {
+        if(!is.list(numbers)) {
+            return(numbers)
+        }
+        num.vector = unlist(numbers)
+        # if list is not only integers, return it as is (e.g., for Jira, where components are stored as list of strings)
+        if (!all(sapply(num.vector, is.numeric))) {
+            return(numbers)
+        }
+        ids = lapply(num.vector, function(id) {
+            return(sprintf(ISSUE.ID.FORMAT, "github", id))
+        })
+        return(ids)
+    })
+    attr(issue.data[["issue.components"]], "class") = "AsIs"
     ## convert dates and sort by 'date' column
     issue.data[["date"]] = get.date.from.string(issue.data[["date"]])
     issue.data[["creation.date"]] = get.date.from.string(issue.data[["creation.date"]])
     issue.data[["closing.date"]] = get.date.from.string(issue.data[["closing.date"]])
 
     ## if other issues are referenced, convert names to ID format
-    matches = issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by") &
-                         issue.data[["event.info.2"]] == "issue", ]
+    matches = issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by", "connected") &
+                         (issue.data[["event.info.2"]] == "issue" | (issue.data[["event.name"]] == "connected" &
+                                                                     issue.data[["event.info.1"]] != "external")), ]
     formatted.matches = sprintf(ISSUE.ID.FORMAT, matches[["issue.source"]], matches[["event.info.1"]])
-    issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by") &
-               issue.data[["event.info.2"]] == "issue", ][["event.info.1"]] = formatted.matches
+    issue.data[issue.data[["event.name"]] %in% c("add_link", "remove_link", "referenced_by", "connected") &
+               (issue.data[["event.info.2"]] == "issue" | (issue.data[["event.name"]] == "connected" &
+                                                           issue.data[["event.info.1"]] != "external")), ][["event.info.1"]] = formatted.matches
 
     if (nrow(issue.data) > 0) {
         ## fix all dates to be after the creation date
@@ -457,14 +475,14 @@ create.empty.issues.list = function() {
 ## 'bots.list' and function \code{read.bot.list})
 BOT.LIST.COLUMNS = c(
     "author.name", "author.email", ## author
-    "is.bot" ## whether this is a bot
+    "is.bot", "is.agent" ## whether this is a bot or an agent
 )
 
 #' Read the bot classification from the 'bots.list' file.
 #'
 #' @param data.path the path to the commit-messages list
 #'
-#' @return a data frame with author.name, author.email, and a (potentially NA) boolean whether this is a bot,
+#' @return a data frame with author.name, author.email, and two (potentially NA) booleans whether this is a bot or an agent,
 #'         or \code{NULL} if the above file is not present.
 read.bot.info = function(data.path) {
     logging::logdebug("read.bot.info: starting.")
@@ -486,8 +504,10 @@ read.bot.info = function(data.path) {
     }
 
     ## set column names for new data frame
+    bot.data[[4]] = bot.data[[3]]
     colnames(bot.data) = BOT.LIST.COLUMNS
-    bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, NA))
+    bot.data["is.bot"] = sapply(bot.data[["is.bot"]], function(x) switch(x, Bot = TRUE, Human = FALSE, Agent = FALSE, NA))
+    bot.data["is.agent"] = sapply(bot.data[["is.agent"]], function(x) switch(x, Agent = TRUE, Human = FALSE, Bot = FALSE, NA))
 
     ## check that dataframe is of correct shape
     verify.data.frame.columns(bot.data, BOT.LIST.COLUMNS)
@@ -499,7 +519,7 @@ read.bot.info = function(data.path) {
 
 ## column names of a dataframe containing authors (see file 'authors.list' and function \code{read.authors})
 AUTHORS.LIST.COLUMNS = c(
-    "author.id", "author.name", "author.email", "is.bot"
+    "author.id", "author.name", "author.email", "is.bot", "is.agent"
 )
 
 ## column names of a dataframe containing authors, before adding bot data.
@@ -507,7 +527,7 @@ AUTHORS.LIST.COLUMNS.WITHOUT.BOTS = AUTHORS.LIST.COLUMNS[1:3]
 
 ## declare the datatype for each column in the constant 'AUTHORS.LIST.COLUMNS'
 AUTHORS.LIST.DATA.TYPES = c(
-    "character", "character", "character", "logical"
+    "character", "character", "character", "logical", "logical"
 )
 
 #' Read the author data from the 'authors.list' file.
@@ -545,6 +565,7 @@ read.authors = function(data.path) {
         ## if bot data is not available, add NA data, which is what would have happened
         ## if the file was empty
         authors.df[["is.bot"]] = NA
+        authors.df[["is.agent"]] = NA
     }
 
     ## order by author name

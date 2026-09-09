@@ -26,7 +26,7 @@
 ## Copyright 2021 by Mirabdulla Yusifli <s8miyusi@stud.uni-saarland.de>
 ## Copyright 2022 by Jonathan Baumann <joba00002@stud.uni-saarland.de>
 ## Copyright 2022-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
-## Copyright 2024 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
+## Copyright 2024, 2026 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
 
@@ -194,9 +194,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
         #' @param filter.bots flag whether commits by bots should be removed
+        #' @param filter.agents flag whether commits by agents should be removed
         #'
         #' @return the commits after all filters have been applied
-        filter.commits = function(commits, remove.untracked.files, remove.base.artifact, filter.bots) {
+        filter.commits = function(commits, remove.untracked.files, remove.base.artifact, filter.bots, filter.agents) {
             logging::logdebug("filter.commits: starting.")
 
             ## filter out the untracked files
@@ -214,6 +215,11 @@ ProjectData = R6::R6Class("ProjectData",
                 commits = self$filter.bots(commits)
             }
 
+            ## filter out all commits made by agents
+            if (filter.agents) {
+                commits = self$filter.agents(commits)
+            }
+
             logging::logdebug("filter.commits: finished.")
             return(commits)
         },
@@ -225,9 +231,10 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param issues the data.frame of issues on which filtering will be applied
         #' @param issues.only.comments flag whether non-comment issue events are removed
         #' @param filter.bots flag whether bot issues are to be removed
+        #' @param filter.agents flag whether agent issues are to be removed
         #'
         #' @return the issues after all filters have been applied
-        filter.issues = function(issues, issues.only.comments, filter.bots) {
+        filter.issues = function(issues, issues.only.comments, filter.bots, filter.agents) {
             logging::logdebug("filter.issues: starting.")
 
             if (issues.only.comments) {
@@ -237,6 +244,11 @@ ProjectData = R6::R6Class("ProjectData",
             ## filter out all issues made by bots
             if (filter.bots) {
                 issues = self$filter.bots(issues)
+            }
+
+            ## filter out all issues made by agents
+            if (filter.agents) {
+                issues = self$filter.agents(issues)
             }
 
             logging::logdebug("filter.issues: finished.")
@@ -319,14 +331,20 @@ ProjectData = R6::R6Class("ProjectData",
         #'
         #' @param mails the data.frame of mails on which filtering will be applied
         #' @param filter.bots flag whether bot mails are to be removed
+        #' @param filter.agents flag whether agent mails are to be removed
         #'
         #' @return the mails after all filters have been applied
-        filter.mails = function(mails, filter.bots) {
+        filter.mails = function(mails, filter.bots, filter.agents) {
             logging::logdebug("filter.mails: starting.")
 
             ## filter out all mails made by bots
             if (filter.bots) {
                 mails = self$filter.bots(mails)
+            }
+
+            ## filter out all mails made by agents
+            if (filter.agents) {
+                mails = self$filter.agents(mails)
             }
 
             logging::logdebug("filter.mails: finished.")
@@ -1088,7 +1106,8 @@ ProjectData = R6::R6Class("ProjectData",
                     self$get.commits.unfiltered(),
                     private$project.conf$get.value("commits.filter.untracked.files"),
                     private$project.conf$get.value("commits.filter.base.artifact"),
-                    private$project.conf$get.value("filter.bots")
+                    private$project.conf$get.value("filter.bots"),
+                    private$project.conf$get.value("filter.agents")
                 )
             }
             return(private$commits)
@@ -1103,13 +1122,14 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param remove.untracked.files flag whether untracked files are kept or removed
         #' @param remove.base.artifact flag whether the base artifact is kept or removed
         #' @param filter.bots flag whether commits by bots should be removed [default: FALSE]
+        #' @param filter.agents flag whether commits by agents should be removed [default: FALSE]
         #'
         #' @return the commits retrieved by the method \code{get.commits.unfiltered} after all filters have been applied
         #'
         #' @seealso get.commits
-        get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE) {
+        get.commits.uncached = function(remove.untracked.files, remove.base.artifact, filter.bots = FALSE, filter.agents = FALSE) {
             logging::loginfo("Getting commit data (uncached).")
-            return(private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots))
+            return(private$filter.commits(self$get.commits.unfiltered(), remove.untracked.files, remove.base.artifact, filter.bots, filter.agents))
         },
 
         #' Get the list of commits which have the artifact kind configured in the \code{project.conf}.
@@ -1660,7 +1680,9 @@ ProjectData = R6::R6Class("ProjectData",
             ## do further filterings
             private$mails = private$filter.mails(
                 private$mails,
-                private$project.conf$get.value("filter.bots"))
+                private$project.conf$get.value("filter.bots"),
+                private$project.conf$get.value("filter.agents")
+                )
 
             ## add PaStA data if wanted
             if (private$project.conf$get.value("pasta")) {
@@ -1746,6 +1768,22 @@ ProjectData = R6::R6Class("ProjectData",
             return(data.to.filter[bot.indices,])
         },
 
+        #' Filter agents from given data.
+        #'
+        #' @param data.to.filter A data frame, with the standard author columns,
+        #'                       from which all rows with agent authors are removed
+        #'
+        #' @return the filtered data
+        filter.agents = function(data.to.filter) {
+            authors = self$get.authors()
+            ## authors are uniquely identified by their email, so checking this here is sufficient
+            agent.indices = authors[match(data.to.filter[["author.email"]],
+                                           authors[["author.email"]]), "is.agent"]
+            ## retain if entry is FALSE or NA
+            agent.indices = !agent.indices | is.na(agent.indices)
+            return(data.to.filter[agent.indices,])
+        },
+
         #' Get the issue data, filtered according to options in the project configuration:
         #' * The option \code{issues.only.comments} removes all events that are not comments
         #'   from the issue data.
@@ -1761,7 +1799,9 @@ ProjectData = R6::R6Class("ProjectData",
                 private$issues = private$filter.issues(
                     self$get.issues.unfiltered(),
                     private$project.conf$get.value("issues.only.comments"),
-                    private$project.conf$get.value("filter.bots"))
+                    private$project.conf$get.value("filter.bots"),
+                    private$project.conf$get.value("filter.agents")
+                )
             }
             return(private$issues)
         },
@@ -1774,13 +1814,14 @@ ProjectData = R6::R6Class("ProjectData",
         #' @param issues.only.comments flag whether issue events that are not comments are retained
         #'                             (i.e. opening, closing, ...).
         #' @param filter.bots flag whether issues by bots should be removed. [default: FALSE]
+        #' @param filter.agents flag whether issues by agents should be removed. [default: FALSE]
         #'
         #' @return the issue data
         #'
         #' @seealso get.issues
-        get.issues.uncached = function(issues.only.comments, filter.bots = FALSE) {
+        get.issues.uncached = function(issues.only.comments, filter.bots = FALSE, filter.agents = FALSE) {
             logging::loginfo("Getting issue data (uncached).")
-            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots))
+            return(private$filter.issues(self$get.issues.unfiltered(), issues.only.comments, filter.bots, filter.agents))
         },
 
         #' Get the issue data, unfiltered.

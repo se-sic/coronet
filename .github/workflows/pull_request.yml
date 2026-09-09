@@ -13,6 +13,7 @@
 ##
 ## Copyright 2023-2025 by Maximilian Löffler <s8maloef@stud.uni-saarland.de>
 ## Copyright 2024 by Thomas Bock <bockthom@cs.uni-saarland.de>
+## Copyright 2026 by Thomas Bock <bockthom@cmu.edu>
 ## Copyright 2025 by Leo Sendelbach <s8lesend@stud.uni-saarland.de>
 ## All Rights Reserved.
 
@@ -38,11 +39,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r-version: ['4.1', '4.2', '4.3', '4.4', '4.5', 'latest']
+        r-version: ['4.1', '4.2', '4.3', '4.4', '4.5', '4.6', 'latest']
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Update system
         run: |
@@ -78,7 +79,7 @@ jobs:
         if: matrix.r-version == 'latest' && steps.run_tests.outcome == 'success'
 
       - name: Store coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: cobertura.xml
@@ -91,15 +92,15 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Load coverage report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: coverage-report
 
       - name: Upload Report to CodeCov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: cobertura.xml

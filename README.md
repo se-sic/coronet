@@ -200,7 +200,7 @@ There are two distinguishable types of data sources that are both handled by the
     * Commit messages are available through the parameter `commit.messages` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class. Three values can be used:
         1. `none` is the default value and does not impact the configuration at all.
         2. `title` merges the commit message titles (i.e. the first non white space line of a commit message) to the commit data. This gives the data frame an additional column `title`.
-        3. `messages` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
+        3. `message` merges both titles and message bodies to the commit data frame. This adds two new columns `title` and `message`.
     * Gender data of authors (see also the parameter `gender` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class)))
     * [PaStA](https://github.com/lfd/PaStA/)  data (patch-stack analysis, see also the parameter `pasta` in the [`ProjectConf`](#configurable-data-retrieval-related-parameters) class))
         * Patch-stack analysis to link patches sent to mailing lists and upstream commits
@@ -437,6 +437,10 @@ In this section, we provide descriptions of the different algorithms we provide 
 
 In this section, we give an overview of the functionalities we offer regarding the textual analysis of commit messages. These consist of basic NLP tasks, such as stemming (`get.stemmed.commit.messages`), tokenization (`get.tokenized.commit.messages`), and lemmatization (`get.lemmatized.commit.messages`), as well as preprocessing steps (`get.preprocessed.commit.messages`) such as lowercase transformation and removal of punctuation, stopwords, and extra whitespaces. Apart from these, there is the option of searching for a set of strings in commit messages for matching commits (`get.commit.messages.by.strings`) as well as getting token counts for commit messages (`get.commit.message.counts`).
 
+#### Commit-message tag analysis
+
+To analyze standardized tags that are often used at the end of commit messages (such as "Signed-off-by: Name <e-mail>" or "Reviewed-by: Name <e-mail>", etc.), we provide the function `extract.commit.message.tags`, which extracts these tags from commit messages and returns a data frame with the commit hash, the tag, and the name and e-mail. With function `canonicalize.commit.message.tags`, we provide the possibility to canonicalize spelling variants of the extracted tags to handle typos that can occur due to manually written tags. To get an overview of which tags and how often they occur in the commit messages, we provide the function `get.commit.message.tag.statistics`.
+
 ### How-to
 
 In this section, we give a short example on how to initialize all needed objects and build a bipartite network.
@@ -633,8 +637,13 @@ There is no way to update the entries, except for the revision-based parameters.
     * Read and add commit messages to commits. The column `title` will contain the first line of the message and, if selected, the column `message` will contain the rest.
     * [*`none`*, `title`, `messages`]
 - `filter.bots`
-    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file.
+    * Remove all commits, issues, and mails made by bots. Bots are identified using the `bots.list` file; to be matched by this filter, an entry must use the classification value `Bot` in the third column of `bots.list`.
     * [`TRUE`, *`FALSE`*]
+    * **Note**: This only filters bots, and will leave known agents in the data. Consider setting the config parameter `filter.agents` as well to remove all non-human user interactions.
+- `filter.agents`
+    * Remove all commits, issues, and mails made by agents. Agents are identified using the `bots.list` file; to be matched by this filter, an entry must use the classification value `Agent` in the third column of `bots.list`.
+    * [`TRUE`, *`FALSE`*]
+    * **Note**: This only filters agents, and will leave known bots in the data. Consider setting the config parameter `filter.bots` as well to remove all non-human user interactions.
 - `gender`
     * Read and add gender data to authors (column `gender`)
     * [`TRUE`, *`FALSE`*]
@@ -643,7 +652,7 @@ There is no way to update the entries, except for the revision-based parameters.
     * [*`TRUE`*, `FALSE`]
 - `issues.from.source`
     * Choose from which sources the issue data on disk is read in. Multiple sources can be chosen.
-    * [*`github`*, `jira`]
+    * [*`github`*, `jira`, `zulip`]
 - `issues.locked`
     * Lock issues to prevent them from being read if not yet present when calling the getter.
     * [`TRUE`, *`FALSE`*]

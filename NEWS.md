@@ -2,6 +2,26 @@
 
 # coronet – Changelog
 
+## 5.2
+
+### Added
+
+- Add subissues as a supported issue type for edge generation in issue networks (PR #292, 0d06d088b350713b7406fb699fb90505647af841)
+- Add connected events to the issue network generation (PR #292, d96fade35a4f6992b6ece8b89c27b7c40a9f3b35)
+- Add agent handling similar to bots handling (PR #292, 0d06d088b350713b7406fb699fb90505647af841, d96fade35a4f6992b6ece8b89c27b7c40a9f3b35).
+**Potentially breaking change:** Agents need to be filtered separately, filtering bots does not filter agents
+- Add Zulip as a supported issue source for `issues.from.source` (PR #293, 2bbc9525f35f2fc53c586dec1192517e57e040f5, d7b47b7ddb943f918b631ef8c194bde6caa94537, 1f34ee061f59ae06588dc4c9e83ebbad8ad7ffe1)
+- Add functionality to analyze commit-message tags: `extract.commit.message.tags` extracts these tags from commit messages; `canonicalize.commit.message.tags` provides the possibility to canonicalize spelling variants of the extracted tags to handle typos, etc., and `get.commit.message.tag.statistics` provides frequency statistics on the extracted tags (PR #294, f619749815e25f5ba8fe6362453e33ee1f1a7296, b66f28b345daa2974f5e10dda91128e2ab566983, 3af3506efef56f619c531cb97d3dd5e43204da6a, dfc26ecf97ccae3f484b13d7bb1850ce628978ec, 9396a17214e227d719eff3b9964f22205b7fc8ce)
+
+### Changed/Improved
+- Explicitly add R version 4.6 to the CI test pipeline and update GitHub Action versions (d569d675e914533507138464e95ef859535db19d)
+
+### Fixed
+
+- Isolate nodes now always get an eigenvector centrality of 0 and fix one eigenvector centrality test to avoid flakiness (64ed64f17f638f71c35bf0c79df9e68587a15934, 29dcede996cfe4b465c12e0fb00499b03ef589fd)
+- Fix legend of relations in plots that use multiple relations (52c286dcce176b30a039cec334d8fa9d59a387a5)
+
+
 ## 5.1
 
 ### Added

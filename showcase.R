@@ -517,3 +517,14 @@ get.preprocessed.commit.messages(y.data)
 
 ## analyze all commit messages with two preprocessing steps
 get.stemmed.commit.messages(y.data, preprocessing = c("whitespaces", "lowercase"))
+
+## / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
+## Commit-message tag analysis ---------------------------------------------
+
+commit.message.data = y.data$get.commit.messages()
+commit.message.tags = extract.commit.message.tags(commit.message.data, hash.col = "hash",
+                                                  body.col = "message", allow.no.email = TRUE)
+
+commit.message.tags.clean = canonicalize.commit.message.tags(commit.message.tags)
+commit.message.tags.clean[["tag"]] = commit.message.tags.clean[["tag.clean"]]
+get.commit.message.tag.statistics(commit.message.tags.clean)

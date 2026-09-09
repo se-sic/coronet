@@ -53,7 +53,7 @@ test_that("Amount of authors (author.all.authors, author.only.committers).", {
     authors.mailing = c("Björn", "Olaf", "Thomas", "georg", "Hans", "udo", "Fritz fritz@example.org")
     authors.issue = c("Karl", "Olaf", "Thomas", "Björn", "Max")
 
-    authors.all = union(union(authors.committing, authors.mailing), authors.issue)
+    authors.all = union(union(union(authors.committing, authors.mailing), authors.issue), "Copilot")
 
     authors.all.aoc = intersect(authors.all, authors.committing)
     authors.committing.aoc = intersect(authors.committing, authors.committing)
@@ -501,93 +501,106 @@ test_that("Network construction of the undirected author-issue network with all 
     network.built = network.builder$get.author.network()
 
     ## vertex attributes
-    vertices = data.frame(name = c("Thomas", "Olaf", "Björn", "Karl", "udo", "Max"),
+    vertices = data.frame(name = c("Thomas", "Olaf", "Björn", "Copilot", "Karl", "udo", "Max"),
                           kind = TYPE.AUTHOR,
                           type = TYPE.AUTHOR)
 
     ## edge attributes
-    edges = data.frame(from = c(rep("Thomas", 5), rep("Thomas", 4), rep("Olaf", 3), # <issue-github-1>
-                                rep("Olaf", 4), rep("Thomas", 3), rep("Thomas", 3), # <issue-github-2>
-                                rep("Olaf", 7), rep("Thomas", 7), rep("Thomas", 4), # <issue-github-3>
+    edges = data.frame(from = c(rep("Thomas", 7), rep("Thomas", 6), rep("Olaf", 3), # <issue-github-1>
+                                rep("Olaf", 4), rep("Thomas", 3), rep("Björn", 3), rep("Thomas", 3), rep("Olaf", 3), rep("Thomas", 2),# <issue-github-2>
+                                rep("Olaf", 8), rep("Thomas", 11), rep("Copilot", 7), rep("Thomas", 7), rep("Olaf", 3), rep("Thomas", 6),# <issue-github-3>
                                 rep("Olaf", 3), # <issue-github-4>
-                                rep("Thomas", 4), rep("Karl", 3), rep("Björn", 7), rep("Olaf", 3), rep("Thomas", 3), rep("Thomas", 7),
-                                rep("Thomas", 3), rep("Björn", 6), rep("Olaf", 2), rep("Olaf", 6), # <issue-github-6>
+                                rep("Thomas", 5), rep("Karl", 4), rep("Björn", 7), rep("Olaf", 3), rep("Thomas", 5), rep("Thomas", 8),
+                                rep("Thomas", 4), rep("Björn", 7), rep("Olaf", 3), rep("Olaf", 6), # <issue-github-6>
                                 rep("Thomas", 11), rep("Thomas", 8), rep("Olaf", 11), # <issue-jira-ZEPPELIN-328>
                                 rep("Björn", 6), rep("Thomas", 5), rep("Thomas", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
-                       to = c(rep("Olaf", 5), rep("Björn", 4), rep("Björn", 3), # <issue-github-1>
-                              rep("Björn", 4), rep("Björn", 3), rep("Olaf", 3), # <issue-github-2>
-                              rep("Karl", 7), rep("Karl", 7), rep("Olaf", 4), # <issue-github-3>
+                       to = c(rep("Olaf", 7), rep("Björn", 6), rep("Björn", 3), # <issue-github-1>
+                              rep("Björn", 4), rep("Björn", 3), rep("Copilot", 3), rep("Olaf", 3), rep("Copilot", 3), rep("Copilot", 2), # <issue-github-2>
+                              rep("Karl", 8), rep("Karl", 11), rep("Karl", 7), rep("Olaf", 7), rep("Copilot", 3), rep("Copilot", 6),# <issue-github-3>
                               rep("Björn", 3), # <issue-github-4>
-                              rep("udo", 4), rep("udo", 3), rep("udo", 7), rep("udo", 3), rep("Karl", 3), rep("Björn", 7),
-                              rep("Olaf", 3), rep("Karl", 6), rep("Karl", 2), rep("Björn", 6), # <issue-github-6>
+                              rep("udo", 5), rep("udo", 4), rep("udo", 7), rep("udo", 3), rep("Karl", 5), rep("Björn", 8),
+                              rep("Olaf", 4), rep("Karl", 7), rep("Karl", 3), rep("Björn", 6), # <issue-github-6>
                               rep("Björn", 11), rep("Olaf", 8), rep("Björn", 11), # <issue-jira-ZEPPELIN-328>
                               rep("Max", 6), rep("Björn", 5), rep("Max", 5) # <issue-jira-ZEPPELIN-332>
                                 ),
                        date = get.date.from.string(c( "2016-07-12 15:59:25", "2016-07-12 15:59:25", "2016-07-12 15:59:59", # <issue-github-1>
-                                                      "2016-07-12 16:01:01", "2016-07-14 13:37:00", "2016-07-12 15:59:25",
-                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-07-12 16:06:01",
-                                                      "2016-07-12 16:01:01", "2016-07-14 13:37:00", "2016-07-12 16:06:01",
-                                                      "2016-07-12 14:59:25", "2016-07-12 14:59:25", "2016-07-12 16:04:59", # <issue-github-2>
-                                                      "2016-07-12 16:04:59", "2016-07-12 14:59:25", "2016-07-12 14:59:25",
-                                                      "2016-08-07 15:30:00", "2016-07-12 16:04:59", "2016-07-12 16:04:59",
-                                                      "2016-08-07 15:30:00",
-                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02", # <issue-github-3>
-                                                      "2016-08-07 15:37:02", "2016-08-31 16:45:09", "2016-07-12 15:59:25",
-                                                      "2016-07-12 16:06:30", "2016-07-12 15:59:25", "2016-07-12 15:59:59",
-                                                      "2016-08-07 15:37:02", "2016-08-07 15:37:02", "2016-08-31 16:45:09",
-                                                      "2016-08-07 15:30:00", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
-                                                      "2016-07-12 16:06:30", "2016-08-07 15:30:00", "2016-10-05 16:45:09",
-                                                      "2016-07-12 16:02:02", "2016-07-12 16:02:02", "2016-07-12 16:02:02", # <issue-github-4>
-                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-07-12 16:03:59", # <issue-github-6>
-                                                      "2016-10-13 15:30:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
-                                                      "2016-08-07 15:37:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
+                                                      "2016-08-07 15:39:00", "2016-08-07 15:39:30", "2016-07-12 16:01:01",
+                                                      "2016-07-14 13:37:00", "2016-07-12 15:59:25", "2016-07-12 15:59:25",
+                                                      "2016-07-12 15:59:59", "2016-08-07 15:39:00", "2016-08-07 15:39:30",
+                                                      "2016-07-12 16:06:01", "2016-07-12 16:01:01", "2016-07-14 13:37:00",
+                                                      "2016-07-12 16:06:01", "2016-07-12 14:59:25", "2016-07-12 14:59:25",
+                                                      "2016-07-12 16:04:59", "2016-07-12 16:04:59", "2016-07-12 14:59:25", # <issue-github-2>
+                                                      "2016-07-12 14:59:25", "2016-08-07 15:30:00", "2016-07-12 14:59:25",
+                                                      "2016-07-12 14:59:25", "2016-08-07 15:33:00", "2016-07-12 16:04:59",
+                                                      "2016-07-12 16:04:59", "2016-08-07 15:30:00", "2016-07-12 16:04:59",
+                                                      "2016-07-12 16:04:59", "2016-08-07 15:33:00", "2016-08-07 15:30:00",
+                                                      "2016-08-07 15:33:00", "2016-07-12 15:59:25", "2016-07-12 15:59:59", # <issue-github-3>
+                                                      "2016-08-07 15:37:02", "2016-08-07 15:37:02", "2016-08-07 16:22:00",
+                                                      "2016-08-31 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
+                                                      "2016-07-12 15:59:25", "2016-07-12 15:59:59", "2016-08-07 15:37:02",
+                                                      "2016-08-07 15:37:02", "2016-08-07 16:22:00", "2016-08-31 16:45:09",
+                                                      "2016-08-07 15:30:00", "2016-08-07 15:39:00", "2016-08-07 15:39:30",
+                                                      "2016-08-07 15:41:00", "2016-10-05 16:45:09", "2016-07-12 15:59:25",
+                                                      "2016-07-12 15:59:59", "2016-08-07 15:37:02", "2016-08-07 15:37:02",
+                                                      "2016-08-07 16:22:00", "2016-08-31 16:45:09", "2016-08-07 15:33:00",
+                                                      "2016-07-12 15:59:25", "2016-07-12 16:06:30", "2016-08-07 15:30:00",
+                                                      "2016-08-07 15:39:00", "2016-08-07 15:39:30", "2016-08-07 15:41:00",
+                                                      "2016-10-05 16:45:09", "2016-07-12 15:59:25", "2016-07-12 16:06:30",
+                                                      "2016-08-07 15:33:00", "2016-08-07 15:30:00", "2016-08-07 15:39:00",
+                                                      "2016-08-07 15:39:30", "2016-08-07 15:41:00", "2016-10-05 16:45:09",
+                                                      "2016-08-07 15:33:00", "2016-07-12 16:02:02", "2016-07-12 16:02:02", # <issue-github-4>
+                                                      "2016-07-12 16:02:02", "2016-07-12 15:30:02", "2016-07-12 15:30:02", # <issue-github-6>
+                                                      "2016-07-12 16:03:59", "2016-08-07 15:41:00", "2016-10-13 15:30:02",
+                                                      "2016-07-12 15:30:02", "2016-07-12 15:30:02", "2016-08-07 15:37:02",
+                                                      "2016-08-07 16:22:00", "2016-07-12 15:30:02", "2016-07-12 15:30:02",
                                                       "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
                                                       "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2016-07-12 15:30:02",
                                                       "2016-07-12 15:30:02", "2017-05-23 12:31:34", "2016-07-12 16:03:59",
-                                                      "2016-10-13 15:30:02", "2016-08-07 15:37:02", "2016-07-12 16:03:59",
+                                                      "2016-08-07 15:41:00", "2016-10-13 15:30:02", "2016-08-07 15:37:02",
+                                                      "2016-08-07 16:22:00", "2016-07-12 16:03:59", "2016-08-07 15:41:00",
                                                       "2016-10-13 15:30:02", "2016-08-31 15:30:02", "2016-10-05 15:30:02",
                                                       "2016-12-07 15:30:02", "2016-12-07 15:30:02", "2017-05-23 12:32:39",
-                                                      "2016-07-12 16:03:59", "2016-10-13 15:30:02", "2017-05-23 12:31:34",
-                                                      "2016-08-07 15:37:02", "2016-08-31 15:30:02", "2016-10-05 15:30:02",
-                                                      "2016-12-07 15:30:02", "2016-12-07 15:30:02", "2017-05-23 12:32:39",
-                                                      "2016-08-07 15:37:02", "2017-05-23 12:31:34", "2016-08-31 15:30:02",
+                                                      "2016-07-12 16:03:59", "2016-08-07 15:41:00", "2016-10-13 15:30:02",
+                                                      "2017-05-23 12:31:34", "2016-08-07 15:37:02", "2016-08-07 16:22:00",
+                                                      "2016-08-31 15:30:02", "2016-10-05 15:30:02", "2016-12-07 15:30:02",
+                                                      "2016-12-07 15:30:02", "2017-05-23 12:32:39", "2016-08-07 15:37:02",
+                                                      "2016-08-07 16:22:00", "2017-05-23 12:31:34", "2016-08-31 15:30:02",
                                                       "2016-10-05 15:30:02", "2016-12-07 15:30:02", "2016-12-07 15:30:02",
-                                                      "2017-05-23 12:32:39", "2017-05-23 12:31:34",
-                                                      "2013-04-21 23:52:09", "2013-04-21 23:52:09", "2017-05-21 12:00:00", # <issue-jira-ZEPPELIN-328>
-                                                      "2017-05-21 12:00:00", "2013-05-05 21:46:30", "2013-05-05 21:49:21",
-                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
-                                                      "2013-05-25 04:08:07", "2013-06-01 06:53:06", "2013-04-21 23:52:09",
-                                                      "2013-04-21 23:52:09", "2017-05-21 12:00:00", "2017-05-21 12:00:00",
-                                                      "2013-05-25 03:25:06", "2013-05-25 06:06:53", "2013-05-25 06:22:23",
-                                                      "2013-06-01 06:50:26", "2013-05-05 21:46:30", "2013-05-05 21:49:21",
-                                                      "2013-05-05 21:49:34", "2013-05-06 01:04:34", "2013-05-25 03:48:41",
-                                                      "2013-05-25 04:08:07", "2013-06-01 06:53:06", "2013-05-25 03:25:06",
+                                                      "2017-05-23 12:32:39", "2017-05-23 12:31:34", "2013-04-21 23:52:09",
+                                                      "2013-04-21 23:52:09", "2017-05-21 12:00:00", "2017-05-21 12:00:00", # <issue-jira-ZEPPELIN-328>
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-06-01 06:53:06", "2013-04-21 23:52:09", "2013-04-21 23:52:09",
+                                                      "2017-05-21 12:00:00", "2017-05-21 12:00:00", "2013-05-25 03:25:06",
                                                       "2013-05-25 06:06:53", "2013-05-25 06:22:23", "2013-06-01 06:50:26",
-                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39", # <issue-jira-ZEPPELIN-332>
-                                                      "2016-07-15 20:07:47", "2016-07-27 20:12:08", "2016-07-28 06:27:52",
-                                                      "2016-07-12 16:01:30", "2016-07-12 16:02:30", "2016-07-15 19:55:39",
-                                                      "2017-05-21 12:00:00", "2017-05-21 12:00:00", "2016-07-15 20:07:47",
-                                                      "2016-07-27 20:12:08", "2016-07-28 06:27:52", "2017-05-21 12:00:00",
-                                                      "2017-05-21 12:00:00"
+                                                      "2013-05-05 21:46:30", "2013-05-05 21:49:21", "2013-05-05 21:49:34",
+                                                      "2013-05-06 01:04:34", "2013-05-25 03:48:41", "2013-05-25 04:08:07",
+                                                      "2013-06-01 06:53:06", "2013-05-25 03:25:06", "2013-05-25 06:06:53",
+                                                      "2013-05-25 06:22:23", "2013-06-01 06:50:26", "2016-07-12 16:01:30",
+                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2016-07-15 20:07:47", # <issue-jira-ZEPPELIN-332>
+                                                      "2016-07-27 20:12:08", "2016-07-28 06:27:52", "2016-07-12 16:01:30",
+                                                      "2016-07-12 16:02:30", "2016-07-15 19:55:39", "2017-05-21 12:00:00",
+                                                      "2017-05-21 12:00:00", "2016-07-15 20:07:47", "2016-07-27 20:12:08",
+                                                      "2016-07-28 06:27:52", "2017-05-21 12:00:00", "2017-05-21 12:00:00"
                                                       )),
                        artifact.type = "IssueEvent",
-                       issue.id = c(rep("<issue-github-1>", 12), rep("<issue-github-2>", 10), rep("<issue-github-3>", 18),
-                                    rep("<issue-github-4>", 3), rep("<issue-github-6>", 44), rep("<issue-jira-ZEPPELIN-328>", 30),
+                       issue.id = c(rep("<issue-github-1>", 16), rep("<issue-github-2>", 18), rep("<issue-github-3>", 42),
+                                    rep("<issue-github-4>", 3), rep("<issue-github-6>", 52), rep("<issue-jira-ZEPPELIN-328>", 30),
                                     rep("<issue-jira-ZEPPELIN-332>", 16)),
-                       event.name = c("created", "commented", "state_updated", "commented", "state_updated", "created", # <issue-github-1>
-                                      "commented", "state_updated", "commented", "commented", "state_updated", "commented",
-                                      "created", "commented", "merged", "state_updated", "created", "commented", "referenced_by", # <issue-github-2>
-                                      "merged", "state_updated", "referenced_by",
-                                      "created", "commented", "add_link", "add_link", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
-                                      "commented", "add_link", "add_link", "referenced", "add_link", "referenced", "assigned", "state_updated", "add_link",
-                                      "referenced",
+                       event.name = c("created", "commented", "state_updated", "parent_issue_added", "parent_issue_removed", "commented", "state_updated", "created", # <issue-github-1>
+                                      "commented", "state_updated", "parent_issue_added", "parent_issue_removed", "commented", "commented", "state_updated", "commented",
+                                      "created", "commented", "merged", "state_updated", "created", "commented", "referenced_by", "created", "commented", "referenced_by", # <issue-github-2>
+                                      "merged", "state_updated", "referenced_by", "merged", "state_updated", "referenced_by", "referenced_by", "referenced_by",
+                                      "created", "commented", "add_link", "add_link", "connected", "referenced", "assigned", "state_updated", "created", # <issue-github-3>
+                                      "commented", "add_link", "add_link", "connected", "referenced", "add_link", "sub_issue_added", "sub_issue_removed", "sub_issue_added", "referenced", "created", "commented", "add_link", "add_link", "connected", "referenced", "add_link", "assigned", "state_updated", "add_link", "sub_issue_added", "sub_issue_removed", "sub_issue_added",
+                                      "referenced", "assigned", "state_updated", "add_link", "add_link", "sub_issue_added", "sub_issue_removed", "sub_issue_added", "referenced", "add_link",
                                       "commit_added", "created", "commented", # <issue-github-4>
-                                      "mentioned", "subscribed", "commented", "add_link", "mentioned", "subscribed", "referenced_by", # <issue-github-6>
-                                      "mentioned", "subscribed", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
-                                      "mentioned", "subscribed", "labeled", "commented", "add_link", "referenced_by", "commented", "add_link", "mentioned",
-                                      "subscribed", "mentioned", "subscribed", "commented", "commented", "add_link", "labeled", "referenced_by",
-                                      "mentioned", "subscribed", "mentioned", "subscribed", "commented", "referenced_by", "labeled",
+                                      "mentioned", "subscribed", "commented", "parent_issue_added", "add_link", "mentioned", "subscribed", "referenced_by", # <issue-github-6>
+                                      "connected", "mentioned", "subscribed", "mentioned", "subscribed", "mentioned", "subscribed", "commented",
+                                      "mentioned", "subscribed", "labeled", "commented", "parent_issue_added", "add_link", "referenced_by", "connected", "commented", "parent_issue_added", "add_link", "mentioned",
+                                      "subscribed", "mentioned", "subscribed", "commented", "commented", "parent_issue_added", "add_link", "labeled", "referenced_by", "connected",
+                                      "mentioned", "subscribed", "mentioned", "subscribed", "commented", "referenced_by", "connected", "labeled",
                                       "mentioned", "subscribed", "mentioned", "subscribed", "commented", "labeled",
                                       "created", "commented", "referenced_by", "add_link", "commented", "commented", "commented", "commented", # <issue-jira-ZEPPELIN-328>
                                       "commented", "commented", "resolution_updated", "created", "commented", "referenced_by", "add_link", "commented",
